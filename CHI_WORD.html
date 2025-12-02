@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>中文閃卡 v3.1 (錄音修復+大字版)</title>
+    <title>中文閃卡 v3.2 (iPad錄音修復版)</title>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Serif+HK:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -15,7 +15,8 @@
             --accent: #ff7043;
             --btn-speak: #42a5f5;
             --btn-record: #ef5350;
-            --btn-pause: #ffca28;
+            --btn-pause: #ffca28; /* 黃色 */
+            --btn-pause-text: #37474f; /* 深色字，解決看不清的問題 */
             --btn-master: #66bb6a;
             --danger: #ef5350;
             --import-btn: #fdd835;
@@ -113,9 +114,9 @@
         .word-tag.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 112, 67, 0.3); z-index: 2; }
         
         .has-audio-dot {
-            position: absolute; top: 4px; right: 4px; width: 6px; height: 6px;
+            position: absolute; top: 4px; right: 4px; width: 8px; height: 8px;
             background-color: var(--btn-record); border-radius: 50%; z-index: 3;
-            box-shadow: 0 0 2px rgba(0,0,0,0.3);
+            box-shadow: 0 0 2px rgba(0,0,0,0.3); border: 1px solid white;
         }
 
         .word-tag-bg {
@@ -178,17 +179,17 @@
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* --- 閃卡角落資訊 (已放大) --- */
+        /* --- 閃卡角落資訊 (大字版) --- */
         .card-info-bl {
             position: absolute; bottom: 20px; left: 25px;
-            font-size: 2rem; /* 放大 */
+            font-size: 2rem;
             color: #90a4ae; font-weight: 800;
             display: flex; align-items: center; gap: 5px;
             text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
         }
         .card-info-br {
             position: absolute; bottom: 20px; right: 25px;
-            font-size: 2rem; /* 放大 */
+            font-size: 2rem;
             color: #90a4ae; font-weight: 800;
             display: flex; align-items: center; gap: 5px;
             text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
@@ -210,7 +211,13 @@
         .big-btn:disabled { background: #cfd8dc !important; box-shadow: none !important; color: #fff; cursor: not-allowed; top: 0; }
 
         .btn-speak { background: var(--btn-speak); box-shadow: 0 5px 0 #1e88e5; }
-        .btn-speak.paused { background: var(--btn-pause); box-shadow: 0 5px 0 #ffb300; }
+        
+        /* 修正：暫停狀態改為深色字體 */
+        .btn-speak.paused { 
+            background: var(--btn-pause); 
+            box-shadow: 0 5px 0 #ffb300; 
+            color: var(--btn-pause-text); 
+        }
         
         .btn-record { background: var(--btn-record); box-shadow: 0 5px 0 #c62828; font-size: 1.5rem; }
         .btn-record.recording { background: #b71c1c; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); top: 5px; }
@@ -301,7 +308,6 @@
             .flashcard { max-height: 30vh; }
             .word-display { font-size: 6rem; }
             .controls-grid { margin-bottom: 5px; }
-            /* 手機版字體稍微調整，避免過大 */
             .card-info-bl, .card-info-br { font-size: 1.5rem; bottom: 10px; }
         }
 
@@ -401,7 +407,7 @@
                     🔊 朗讀
                 </button>
                 
-                <!-- 錄音按鈕 (加入 touch 事件處理) -->
+                <!-- 錄音按鈕 -->
                 <button class="big-btn btn-record" id="recordBtn">
                     🎤
                 </button>
@@ -505,6 +511,8 @@
         let mediaRecorder;
         let audioChunks = [];
         let isRecording = false;
+        let recordingTimerInterval = null;
+        let recordingSeconds = 0;
         
         let state = {
             status: 'idle',
@@ -548,7 +556,7 @@
                 shuffleDeck = [];
             });
 
-            // 綁定錄音按鈕事件 (修復無反應問題)
+            // 綁定錄音按鈕事件
             const recBtn = document.getElementById('recordBtn');
             
             // 滑鼠事件
@@ -563,7 +571,7 @@
             
             // 觸控事件 (手機/iPad)
             recBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // 防止長按選單
+                e.preventDefault(); 
                 startRecording();
             });
             recBtn.addEventListener('touchend', (e) => {
@@ -571,7 +579,6 @@
                 stopRecording();
             });
             
-            // 防止滑鼠移出按鈕導致無法停止
             recBtn.addEventListener('mouseleave', (e) => {
                 if(isRecording) stopRecording();
             });
@@ -583,28 +590,46 @@
                              voices.find(v => v.lang === 'zh-HK');
         }
 
-        // --- 錄音功能 (增強錯誤檢查) ---
+        // --- 錄音功能 (iPad 格式修正 + 計時器) ---
         function startRecording() {
             if (words.length === 0) return;
             if (isRecording) return;
 
-            // 檢查瀏覽器支援
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("⚠️ 錄音功能無法啟動！\n\n原因：瀏覽器安全性限制。\n\n解決方法：\n1. 請勿直接開啟 HTML 檔案 (file://)，Chrome 會封鎖麥克風。\n2. 請將檔案上傳至 HTTPS 網站 (如 GitHub Pages)。\n3. 或使用 Local Server 運行。");
+                alert("⚠️ 錄音功能無法啟動！請確保使用 HTTPS 或 Localhost。");
                 return;
             }
             
+            // 停止當前任何語音播放
+            window.speechSynthesis.cancel();
+            stopEverything();
+
+            // 偵測支援的格式 (解決 iPad 錄音無聲問題)
+            let options = { mimeType: 'audio/webm' };
+            if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                options = { mimeType: 'audio/mp4' }; // iOS 優先
+            } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                options = { mimeType: 'audio/webm;codecs=opus' }; // Chrome/Android
+            }
+
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(stream => {
-                    mediaRecorder = new MediaRecorder(stream);
+                    try {
+                        mediaRecorder = new MediaRecorder(stream, options);
+                    } catch (e) {
+                        // 如果指定格式失敗，嘗試預設
+                        mediaRecorder = new MediaRecorder(stream);
+                    }
+
                     audioChunks = [];
-                    
                     mediaRecorder.ondataavailable = event => {
-                        audioChunks.push(event.data);
+                        if (event.data.size > 0) audioChunks.push(event.data);
                     };
                     
                     mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        // 建立 Blob 時使用正確的 Type
+                        const blobType = mediaRecorder.mimeType || 'audio/webm';
+                        const audioBlob = new Blob(audioChunks, { type: blobType });
                         words[currentIndex].audioBlob = audioBlob;
                         showToast("錄音已保存！");
                         renderLists();
@@ -614,16 +639,26 @@
                     isRecording = true;
                     document.getElementById('recordBtn').classList.add('recording');
                     
-                    const badge = document.getElementById('statusBadge');
-                    badge.textContent = "🔴 錄音中...";
-                    badge.className = 'status-badge status-recording';
-                    badge.style.opacity = '1';
+                    // 啟動計時器
+                    recordingSeconds = 0;
+                    updateRecordingUI();
+                    recordingTimerInterval = setInterval(() => {
+                        recordingSeconds++;
+                        updateRecordingUI();
+                    }, 1000);
+
                 })
                 .catch(err => {
                     console.error("錄音錯誤:", err);
-                    alert("無法存取麥克風。\n請檢查瀏覽器權限設定，或確認您使用的是 HTTPS 連線。");
-                    document.getElementById('recordBtn').disabled = true;
+                    alert("無法存取麥克風。請檢查設定。");
                 });
+        }
+
+        function updateRecordingUI() {
+            const badge = document.getElementById('statusBadge');
+            badge.textContent = `🔴 錄音中 (${recordingSeconds}s)...`;
+            badge.className = 'status-badge status-recording';
+            badge.style.opacity = '1';
         }
 
         function stopRecording() {
@@ -631,9 +666,10 @@
             
             mediaRecorder.stop();
             isRecording = false;
+            clearInterval(recordingTimerInterval);
             document.getElementById('recordBtn').classList.remove('recording');
             
-            // 停止所有軌道以釋放麥克風
+            // 停止麥克風串流
             mediaRecorder.stream.getTracks().forEach(track => track.stop());
             
             updateStatusUI();
@@ -726,24 +762,39 @@
             const currentItem = words[currentIndex];
 
             if (currentItem.audioBlob) {
+                // 播放錄音
+                window.speechSynthesis.cancel(); // 確保 TTS 停止
                 const audioUrl = URL.createObjectURL(currentItem.audioBlob);
                 const audio = new Audio(audioUrl);
                 
+                // iOS Safari 有時需要 load
+                audio.load();
+                
                 audio.onended = () => {
                     handleSpeakEnd();
+                    URL.revokeObjectURL(audioUrl); // 釋放記憶體
                 };
-                audio.play();
+                
+                audio.play().catch(e => {
+                    console.error("播放失敗:", e);
+                    // 如果播放失敗，回退到 TTS
+                    speakTTS(currentItem.text);
+                });
             } else {
-                const u = new SpeechSynthesisUtterance(currentItem.text);
-                u.lang = 'zh-HK';
-                if (cantoneseVoice) u.voice = cantoneseVoice;
-                u.rate = 0.8;
-
-                u.onend = () => {
-                    handleSpeakEnd();
-                };
-                window.speechSynthesis.speak(u);
+                speakTTS(currentItem.text);
             }
+        }
+
+        function speakTTS(text) {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'zh-HK';
+            if (cantoneseVoice) u.voice = cantoneseVoice;
+            u.rate = 0.8;
+
+            u.onend = () => {
+                handleSpeakEnd();
+            };
+            window.speechSynthesis.speak(u);
         }
 
         function handleSpeakEnd() {
@@ -1195,7 +1246,9 @@
             masteredWords.forEach(w => { w.views = 0; w.hits = 0; });
             renderLists();
             updateCard();
+            // 同時關閉兩個視窗
             closeModal('confirmModal');
+            closeModal('settingsModal');
             showToast("統計已重置");
         }
 
