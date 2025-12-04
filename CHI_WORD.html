@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>中英閃卡 v3.5 (英式女聲+音量修復)</title>
+    <title>中英閃卡 v3.6 (自選語音版)</title>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Serif+HK:wght@500;700;900&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -267,6 +267,7 @@
             background: white; width: 90%; max-width: 500px; border-radius: 24px;
             padding: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.25);
             text-align: center; display: flex; flex-direction: column; max-height: 85vh;
+            overflow-y: auto;
         }
         
         .import-textarea {
@@ -287,10 +288,19 @@
         .setting-row {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 15px; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 10px;
+            flex-wrap: wrap; gap: 5px;
         }
-        .setting-label { flex: 1; padding-right: 10px; font-size: 0.95rem; font-weight: bold; color: #546e7a; }
+        .setting-label { flex: 1; padding-right: 10px; font-size: 0.95rem; font-weight: bold; color: #546e7a; min-width: 150px; }
         .setting-input { width: 80px; padding: 8px; border-radius: 10px; border: 1px solid #cfd8dc; text-align: center; font-size: 1.1rem; }
         .setting-input:focus { border-color: var(--accent); outline: none; background: #fff3e0; }
+        
+        /* Voice Select Specific */
+        .voice-select-container {
+            width: 100%; display: flex; gap: 5px; margin-top: 5px;
+        }
+        select.setting-input {
+            width: 100%; text-align: left; font-size: 0.9rem;
+        }
 
         .toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -494,6 +504,16 @@
                 <input type="number" id="settingMasteryViewLimit" class="setting-input" value="1" min="1" max="50" onchange="autoSaveSettings()" onfocus="this.select()">
             </div>
 
+            <!-- 語音選擇器 -->
+            <div class="setting-row" style="display:block;">
+                <div class="setting-label" style="margin-bottom:5px;">英文語音選擇 (English Voice)</div>
+                <div class="voice-select-container">
+                    <select id="englishVoiceSelect" class="setting-input" onchange="autoSaveSettings()"></select>
+                    <button class="mini-btn" onclick="testSelectedVoice()">🔊 試聽</button>
+                </div>
+                <small style="color:#90a4ae; font-size:0.75rem;">* 請選一個好聽的女聲 (如 Martha, Catherine)</small>
+            </div>
+
             <button class="btn-reset" onclick="openConfirmModal()">🔄 重置所有學習統計</button>
             <button class="btn-reset" style="background:#90a4ae" onclick="resetSettings()">↩️ 還原初始設定 (4, 3, 2, 1)</button>
             <button class="btn-danger" onclick="clearAllData()">🗑️ 清空所有資料 (包括錄音)</button>
@@ -529,6 +549,7 @@
         let currentIndex = 0;
         let cantoneseVoice = null;
         let englishVoice = null;
+        let availableVoices = [];
         
         // 錄音相關
         let mediaRecorder;
@@ -557,11 +578,12 @@
             autoDelay: 4,
             repeatDelay: 3,
             masteryThreshold: 2,
-            masteryViewLimit: 1
+            masteryViewLimit: 1,
+            preferredEnglishVoiceURI: '' // 新增：儲存用戶選擇的語音 URI
         };
 
         // --- IndexedDB 系統 ---
-        const DB_NAME = 'FlashcardDB_v3.5'; // 升級 DB 名稱以防衝突
+        const DB_NAME = 'FlashcardDB_v3.6'; // 升級 DB 名稱以防衝突
         const DB_VERSION = 1;
         let db = null;
         let isDirty = false;
@@ -598,7 +620,10 @@
                     if (getMastered.result) masteredWords = getMastered.result.value;
                     else masteredWords = initialMastered.map(w => ({ text: w, views: 0, hits: 0, audioBlob: null }));
 
-                    if (getSettings.result) settings = getSettings.result.value;
+                    if (getSettings.result) {
+                        // 合併設定，防止舊資料覆蓋新欄位
+                        settings = { ...settings, ...getSettings.result.value };
+                    }
                     resolve(true);
                 };
                 transaction.onerror = () => resolve(false);
@@ -644,8 +669,11 @@
             updateCard();
             
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.onvoiceschanged = selectVoice;
-                selectVoice();
+                // iOS 需要時間加載語音
+                window.speechSynthesis.onvoiceschanged = () => {
+                    loadVoices();
+                };
+                loadVoices(); // 嘗試立即加載
             }
 
             document.getElementById('autoPlayNext').addEventListener('change', (e) => {
@@ -666,18 +694,30 @@
             window.onbeforeunload = function (e) { if (isDirty) { saveDataToDB(); return "您有未儲存的變更"; } };
         }
 
-        function selectVoice() {
-            const voices = window.speechSynthesis.getVoices();
-            
+        function loadVoices() {
+            availableVoices = window.speechSynthesis.getVoices();
+            if (availableVoices.length === 0) return;
+
             // 廣東話 (優先 Google)
-            cantoneseVoice = voices.find(v => v.lang === 'zh-HK' && v.name.includes('Google')) || 
-                             voices.find(v => v.lang === 'zh-HK');
+            cantoneseVoice = availableVoices.find(v => v.lang === 'zh-HK' && v.name.includes('Google')) || 
+                             availableVoices.find(v => v.lang === 'zh-HK');
             
-            // 英式英文女聲 (優先 Google UK Female, 或 iOS 的 Martha/Catherine, 或任何 en-GB)
-            englishVoice = voices.find(v => v.lang === 'en-GB' && v.name.includes('Google') && v.name.includes('Female')) ||
-                           voices.find(v => v.lang === 'en-GB' && (v.name.includes('Martha') || v.name.includes('Catherine'))) ||
-                           voices.find(v => v.lang === 'en-GB' && v.name.includes('Female')) ||
-                           voices.find(v => v.lang === 'en-GB');
+            // 英文語音設定邏輯
+            updateEnglishVoiceFromSettings();
+        }
+
+        function updateEnglishVoiceFromSettings() {
+            if (settings.preferredEnglishVoiceURI) {
+                englishVoice = availableVoices.find(v => v.voiceURI === settings.preferredEnglishVoiceURI);
+            }
+            
+            // 如果沒設定，或找不到設定的語音，則使用預設邏輯 (優先找英式女聲)
+            if (!englishVoice) {
+                englishVoice = availableVoices.find(v => v.lang === 'en-GB' && v.name.includes('Google') && v.name.includes('Female')) ||
+                               availableVoices.find(v => v.lang === 'en-GB' && (v.name.includes('Martha') || v.name.includes('Catherine'))) ||
+                               availableVoices.find(v => v.lang === 'en-GB' && v.name.includes('Female')) ||
+                               availableVoices.find(v => v.lang === 'en-GB');
+            }
         }
 
         function isEnglish(text) {
@@ -1167,7 +1207,53 @@
             document.getElementById('settingRepeatDelay').value = settings.repeatDelay;
             document.getElementById('settingMasteryThreshold').value = settings.masteryThreshold;
             document.getElementById('settingMasteryViewLimit').value = settings.masteryViewLimit;
+            
+            // 填充語音選單
+            const select = document.getElementById('englishVoiceSelect');
+            select.innerHTML = '';
+            
+            // 篩選英文語音
+            const enVoices = availableVoices.filter(v => v.lang.startsWith('en'));
+            
+            // 排序：GB 優先，然後 US，然後其他
+            enVoices.sort((a, b) => {
+                const aGB = a.lang === 'en-GB';
+                const bGB = b.lang === 'en-GB';
+                if (aGB && !bGB) return -1;
+                if (!aGB && bGB) return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+            enVoices.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.voiceURI;
+                const flag = v.lang === 'en-GB' ? '🇬🇧' : (v.lang === 'en-US' ? '🇺🇸' : '🌍');
+                opt.textContent = `${flag} ${v.name} (${v.lang})`;
+                if (englishVoice && v.voiceURI === englishVoice.voiceURI) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+            
+            if (enVoices.length === 0) {
+                const opt = document.createElement('option');
+                opt.textContent = "沒有偵測到英文語音";
+                select.appendChild(opt);
+            }
+
             document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function testSelectedVoice() {
+            const select = document.getElementById('englishVoiceSelect');
+            const uri = select.value;
+            const voice = availableVoices.find(v => v.voiceURI === uri);
+            if (voice) {
+                const u = new SpeechSynthesisUtterance("Hello! This is a test voice.");
+                u.voice = voice;
+                u.lang = voice.lang;
+                window.speechSynthesis.speak(u);
+            }
         }
 
         function autoSaveSettings() {
@@ -1175,6 +1261,13 @@
             settings.repeatDelay = parseInt(document.getElementById('settingRepeatDelay').value) || 3;
             settings.masteryThreshold = parseInt(document.getElementById('settingMasteryThreshold').value) || 2;
             settings.masteryViewLimit = parseInt(document.getElementById('settingMasteryViewLimit').value) || 1;
+            
+            const voiceSelect = document.getElementById('englishVoiceSelect');
+            if (voiceSelect.value) {
+                settings.preferredEnglishVoiceURI = voiceSelect.value;
+                updateEnglishVoiceFromSettings();
+            }
+
             markDirty(); saveDataToDB(); renderLists(); updateCard(); showToast("設定已更新");
         }
 
@@ -1183,6 +1276,9 @@
             settings.repeatDelay = 3;
             settings.masteryThreshold = 2;
             settings.masteryViewLimit = 1;
+            settings.preferredEnglishVoiceURI = '';
+            updateEnglishVoiceFromSettings(); // Reset voice logic
+            
             openSettingsModal(); // Refresh UI
             markDirty(); saveDataToDB();
             showToast("設定已還原為初始值");
