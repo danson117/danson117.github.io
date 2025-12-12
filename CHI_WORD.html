@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>中英閃卡 v3.7 (Moira版)</title>
+    <title>中英閃卡 v3.8 (Moira版)</title>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Serif+HK:wght@500;700;900&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -36,9 +36,13 @@
             font-family: var(--font-ui);
             background: var(--bg-primary);
             color: var(--text-primary);
-            height: 100vh;
+            /* 修改 4: 使用 dvh 解決移動端網址列遮擋問題 */
+            height: 100vh; 
+            height: 100dvh; 
             overflow: hidden;
             padding: 15px;
+            /* 修改 4: 增加安全區域，防止瀏海遮擋 */
+            padding-top: max(15px, env(safe-area-inset-top)); 
             display: flex;
             flex-direction: column;
         }
@@ -249,7 +253,7 @@
             background: #fff; cursor: pointer; font-weight: bold; color: #546e7a;
         }
 
-        /* Save Status Indicator (Updated) */
+        /* Save Status Indicator */
         .save-status {
             position: fixed; bottom: 10px; right: 10px; font-size: 0.75rem; 
             background: rgba(255,255,255,0.5); padding: 4px 8px; border-radius: 8px;
@@ -294,10 +298,17 @@
         .setting-input { width: 80px; padding: 8px; border-radius: 10px; border: 1px solid #cfd8dc; text-align: center; font-size: 1.1rem; }
         .setting-input:focus { border-color: var(--accent); outline: none; background: #fff3e0; }
         
+        /* 修改 3: Toast 位置調整至上方，避免遮擋卡片 */
         .toast {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            position: fixed; 
+            top: 15%; /* 改為 15% 避免遮擋中間 */
+            left: 50%; 
+            transform: translate(-50%, 0); /* 移除垂直置中 */
             background: rgba(0,0,0,0.85); color: white; padding: 16px 30px;
-            border-radius: 40px; font-weight: bold; font-size: 1.1rem; z-index: 4000; opacity: 0; pointer-events: none; transition: opacity 0.3s; text-align: center;
+            border-radius: 40px; font-weight: bold; font-size: 1.1rem; 
+            z-index: 4000; opacity: 0; pointer-events: none; 
+            transition: opacity 0.3s; text-align: center;
+            width: max-content; max-width: 90%;
         }
 
         .select-mode-active .panel-words { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
@@ -662,6 +673,7 @@
                 else if (words.length > 0) startSequence();
             });
             
+            // 修改 2: 切換模式時重置洗牌堆
             document.getElementById('randomOrder').addEventListener('change', () => { shuffleDeck = []; });
 
             const recBtn = document.getElementById('recordBtn');
@@ -1047,6 +1059,8 @@
             const indices = Array.from(checkboxes).map(c => parseInt(c.dataset.index)).sort((a,b) => b-a);
             indices.forEach(idx => { masteredWords.push(words[idx]); words.splice(idx, 1); });
             if (currentIndex >= words.length) currentIndex = 0;
+            // 修改 2: 詞語列表變動，清空洗牌堆
+            shuffleDeck = [];
             showToast(`已移動 ${indices.length} 個到已學識`); markDirty(); exitWordSelectMode(); updateCard();
         }
         function confirmBatchMoveFromReviewToWords() {
@@ -1054,6 +1068,8 @@
             if (checkboxes.length === 0) return;
             const indices = Array.from(checkboxes).map(c => parseInt(c.dataset.index)).sort((a,b) => b-a);
             indices.forEach(idx => { let w = reviewWords[idx]; w.views = 0; w.hits = 0; words.push(w); reviewWords.splice(idx, 1); });
+            // 修改 2: 詞語列表變動，清空洗牌堆
+            shuffleDeck = [];
             showToast(`已退回 ${indices.length} 個到詞語表`); markDirty(); exitReviewMode(); updateCard();
         }
         function confirmBatchMoveFromReviewToMastered() {
@@ -1075,6 +1091,8 @@
             if (checkboxes.length === 0) return;
             const indices = Array.from(checkboxes).map(c => parseInt(c.dataset.index)).sort((a,b) => b-a);
             indices.forEach(idx => { let w = masteredWords[idx]; w.views = 0; w.hits = 0; words.push(w); masteredWords.splice(idx, 1); });
+            // 修改 2: 詞語列表變動，清空洗牌堆
+            shuffleDeck = [];
             showToast(`已還原 ${indices.length} 個到詞語表`); markDirty(); exitDeleteMode(); updateCard();
         }
         function toggleSelectAll(type) {
@@ -1125,17 +1143,32 @@
         function nextWord() {
             if (words.length === 0) return;
             stopEverything();
+            
+            // 修改 2: 真正的洗牌模式 (Deck Shuffle)
             if (document.getElementById('randomOrder').checked) {
+                // 如果洗牌堆空了，重新生成
                 if (shuffleDeck.length === 0) {
-                    shuffleDeck = words.map((_, i) => i).filter(i => i !== currentIndex);
-                    if (shuffleDeck.length === 0 && words.length > 0) shuffleDeck = [0];
-                    for (let i = shuffleDeck.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [shuffleDeck[i], shuffleDeck[j]] = [shuffleDeck[j], shuffleDeck[i]];
+                    // 建立一個包含所有索引的陣列 [0, 1, 2, ... length-1]
+                    let newDeck = Array.from({length: words.length}, (_, i) => i);
+                    
+                    // 如果詞語多於一個，嘗試移除當前索引，避免連續重複
+                    if (words.length > 1) {
+                        newDeck = newDeck.filter(i => i !== currentIndex);
                     }
+                    
+                    // Fisher-Yates 洗牌算法
+                    for (let i = newDeck.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+                    }
+                    shuffleDeck = newDeck;
                 }
+                // 從堆中取出一個索引
                 currentIndex = shuffleDeck.pop();
-            } else currentIndex = (currentIndex + 1) % words.length;
+            } else {
+                currentIndex = (currentIndex + 1) % words.length;
+            }
+            
             updateCard();
             if (document.getElementById('autoPlayNext').checked) startSequence();
         }
@@ -1149,11 +1182,19 @@
 
         function handleMasteryClick(e) {
             if (words.length === 0) return;
+
+            // 修改 1: 立即停止舊的計時器，防止倒數繼續
+            stopEverything();
+
             const item = words[currentIndex];
             item.hits++;
             
             if (item.hits >= settings.masteryThreshold) {
                 words.splice(currentIndex, 1);
+                
+                // 修改 2: 詞語數量改變，必須清空洗牌堆，否則索引會錯亂
+                shuffleDeck = [];
+
                 if (item.views > settings.masteryViewLimit) {
                     reviewWords.push(item);
                     showToast(`👍 識咗，但要多練下「${item.text}」`);
@@ -1169,6 +1210,11 @@
                 const rect = e.target.getBoundingClientRect();
                 triggerConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, 0.4);
                 markDirty(); renderLists(); updateCard();
+            }
+
+            // 修改 1: 如果開啟了自動模式，重新開始全新的倒數
+            if (document.getElementById('autoPlayNext').checked && words.length > 0) {
+                startSequence();
             }
         }
 
@@ -1214,6 +1260,8 @@
         function clearAllData() {
             if(confirm("⚠️ 嚴重警告：這會刪除所有詞語、錄音和進度！確定嗎？")) {
                 words = []; reviewWords = []; masteredWords = [];
+                // 修改 2: 清空資料時也要清空洗牌堆
+                shuffleDeck = [];
                 markDirty(); saveDataToDB(); renderLists(); updateCard();
                 closeModal('settingsModal'); showToast("所有資料已清空");
             }
@@ -1251,6 +1299,8 @@
                 });
             });
             words = newWords; reviewWords = newReview; masteredWords = newMastered;
+            // 修改 2: 導入新資料，清空洗牌堆
+            shuffleDeck = [];
             currentIndex = 0; markDirty(); saveDataToDB(); renderLists(); updateCard();
             closeModal('importModal'); showToast("已更新列表 (錄音已重置)");
         }
