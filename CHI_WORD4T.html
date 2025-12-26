@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>中英閃卡 v4.0 (多學生+全方位移動版)</title>
+<title>中英閃卡 v4.1 (學生管理增強版)</title>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Serif+HK:wght@500;700;900&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -281,6 +281,12 @@ body.hide-text-mode .word-tag i {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #eceff1;
 }
 
+.version-tag {
+    position: fixed; bottom: 5px; right: 8px; font-size: 0.65rem;
+    color: #b0bec5; font-weight: bold; z-index: 5000; pointer-events: none;
+    font-family: var(--font-ui);
+}
+
 /* Modal */
 .custom-modal {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
@@ -305,6 +311,36 @@ body.hide-text-mode .word-tag i {
 .btn-save { background: var(--accent); color: white; }
 .btn-paste { background: var(--import-btn); color: #333; }
 .btn-no { background: #eceff1; color: #455a64; }
+.btn-danger { background: var(--danger); color: white; }
+
+/* Profile Manager Styles */
+.profile-list-container {
+    max-height: 50vh; overflow-y: auto; margin: 10px 0;
+    border: 1px solid #eee; border-radius: 12px; padding: 5px;
+}
+.profile-row {
+    display: flex; align-items: center; gap: 5px; padding: 8px;
+    background: #f9f9f9; border-radius: 8px; margin-bottom: 6px;
+    border: 1px solid #eee;
+}
+.profile-row.active-profile {
+    border-color: var(--accent); background: #fff3e0;
+}
+.profile-name-input {
+    flex: 1; border: 1px solid transparent; background: transparent;
+    font-size: 1rem; font-weight: bold; color: #333; padding: 4px;
+    border-radius: 4px; font-family: var(--font-ui);
+}
+.profile-name-input:focus {
+    background: #fff; border-color: var(--accent); outline: none;
+}
+.profile-action-btn {
+    width: 30px; height: 30px; border-radius: 6px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 0.9rem; flex-shrink: 0;
+}
+.btn-move { background: #eceff1; color: #546e7a; }
+.btn-del { background: #ffebee; color: #c62828; }
 
 /* New Settings Grid */
 .settings-grid {
@@ -372,6 +408,7 @@ body.hide-text-mode .word-tag i {
 <body>
 
     <canvas id="confetti-canvas"></canvas>
+    <div class="version-tag">v4.1</div>
 
     <div class="main-layout">
         <div class="sidebar">
@@ -381,7 +418,8 @@ body.hide-text-mode .word-tag i {
                 <select id="profileSelect" class="profile-select" onchange="switchProfile(this.value)">
                     <option value="default">預設學生</option>
                 </select>
-                <button class="profile-btn" onclick="openProfileModal()">+</button>
+                <!-- 改為管理按鈕 -->
+                <button class="profile-btn" onclick="openProfileManager()">⚙️</button>
             </div>
 
             <!-- 詞語表 -->
@@ -480,17 +518,32 @@ body.hide-text-mode .word-tag i {
     <div id="saveStatus" class="save-status">☁️ 準備中...</div>
     <div id="toast" class="toast">提示訊息</div>
 
-    <!-- 學生管理視窗 -->
-    <div id="profileModal" class="custom-modal">
+    <!-- 學生管理視窗 (新版) -->
+    <div id="profileManagerModal" class="custom-modal">
         <div class="modal-content">
-            <div class="modal-title">👤 新增學生</div>
-            <input type="text" id="newProfileName" class="import-textarea" style="height:50px; text-align:center;" placeholder="輸入學生名字 (例如: 細佬)">
-            <div class="modal-actions">
-                <button class="modal-btn btn-save" onclick="addNewProfile()">✨ 建立</button>
-                <button class="modal-btn btn-no" onclick="closeModal('profileModal')">取消</button>
+            <div class="modal-title">👤 學生管理</div>
+            <p style="font-size:0.85rem; color:#888; margin-bottom:10px;">可修改名字、調整次序或刪除</p>
+            
+            <div id="profileListContainer" class="profile-list-container">
+                <!-- JS 生成列表 -->
             </div>
-            <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
-            <div style="font-size:0.85rem; color:#888;">如要刪除學生，請在設定頁面操作。</div>
+
+            <div class="modal-actions" style="margin-top:5px;">
+                <button class="modal-btn btn-save" onclick="openAddProfileModal()">➕ 新增學生</button>
+                <button class="modal-btn btn-no" onclick="closeModal('profileManagerModal')">完成</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增學生視窗 (簡化) -->
+    <div id="addProfileModal" class="custom-modal" style="z-index: 3100;">
+        <div class="modal-content">
+            <div class="modal-title">➕ 新增學生</div>
+            <input type="text" id="newProfileNameInput" class="import-textarea" style="height:50px; text-align:center;" placeholder="輸入名字">
+            <div class="modal-actions">
+                <button class="modal-btn btn-save" onclick="confirmAddProfile()">建立</button>
+                <button class="modal-btn btn-no" onclick="closeModal('addProfileModal')">取消</button>
+            </div>
         </div>
     </div>
 
@@ -538,9 +591,6 @@ body.hide-text-mode .word-tag i {
                 </button>
                 <button class="btn-setting-action" style="background:#ff9800;" onclick="confirmAction('clearAudio')">
                     <span>🗑️ 清除錄音</span><span style="font-size:0.7rem; opacity:0.8; font-weight:normal">保留文字</span>
-                </button>
-                <button class="btn-setting-action" style="background:#ef5350;" onclick="confirmAction('deleteProfile')">
-                    <span>❌ 刪除學生</span><span style="font-size:0.7rem; opacity:0.8; font-weight:normal">刪除當前學生</span>
                 </button>
             </div>
             <div class="modal-actions" style="margin-top: 20px;">
@@ -620,17 +670,123 @@ body.hide-text-mode .word-tag i {
             });
         }
 
-        function openProfileModal() { document.getElementById('profileModal').style.display = 'flex'; document.getElementById('newProfileName').focus(); }
-        
-        function addNewProfile() {
-            const name = document.getElementById('newProfileName').value.trim();
+        // --- 學生管理系統 (v4.1 新增) ---
+        function openProfileManager() {
+            renderProfileManagerList();
+            document.getElementById('profileManagerModal').style.display = 'flex';
+        }
+
+        function renderProfileManagerList() {
+            const container = document.getElementById('profileListContainer');
+            container.innerHTML = '';
+            
+            profiles.forEach((p, index) => {
+                const row = document.createElement('div');
+                row.className = 'profile-row';
+                if(p.id === currentProfileId) row.classList.add('active-profile');
+
+                // 名字輸入框
+                const input = document.createElement('input');
+                input.className = 'profile-name-input';
+                input.value = p.name;
+                input.onchange = (e) => renameProfile(index, e.target.value);
+
+                // 上移按鈕
+                const upBtn = document.createElement('button');
+                upBtn.className = 'profile-action-btn btn-move';
+                upBtn.innerHTML = '⬆️';
+                upBtn.disabled = index === 0;
+                upBtn.onclick = () => moveProfile(index, -1);
+                if(index === 0) upBtn.style.opacity = 0.3;
+
+                // 下移按鈕
+                const downBtn = document.createElement('button');
+                downBtn.className = 'profile-action-btn btn-move';
+                downBtn.innerHTML = '⬇️';
+                downBtn.disabled = index === profiles.length - 1;
+                downBtn.onclick = () => moveProfile(index, 1);
+                if(index === profiles.length - 1) downBtn.style.opacity = 0.3;
+
+                // 刪除按鈕
+                const delBtn = document.createElement('button');
+                delBtn.className = 'profile-action-btn btn-del';
+                delBtn.innerHTML = '❌';
+                delBtn.onclick = () => deleteProfileSpecific(index);
+
+                row.appendChild(input);
+                row.appendChild(upBtn);
+                row.appendChild(downBtn);
+                row.appendChild(delBtn);
+                container.appendChild(row);
+            });
+        }
+
+        function renameProfile(index, newName) {
+            if(!newName.trim()) {
+                renderProfileManagerList(); // 還原
+                return;
+            }
+            profiles[index].name = newName.trim();
+            saveProfiles();
+            updateProfileSelectUI();
+        }
+
+        function moveProfile(index, direction) {
+            const targetIndex = index + direction;
+            if(targetIndex < 0 || targetIndex >= profiles.length) return;
+            
+            // Swap
+            const temp = profiles[index];
+            profiles[index] = profiles[targetIndex];
+            profiles[targetIndex] = temp;
+            
+            saveProfiles();
+            renderProfileManagerList();
+            updateProfileSelectUI();
+        }
+
+        function deleteProfileSpecific(index) {
+            if(profiles.length <= 1) {
+                showToast("最少要保留一個學生");
+                return;
+            }
+            const p = profiles[index];
+            if(!confirm(`確定要刪除「${p.name}」嗎？資料將無法復原。`)) return;
+
+            const isCurrent = (p.id === currentProfileId);
+            profiles.splice(index, 1);
+            saveProfiles();
+            
+            if(isCurrent) {
+                switchProfile(profiles[0].id);
+            } else {
+                updateProfileSelectUI();
+            }
+            renderProfileManagerList();
+            showToast("已刪除學生");
+        }
+
+        function saveProfiles() {
+            localStorage.setItem('flashcard_profiles', JSON.stringify(profiles));
+        }
+
+        function openAddProfileModal() {
+            document.getElementById('newProfileNameInput').value = '';
+            document.getElementById('addProfileModal').style.display = 'flex';
+            document.getElementById('newProfileNameInput').focus();
+        }
+
+        function confirmAddProfile() {
+            const name = document.getElementById('newProfileNameInput').value.trim();
             if(!name) return;
             const id = 'student_' + Date.now();
             profiles.push({id, name});
-            localStorage.setItem('flashcard_profiles', JSON.stringify(profiles));
+            saveProfiles();
+            
             switchProfile(id);
-            closeModal('profileModal');
-            document.getElementById('newProfileName').value = '';
+            updateProfileSelectUI();
+            renderProfileManagerList();
+            closeModal('addProfileModal');
             showToast(`已建立新學生：${name}`);
         }
 
@@ -657,6 +813,11 @@ body.hide-text-mode .word-tag i {
             updateProfileSelectUI();
             renderLists();
             updateCard();
+            
+            // 如果管理介面開著，重新渲染以更新高亮
+            if(document.getElementById('profileManagerModal').style.display === 'flex') {
+                renderProfileManagerList();
+            }
             showToast("已切換學生檔案");
         }
 
@@ -723,27 +884,19 @@ body.hide-text-mode .word-tag i {
                 const transaction = db.transaction(['data'], 'readonly');
                 const store = transaction.objectStore('data');
                 
-                // 兼容舊版：如果 currentProfileId 是 'default'，我們嘗試讀取舊版 key ('words')
-                // 如果是新學生，讀取 'studentID_words'
                 let keyPrefix = currentProfileId === 'default' ? '' : (currentProfileId + '_');
-                // 如果是 default 但沒有 prefix，就用純 'words'。如果是 default 但有 prefix (未來)，就用 prefix。
-                // 為了簡單，v4.0 邏輯：
-                // 1. 嘗試讀取 `${currentProfileId}_words`
-                // 2. 如果是 default 且讀不到，嘗試讀取 `words` (遷移舊資料)
                 
                 const getWords = store.get(getDBKey('words'));
                 const getReview = store.get(getDBKey('review'));
                 const getMastered = store.get(getDBKey('mastered'));
                 const getSettings = store.get(getDBKey('settings'));
                 
-                // 舊版兼容讀取
                 const getOldWords = store.get('words');
                 const getOldReview = store.get('review');
                 const getOldMastered = store.get('mastered');
                 const getOldSettings = store.get('settings');
 
                 transaction.oncomplete = () => {
-                    // 優先使用帶 ID 的資料
                     if (getWords.result) words = getWords.result.value;
                     else if (currentProfileId === 'default' && getOldWords.result) words = getOldWords.result.value;
                     else words = (currentProfileId === 'default') ? [...initialWords].map(w => ({ text: w, views: 0, hits: 0, audioBlob: null, roundId: 0 })) : [];
@@ -779,8 +932,6 @@ body.hide-text-mode .word-tag i {
                     store.put({ id: getDBKey('mastered'), value: masteredWords });
                     store.put({ id: getDBKey('settings'), value: settings });
                     
-                    // 如果是 default，為了安全也更新舊 key (可選，但為了乾淨，v4.0 開始我們主要依賴帶 ID 的 key，
-                    // 不過為了防止回滾版本導致資料丟失，我們可以同時寫入舊 key 如果是 default)
                     if (currentProfileId === 'default') {
                         store.put({ id: 'words', value: words });
                         store.put({ id: 'review', value: reviewWords });
@@ -810,7 +961,7 @@ body.hide-text-mode .word-tag i {
         // --- 初始化 ---
         async function init() {
             initGestureUnlock();
-            updateProfileSelectUI(); // 初始化下拉選單
+            updateProfileSelectUI(); 
             
             try {
                 await initDB();
@@ -818,7 +969,6 @@ body.hide-text-mode .word-tag i {
                 updateSaveStatus('saved');
             } catch (e) {
                 console.warn("DB Init failed", e);
-                // Fallback
                 words = initialWords.map(w => ({ text: w, views: 0, hits: 0, audioBlob: null, roundId: 0 }));
                 updateSaveStatus('error');
             }
@@ -831,7 +981,6 @@ body.hide-text-mode .word-tag i {
                 loadVoices();
             }
 
-            // Event Listeners
             document.getElementById('autoPlayNext').addEventListener('change', async (e) => {
                 stopEverything();
                 if (!e.target.checked) return;
@@ -1112,7 +1261,6 @@ body.hide-text-mode .word-tag i {
                 let pressTimer;
                 const startPress = () => { 
                     pressTimer = setTimeout(() => {
-                        // 長按觸發：傳入 index 以便自動選取
                         if (type === 'word') enterWordSelectMode(index);
                         if (type === 'review') enterReviewMode(index);
                         if (type === 'mastered') enterDeleteMode(index);
@@ -1124,7 +1272,7 @@ body.hide-text-mode .word-tag i {
             }
         }
 
-        // --- 模式管理 (含自動選取邏輯) ---
+        // --- 模式管理 ---
         function enterWordSelectMode(initialIndex) { 
             isWordSelectMode = true; document.body.classList.add('select-mode-active'); 
             document.getElementById('wordSelectControls').style.display = 'flex'; 
@@ -1157,20 +1305,18 @@ body.hide-text-mode .word-tag i {
             if(cb) cb.checked = true;
         }
 
-        // --- 移動邏輯 (全方位) ---
+        // --- 移動邏輯 ---
         function getSelectedIndices(selector) {
             return Array.from(document.querySelectorAll(`${selector} .select-checkbox:checked`))
                 .map(c => parseInt(c.dataset.index)).sort((a,b) => b-a);
         }
 
-        // 1. 詞語表 -> 已學識 (原有)
         function confirmBatchMove() {
             const indices = getSelectedIndices('#wordList'); if (!indices.length) return;
             indices.forEach(idx => { masteredWords.push(words[idx]); words.splice(idx, 1); });
             if (currentIndex >= words.length) currentIndex = 0;
             showToast(`已移動 ${indices.length} 個到已學識`); markDirty(); exitWordSelectMode(); updateCard();
         }
-        // 2. 詞語表 -> 還要練 (新增)
         function confirmBatchMoveFromWordsToReview() {
             const indices = getSelectedIndices('#wordList'); if (!indices.length) return;
             indices.forEach(idx => { reviewWords.push(words[idx]); words.splice(idx, 1); });
@@ -1178,32 +1324,27 @@ body.hide-text-mode .word-tag i {
             showToast(`已移動 ${indices.length} 個到還要練`); markDirty(); exitWordSelectMode(); updateCard();
         }
 
-        // 3. 還要練 -> 詞語表 (原有)
         function confirmBatchMoveFromReviewToWords() {
             const indices = getSelectedIndices('#reviewList'); if (!indices.length) return;
             indices.forEach(idx => { let w = reviewWords[idx]; w.views=0; w.hits=0; w.roundId=0; words.push(w); reviewWords.splice(idx, 1); });
             showToast(`已退回 ${indices.length} 個到詞語表`); markDirty(); exitReviewMode(); updateCard();
         }
-        // 4. 還要練 -> 已學識 (原有)
         function confirmBatchMoveFromReviewToMastered() {
             const indices = getSelectedIndices('#reviewList'); if (!indices.length) return;
             indices.forEach(idx => { masteredWords.push(reviewWords[idx]); reviewWords.splice(idx, 1); });
             showToast(`已晉級 ${indices.length} 個到已學識`); markDirty(); exitReviewMode();
         }
 
-        // 5. 已學識 -> 刪除 (原有)
         function confirmBatchDelete() {
             const indices = getSelectedIndices('#masteredList'); if (!indices.length) return;
             indices.forEach(idx => masteredWords.splice(idx, 1));
             showToast(`已刪除 ${indices.length} 個詞語`); markDirty(); exitDeleteMode();
         }
-        // 6. 已學識 -> 詞語表 (原有)
         function confirmBatchRestore() {
             const indices = getSelectedIndices('#masteredList'); if (!indices.length) return;
             indices.forEach(idx => { let w = masteredWords[idx]; w.views=0; w.hits=0; w.roundId=0; words.push(w); masteredWords.splice(idx, 1); });
             showToast(`已還原 ${indices.length} 個到詞語表`); markDirty(); exitDeleteMode(); updateCard();
         }
-        // 7. 已學識 -> 還要練 (新增)
         function confirmBatchMoveFromMasteredToReview() {
             const indices = getSelectedIndices('#masteredList'); if (!indices.length) return;
             indices.forEach(idx => { let w = masteredWords[idx]; w.views=0; w.hits=0; reviewWords.push(w); masteredWords.splice(idx, 1); });
@@ -1296,11 +1437,6 @@ body.hide-text-mode .word-tag i {
             if (actionType === 'resetStats') { msgEl.textContent = "確定要將所有詞語的聽讀次數和熟練度歸零嗎？"; btnEl.className = "modal-btn btn-save"; btnEl.style.background = "#5c6bc0"; }
             else if (actionType === 'resetSettings') { msgEl.textContent = "確定要還原設定到初始值嗎？"; btnEl.className = "modal-btn btn-save"; btnEl.style.background = "#78909c"; }
             else if (actionType === 'clearAudio') { msgEl.textContent = "確定要清除所有自製錄音嗎？文字會保留。"; btnEl.className = "modal-btn btn-save"; btnEl.style.background = "#ff9800"; }
-            else if (actionType === 'deleteProfile') { 
-                if(currentProfileId === 'default') { showToast("預設學生不能刪除"); closeModal('confirmModal'); return; }
-                msgEl.textContent = `⚠️ 確定要刪除當前學生「${profiles.find(p=>p.id===currentProfileId)?.name}」的所有資料嗎？此操作無法復原。`; 
-                btnEl.className = "modal-btn btn-danger"; btnEl.style.background = "#ef5350"; 
-            }
         }
 
         document.getElementById('confirmBtn').onclick = async () => {
@@ -1314,17 +1450,6 @@ body.hide-text-mode .word-tag i {
             } else if (pendingAction === 'clearAudio') {
                 let count = 0; [words, reviewWords, masteredWords].forEach(list => list.forEach(w => { if(w.audioBlob) { w.audioBlob = null; count++; } }));
                 markDirty(); renderLists(); updateCard(); showToast(`已清除 ${count} 個錄音`);
-            } else if (pendingAction === 'deleteProfile') {
-                // 刪除學生
-                const idx = profiles.findIndex(p => p.id === currentProfileId);
-                if(idx > -1) {
-                    profiles.splice(idx, 1);
-                    localStorage.setItem('flashcard_profiles', JSON.stringify(profiles));
-                    // 清除 DB 資料 (簡單做法：切換去 default，舊的資料留在 DB 孤兒化，或下次啟動時清理。這裡簡化處理)
-                    await switchProfile('default');
-                    showToast("學生已刪除");
-                    closeModal('settingsModal');
-                }
             }
             closeModal('confirmModal'); pendingAction = null;
         };
