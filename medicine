@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭藥箱智能表 v6.2 (Meptin版)</title>
+    <title>家庭藥箱智能表 v8.0 (智能劑量版)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,19 +20,27 @@
 
     <style>
         body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        .sort-icon { display: inline-block; vertical-align: middle; margin-left: 4px; opacity: 0.5; }
+        .sort-icon { display: inline-block; vertical-align: middle; margin-left: 2px; opacity: 0.4; font-size: 0.8em; }
         .sort-active { opacity: 1; color: #2563eb; }
-        th { user-select: none; cursor: pointer; transition: background-color 0.2s; }
+        th { user-select: none; cursor: pointer; transition: background-color 0.2s; white-space: nowrap; }
         th:hover { background-color: #e2e8f0; }
         
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .cat-btn { transition: all 0.2s; }
+        .cat-btn:active { transform: scale(0.95); }
+
+        .member-tab { transition: all 0.2s; }
+        .member-tab-active { background-color: #2563eb; color: white; border-color: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .member-tab-inactive { background-color: #1e293b; color: #94a3b8; border-color: #334155; }
+        .member-tab-inactive:hover { background-color: #334155; color: white; }
     </style>
 </head>
 <body>
@@ -42,50 +50,119 @@
 <script type="text/babel">
     const { useState, useMemo, useEffect } = React;
 
+    const APP_VERSION = "v8.0";
+
+    // --- 輔助函數：計算年齡 ---
+    const calculateAge = (birthDateStr) => {
+        if (!birthDateStr) return 30; // 默認成人
+        const birthDate = new Date(birthDateStr);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    // --- 輔助函數：智能劑量計算 ---
+    // 這裡定義藥物的計算邏輯
+    // type: 'weight' (按體重), 'age' (按年齡), 'fixed' (固定), 'adult_only' (成人專用)
+    const calculateDynamicDose = (med, member) => {
+        const age = calculateAge(member.birthDate);
+        const weight = member.weight || 20;
+        const isChild = age < 12;
+
+        // 如果是成人，直接返回標準劑量 (如果數據庫有區分 kidDose 和 adultDose 更好，這裡暫時假設原 kidDose 欄位存的是兒童參考，我們需要一個標準劑量欄位，這裡暫時用 med.note 或默認邏輯)
+        // 為了簡化，我們假設如果不是兒童，顯示 "成人標準" 或手動輸入的成人量。
+        // *由於原始數據結構限制，我們這裡做一個邏輯轉換：
+        // 如果是成人，我們顯示 "參照包裝/醫囑" 或者如果我們有成人數據。
+        // 為了演示，我們假設成人顯示 "成人劑量"。
+        
+        if (!isChild) {
+            return { text: "成人標準量", isSafe: true };
+        }
+
+        if (med.kid === 'no') {
+            return { text: "不適合兒童", isSafe: false };
+        }
+
+        // 特殊藥物計算邏輯 (模擬)
+        // Ibuprofen (Brufen): 一般 5-10mg/kg, 藥水通常 20mg/ml (100mg/5ml)
+        if (med.name.includes('Brufen') && med.name.includes('藥水')) {
+            // 假設 10mg/kg
+            const doseMg = weight * 10; 
+            const doseMl = (doseMg / 20).toFixed(1); // 20mg per ml
+            return { text: `${doseMl}ml (10mg/kg)`, isSafe: true };
+        }
+
+        // Paracetamol (Progesic): 一般 10-15mg/kg, 藥水通常 24mg/ml (120mg/5ml) or 50mg/ml (250mg/5ml)
+        // 假設 Progesic 是 120mg/5ml (24mg/ml)
+        if (med.name.includes('Progesic')) {
+            const doseMg = weight * 15;
+            const doseMl = (doseMg / 24).toFixed(1);
+            return { text: `${doseMl}ml (15mg/kg)`, isSafe: true };
+        }
+
+        // 抗敏藥水 (Aerius/Adezio) 通常按年齡或體重分級
+        if (med.name.includes('Aerius') || med.name.includes('Adezio')) {
+            if (age < 2) return { text: "遵醫囑", isSafe: true };
+            if (age < 6) return { text: "2.5ml", isSafe: true };
+            return { text: "5ml", isSafe: true };
+        }
+
+        // 如果沒有特定公式，返回數據庫原本的 kidDose
+        return { text: med.kidDose || "遵醫囑", isSafe: true };
+    };
+
     // --- 初始數據庫 ---
+    // 為了演示合併功能，我保留了 'throat' 類別，只有一個藥物。
+    // 增加了 adultDose 欄位 (模擬)
     const INITIAL_MEDICATIONS = [
-        // 新增: Meptin (User Request)
-        { id: 32, name: 'Meptin Syrup 5mcg', category: 'cough', tags: ['氣喘', '擴張氣管'], strength: '專用', strengthVal: 4.5, rec: 'best', sleep: 'none', sideEffect: '心跳/手震', food: 'empty', price: 'med', kid: 'ok', kidDose: '5ml x 2次', gen: 'Procaterol', note: '舒張氣管用，臨用前搖勻' },
+        // --- 氣管 / 氣喘 ---
+        { id: 32, name: 'Meptin Syrup', category: 'trachea', tags: ['氣喘', '擴張氣管'], strength: '專用', strengthVal: 4.5, rec: 'best', sleep: 'none', sideEffect: '心跳/手震', food: 'empty', price: 'med', kid: 'ok', kidDose: '5ml x 2次', gen: 'Procaterol', note: '臨用前搖勻' },
+        { id: 26, name: 'Beclazone 噴劑', category: 'trachea', tags: ['氣管敏感', '預防'], strength: '強效', strengthVal: 4.5, rec: 'good', sleep: 'none', sideEffect: '鵝口瘡', food: 'empty', price: 'med', kid: 'caution', kidDose: '1噴 x 2次', gen: 'N/A', note: '類固醇，用後必須漱口' },
+        { id: 28, name: 'Singulair 5mg', category: 'trachea', tags: ['氣管', '鼻敏感'], strength: '中強', strengthVal: 3.5, rec: 'good', sleep: 'none', sideEffect: '情緒', food: 'empty', price: 'high', kid: 'ok', kidDose: '1粒 x 1次', gen: 'N/A', note: '長期控制用(順爾寧)' },
 
-        // Batch 3 (Fluimucil)
-        { id: 31, name: 'Fluimucil A 100mg', category: 'cough', tags: ['化痰', '橙樹粉'], strength: '中強', strengthVal: 3.5, rec: 'best', sleep: 'none', sideEffect: '胃氣', food: 'full', price: 'med', kid: 'ok', kidDose: '1包 x 2-3次', gen: 'N/A', note: '橙味顆粒，需沖水飲' },
+        // --- 止咳 / 化痰 ---
+        { id: 31, name: 'Fluimucil A 100', category: 'cough', tags: ['化痰', '橙樹粉'], strength: '中強', strengthVal: 3.5, rec: 'best', sleep: 'none', sideEffect: '胃氣', food: 'full', price: 'med', kid: 'ok', kidDose: '1包 x 2-3次', gen: 'N/A', note: '需沖水飲' },
+        { id: 21, name: 'Fluifort Syrup', category: 'cough', tags: ['強力化痰'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '腸胃', food: 'full', price: 'med', kid: 'ok', kidDose: '5ml x 2次', gen: '-', note: '針對濃痰' },
+        { id: 30, name: 'Actein 顆粒', category: 'cough', tags: ['化痰', '橙樹類'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'none', sideEffect: '胃不適', food: 'full', price: 'med', kid: 'ok', kidDose: '半包 x 2次', gen: 'N/A', note: '需沖水飲' },
+        { id: 11, name: 'Tussidex Forte', category: 'cough', tags: ['止咳'], strength: '強效', strengthVal: 4, rec: 'good', sleep: 'med', sideEffect: '頭暈', food: 'full', price: 'med', kid: 'ok', kidDose: '5ml x 3次', gen: '-', note: '乾咳適用' },
 
-        // Batch 2
-        { id: 26, name: 'Beclazone 50mcg', category: 'nose', tags: ['氣管敏感', '類固醇'], strength: '強效', strengthVal: 4.5, rec: 'good', sleep: 'none', sideEffect: '鵝口瘡', food: 'empty', price: 'med', kid: 'caution', kidDose: '1噴 x 2次', gen: 'N/A', note: '預防性吸入劑，用後需漱口' },
-        { id: 27, name: 'Avamys 鼻噴劑', category: 'nose', tags: ['鼻敏感', '類固醇'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '流鼻血', food: 'empty', price: 'high', kid: 'ok', kidDose: '1噴 x 1次', gen: '2代', note: '新一代噴劑，副作用少' },
-        { id: 28, name: 'Singulair 5mg', category: 'nose', tags: ['氣管/鼻', '咀嚼片'], strength: '中強', strengthVal: 3.5, rec: 'good', sleep: 'none', sideEffect: '情緒', food: 'empty', price: 'high', kid: 'ok', kidDose: '1粒 x 1次', gen: 'N/A', note: '順爾寧，長期控制用' },
-        { id: 30, name: 'Actein 顆粒', category: 'cough', tags: ['化痰', '橙樹類'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'none', sideEffect: '胃不適', food: 'full', price: 'med', kid: 'ok', kidDose: '半包 x 2次', gen: 'N/A', note: '針對濃痰，需沖水飲' },
+        // --- 收鼻水 / 抗敏 ---
+        { id: 2, name: 'Bendrol 紫水', category: 'nose_run', tags: ['收鼻水', '敏感'], strength: '強效', strengthVal: 4, rec: 'neutral', sleep: 'high', sideEffect: '口乾', food: 'empty', price: 'low', kid: 'ok', kidDose: '5ml x 3次', gen: '1代', note: '睡前用佳' },
+        { id: 7, name: 'Aerius 丸', category: 'nose_run', tags: ['收鼻水', '抗敏'], strength: '中等', strengthVal: 3, rec: 'best', sleep: 'none', sideEffect: '極少', food: 'empty', price: 'high', kid: 'caution', kidDose: '藥水佳', gen: '3代', note: '長效24小時' },
+        { id: 6, name: 'Adezio 藥水', category: 'nose_run', tags: ['收鼻水', '抗敏'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'low', sideEffect: '微倦', food: 'empty', price: 'med', kid: 'ok', kidDose: '5ml x 1次', gen: '2代', note: '睡前食' },
+        { id: 4, name: '黃丸 (Chlor)', category: 'nose_run', tags: ['收鼻水', '抗敏'], strength: '標準', strengthVal: 2, rec: 'neutral', sleep: 'med', sideEffect: '口乾', food: 'empty', price: 'low', kid: 'ok', kidDose: '2.5ml x 3次', gen: '1代', note: '傳統抗敏' },
 
-        // Batch 1
-        { id: 22, name: '抗過敏鼻炎凝膠', category: 'external', tags: ['鼻敏感', '物理'], strength: '輔助', strengthVal: 2, rec: 'good', sleep: 'none', sideEffect: '極少', food: 'empty', price: 'med', kid: 'ok', kidDose: '適量 x 3次', gen: '-', note: '物理性阻隔致敏源' },
-        { id: 23, name: 'Hypromellose Eye', category: 'external', tags: ['眼乾', '滋潤'], strength: '溫和', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '無', food: 'empty', price: 'low', kid: 'ok', kidDose: '1滴 x 4次', gen: '-', note: '人造淚水' },
-        { id: 25, name: 'LCRxx 鼻安舒', category: 'nose', tags: ['洗鼻', '清潔'], strength: '溫和', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '無', food: 'empty', price: 'med', kid: 'ok', kidDose: '適量 x 2次', gen: '-', note: '非藥性清潔' },
+        // --- 通鼻塞 ---
+        { id: 3, name: 'Actifed 黃水', category: 'nose_block', tags: ['通鼻塞', '收鼻水'], strength: '強效', strengthVal: 4, rec: 'neutral', sleep: 'med', sideEffect: '心跳', food: 'empty', price: 'low', kid: 'ok', kidDose: '5ml x 3次', gen: '1代', note: '心臟不好慎用' },
+        { id: 27, name: 'Avamys 鼻噴劑', category: 'nose_block', tags: ['鼻敏感', '通鼻'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '流鼻血', food: 'empty', price: 'high', kid: 'ok', kidDose: '1噴 x 1次', gen: '2代', note: '類固醇噴劑' },
 
-        // 核心藥物
-        { id: 21, name: 'Fluifort Syrup 9%', category: 'cough', tags: ['強力化痰'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '腸胃', food: 'full', price: 'med', kid: 'ok', kidDose: '5ml x 2次', gen: '-', note: '針對濃痰不眼瞓' },
-        { id: 17, name: 'Brufen 丸', category: 'pain', tags: ['止痛', '退燒'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '傷胃', food: 'full', price: 'low', kid: 'caution', kidDose: '藥水佳', gen: '-', note: '喉嚨痛/高燒首選' },
-        { id: 18, name: 'Brufen 藥水', category: 'pain', tags: ['止痛', '退燒'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '傷胃', food: 'full', price: 'med', kid: 'ok', kidDose: '7ml x 3次', gen: '-', note: '兒童高燒首選 (按體重)' },
-        { id: 2, name: 'Bendrol 紫水', category: 'nose', tags: ['收鼻水', '助眠'], strength: '強效', strengthVal: 4, rec: 'neutral', sleep: 'high', sideEffect: '口乾', food: 'empty', price: 'low', kid: 'ok', kidDose: '5ml x 3次', gen: '1代', note: '非常眼瞓，睡前用' },
-        { id: 3, name: 'Actifed 黃水', category: 'nose', tags: ['通鼻塞'], strength: '強效', strengthVal: 4, rec: 'neutral', sleep: 'med', sideEffect: '心跳', food: 'empty', price: 'low', kid: 'ok', kidDose: '5ml x 3次', gen: '1代', note: '心臟不好慎用' },
-        { id: 11, name: 'Tussidex Forte', category: 'cough', tags: ['止咳'], strength: '強效', strengthVal: 4, rec: 'good', sleep: 'med', sideEffect: '頭暈', food: 'full', price: 'med', kid: 'ok', kidDose: '5ml x 3次', gen: '-', note: '強效止咳無鴉片' },
-        { id: 7, name: 'Aerius 丸', category: 'nose', tags: ['抗敏'], strength: '中等', strengthVal: 3, rec: 'best', sleep: 'none', sideEffect: '極少', food: 'empty', price: 'high', kid: 'caution', kidDose: '藥水佳', gen: '3代', note: '副作用最少' },
-        { id: 6, name: 'Adezio 藥水', category: 'nose', tags: ['抗敏'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'low', sideEffect: '微倦', food: 'empty', price: 'med', kid: 'ok', kidDose: '5ml x 1次', gen: '2代', note: 'Zyrtec同類，睡前食' },
-        { id: 19, name: 'Progesic 水', category: 'pain', tags: ['止痛', '退燒'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'none', sideEffect: '傷肝', food: 'empty', price: 'low', kid: 'ok', kidDose: '10ml x 4次', gen: '-', note: 'Panadol成份 (每4小時)' },
-        { id: 20, name: 'Pabron Gold A', category: 'pain', tags: ['綜合感冒'], strength: '中等', strengthVal: 3, rec: 'bad', sleep: 'med', sideEffect: '依賴', food: 'full', price: 'med', kid: 'caution', kidDose: '按包裝', gen: '-', note: '成份雜，不可混吃' },
-        { id: 4, name: 'Chlorpheniramine', category: 'nose', tags: ['抗敏'], strength: '標準', strengthVal: 2, rec: 'neutral', sleep: 'med', sideEffect: '口乾', food: 'empty', price: 'low', kid: 'ok', kidDose: '2.5ml x 3次', gen: '1代', note: '傳統黃丸' },
-        { id: 16, name: 'Flemizyme 丸', category: 'cough', tags: ['消腫'], strength: '輔助', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '極少', food: 'full', price: 'low', kid: 'ok', kidDose: '1粒 x 3次', gen: '-', note: '消腫酵素' },
+        // --- 喉嚨痛 / 消腫 (只有一個，會被合併) ---
+        { id: 16, name: 'Flemizyme 丸', category: 'throat', tags: ['消腫', '喉嚨痛'], strength: '輔助', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '極少', food: 'full', price: 'low', kid: 'ok', kidDose: '1粒 x 3次', gen: '-', note: '酵素類，吞服' },
+        
+        // --- 發燒 / 止痛 ---
+        { id: 17, name: 'Brufen 丸', category: 'fever', tags: ['止痛', '退燒'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '傷胃', food: 'full', price: 'low', kid: 'caution', kidDose: '藥水佳', gen: '-', note: '喉嚨痛/高燒首選' },
+        { id: 18, name: 'Brufen 藥水', category: 'fever', tags: ['止痛', '退燒'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '傷胃', food: 'full', price: 'med', kid: 'ok', kidDose: '7ml x 3次', gen: '-', note: '需飽肚服' },
+        { id: 19, name: 'Progesic 水', category: 'fever', tags: ['止痛', '退燒'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'none', sideEffect: '傷肝', food: 'empty', price: 'low', kid: 'ok', kidDose: '10ml x 4次', gen: '-', note: 'Panadol成份' },
+        { id: 20, name: 'Pabron Gold A', category: 'fever', tags: ['綜合感冒'], strength: '中等', strengthVal: 3, rec: 'bad', sleep: 'med', sideEffect: '依賴', food: 'full', price: 'med', kid: 'caution', kidDose: '按包裝', gen: '-', note: '成份雜，不可混吃' },
+
+        // --- 外用 / 其他 ---
+        { id: 22, name: '抗敏鼻炎凝膠', category: 'external', tags: ['鼻敏感', '物理'], strength: '輔助', strengthVal: 2, rec: 'good', sleep: 'none', sideEffect: '極少', food: 'empty', price: 'med', kid: 'ok', kidDose: '適量 x 3次', gen: '-', note: '物理性阻隔' },
+        { id: 23, name: 'Hypromellose', category: 'external', tags: ['眼乾', '滋潤'], strength: '溫和', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '無', food: 'empty', price: 'low', kid: 'ok', kidDose: '1滴 x 4次', gen: '-', note: '人造淚水' },
+        { id: 25, name: 'LCRxx 鼻安舒', category: 'external', tags: ['洗鼻', '清潔'], strength: '溫和', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '無', food: 'empty', price: 'med', kid: 'ok', kidDose: '適量 x 2次', gen: '-', note: '非藥性' },
     ];
 
-    const STORAGE_KEY_MEMBERS = 'famBox_members_v1';
-    const STORAGE_KEY_HIDDEN = 'famBox_hidden_v1';
+    const STORAGE_KEY_MEMBERS = 'famBox_members_v8'; 
+    const STORAGE_KEY_HIDDEN = 'famBox_hidden_v8';
 
-    // 安全存取 LocalStorage 的 Helper
     const safeGetItem = (key, defaultValue) => {
         try {
             const saved = localStorage.getItem(key);
             return saved ? JSON.parse(saved) : defaultValue;
         } catch (e) {
-            console.warn('LocalStorage access denied, using default value.');
             return defaultValue;
         }
     };
@@ -94,74 +171,85 @@
         try {
             localStorage.setItem(key, JSON.stringify(value));
         } catch (e) {
-            console.warn('LocalStorage save failed (sandboxed environment).');
+            console.warn('LocalStorage save failed');
         }
     };
 
     const App = () => {
         // --- State ---
-        const [medications, setMedications] = useState(INITIAL_MEDICATIONS);
+        // 1. 處理藥物分類合併 (Requirement 1)
+        const [medications, setMedications] = useState(() => {
+            // 檢查分類數量
+            const counts = {};
+            INITIAL_MEDICATIONS.forEach(m => {
+                counts[m.category] = (counts[m.category] || 0) + 1;
+            });
+            
+            return INITIAL_MEDICATIONS.map(m => {
+                // 如果該分類只有1個或更少，且不是 'external'，則歸入 'external'
+                if (counts[m.category] <= 1 && m.category !== 'external') {
+                    return { ...m, category: 'external' };
+                }
+                return m;
+            });
+        });
         
-        // 使用安全讀取
         const [hiddenIds, setHiddenIds] = useState(() => safeGetItem(STORAGE_KEY_HIDDEN, []));
-        const [viewMode, setViewMode] = useState('active'); // 'active' | 'deleted'
+        const [viewMode, setViewMode] = useState('active');
         
-        // 使用安全讀取
+        // 2. 成員名單與詳細資料 (Requirement 2)
         const [members, setMembers] = useState(() => safeGetItem(STORAGE_KEY_MEMBERS, [
-            { id: 1, name: '爸爸', items: [] },
-            { id: 2, name: '媽媽', items: [] },
-            { id: 3, name: 'BB', items: [] }
+            { id: 1, name: 'Alpha', birthDate: '2016-04-01', weight: 23, items: [] },
+            { id: 2, name: 'Karson', birthDate: '2019-03-01', weight: 20, items: [] },
+            { id: 3, name: 'Danson', birthDate: '1984-01-01', weight: 70, items: [] },
+            { id: 4, name: 'Yan', birthDate: '1992-08-01', weight: 50, items: [] }
         ]));
 
         const [activeMemberId, setActiveMemberId] = useState(members[0]?.id || 1);
-        const [isEditingName, setIsEditingName] = useState(false);
-        const [tempName, setTempName] = useState('');
+        
+        // 編輯成員狀態
+        const [editingMember, setEditingMember] = useState(null); // { id, name, weight, birthDate }
 
-        // 搜尋與篩選
         const [searchTerm, setSearchTerm] = useState('');
         const [selectedCategory, setSelectedCategory] = useState('all');
         const [filterNoSleep, setFilterNoSleep] = useState(false);
         const [filterKidSafe, setFilterKidSafe] = useState(false);
 
-        // 排序設定 (預設強度由高至低)
         const [sortConfig, setSortConfig] = useState({ key: 'strengthVal', direction: 'desc' });
 
-        // --- Persistence Effects (自動儲存 - 安全版) ---
-        useEffect(() => {
-            safeSetItem(STORAGE_KEY_MEMBERS, members);
-        }, [members]);
+        // --- Persistence ---
+        useEffect(() => { safeSetItem(STORAGE_KEY_MEMBERS, members); }, [members]);
+        useEffect(() => { safeSetItem(STORAGE_KEY_HIDDEN, hiddenIds); }, [hiddenIds]);
 
-        useEffect(() => {
-            safeSetItem(STORAGE_KEY_HIDDEN, hiddenIds);
-        }, [hiddenIds]);
-
-        // --- Derived State ---
         const activeMember = members.find(m => m.id === activeMemberId) || members[0];
+        const activeAge = calculateAge(activeMember.birthDate);
+        const isChildActive = activeAge < 12;
 
         // --- Logic ---
         const filteredData = useMemo(() => {
             let data = medications.filter(med => {
-                // 1. 視圖過濾
                 if (viewMode === 'active' && hiddenIds.includes(med.id)) return false;
                 if (viewMode === 'deleted' && !hiddenIds.includes(med.id)) return false;
 
-                // 2. 搜尋
                 const matchesSearch = med.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                                       med.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                       med.tags.some(t => t.includes(searchTerm));
                 if (!matchesSearch) return false;
 
-                // 3. 類別
-                if (selectedCategory !== 'all' && med.category !== selectedCategory) return false;
+                if (selectedCategory !== 'all') {
+                    if (selectedCategory === 'nose_all') {
+                        if (!['nose_run', 'nose_block'].includes(med.category)) return false;
+                    } else {
+                        if (med.category !== selectedCategory) return false;
+                    }
+                }
 
-                // 4. 進階篩選
                 if (filterNoSleep && med.sleep !== 'none') return false;
                 if (filterKidSafe && med.kid === 'no') return false;
 
                 return true;
             });
 
-            // 5. 排序
             data.sort((a, b) => {
                 let aValue = a[sortConfig.key];
                 let bValue = b[sortConfig.key];
@@ -189,29 +277,27 @@
             return data;
         }, [medications, hiddenIds, viewMode, searchTerm, selectedCategory, sortConfig, filterNoSleep, filterKidSafe]);
 
-        // --- Member Actions ---
+        // --- Actions ---
         const createMember = () => {
             const newId = Date.now();
-            const newMembers = [...members, { id: newId, name: `新成員 ${members.length + 1}`, items: [] }];
+            const newMembers = [...members, { id: newId, name: `成員`, birthDate: '2000-01-01', weight: 50, items: [] }];
             setMembers(newMembers);
             setActiveMemberId(newId);
+            setEditingMember({ ...newMembers[newMembers.length-1] }); // Immediately edit
         };
 
-        const deleteMember = (id) => {
-            if (members.length <= 1) {
-                alert("最少保留一個成員名單");
-                return;
-            }
+        const deleteMember = (id, e) => {
+            e.stopPropagation();
+            if (members.length <= 1) { alert("最少保留一個成員名單"); return; }
             if (!confirm("確定要刪除這個成員的名單嗎？")) return;
             const newMembers = members.filter(m => m.id !== id);
             setMembers(newMembers);
             if (activeMemberId === id) setActiveMemberId(newMembers[0].id);
         };
 
-        const updateMemberName = () => {
-            if (!tempName.trim()) return;
-            setMembers(members.map(m => m.id === activeMemberId ? { ...m, name: tempName } : m));
-            setIsEditingName(false);
+        const saveMemberEdit = () => {
+            setMembers(members.map(m => m.id === editingMember.id ? editingMember : m));
+            setEditingMember(null);
         };
 
         const toggleItemInMember = (medId) => {
@@ -227,22 +313,10 @@
             }));
         };
 
-        // --- Drug Actions ---
-        const softDelete = (id) => {
-            setHiddenIds([...hiddenIds, id]);
-        };
-
-        const restore = (id) => {
-            setHiddenIds(hiddenIds.filter(hid => hid !== id));
-        };
-
-        const handleSort = (key) => {
-            setSortConfig(current => ({
-                key,
-                direction: current.key === key && current.direction === 'desc' ? 'asc' : 'desc'
-            }));
-        };
-
+        const softDelete = (id) => setHiddenIds([...hiddenIds, id]);
+        const restore = (id) => setHiddenIds(hiddenIds.filter(hid => hid !== id));
+        const handleSort = (key) => setSortConfig(current => ({ key, direction: current.key === key && current.direction === 'desc' ? 'asc' : 'desc' }));
+        
         const getSortIcon = (key) => {
             if (sortConfig.key !== key) return <i className="ph ph-arrows-down-up sort-icon"></i>;
             return sortConfig.direction === 'asc' 
@@ -252,8 +326,24 @@
 
         const getGoogleImageLink = (name) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(name + ' medicine packaging')}`;
 
+        // --- Filter Buttons Configuration ---
+        // Dynamically hide categories that don't exist anymore (merged into external)
+        const activeCategories = new Set(medications.map(m => m.category));
+        
+        const allFilters = [
+            { id: 'nose_run', label: '收鼻水/抗敏', icon: 'ph-drop', color: 'blue' },
+            { id: 'nose_block', label: '通鼻塞', icon: 'ph-wind', color: 'sky' },
+            { id: 'cough', label: '止咳/化痰', icon: 'ph-cloud-rain', color: 'teal' },
+            { id: 'trachea', label: '氣管/氣喘', icon: 'ph-lungs', color: 'cyan' },
+            { id: 'throat', label: '喉嚨痛/消腫', icon: 'ph-microphone-slash', color: 'indigo' },
+            { id: 'fever', label: '發燒/止痛', icon: 'ph-thermometer', color: 'red' },
+            { id: 'external', label: '外用/其他', icon: 'ph-bandaids', color: 'amber' },
+        ];
+        
+        const filters = allFilters.filter(f => activeCategories.has(f.id));
+
         return (
-            <div className="w-full max-w-[1400px] mx-auto bg-white shadow-2xl min-h-screen flex flex-col">
+            <div className="w-full max-w-[1400px] mx-auto bg-white shadow-2xl min-h-screen flex flex-col relative">
                 
                 {/* 1. 頂部導航與成員管理器 */}
                 <div className="bg-slate-900 text-white p-4 sticky top-0 z-30 shadow-lg">
@@ -264,7 +354,6 @@
                             </h1>
                         </div>
                         
-                        {/* 視圖切換 */}
                         <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
                             <button onClick={() => setViewMode('active')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'active' ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}>
                                 藥物庫
@@ -275,76 +364,85 @@
                         </div>
                     </div>
 
-                    {/* 成員名單控制台 */}
-                    <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 shadow-inner">
-                        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                            
-                            {/* 左側：選擇成員 */}
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
-                                <div className="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg">
-                                    <i className="ph ph-user text-xl"></i>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">當前成員名單</span>
-                                    
-                                    {isEditingName ? (
-                                        <div className="flex items-center gap-1 mt-1">
-                                            <input type="text" value={tempName} onChange={(e) => setTempName(e.target.value)} 
-                                                className="text-black px-2 py-0.5 rounded text-sm w-32 outline-none" autoFocus />
-                                            <button onClick={updateMemberName} className="text-green-400 hover:text-green-300"><i className="ph ph-check-circle text-xl"></i></button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2">
-                                            <select 
-                                                value={activeMemberId} 
-                                                onChange={(e) => setActiveMemberId(Number(e.target.value))}
-                                                className="bg-transparent text-white font-bold text-lg border-b border-slate-500 focus:border-blue-400 outline-none cursor-pointer pb-0.5"
-                                            >
-                                                {members.map(m => <option key={m.id} value={m.id} className="text-black">{m.name}</option>)}
-                                            </select>
-                                            <button onClick={() => { setTempName(activeMember.name); setIsEditingName(true); }} className="text-slate-500 hover:text-white transition-colors" title="改名">
-                                                <i className="ph ph-pencil-simple"></i>
-                                            </button>
-                                            <button onClick={() => deleteMember(activeMemberId)} className="text-slate-500 hover:text-red-400 transition-colors" title="刪除此成員名單">
-                                                <i className="ph ph-trash"></i>
-                                            </button>
-                                            <button onClick={createMember} className="ml-2 bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 rounded text-xs flex items-center gap-1 transition-colors border border-slate-600">
-                                                <i className="ph ph-plus"></i> 加人
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
+                    {/* 成員 Tabs (Requirement 5) */}
+                    <div className="flex flex-wrap items-end gap-2 mb-0">
+                        {members.map(m => (
+                            <div key={m.id} 
+                                onClick={() => setActiveMemberId(m.id)}
+                                className={`member-tab cursor-pointer px-4 py-2 rounded-t-lg border-t border-x flex items-center gap-2 relative group ${activeMemberId === m.id ? 'member-tab-active z-10' : 'member-tab-inactive z-0'}`}>
+                                <span className="font-bold">{m.name}</span>
+                                {activeMemberId === m.id && (
+                                    <button onClick={(e) => { e.stopPropagation(); setEditingMember({...m}); }} className="text-blue-200 hover:text-white ml-1">
+                                        <i className="ph ph-pencil-simple"></i>
+                                    </button>
+                                )}
+                                {/* 刪除按鈕 (Hover時顯示) */}
+                                <button onClick={(e) => deleteMember(m.id, e)} className="opacity-0 group-hover:opacity-100 hover:text-red-400 transition-opacity ml-1">
+                                    <i className="ph ph-x-circle"></i>
+                                </button>
                             </div>
+                        ))}
+                        <button onClick={createMember} className="px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-t-lg transition-colors">
+                            <i className="ph ph-plus text-lg"></i>
+                        </button>
+                    </div>
 
-                            {/* 右側：藥物摘要 */}
-                            <div className="flex items-center gap-4 text-sm w-full sm:w-auto bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-slate-400">已選藥物:</span>
-                                    <span className="font-bold text-white text-xl text-blue-400">{activeMember.items.length}</span>
-                                </div>
-                                <div className="h-4 w-px bg-slate-700"></div>
-                                <div className="text-xs text-slate-500">
-                                    {activeMember.items.length > 0 ? '已儲存至名單' : '點擊下方 + 加入'}
-                                </div>
+                    {/* 當前成員資訊面板 (顯示年齡體重) */}
+                    <div className="bg-blue-600 text-white p-3 rounded-b-lg rounded-tr-lg shadow-inner flex flex-wrap gap-4 items-center justify-between -mt-[1px] z-20 relative border-t border-blue-500">
+                        <div className="flex items-center gap-4 text-sm">
+                            <div className="flex items-center gap-1 bg-blue-700/50 px-2 py-1 rounded">
+                                <i className="ph ph-cake"></i>
+                                <span>{activeAge} 歲</span>
+                            </div>
+                            <div className="flex items-center gap-1 bg-blue-700/50 px-2 py-1 rounded">
+                                <i className="ph ph-scales"></i>
+                                <span>{activeMember.weight} kg</span>
+                            </div>
+                            <div className="flex items-center gap-1 bg-blue-700/50 px-2 py-1 rounded">
+                                <i className="ph ph-pill"></i>
+                                <span>已選: {activeMember.items.length}</span>
                             </div>
                         </div>
                         
-                        {/* 名單內容預覽 */}
+                        {/* 編輯 Modal */}
+                        {editingMember && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-white text-slate-900 p-6 rounded-xl shadow-2xl w-full max-w-sm animate-fade-in">
+                                    <h3 className="text-lg font-bold mb-4">編輯成員資料</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">名稱</label>
+                                            <input type="text" value={editingMember.name} onChange={e => setEditingMember({...editingMember, name: e.target.value})} className="w-full border p-2 rounded" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">出生日期</label>
+                                            <input type="date" value={editingMember.birthDate} onChange={e => setEditingMember({...editingMember, birthDate: e.target.value})} className="w-full border p-2 rounded" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">體重 (kg)</label>
+                                            <input type="number" value={editingMember.weight} onChange={e => setEditingMember({...editingMember, weight: Number(e.target.value)})} className="w-full border p-2 rounded" />
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 mt-6 justify-end">
+                                        <button onClick={() => setEditingMember(null)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">取消</button>
+                                        <button onClick={saveMemberEdit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">儲存</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {activeMember.items.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-slate-700 flex flex-wrap gap-2 animate-fade-in">
+                            <div className="flex flex-wrap gap-2">
                                 {activeMember.items.map(itemId => {
                                     const item = medications.find(m => m.id === itemId);
-                                    if (!item) return null; // 如果藥物被完全移除
+                                    if (!item) return null;
                                     const isDeleted = hiddenIds.includes(itemId);
                                     return (
-                                        <span key={itemId} className={`text-xs px-2 py-1 rounded flex items-center gap-1 border ${
-                                            isDeleted 
-                                            ? 'bg-red-900/30 border-red-800 text-red-300' 
-                                            : 'bg-blue-900/50 border-blue-700 text-blue-100'
+                                        <span key={itemId} className={`text-xs px-2 py-1 rounded flex items-center gap-1 border shadow-sm ${
+                                            isDeleted ? 'bg-red-100 border-red-200 text-red-800' : 'bg-white text-blue-800 border-blue-200'
                                         }`}>
                                             {item.name}
-                                            {isDeleted && <span className="text-[10px]">(已移除)</span>}
-                                            <button onClick={() => toggleItemInMember(itemId)} className="hover:text-white ml-1"><i className="ph ph-x"></i></button>
+                                            <button onClick={() => toggleItemInMember(itemId)} className="hover:text-red-500 ml-1"><i className="ph ph-x"></i></button>
                                         </span>
                                     );
                                 })}
@@ -358,43 +456,30 @@
                     <div className="flex flex-col md:flex-row gap-4 justify-between">
                         <div className="relative flex-1">
                             <i className="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
-                            <input type="text" placeholder={viewMode === 'active' ? "搜尋藥名、功效..." : "搜尋已移除的藥物..."}
+                            <input type="text" placeholder="搜尋藥名、功效..."
                                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
                                 value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                         </div>
-                        
-                        {/* 進階篩選開關 */}
                         <div className="flex items-center gap-2">
-                            <button 
-                                onClick={() => setFilterNoSleep(!filterNoSleep)}
-                                className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 border transition-all ${filterNoSleep ? 'bg-green-100 border-green-300 text-green-800' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
-                            >
-                                <i className={`ph ${filterNoSleep ? 'ph-check-square' : 'ph-square'}`}></i>
-                                🟢 無睡意
+                            <button onClick={() => setFilterNoSleep(!filterNoSleep)}
+                                className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 border transition-all ${filterNoSleep ? 'bg-green-100 border-green-300 text-green-800' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+                                <i className={`ph ${filterNoSleep ? 'ph-check-square' : 'ph-square'}`}></i> 🟢 無睡意
                             </button>
-                            <button 
-                                onClick={() => setFilterKidSafe(!filterKidSafe)}
-                                className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 border transition-all ${filterKidSafe ? 'bg-blue-100 border-blue-300 text-blue-800' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
-                            >
-                                <i className={`ph ${filterKidSafe ? 'ph-check-square' : 'ph-square'}`}></i>
-                                👶 小童適用
+                            <button onClick={() => setFilterKidSafe(!filterKidSafe)}
+                                className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 border transition-all ${filterKidSafe ? 'bg-blue-100 border-blue-300 text-blue-800' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+                                <i className={`ph ${filterKidSafe ? 'ph-check-square' : 'ph-square'}`}></i> 👶 小童適用
                             </button>
                         </div>
                     </div>
 
                     <div className="flex flex-wrap gap-2">
                         <button onClick={() => setSelectedCategory('all')} 
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${selectedCategory === 'all' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}>
+                            className={`cat-btn px-3 py-1.5 rounded-full text-xs font-medium border ${selectedCategory === 'all' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}>
                             全部
                         </button>
-                        {[
-                            {id: 'nose', label: '鼻/抗敏', icon: 'ph-wind', color: 'blue'},
-                            {id: 'cough', label: '咳/喉嚨', icon: 'ph-cloud-rain', color: 'teal'},
-                            {id: 'pain', label: '痛/燒', icon: 'ph-thermometer', color: 'purple'},
-                            {id: 'external', label: '外用/其他', icon: 'ph-eye', color: 'amber'}
-                        ].map(cat => (
+                        {filters.map(cat => (
                             <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} 
-                                className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1 border transition-all ${selectedCategory === cat.id ? `bg-${cat.color}-600 text-white border-${cat.color}-600` : `bg-white text-gray-600 hover:bg-${cat.color}-50`}`}>
+                                className={`cat-btn px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1 border ${selectedCategory === cat.id ? `bg-${cat.color}-600 text-white border-${cat.color}-600` : `bg-white text-gray-600 hover:bg-${cat.color}-50`}`}>
                                 <i className={`ph ${cat.icon}`}></i> {cat.label}
                             </button>
                         ))}
@@ -402,132 +487,116 @@
                 </div>
 
                 {/* 3. 主表格 */}
-                <div className="flex-1 overflow-x-auto bg-gray-50">
+                <div className="flex-1 overflow-x-auto bg-gray-50 pb-8">
                     <table className="w-full text-left border-collapse min-w-[1100px]">
                         <thead className="bg-gray-200 text-gray-700 uppercase text-xs sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th className="p-3 w-14 text-center">圖片</th>
-                                <th className="p-3 w-10 text-center" title="加入當前成員名單">選取</th>
-                                
-                                <th className="p-3 w-[18%]" onClick={() => handleSort('name')}>
-                                    藥名 / 標籤 {getSortIcon('name')}
+                                <th className="p-3 w-10 text-center">選取</th>
+                                <th className="p-3 w-[14%]" onClick={() => handleSort('name')}>藥名 / 標籤 {getSortIcon('name')}</th>
+                                <th className="p-3 w-16" onClick={() => handleSort('rec')}>推薦 {getSortIcon('rec')}</th>
+                                <th className="p-3 w-16" onClick={() => handleSort('strengthVal')}>強度 {getSortIcon('strengthVal')}</th>
+                                <th className="p-3 w-20" onClick={() => handleSort('sleep')}>睡意 {getSortIcon('sleep')}</th>
+                                <th className="p-3 w-16" onClick={() => handleSort('food')}>飽肚 {getSortIcon('food')}</th>
+                                <th className="p-3 w-28" onClick={() => handleSort('kid')}>
+                                    {isChildActive ? `建議劑量 (${activeMember.weight}kg)` : '兒童適用'} {getSortIcon('kid')}
                                 </th>
-                                
-                                <th className="p-3 w-16" onClick={() => handleSort('rec')}>
-                                    推薦 {getSortIcon('rec')}
-                                </th>
-                                
-                                <th className="p-3 w-16" onClick={() => handleSort('strengthVal')}>
-                                    強度 {getSortIcon('strengthVal')}
-                                </th>
-                                
-                                <th className="p-3 w-20" onClick={() => handleSort('sleep')}>
-                                    睡意 {getSortIcon('sleep')}
-                                </th>
-                                
-                                <th className="p-3 w-16" onClick={() => handleSort('food')}>
-                                    飽肚 {getSortIcon('food')}
-                                </th>
-                                
-                                <th className="p-3 w-24" onClick={() => handleSort('kid')}>
-                                    兒童 {getSortIcon('kid')}
-                                </th>
-                                
-                                <th className="p-3 w-[20%]" onClick={() => handleSort('note')}>
-                                    備註 / 副作用 {getSortIcon('note')}
-                                </th>
-                                
+                                <th className="p-3 w-auto" onClick={() => handleSort('note')}>備註 / 副作用 {getSortIcon('note')}</th>
                                 <th className="p-3 w-12 text-center">操作</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 text-sm bg-white">
                             {filteredData.map(med => {
                                 const isInList = activeMember.items.includes(med.id);
+                                
+                                // Dynamic Dose Calculation
+                                const doseInfo = calculateDynamicDose(med, activeMember);
+                                
+                                // Highlight Row Logic (Requirement 2)
+                                const isHighlighted = isChildActive && med.kid === 'ok';
+                                
                                 return (
-                                    <tr key={med.id} className={`hover:bg-blue-50 transition-colors ${isInList ? 'bg-blue-50/60' : ''}`}>
-                                        {/* 圖片連結 */}
+                                    <tr key={med.id} className={`transition-colors ${
+                                        isInList ? 'bg-blue-100/70' : 
+                                        isHighlighted ? 'bg-green-50 hover:bg-green-100' : 
+                                        'hover:bg-gray-50'
+                                    }`}>
                                         <td className="p-2 text-center">
                                             <a href={getGoogleImageLink(med.name)} target="_blank" className="block w-10 h-10 bg-gray-100 rounded flex items-center justify-center mx-auto hover:bg-blue-100 hover:text-blue-600 border border-gray-200 text-gray-400">
                                                 <i className="ph ph-image text-xl"></i>
                                             </a>
                                         </td>
-
-                                        {/* 加入名單按鈕 */}
                                         <td className="p-2 text-center">
                                             {viewMode === 'active' && (
                                                 <button onClick={() => toggleItemInMember(med.id)} 
-                                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isInList ? 'bg-blue-600 text-white shadow-md scale-110' : 'bg-gray-100 text-gray-400 hover:bg-blue-200 hover:text-blue-600'}`}
-                                                    title={isInList ? `從 ${activeMember.name} 的名單移除` : `加入 ${activeMember.name} 的名單`}>
+                                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isInList ? 'bg-blue-600 text-white shadow-md scale-110' : 'bg-gray-100 text-gray-400 hover:bg-blue-200 hover:text-blue-600'}`}>
                                                     {isInList ? <i className="ph ph-check text-lg"></i> : <i className="ph ph-plus text-lg"></i>}
                                                 </button>
                                             )}
                                         </td>
-
-                                        {/* 藥名 */}
                                         <td className="p-3">
-                                            <div className="font-bold text-gray-800 text-base">{med.name}</div>
+                                            <div className="font-bold text-gray-800 text-base leading-tight">{med.name}</div>
                                             <div className="flex flex-wrap gap-1 mt-1">
                                                 {med.tags.map((tag, i) => (
                                                     <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded border ${
                                                         tag.includes('退燒') ? 'bg-red-50 text-red-700 border-red-100' :
                                                         tag.includes('止痛') ? 'bg-orange-50 text-orange-700 border-orange-100' :
+                                                        tag.includes('氣管') ? 'bg-cyan-50 text-cyan-700 border-cyan-100' :
                                                         'bg-gray-100 text-gray-600 border-gray-200'
                                                     }`}>{tag}</span>
                                                 ))}
                                             </div>
                                         </td>
-
-                                        {/* 推薦度 */}
                                         <td className="p-3 text-center">
                                             {med.rec === 'best' ? <i className="ph ph-thumbs-up text-green-600 text-xl"></i> :
                                              med.rec === 'bad' ? <i className="ph ph-thumbs-down text-red-500 text-xl"></i> : 
                                              <span className="text-gray-300">-</span>}
                                         </td>
-
-                                        {/* 強度 */}
                                         <td className={`p-3 font-medium ${med.strengthVal >= 4 ? 'text-red-600' : 'text-gray-700'}`}>{med.strength}</td>
-
-                                        {/* 睡意 */}
                                         <td className="p-3">
                                             {med.sleep === 'high' ? <span className="text-red-600 font-bold text-xs">極眼瞓</span> :
                                              med.sleep === 'med' ? <span className="text-orange-500 font-bold text-xs">有睡意</span> :
                                              med.sleep === 'low' ? <span className="text-yellow-600 font-bold text-xs">微睡意</span> :
                                              <span className="text-green-600 font-bold text-xs">無</span>}
                                         </td>
-
-                                        {/* 飽肚 */}
                                         <td className="p-3 text-xs">
                                             {med.food === 'full' ? <span className="text-blue-600 font-bold">飽肚</span> : <span className="text-gray-400">可空</span>}
                                         </td>
-
-                                        {/* 兒童份量 */}
                                         <td className="p-3">
-                                            {med.kid === 'no' ? <span className="text-red-500 text-xs font-bold">不可</span> : (
+                                            {/* 智能劑量顯示區域 (Requirement 2) */}
+                                            {isChildActive ? (
+                                                med.kid === 'no' ? (
+                                                    <span className="text-red-500 text-xs font-bold">不可</span>
+                                                ) : (
+                                                    <div className={`flex flex-col p-1 rounded ${med.kid === 'ok' ? 'bg-green-100/80 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                                                        <span className={`text-xs font-bold ${med.kid === 'ok' ? 'text-green-700' : 'text-yellow-700'}`}>
+                                                            {doseInfo.text}
+                                                        </span>
+                                                        {med.kid === 'caution' && <span className="text-[10px] text-yellow-600">慎用</span>}
+                                                    </div>
+                                                )
+                                            ) : (
+                                                // 成人視角
+                                                med.kid === 'no' ? <span className="text-red-500 text-xs font-bold">小童不可</span> : (
                                                 <div className="flex flex-col">
                                                     <span className={`text-xs font-bold ${med.kid === 'ok' ? 'text-green-600' : 'text-yellow-600'}`}>
                                                         {med.kid === 'ok' ? 'OK' : '慎用'}
                                                     </span>
-                                                    <span className="text-xs font-mono text-gray-600 bg-gray-100 px-1 rounded mt-0.5 w-fit">
-                                                        {med.kidDose}
-                                                    </span>
                                                 </div>
+                                                )
                                             )}
                                         </td>
-
-                                        {/* 備註 */}
                                         <td className="p-3 text-xs">
                                             <div className="text-gray-800">{med.note}</div>
                                             {med.sideEffect !== '無' && med.sideEffect !== '極少' && med.sideEffect !== '未知' && <div className="text-red-500 mt-0.5">⚠ {med.sideEffect}</div>}
                                         </td>
-
-                                        {/* 拆除/還原 按鈕 */}
                                         <td className="p-3 text-center">
                                             {viewMode === 'active' ? (
-                                                <button onClick={() => softDelete(med.id)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded transition-colors" title="移除 (移至回收筒)">
+                                                <button onClick={() => softDelete(med.id)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded transition-colors" title="移除">
                                                     <i className="ph ph-trash text-lg"></i>
                                                 </button>
                                             ) : (
-                                                <button onClick={() => restore(med.id)} className="text-green-500 hover:text-green-700 hover:bg-green-50 p-2 rounded transition-colors flex items-center gap-1 mx-auto" title="還原">
+                                                <button onClick={() => restore(med.id)} className="text-green-500 hover:text-green-700 hover:bg-green-50 p-2 rounded transition-colors mx-auto" title="還原">
                                                     <i className="ph ph-arrow-counter-clockwise text-lg"></i>
                                                 </button>
                                             )}
@@ -544,13 +613,31 @@
                         </div>
                     )}
                 </div>
-
+                
+                {/* 4. 版本號 (Requirement 4) */}
+                <div className="absolute bottom-1 right-2 text-[10px] text-slate-300 pointer-events-none z-0">
+                    {APP_VERSION}
+                </div>
             </div>
         );
     };
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
+
+    /* 
+     * VERSION CONTROL LOG:
+     * v1.0 - Initial Release
+     * ...
+     * v7.0 - Refined Categories, Member List Persistence
+     * v8.0 - (Current) 
+     *      - Added dynamic age/weight calculation.
+     *      - Added 'calculateDynamicDose' function for weight-based dosing (Brufen, Progesic).
+     *      - Implemented automatic category merging (Throat -> External if count <= 1).
+     *      - Changed member selection to Tabs.
+     *      - Added visual highlighting for child-safe meds when child profile is active.
+     *      - Added version label in UI.
+     */
 </script>
 
 </body>
