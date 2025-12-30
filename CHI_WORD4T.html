@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>中英閃卡 v4.3 (邏輯修復+清空所有)</title>
+<title>中英閃卡 v4.4 (介面優化+詞語表刪除)</title>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Serif+HK:wght@500;700;900&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -262,10 +262,16 @@ body.hide-text-mode .word-tag i {
     box-shadow: 0 5px 0 #b0bec5; font-size: 1rem; padding: 10px;
 }
 
+/* UI 修改: 分行顯示開關 */
 .toggles-area {
     margin-top: 15px;
-    display: flex; gap: 15px; background: rgba(255,255,255,0.6);
-    padding: 12px 20px; border-radius: 16px; flex-wrap: wrap; justify-content: center; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 10px; /* 垂直排列 */
+    background: rgba(255,255,255,0.6);
+    padding: 12px 20px; border-radius: 16px; flex-shrink: 0;
+    align-items: center;
+}
+.toggle-row {
+    display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;
 }
 .toggle-item { display: flex; align-items: center; gap: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; }
 .toggle-item input { accent-color: var(--accent); width: 20px; height: 20px; }
@@ -416,7 +422,7 @@ body.hide-text-mode .word-tag i {
 <body>
 
     <canvas id="confetti-canvas"></canvas>
-    <div class="version-tag">v4.3</div>
+    <div class="version-tag">v4.4</div>
 
     <div class="main-layout">
         <div class="sidebar">
@@ -436,6 +442,8 @@ body.hide-text-mode .word-tag i {
                             <button class="mode-btn" style="background:#78909c" onclick="toggleSelectAll('#wordList')">全選</button>
                             <button class="mode-btn" style="background:var(--review-color)" onclick="confirmBatchMoveFromWordsToReview()">移至還要練</button>
                             <button class="mode-btn" style="background:var(--btn-master)" onclick="confirmBatchMove()">移至已學識</button>
+                            <!-- 3. 新增詞語表刪除按鈕 -->
+                            <button class="mode-btn" style="background:var(--danger)" onclick="confirmBatchDeleteFromWords()">刪除</button>
                             <button class="mode-btn" style="background:#cfd8dc; color:#555" onclick="exitWordSelectMode()">取消</button>
                         </div>
                     </div>
@@ -512,11 +520,17 @@ body.hide-text-mode .word-tag i {
                 <button class="big-btn nav-btn" id="nextBtn" onclick="manualNext()">下一個 👉</button>
             </div>
 
+            <!-- 1. & 2. 介面修改：雙行排列，立即朗讀移至此處 -->
             <div class="toggles-area">
-                <label class="toggle-item"><input type="checkbox" id="autoPlayNext"> ▶️ 自動模式</label>
-                <label class="toggle-item"><input type="checkbox" id="repeatThreeTimes"> 🔁 讀三次</label>
-                <label class="toggle-item"><input type="checkbox" id="randomOrder"> 🔀 洗牌模式</label>
-                <label class="toggle-item"><input type="checkbox" id="hideTextMode"> 🙈 隱藏文字</label>
+                <div class="toggle-row">
+                    <label class="toggle-item"><input type="checkbox" id="readImmediatelyToggle"> ⚡ 立即朗讀</label>
+                    <label class="toggle-item"><input type="checkbox" id="autoPlayNext"> ▶️ 自動模式</label>
+                    <label class="toggle-item"><input type="checkbox" id="repeatThreeTimes"> 🔁 讀三次</label>
+                </div>
+                <div class="toggle-row">
+                    <label class="toggle-item"><input type="checkbox" id="randomOrder"> 🔀 洗牌模式</label>
+                    <label class="toggle-item"><input type="checkbox" id="hideTextMode"> 🙈 隱藏文字</label>
+                </div>
             </div>
         </div>
     </div>
@@ -590,11 +604,7 @@ body.hide-text-mode .word-tag i {
                 <div class="setting-label">「熟練度判斷」聽讀次數上限</div>
                 <input type="number" id="settingMasteryViewLimit" class="setting-input" value="1" min="1" max="50" onchange="autoSaveSettings()">
             </div>
-            <!-- 新增：立即朗讀開關 -->
-            <div class="setting-row">
-                <div class="setting-label">切換卡片時立即朗讀</div>
-                <input type="checkbox" id="settingReadImmediately" class="setting-checkbox" onchange="autoSaveSettings()">
-            </div>
+            <!-- 移除設定中的立即朗讀，因已移至主畫面 -->
 
             <div class="settings-grid">
                 <button class="btn-setting-action" style="background:#5c6bc0;" onclick="confirmAction('resetStats')">
@@ -606,7 +616,6 @@ body.hide-text-mode .word-tag i {
                 <button class="btn-setting-action" style="background:#ff9800;" onclick="confirmAction('clearAudio')">
                     <span>🗑️ 清除錄音</span><span style="font-size:0.7rem; opacity:0.8; font-weight:normal">保留文字，刪聲音</span>
                 </button>
-                <!-- 新增：清空所有按鈕 -->
                 <button class="btn-setting-action" style="background:var(--danger);" onclick="confirmAction('clearAll')">
                     <span>💥 清空所有</span><span style="font-size:0.7rem; opacity:0.8; font-weight:normal">刪除全部資料</span>
                 </button>
@@ -666,7 +675,6 @@ body.hide-text-mode .word-tag i {
         let isWordSelectMode = false;
         let isReviewMode = false;
 
-        // 新增 readImmediately 設定
         let settings = { autoDelay: 4, repeatDelay: 3, masteryThreshold: 2, masteryViewLimit: 1, readImmediately: false };
 
         const DB_NAME = 'FlashcardDB_v4.0';
@@ -1031,6 +1039,15 @@ body.hide-text-mode .word-tag i {
                 window.speechSynthesis.onvoiceschanged = loadVoices;
                 loadVoices();
             }
+            
+            // 初始化立即朗讀開關
+            const readImmToggle = document.getElementById('readImmediatelyToggle');
+            readImmToggle.checked = settings.readImmediately;
+            readImmToggle.addEventListener('change', (e) => {
+                settings.readImmediately = e.target.checked;
+                autoSaveSettings();
+            });
+
             document.getElementById('autoPlayNext').addEventListener('change', async (e) => {
                 stopEverything();
                 if (!e.target.checked) return;
@@ -1092,21 +1109,14 @@ body.hide-text-mode .word-tag i {
             if (document.getElementById('randomOrder').checked) currentIndex = pickNextIndexRandom(false);
             else currentIndex = (currentIndex + 1) % words.length;
             updateCard();
-            // 自動模式下，進入下一張卡，同樣遵循設定（倒數或立即）
             startSequence(); 
         }
 
-        // --- 核心邏輯修改：切換卡片時的音頻策略 ---
         function playCardAudioWithStrategy() {
-            // 1. 停止所有當前聲音和倒數
             stopEverything();
-            
-            // 2. 檢查設定：立即朗讀 還是 倒數
             if (settings.readImmediately) {
                 speakWordFlow();
             } else {
-                // 如果是自動模式，且剛切換過來，這裡會執行倒數
-                // 如果是手動切換，也會執行倒數，這符合使用者的「重新倒數」需求
                 runCountdown(settings.autoDelay, "試下自己讀", () => setTimeout(() => speakWordFlow(), 0));
             }
         }
@@ -1114,28 +1124,23 @@ body.hide-text-mode .word-tag i {
         async function manualNext() {
             if (words.length === 0) return;
             await unlockAudioAndSpeech();
-            
             if (document.getElementById('randomOrder').checked) currentIndex = pickNextIndexRandom(false);
             else currentIndex = (currentIndex + 1) % words.length;
-            
             updateCard();
-            playCardAudioWithStrategy(); // 使用新策略
+            playCardAudioWithStrategy();
         }
 
         async function manualPrev() {
             if (words.length === 0) return;
             await unlockAudioAndSpeech();
-            
             currentIndex = (currentIndex - 1 + words.length) % words.length;
-            
             updateCard();
-            playCardAudioWithStrategy(); // 使用新策略
+            playCardAudioWithStrategy();
         }
 
         function startSequence() {
             stopEverything(); 
             if (words.length === 0) return;
-            // 自動模式循環也使用同樣的邏輯
             if (settings.readImmediately) {
                 speakWordFlow();
             } else {
@@ -1192,7 +1197,6 @@ body.hide-text-mode .word-tag i {
             if (state.status === 'paused') resumeFlow();
             else if (state.status === 'countdown' || state.status === 'speaking') pauseFlow();
             else { 
-                // 手動按朗讀，直接讀，不倒數
                 speakWordFlow(); 
             }
         }
@@ -1330,7 +1334,6 @@ body.hide-text-mode .word-tag i {
                     div.onclick = () => { 
                         if (state.status === 'idle' || state.status === 'paused') { 
                             currentIndex = index; updateCard(); 
-                            // 點擊切換時，也遵循設定
                             playCardAudioWithStrategy();
                         } 
                     };
@@ -1398,6 +1401,15 @@ body.hide-text-mode .word-tag i {
             if (currentIndex >= words.length) currentIndex = 0;
             showToast(`已移動 ${indices.length} 個到還要練`); markDirty(); exitWordSelectMode(); updateCard();
         }
+        // 3. 新增詞語表批量刪除邏輯
+        function confirmBatchDeleteFromWords() {
+            const indices = getSelectedIndices('#wordList'); if (!indices.length) return;
+            if(!confirm(`確定要刪除這 ${indices.length} 個詞語嗎？`)) return;
+            indices.forEach(idx => words.splice(idx, 1));
+            if (currentIndex >= words.length) currentIndex = 0;
+            showToast(`已刪除 ${indices.length} 個詞語`); markDirty(); exitWordSelectMode(); updateCard();
+        }
+
         function confirmBatchMoveFromReviewToWords() {
             const indices = getSelectedIndices('#reviewList'); if (!indices.length) return;
             indices.forEach(idx => { let w = reviewWords[idx]; w.views=0; w.hits=0; w.roundId=0; words.push(w); reviewWords.splice(idx, 1); });
@@ -1462,7 +1474,6 @@ body.hide-text-mode .word-tag i {
         function handleMasteryClick(e) {
             if (words.length === 0) return;
             
-            // 1. 立即停止當前可能的倒數或發音，這是關鍵修正
             stopEverything();
 
             const item = words[currentIndex]; item.hits++;
@@ -1479,16 +1490,12 @@ body.hide-text-mode .word-tag i {
                 if (words.length > 0) {
                     if (document.getElementById('randomOrder').checked) currentIndex = pickNextIndexRandom(true);
                     updateCard(); 
-                    
-                    // 2. 這裡使用自動模式的邏輯，會檢查設定決定是否倒數
                     startAutoIfEnabled();
                 } else updateCard();
             } else {
                 const rect = e.target.getBoundingClientRect();
                 triggerConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, 0.4);
                 markDirty(); renderLists(); updateCard(); 
-                
-                // 3. 手動切換下一張，同樣檢查設定
                 manualNext();
             }
         }
@@ -1498,7 +1505,6 @@ body.hide-text-mode .word-tag i {
             document.getElementById('settingRepeatDelay').value = settings.repeatDelay;
             document.getElementById('settingMasteryThreshold').value = settings.masteryThreshold;
             document.getElementById('settingMasteryViewLimit').value = settings.masteryViewLimit;
-            document.getElementById('settingReadImmediately').checked = settings.readImmediately; // 載入新設定
             document.getElementById('settingsModal').style.display = 'flex';
         }
 
@@ -1507,7 +1513,7 @@ body.hide-text-mode .word-tag i {
             settings.repeatDelay = parseInt(document.getElementById('settingRepeatDelay').value) || 3;
             settings.masteryThreshold = parseInt(document.getElementById('settingMasteryThreshold').value) || 2;
             settings.masteryViewLimit = parseInt(document.getElementById('settingMasteryViewLimit').value) || 1;
-            settings.readImmediately = document.getElementById('settingReadImmediately').checked; // 儲存新設定
+            settings.readImmediately = document.getElementById('readImmediatelyToggle').checked;
             markDirty(); updateCard(); showToast("設定已更新");
         }
 
@@ -1535,22 +1541,15 @@ body.hide-text-mode .word-tag i {
                 let count = 0; [words, reviewWords, masteredWords].forEach(list => list.forEach(w => { if(w.audioBlob) { w.audioBlob = null; count++; } }));
                 markDirty(); renderLists(); updateCard(); showToast(`已清除 ${count} 個錄音`);
             } else if (pendingAction === 'clearAll') {
-                // 清空所有邏輯
                 words = []; reviewWords = []; masteredWords = [];
                 settings = { autoDelay: 4, repeatDelay: 3, masteryThreshold: 2, masteryViewLimit: 1, readImmediately: false };
-                localStorage.clear(); // 清除所有本地存儲
-                
-                // 重新初始化 DB (清空 DB)
+                localStorage.clear(); 
                 if(db) {
                     const transaction = db.transaction(['data'], 'readwrite');
                     const store = transaction.objectStore('data');
                     store.clear();
                 }
-                
-                // 重新載入頁面或重置狀態
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                setTimeout(() => { window.location.reload(); }, 1000);
                 showToast("已清空所有資料，正在重啟...");
             }
             closeModal('confirmModal'); pendingAction = null;
