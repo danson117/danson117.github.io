@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>中英閃卡 v4.4 (介面優化+詞語表刪除)</title>
+<title>中英閃卡 v4.5 (聽力測驗模式)</title>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Serif+HK:wght@500;700;900&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -22,6 +22,7 @@
     --import-btn: #fdd835;
     --reset-btn: #78909c;
     --review-color: #ff9800;
+    --game-bg: #e8eaf6;
 
     --card-border: #b2ebf2;
     --font-ui: 'M PLUS Rounded 1c', sans-serif;
@@ -278,10 +279,14 @@ body.hide-text-mode .word-tag i {
 
 .parents-bar {
     margin-top: auto; display: flex; gap: 10px; justify-content: center; padding-top: 10px; flex-shrink: 0;
+    flex-wrap: wrap;
 }
 .mini-btn {
     padding: 10px 14px; font-size: 0.85rem; border-radius: 10px; border: 1px solid #cfd8dc;
     background: #fff; cursor: pointer; font-weight: bold; color: #546e7a;
+}
+.game-btn {
+    background: #e8eaf6; color: #3f51b5; border-color: #c5cae9;
 }
 
 .save-status {
@@ -400,6 +405,53 @@ body.hide-text-mode .word-tag i {
 
 #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2500; }
 
+/* --- 遊戲模式 CSS --- */
+.game-overlay {
+    position: fixed; inset: 0; background: var(--bg-primary); z-index: 4000;
+    display: none; flex-direction: column; padding: 15px; padding-top: max(15px, env(safe-area-inset-top));
+}
+.game-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px; background: #fff; border-radius: 16px; margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.game-title { font-size: 1.2rem; font-weight: 900; color: #3f51b5; display: flex; align-items: center; gap: 8px; }
+.game-score { font-size: 1rem; color: #7986cb; font-weight: bold; }
+.game-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+.game-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+    width: 100%; max-width: 600px; height: 100%; max-height: 80vh;
+    align-content: center;
+}
+.game-card {
+    background: #fff; border-radius: 20px; border: 3px solid #e8eaf6;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-learn-zh); font-weight: bold; color: #333;
+    font-size: 2rem; cursor: pointer; box-shadow: 0 4px 0 #c5cae9;
+    transition: transform 0.1s, background 0.2s; position: relative;
+    aspect-ratio: 2 / 1;
+}
+.game-card:active { transform: scale(0.95); box-shadow: 0 2px 0 #c5cae9; top: 2px; }
+.game-card.shake { animation: shake 0.5s; border-color: #ef5350; background: #ffebee; }
+.game-card.correct { border-color: #66bb6a; background: #e8f5e9; transform: scale(1.05); z-index: 10; }
+.game-card.is-english { font-family: var(--font-learn-en); font-size: 1.5rem; }
+
+.game-controls {
+    margin-top: 20px; display: flex; gap: 20px; justify-content: center; width: 100%;
+}
+.btn-replay {
+    width: 60px; height: 60px; border-radius: 50%; border: none;
+    background: #3f51b5; color: white; font-size: 1.5rem;
+    box-shadow: 0 4px 10px rgba(63, 81, 181, 0.3); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.btn-replay:active { transform: scale(0.9); }
+
+@keyframes shake {
+    0% { transform: translateX(0); } 25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); }
+}
+
 @media (orientation: portrait) {
     .main-layout { flex-direction: column; gap: 10px; }
     .sidebar { flex: none; height: 50%; width: 100%; }
@@ -409,6 +461,8 @@ body.hide-text-mode .word-tag i {
     .word-display { font-size: 6rem; }
     .controls-grid { margin-bottom: 20px; }
     .card-info-bl, .card-info-br { font-size: 1.5rem; bottom: 10px; }
+    .game-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .game-card { font-size: 1.8rem; }
 }
 
 @media (max-width: 600px) {
@@ -422,7 +476,7 @@ body.hide-text-mode .word-tag i {
 <body>
 
     <canvas id="confetti-canvas"></canvas>
-    <div class="version-tag">v4.4</div>
+    <div class="version-tag">v4.5</div>
 
     <div class="main-layout">
         <div class="sidebar">
@@ -442,7 +496,6 @@ body.hide-text-mode .word-tag i {
                             <button class="mode-btn" style="background:#78909c" onclick="toggleSelectAll('#wordList')">全選</button>
                             <button class="mode-btn" style="background:var(--review-color)" onclick="confirmBatchMoveFromWordsToReview()">移至還要練</button>
                             <button class="mode-btn" style="background:var(--btn-master)" onclick="confirmBatchMove()">移至已學識</button>
-                            <!-- 3. 新增詞語表刪除按鈕 -->
                             <button class="mode-btn" style="background:var(--danger)" onclick="confirmBatchDeleteFromWords()">刪除</button>
                             <button class="mode-btn" style="background:#cfd8dc; color:#555" onclick="exitWordSelectMode()">取消</button>
                         </div>
@@ -490,6 +543,7 @@ body.hide-text-mode .word-tag i {
             </div>
 
             <div class="parents-bar">
+                <button class="mini-btn game-btn" onclick="openGameMode()">🎮 聽力測驗</button>
                 <button class="mini-btn" onclick="openEditModal()">📝 編輯/導入</button>
                 <button class="mini-btn" onclick="exportData()">📤 導出</button>
                 <button class="mini-btn" onclick="openSettingsModal()">⚙️ 設定</button>
@@ -520,7 +574,6 @@ body.hide-text-mode .word-tag i {
                 <button class="big-btn nav-btn" id="nextBtn" onclick="manualNext()">下一個 👉</button>
             </div>
 
-            <!-- 1. & 2. 介面修改：雙行排列，立即朗讀移至此處 -->
             <div class="toggles-area">
                 <div class="toggle-row">
                     <label class="toggle-item"><input type="checkbox" id="readImmediatelyToggle"> ⚡ 立即朗讀</label>
@@ -531,6 +584,22 @@ body.hide-text-mode .word-tag i {
                     <label class="toggle-item"><input type="checkbox" id="randomOrder"> 🔀 洗牌模式</label>
                     <label class="toggle-item"><input type="checkbox" id="hideTextMode"> 🙈 隱藏文字</label>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊戲模式 Overlay -->
+    <div id="gameOverlay" class="game-overlay">
+        <div class="game-header">
+            <div class="game-title">🎮 聽力測驗 <small style="font-size:0.8rem; color:#7986cb; margin-left:5px;">(還要練優先)</small></div>
+            <button class="mini-btn" onclick="closeGameMode()">❌ 離開</button>
+        </div>
+        <div class="game-body">
+            <div class="game-grid" id="gameGrid">
+                <!-- Cards will be generated here -->
+            </div>
+            <div class="game-controls">
+                <button class="btn-replay" onclick="playGameAudio()">🔊</button>
             </div>
         </div>
     </div>
@@ -604,7 +673,6 @@ body.hide-text-mode .word-tag i {
                 <div class="setting-label">「熟練度判斷」聽讀次數上限</div>
                 <input type="number" id="settingMasteryViewLimit" class="setting-input" value="1" min="1" max="50" onchange="autoSaveSettings()">
             </div>
-            <!-- 移除設定中的立即朗讀，因已移至主畫面 -->
 
             <div class="settings-grid">
                 <button class="btn-setting-action" style="background:#5c6bc0;" onclick="confirmAction('resetStats')">
@@ -643,6 +711,7 @@ body.hide-text-mode .word-tag i {
         let words = [];
         let reviewWords = [];
         let masteredWords = [];
+        const FALLBACK_WORDS = ["學校", "朋友", "快樂", "老師", "爸爸", "媽媽", "公園", "讀書", "寫字", "遊戲", "太陽", "月亮", "星星", "天空", "花朵", "小狗", "小貓", "吃飯", "喝水", "睡覺"];
         
         let profiles = JSON.parse(localStorage.getItem('flashcard_profiles')) || [{id: 'default', name: '預設學生', parentId: null, isFolder: false}];
         let currentProfileId = localStorage.getItem('flashcard_current_profile') || 'default';
@@ -685,6 +754,11 @@ body.hide-text-mode .word-tag i {
         let mediaUnlocked = false;
 
         let isAddingFolder = false;
+
+        // --- Game Mode Variables ---
+        let gameTarget = null;
+        let gameItems = [];
+        let isGameActive = false;
 
         // --- 輔助函數 ---
         function getDBKey(type) {
@@ -1040,7 +1114,6 @@ body.hide-text-mode .word-tag i {
                 loadVoices();
             }
             
-            // 初始化立即朗讀開關
             const readImmToggle = document.getElementById('readImmediatelyToggle');
             readImmToggle.checked = settings.readImmediately;
             readImmToggle.addEventListener('change', (e) => {
@@ -1219,23 +1292,26 @@ body.hide-text-mode .word-tag i {
             state.status = 'speaking'; updateStatusUI();
             if (state.repeatCount === 0) { words[currentIndex].views++; markDirty(); renderLists(); updateCard(); }
             const item = words[currentIndex];
-            window.speechSynthesis.cancel(); globalAudioPlayer.pause(); globalAudioPlayer.currentTime = 0;
-            clearTimeout(state.watchdogId);
-            state.watchdogId = setTimeout(() => handleSpeakEnd(), 10000);
+            playItemAudio(item, () => handleSpeakEnd());
+        }
 
+        function playItemAudio(item, onEndCallback) {
+            window.speechSynthesis.cancel(); globalAudioPlayer.pause(); globalAudioPlayer.currentTime = 0;
             if (item.audioBlob) {
                 const url = URL.createObjectURL(item.audioBlob);
                 globalAudioPlayer.src = url; globalAudioPlayer.volume = 1.0;
-                globalAudioPlayer.onended = () => { handleSpeakEnd(); URL.revokeObjectURL(url); };
-                globalAudioPlayer.play().catch(() => { if (state.repeatCount === 0) speakTTS(item.text); else handleSpeakEnd(); });
-            } else speakTTS(item.text);
+                globalAudioPlayer.onended = () => { if(onEndCallback) onEndCallback(); URL.revokeObjectURL(url); };
+                globalAudioPlayer.play().catch(() => { speakTTS(item.text, onEndCallback); });
+            } else {
+                speakTTS(item.text, onEndCallback);
+            }
         }
 
-        function speakTTS(text) {
+        function speakTTS(text, onEndCallback) {
             const u = new SpeechSynthesisUtterance(text);
             if (isEnglish(text)) { u.lang = 'en-IE'; if (englishVoice) u.voice = englishVoice; u.rate = 0.9; }
             else { u.lang = 'zh-HK'; if (cantoneseVoice) u.voice = cantoneseVoice; u.rate = 0.8; }
-            u.onend = u.onerror = () => handleSpeakEnd();
+            u.onend = u.onerror = () => { if(onEndCallback) onEndCallback(); };
             window.speechSynthesis.speak(u);
         }
 
@@ -1401,7 +1477,6 @@ body.hide-text-mode .word-tag i {
             if (currentIndex >= words.length) currentIndex = 0;
             showToast(`已移動 ${indices.length} 個到還要練`); markDirty(); exitWordSelectMode(); updateCard();
         }
-        // 3. 新增詞語表批量刪除邏輯
         function confirmBatchDeleteFromWords() {
             const indices = getSelectedIndices('#wordList'); if (!indices.length) return;
             if(!confirm(`確定要刪除這 ${indices.length} 個詞語嗎？`)) return;
@@ -1497,6 +1572,138 @@ body.hide-text-mode .word-tag i {
                 triggerConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, 0.4);
                 markDirty(); renderLists(); updateCard(); 
                 manualNext();
+            }
+        }
+
+        // --- Game Mode Logic ---
+        async function openGameMode() {
+            stopEverything();
+            await unlockAudioAndSpeech();
+            const totalCards = words.length + reviewWords.length + masteredWords.length;
+            if (totalCards === 0) { showToast("請先加入一些生字！"); return; }
+            isGameActive = true;
+            document.getElementById('gameOverlay').style.display = 'flex';
+            generateGameRound();
+        }
+
+        function closeGameMode() {
+            isGameActive = false;
+            document.getElementById('gameOverlay').style.display = 'none';
+            stopEverything();
+            renderLists(); // Refresh main lists in case of mastery
+        }
+
+        function generateGameRound() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            
+            // 1. Pick Target (Prioritize Review > Words)
+            let targetPool = reviewWords.length > 0 ? reviewWords : words;
+            if (targetPool.length === 0) targetPool = masteredWords; // Fallback to mastered if others empty
+            
+            if (targetPool.length === 0) { closeGameMode(); return; } // Should not happen due to check in openGameMode
+
+            const targetIndex = Math.floor(Math.random() * targetPool.length);
+            gameTarget = targetPool[targetIndex];
+
+            // 2. Pick Distractors (9 items)
+            let distractors = [];
+            let allAvailable = [...reviewWords, ...words, ...masteredWords].filter(w => w !== gameTarget);
+            
+            // Shuffle available real words
+            for (let i = allAvailable.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allAvailable[i], allAvailable[j]] = [allAvailable[j], allAvailable[i]];
+            }
+
+            // Fill with real words first
+            distractors = allAvailable.slice(0, 9);
+
+            // If not enough, fill with FALLBACK_WORDS
+            if (distractors.length < 9) {
+                let needed = 9 - distractors.length;
+                let fallbackPool = [...FALLBACK_WORDS].filter(w => w !== gameTarget.text && !distractors.some(d => d.text === w));
+                // Shuffle fallback
+                for (let i = fallbackPool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [fallbackPool[i], fallbackPool[j]] = [fallbackPool[j], fallbackPool[i]];
+                }
+                for(let i=0; i<needed; i++) {
+                    if (i < fallbackPool.length) {
+                        distractors.push({ text: fallbackPool[i], isFallback: true });
+                    }
+                }
+            }
+
+            // 3. Combine and Shuffle
+            gameItems = [gameTarget, ...distractors];
+            for (let i = gameItems.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gameItems[i], gameItems[j]] = [gameItems[j], gameItems[i]];
+            }
+
+            // 4. Render Grid
+            gameItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                if (isEnglish(item.text)) card.classList.add('is-english');
+                card.textContent = item.text;
+                card.onclick = () => handleGameCardClick(card, item);
+                grid.appendChild(card);
+            });
+
+            // 5. Play Audio
+            setTimeout(() => playGameAudio(), 500);
+        }
+
+        function playGameAudio() {
+            if (!isGameActive || !gameTarget) return;
+            playItemAudio(gameTarget);
+        }
+
+        function handleGameCardClick(cardElement, item) {
+            if (cardElement.classList.contains('correct')) return; // Already clicked correctly
+
+            if (item === gameTarget) {
+                // Correct!
+                cardElement.classList.add('correct');
+                triggerConfetti(null, null, 0.6);
+                
+                // Logic: Increment hits
+                if (!item.isFallback) {
+                    item.hits++;
+                    // Check Mastery
+                    if (item.hits >= settings.masteryThreshold) {
+                        // Move to Mastered
+                        if (reviewWords.includes(item)) {
+                            reviewWords.splice(reviewWords.indexOf(item), 1);
+                            masteredWords.push(item);
+                            showToast(`🎉 恭喜！「${item.text}」已學識！`);
+                        } else if (words.includes(item)) {
+                            words.splice(words.indexOf(item), 1);
+                            masteredWords.push(item);
+                            showToast(`🎉 恭喜！「${item.text}」已學識！`);
+                        }
+                        markDirty();
+                    } else {
+                        showToast("答啱咗！繼續加油！");
+                        markDirty();
+                    }
+                } else {
+                    showToast("答啱咗！");
+                }
+
+                // Next round after delay
+                setTimeout(() => {
+                    if (isGameActive) generateGameRound();
+                }, 1500);
+
+            } else {
+                // Wrong!
+                cardElement.classList.add('shake');
+                setTimeout(() => cardElement.classList.remove('shake'), 500);
+                // Play the wrong card's audio for learning
+                playItemAudio(item);
             }
         }
 
