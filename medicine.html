@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭藥箱智能表 v8.0 (智能劑量版)</title>
+    <title>家庭藥箱智能表 v8.2 (Adult Dose Update)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -50,7 +50,7 @@
 <script type="text/babel">
     const { useState, useMemo, useEffect } = React;
 
-    const APP_VERSION = "v8.0";
+    const APP_VERSION = "v8.2";
 
     // --- 輔助函數：計算年齡 ---
     const calculateAge = (birthDateStr) => {
@@ -66,93 +66,92 @@
     };
 
     // --- 輔助函數：智能劑量計算 ---
-    // 這裡定義藥物的計算邏輯
-    // type: 'weight' (按體重), 'age' (按年齡), 'fixed' (固定), 'adult_only' (成人專用)
     const calculateDynamicDose = (med, member) => {
         const age = calculateAge(member.birthDate);
         const weight = member.weight || 20;
         const isChild = age < 12;
 
-        // 如果是成人，直接返回標準劑量 (如果數據庫有區分 kidDose 和 adultDose 更好，這裡暫時假設原 kidDose 欄位存的是兒童參考，我們需要一個標準劑量欄位，這裡暫時用 med.note 或默認邏輯)
-        // 為了簡化，我們假設如果不是兒童，顯示 "成人標準" 或手動輸入的成人量。
-        // *由於原始數據結構限制，我們這裡做一個邏輯轉換：
-        // 如果是成人，我們顯示 "參照包裝/醫囑" 或者如果我們有成人數據。
-        // 為了演示，我們假設成人顯示 "成人劑量"。
-        
+        // --- 成人邏輯 (新增) ---
         if (!isChild) {
-            return { text: "成人標準量", isSafe: true };
+            // 直接讀取數據庫中的 adultDose 字段
+            return { text: med.adultDose || "遵醫囑", isSafe: true };
         }
 
+        // --- 兒童邏輯 ---
         if (med.kid === 'no') {
             return { text: "不適合兒童", isSafe: false };
         }
 
-        // 特殊藥物計算邏輯 (模擬)
-        // Ibuprofen (Brufen): 一般 5-10mg/kg, 藥水通常 20mg/ml (100mg/5ml)
+        // 1. Bronal Syrup (根據圖片手寫標籤)
+        // 標籤寫: 20-30kg (5ml)
+        if (med.name.includes('Bronal')) {
+            if (weight < 20) return { text: "2.5ml (估算)", isSafe: true }; // 輕過20kg減半
+            if (weight <= 30) return { text: "5ml", isSafe: true }; // 圖片指定範圍
+            return { text: "7.5ml", isSafe: true }; // 超過30kg
+        }
+
+        // 2. Ibuprofen (Brufen)
         if (med.name.includes('Brufen') && med.name.includes('藥水')) {
-            // 假設 10mg/kg
             const doseMg = weight * 10; 
             const doseMl = (doseMg / 20).toFixed(1); // 20mg per ml
             return { text: `${doseMl}ml (10mg/kg)`, isSafe: true };
         }
 
-        // Paracetamol (Progesic): 一般 10-15mg/kg, 藥水通常 24mg/ml (120mg/5ml) or 50mg/ml (250mg/5ml)
-        // 假設 Progesic 是 120mg/5ml (24mg/ml)
+        // 3. Paracetamol (Progesic)
         if (med.name.includes('Progesic')) {
             const doseMg = weight * 15;
             const doseMl = (doseMg / 24).toFixed(1);
             return { text: `${doseMl}ml (15mg/kg)`, isSafe: true };
         }
 
-        // 抗敏藥水 (Aerius/Adezio) 通常按年齡或體重分級
+        // 4. 抗敏藥水
         if (med.name.includes('Aerius') || med.name.includes('Adezio')) {
             if (age < 2) return { text: "遵醫囑", isSafe: true };
             if (age < 6) return { text: "2.5ml", isSafe: true };
             return { text: "5ml", isSafe: true };
         }
 
-        // 如果沒有特定公式，返回數據庫原本的 kidDose
+        // 默認返回數據庫原本的 kidDose
         return { text: med.kidDose || "遵醫囑", isSafe: true };
     };
 
-    // --- 初始數據庫 ---
-    // 為了演示合併功能，我保留了 'throat' 類別，只有一個藥物。
-    // 增加了 adultDose 欄位 (模擬)
+    // --- 初始數據庫 (已加入 adultDose) ---
     const INITIAL_MEDICATIONS = [
         // --- 氣管 / 氣喘 ---
-        { id: 32, name: 'Meptin Syrup', category: 'trachea', tags: ['氣喘', '擴張氣管'], strength: '專用', strengthVal: 4.5, rec: 'best', sleep: 'none', sideEffect: '心跳/手震', food: 'empty', price: 'med', kid: 'ok', kidDose: '5ml x 2次', gen: 'Procaterol', note: '臨用前搖勻' },
-        { id: 26, name: 'Beclazone 噴劑', category: 'trachea', tags: ['氣管敏感', '預防'], strength: '強效', strengthVal: 4.5, rec: 'good', sleep: 'none', sideEffect: '鵝口瘡', food: 'empty', price: 'med', kid: 'caution', kidDose: '1噴 x 2次', gen: 'N/A', note: '類固醇，用後必須漱口' },
-        { id: 28, name: 'Singulair 5mg', category: 'trachea', tags: ['氣管', '鼻敏感'], strength: '中強', strengthVal: 3.5, rec: 'good', sleep: 'none', sideEffect: '情緒', food: 'empty', price: 'high', kid: 'ok', kidDose: '1粒 x 1次', gen: 'N/A', note: '長期控制用(順爾寧)' },
+        { id: 32, name: 'Meptin Syrup', category: 'trachea', tags: ['氣喘', '擴張氣管'], strength: '專用', strengthVal: 4.5, rec: 'best', sleep: 'none', sideEffect: '心跳/手震', food: 'empty', price: 'med', kid: 'ok', kidDose: '5ml x 2次', adultDose: '10ml x 2次', gen: 'Procaterol', note: '臨用前搖勻' },
+        { id: 26, name: 'Beclazone 噴劑', category: 'trachea', tags: ['氣管敏感', '預防'], strength: '強效', strengthVal: 4.5, rec: 'good', sleep: 'none', sideEffect: '鵝口瘡', food: 'empty', price: 'med', kid: 'caution', kidDose: '1噴 x 2次', adultDose: '2噴 x 2次', gen: 'N/A', note: '類固醇，用後必須漱口' },
+        { id: 28, name: 'Singulair 5mg', category: 'trachea', tags: ['氣管', '鼻敏感'], strength: '中強', strengthVal: 3.5, rec: 'good', sleep: 'none', sideEffect: '情緒', food: 'empty', price: 'high', kid: 'ok', kidDose: '1粒 x 1次', adultDose: '2粒(10mg) x 1次', gen: 'N/A', note: '長期控制用(順爾寧)' },
 
         // --- 止咳 / 化痰 ---
-        { id: 31, name: 'Fluimucil A 100', category: 'cough', tags: ['化痰', '橙樹粉'], strength: '中強', strengthVal: 3.5, rec: 'best', sleep: 'none', sideEffect: '胃氣', food: 'full', price: 'med', kid: 'ok', kidDose: '1包 x 2-3次', gen: 'N/A', note: '需沖水飲' },
-        { id: 21, name: 'Fluifort Syrup', category: 'cough', tags: ['強力化痰'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '腸胃', food: 'full', price: 'med', kid: 'ok', kidDose: '5ml x 2次', gen: '-', note: '針對濃痰' },
-        { id: 30, name: 'Actein 顆粒', category: 'cough', tags: ['化痰', '橙樹類'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'none', sideEffect: '胃不適', food: 'full', price: 'med', kid: 'ok', kidDose: '半包 x 2次', gen: 'N/A', note: '需沖水飲' },
-        { id: 11, name: 'Tussidex Forte', category: 'cough', tags: ['止咳'], strength: '強效', strengthVal: 4, rec: 'good', sleep: 'med', sideEffect: '頭暈', food: 'full', price: 'med', kid: 'ok', kidDose: '5ml x 3次', gen: '-', note: '乾咳適用' },
+        { id: 33, name: 'Bronal Syrup', category: 'cough', tags: ['止咳', '乾咳'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'none', sideEffect: '極少', food: 'empty', price: 'med', kid: 'ok', kidDose: '5ml (20-30kg)', adultDose: '10ml x 3次', gen: 'Levodropropizine', note: '非麻醉性，針對乾咳' },
+        { id: 31, name: 'Fluimucil A 100', category: 'cough', tags: ['化痰', '橙樹粉'], strength: '中強', strengthVal: 3.5, rec: 'best', sleep: 'none', sideEffect: '胃氣', food: 'full', price: 'med', kid: 'ok', kidDose: '1包 x 2-3次', adultDose: '2包 x 3次', gen: 'N/A', note: '需沖水飲' },
+        { id: 21, name: 'Fluifort Syrup', category: 'cough', tags: ['強力化痰'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '腸胃', food: 'full', price: 'med', kid: 'ok', kidDose: '5ml x 2次', adultDose: '10ml x 2次', gen: '-', note: '針對濃痰' },
+        { id: 30, name: 'Actein 顆粒', category: 'cough', tags: ['化痰', '橙樹類'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'none', sideEffect: '胃不適', food: 'full', price: 'med', kid: 'ok', kidDose: '半包 x 2次', adultDose: '1包 x 2次', gen: 'N/A', note: '需沖水飲' },
+        { id: 11, name: 'Tussidex Forte', category: 'cough', tags: ['止咳'], strength: '強效', strengthVal: 4, rec: 'good', sleep: 'med', sideEffect: '頭暈', food: 'full', price: 'med', kid: 'ok', kidDose: '5ml x 3次', adultDose: '10ml x 3次', gen: '-', note: '乾咳適用' },
 
         // --- 收鼻水 / 抗敏 ---
-        { id: 2, name: 'Bendrol 紫水', category: 'nose_run', tags: ['收鼻水', '敏感'], strength: '強效', strengthVal: 4, rec: 'neutral', sleep: 'high', sideEffect: '口乾', food: 'empty', price: 'low', kid: 'ok', kidDose: '5ml x 3次', gen: '1代', note: '睡前用佳' },
-        { id: 7, name: 'Aerius 丸', category: 'nose_run', tags: ['收鼻水', '抗敏'], strength: '中等', strengthVal: 3, rec: 'best', sleep: 'none', sideEffect: '極少', food: 'empty', price: 'high', kid: 'caution', kidDose: '藥水佳', gen: '3代', note: '長效24小時' },
-        { id: 6, name: 'Adezio 藥水', category: 'nose_run', tags: ['收鼻水', '抗敏'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'low', sideEffect: '微倦', food: 'empty', price: 'med', kid: 'ok', kidDose: '5ml x 1次', gen: '2代', note: '睡前食' },
-        { id: 4, name: '黃丸 (Chlor)', category: 'nose_run', tags: ['收鼻水', '抗敏'], strength: '標準', strengthVal: 2, rec: 'neutral', sleep: 'med', sideEffect: '口乾', food: 'empty', price: 'low', kid: 'ok', kidDose: '2.5ml x 3次', gen: '1代', note: '傳統抗敏' },
+        { id: 2, name: 'Bendrol 紫水', category: 'nose_run', tags: ['收鼻水', '敏感'], strength: '強效', strengthVal: 4, rec: 'neutral', sleep: 'high', sideEffect: '口乾', food: 'empty', price: 'low', kid: 'ok', kidDose: '5ml x 3次', adultDose: '10ml x 3次', gen: '1代', note: '睡前用佳' },
+        { id: 7, name: 'Aerius 丸', category: 'nose_run', tags: ['收鼻水', '抗敏'], strength: '中等', strengthVal: 3, rec: 'best', sleep: 'none', sideEffect: '極少', food: 'empty', price: 'high', kid: 'caution', kidDose: '藥水佳', adultDose: '1粒 x 1次', gen: '3代', note: '長效24小時' },
+        { id: 6, name: 'Adezio 藥水', category: 'nose_run', tags: ['收鼻水', '抗敏'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'low', sideEffect: '微倦', food: 'empty', price: 'med', kid: 'ok', kidDose: '5ml x 1次', adultDose: '10ml x 1次', gen: '2代', note: '睡前食' },
+        { id: 4, name: '黃丸 (Chlor)', category: 'nose_run', tags: ['收鼻水', '抗敏'], strength: '標準', strengthVal: 2, rec: 'neutral', sleep: 'med', sideEffect: '口乾', food: 'empty', price: 'low', kid: 'ok', kidDose: '2.5ml x 3次', adultDose: '1粒(4mg) x 3次', gen: '1代', note: '傳統抗敏' },
 
         // --- 通鼻塞 ---
-        { id: 3, name: 'Actifed 黃水', category: 'nose_block', tags: ['通鼻塞', '收鼻水'], strength: '強效', strengthVal: 4, rec: 'neutral', sleep: 'med', sideEffect: '心跳', food: 'empty', price: 'low', kid: 'ok', kidDose: '5ml x 3次', gen: '1代', note: '心臟不好慎用' },
-        { id: 27, name: 'Avamys 鼻噴劑', category: 'nose_block', tags: ['鼻敏感', '通鼻'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '流鼻血', food: 'empty', price: 'high', kid: 'ok', kidDose: '1噴 x 1次', gen: '2代', note: '類固醇噴劑' },
+        { id: 3, name: 'Actifed 黃水', category: 'nose_block', tags: ['通鼻塞', '收鼻水'], strength: '強效', strengthVal: 4, rec: 'neutral', sleep: 'med', sideEffect: '心跳', food: 'empty', price: 'low', kid: 'ok', kidDose: '5ml x 3次', adultDose: '10ml x 3次', gen: '1代', note: '心臟不好慎用' },
+        { id: 27, name: 'Avamys 鼻噴劑', category: 'nose_block', tags: ['鼻敏感', '通鼻'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '流鼻血', food: 'empty', price: 'high', kid: 'ok', kidDose: '1噴 x 1次', adultDose: '2噴 x 1次', gen: '2代', note: '類固醇噴劑' },
 
-        // --- 喉嚨痛 / 消腫 (只有一個，會被合併) ---
-        { id: 16, name: 'Flemizyme 丸', category: 'throat', tags: ['消腫', '喉嚨痛'], strength: '輔助', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '極少', food: 'full', price: 'low', kid: 'ok', kidDose: '1粒 x 3次', gen: '-', note: '酵素類，吞服' },
+        // --- 喉嚨痛 / 消腫 ---
+        { id: 16, name: 'Flemizyme 丸', category: 'throat', tags: ['消腫', '喉嚨痛'], strength: '輔助', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '極少', food: 'full', price: 'low', kid: 'ok', kidDose: '1粒 x 3次', adultDose: '2粒 x 3次', gen: '-', note: '酵素類，吞服' },
         
         // --- 發燒 / 止痛 ---
-        { id: 17, name: 'Brufen 丸', category: 'fever', tags: ['止痛', '退燒'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '傷胃', food: 'full', price: 'low', kid: 'caution', kidDose: '藥水佳', gen: '-', note: '喉嚨痛/高燒首選' },
-        { id: 18, name: 'Brufen 藥水', category: 'fever', tags: ['止痛', '退燒'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '傷胃', food: 'full', price: 'med', kid: 'ok', kidDose: '7ml x 3次', gen: '-', note: '需飽肚服' },
-        { id: 19, name: 'Progesic 水', category: 'fever', tags: ['止痛', '退燒'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'none', sideEffect: '傷肝', food: 'empty', price: 'low', kid: 'ok', kidDose: '10ml x 4次', gen: '-', note: 'Panadol成份' },
-        { id: 20, name: 'Pabron Gold A', category: 'fever', tags: ['綜合感冒'], strength: '中等', strengthVal: 3, rec: 'bad', sleep: 'med', sideEffect: '依賴', food: 'full', price: 'med', kid: 'caution', kidDose: '按包裝', gen: '-', note: '成份雜，不可混吃' },
+        { id: 17, name: 'Brufen 丸', category: 'fever', tags: ['止痛', '退燒'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '傷胃', food: 'full', price: 'low', kid: 'caution', kidDose: '藥水佳', adultDose: '1-2粒 x 3次', gen: '-', note: '喉嚨痛/高燒首選' },
+        { id: 18, name: 'Brufen 藥水', category: 'fever', tags: ['止痛', '退燒'], strength: '強效', strengthVal: 4, rec: 'best', sleep: 'none', sideEffect: '傷胃', food: 'full', price: 'med', kid: 'ok', kidDose: '7ml x 3次', adultDose: '15-20ml x 3次', gen: '-', note: '需飽肚服' },
+        { id: 19, name: 'Progesic 水', category: 'fever', tags: ['止痛', '退燒'], strength: '中等', strengthVal: 3, rec: 'good', sleep: 'none', sideEffect: '傷肝', food: 'empty', price: 'low', kid: 'ok', kidDose: '10ml x 4次', adultDose: '20ml x 4次', gen: '-', note: 'Panadol成份' },
+        { id: 20, name: 'Pabron Gold A', category: 'fever', tags: ['綜合感冒'], strength: '中等', strengthVal: 3, rec: 'bad', sleep: 'med', sideEffect: '依賴', food: 'full', price: 'med', kid: 'caution', kidDose: '按包裝', adultDose: '3粒/1包 x 3次', gen: '-', note: '成份雜，不可混吃' },
 
         // --- 外用 / 其他 ---
-        { id: 22, name: '抗敏鼻炎凝膠', category: 'external', tags: ['鼻敏感', '物理'], strength: '輔助', strengthVal: 2, rec: 'good', sleep: 'none', sideEffect: '極少', food: 'empty', price: 'med', kid: 'ok', kidDose: '適量 x 3次', gen: '-', note: '物理性阻隔' },
-        { id: 23, name: 'Hypromellose', category: 'external', tags: ['眼乾', '滋潤'], strength: '溫和', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '無', food: 'empty', price: 'low', kid: 'ok', kidDose: '1滴 x 4次', gen: '-', note: '人造淚水' },
-        { id: 25, name: 'LCRxx 鼻安舒', category: 'external', tags: ['洗鼻', '清潔'], strength: '溫和', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '無', food: 'empty', price: 'med', kid: 'ok', kidDose: '適量 x 2次', gen: '-', note: '非藥性' },
+        { id: 22, name: '抗敏鼻炎凝膠', category: 'external', tags: ['鼻敏感', '物理'], strength: '輔助', strengthVal: 2, rec: 'good', sleep: 'none', sideEffect: '極少', food: 'empty', price: 'med', kid: 'ok', kidDose: '適量 x 3次', adultDose: '適量 x 3次', gen: '-', note: '物理性阻隔' },
+        { id: 23, name: 'Hypromellose', category: 'external', tags: ['眼乾', '滋潤'], strength: '溫和', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '無', food: 'empty', price: 'low', kid: 'ok', kidDose: '1滴 x 4次', adultDose: '1滴 x 4次', gen: '-', note: '人造淚水' },
+        { id: 25, name: 'LCRxx 鼻安舒', category: 'external', tags: ['洗鼻', '清潔'], strength: '溫和', strengthVal: 1, rec: 'good', sleep: 'none', sideEffect: '無', food: 'empty', price: 'med', kid: 'ok', kidDose: '適量 x 2次', adultDose: '適量 x 2次', gen: '-', note: '非藥性' },
     ];
 
     const STORAGE_KEY_MEMBERS = 'famBox_members_v8'; 
@@ -177,9 +176,8 @@
 
     const App = () => {
         // --- State ---
-        // 1. 處理藥物分類合併 (Requirement 1)
         const [medications, setMedications] = useState(() => {
-            // 檢查分類數量
+            // 檢查分類數量 (Requirement 1)
             const counts = {};
             INITIAL_MEDICATIONS.forEach(m => {
                 counts[m.category] = (counts[m.category] || 0) + 1;
@@ -197,7 +195,6 @@
         const [hiddenIds, setHiddenIds] = useState(() => safeGetItem(STORAGE_KEY_HIDDEN, []));
         const [viewMode, setViewMode] = useState('active');
         
-        // 2. 成員名單與詳細資料 (Requirement 2)
         const [members, setMembers] = useState(() => safeGetItem(STORAGE_KEY_MEMBERS, [
             { id: 1, name: 'Alpha', birthDate: '2016-04-01', weight: 23, items: [] },
             { id: 2, name: 'Karson', birthDate: '2019-03-01', weight: 20, items: [] },
@@ -206,9 +203,7 @@
         ]));
 
         const [activeMemberId, setActiveMemberId] = useState(members[0]?.id || 1);
-        
-        // 編輯成員狀態
-        const [editingMember, setEditingMember] = useState(null); // { id, name, weight, birthDate }
+        const [editingMember, setEditingMember] = useState(null);
 
         const [searchTerm, setSearchTerm] = useState('');
         const [selectedCategory, setSelectedCategory] = useState('all');
@@ -283,7 +278,7 @@
             const newMembers = [...members, { id: newId, name: `成員`, birthDate: '2000-01-01', weight: 50, items: [] }];
             setMembers(newMembers);
             setActiveMemberId(newId);
-            setEditingMember({ ...newMembers[newMembers.length-1] }); // Immediately edit
+            setEditingMember({ ...newMembers[newMembers.length-1] });
         };
 
         const deleteMember = (id, e) => {
@@ -327,7 +322,6 @@
         const getGoogleImageLink = (name) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(name + ' medicine packaging')}`;
 
         // --- Filter Buttons Configuration ---
-        // Dynamically hide categories that don't exist anymore (merged into external)
         const activeCategories = new Set(medications.map(m => m.category));
         
         const allFilters = [
@@ -364,7 +358,7 @@
                         </div>
                     </div>
 
-                    {/* 成員 Tabs (Requirement 5) */}
+                    {/* 成員 Tabs */}
                     <div className="flex flex-wrap items-end gap-2 mb-0">
                         {members.map(m => (
                             <div key={m.id} 
@@ -376,7 +370,6 @@
                                         <i className="ph ph-pencil-simple"></i>
                                     </button>
                                 )}
-                                {/* 刪除按鈕 (Hover時顯示) */}
                                 <button onClick={(e) => deleteMember(m.id, e)} className="opacity-0 group-hover:opacity-100 hover:text-red-400 transition-opacity ml-1">
                                     <i className="ph ph-x-circle"></i>
                                 </button>
@@ -387,7 +380,7 @@
                         </button>
                     </div>
 
-                    {/* 當前成員資訊面板 (顯示年齡體重) */}
+                    {/* 當前成員資訊面板 */}
                     <div className="bg-blue-600 text-white p-3 rounded-b-lg rounded-tr-lg shadow-inner flex flex-wrap gap-4 items-center justify-between -mt-[1px] z-20 relative border-t border-blue-500">
                         <div className="flex items-center gap-4 text-sm">
                             <div className="flex items-center gap-1 bg-blue-700/50 px-2 py-1 rounded">
@@ -499,7 +492,7 @@
                                 <th className="p-3 w-20" onClick={() => handleSort('sleep')}>睡意 {getSortIcon('sleep')}</th>
                                 <th className="p-3 w-16" onClick={() => handleSort('food')}>飽肚 {getSortIcon('food')}</th>
                                 <th className="p-3 w-28" onClick={() => handleSort('kid')}>
-                                    {isChildActive ? `建議劑量 (${activeMember.weight}kg)` : '兒童適用'} {getSortIcon('kid')}
+                                    {isChildActive ? `建議劑量 (${activeMember.weight}kg)` : '建議劑量 (成人)'} {getSortIcon('kid')}
                                 </th>
                                 <th className="p-3 w-auto" onClick={() => handleSort('note')}>備註 / 副作用 {getSortIcon('note')}</th>
                                 <th className="p-3 w-12 text-center">操作</th>
@@ -508,11 +501,7 @@
                         <tbody className="divide-y divide-gray-200 text-sm bg-white">
                             {filteredData.map(med => {
                                 const isInList = activeMember.items.includes(med.id);
-                                
-                                // Dynamic Dose Calculation
                                 const doseInfo = calculateDynamicDose(med, activeMember);
-                                
-                                // Highlight Row Logic (Requirement 2)
                                 const isHighlighted = isChildActive && med.kid === 'ok';
                                 
                                 return (
@@ -563,7 +552,6 @@
                                             {med.food === 'full' ? <span className="text-blue-600 font-bold">飽肚</span> : <span className="text-gray-400">可空</span>}
                                         </td>
                                         <td className="p-3">
-                                            {/* 智能劑量顯示區域 (Requirement 2) */}
                                             {isChildActive ? (
                                                 med.kid === 'no' ? (
                                                     <span className="text-red-500 text-xs font-bold">不可</span>
@@ -576,14 +564,11 @@
                                                     </div>
                                                 )
                                             ) : (
-                                                // 成人視角
-                                                med.kid === 'no' ? <span className="text-red-500 text-xs font-bold">小童不可</span> : (
-                                                <div className="flex flex-col">
-                                                    <span className={`text-xs font-bold ${med.kid === 'ok' ? 'text-green-600' : 'text-yellow-600'}`}>
-                                                        {med.kid === 'ok' ? 'OK' : '慎用'}
+                                                <div className="flex flex-col p-1 rounded bg-blue-50 border border-blue-100">
+                                                    <span className="text-xs font-bold text-blue-800">
+                                                        {doseInfo.text}
                                                     </span>
                                                 </div>
-                                                )
                                             )}
                                         </td>
                                         <td className="p-3 text-xs">
@@ -614,7 +599,6 @@
                     )}
                 </div>
                 
-                {/* 4. 版本號 (Requirement 4) */}
                 <div className="absolute bottom-1 right-2 text-[10px] text-slate-300 pointer-events-none z-0">
                     {APP_VERSION}
                 </div>
@@ -624,20 +608,6 @@
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
-
-    /* 
-     * VERSION CONTROL LOG:
-     * v1.0 - Initial Release
-     * ...
-     * v7.0 - Refined Categories, Member List Persistence
-     * v8.0 - (Current) 
-     *      - Added dynamic age/weight calculation.
-     *      - Added 'calculateDynamicDose' function for weight-based dosing (Brufen, Progesic).
-     *      - Implemented automatic category merging (Throat -> External if count <= 1).
-     *      - Changed member selection to Tabs.
-     *      - Added visual highlighting for child-safe meds when child profile is active.
-     *      - Added version label in UI.
-     */
 </script>
 
 </body>
