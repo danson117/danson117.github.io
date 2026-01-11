@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小學四年級中文作文範本集 (筆記升級版)</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --active-color: #27ae60;
+            --bg-color: #f8f9fa;
+            --sidebar-width: 300px;
+            --highlight-color: #fff176;
+            --highlight-border: #fbc02d;
+            --fill-in-bg: #fff9c4;
+            --fill-in-border: #fbc02d;
+            --blank-text-color: #0056b3;
+            --notebook-bg: #fff3e0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- 遮罩層 --- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* --- 側邊選單 --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: var(--sidebar-width);
+            height: 100%;
+            background-color: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            transition: left 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .menu-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 1em;
+            color: #555;
+        }
+
+        .menu-item:hover {
+            background-color: #f0f0f0;
+            color: var(--active-color);
+        }
+
+        .menu-item.active {
+            background-color: #e8f5e9;
+            color: var(--active-color);
+            font-weight: bold;
+            border-left: 5px solid var(--active-color);
+        }
+        
+        /* 特別樣式：筆記本選項 */
+        .menu-item.special-item {
+            background-color: #fff8e1;
+            color: #d35400;
+            font-weight: bold;
+            border-bottom: 2px solid #ffe0b2;
+        }
+        .menu-item.special-item:hover {
+            background-color: #ffe0b2;
+        }
+        .menu-item.special-item.active {
+            background-color: #ffcc80;
+            color: #bf360c;
+            border-left: 5px solid #bf360c;
+        }
+
+        /* --- 主內容區 --- */
+        .main-content {
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .top-nav {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .menu-toggle-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .nav-title {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        /* --- 文章內容樣式 --- */
+        .content-section {
+            display: none;
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s ease;
+            margin-bottom: 50px;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--active-color);
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .structure-tag {
+            background-color: #eee;
+            color: #555;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        h3 {
+            color: var(--active-color);
+            margin-top: 40px;
+            border-left: 4px solid var(--active-color);
+            padding-left: 10px;
+            background-color: #f9f9f9;
+            padding: 10px;
+        }
+
+        /* 填充區 */
+        .fill-in-box {
+            background-color: var(--fill-in-bg);
+            border: 2px dashed var(--fill-in-border);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .fill-in-title {
+            font-weight: bold;
+            color: #f57f17;
+            margin-bottom: 15px;
+        }
+
+        .blank {
+            display: inline-block;
+            min-width: 60px;
+            border-bottom: 2px solid #555;
+            text-align: center;
+            color: var(--blank-text-color);
+            font-weight: bold;
+            padding: 0 5px;
+        }
+
+        /* --- 重點標記樣式 --- */
+        .article-text p {
+            line-height: 2.2;
+            font-size: 1.2em;
+            margin-bottom: 25px;
+            text-align: justify;
+        }
+
+        .phrase {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px 1px;
+            transition: background-color 0.15s, border-bottom 0.15s;
+            position: relative;
+        }
+
+        .phrase:hover {
+            background-color: #e0e0e0; 
+        }
+
+        .phrase.highlight {
+            background-color: var(--highlight-color);
+            border-bottom: 3px solid var(--highlight-border);
+        }
+
+        .btn-clear {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: auto;
+        }
+
+        .instruction-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ffe0b2;
+        }
+
+        /* --- 筆記本專用樣式 --- */
+        .notebook-input-area {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #bbdefb;
+        }
+
+        .notebook-input-area h3 {
+            margin-top: 0;
+            border: none;
+            padding: 0;
+            background: none;
+            color: #1565c0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        #customNoteInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        #addNoteBtn {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #addNoteBtn:hover {
+            background-color: #1565c0;
+        }
+
+        .notebook-section-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #555;
+            margin: 30px 0 15px 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .notebook-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .notebook-item {
+            background: white;
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 5px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            line-height: 1.6;
+        }
+
+        /* 文章重點的顏色 */
+        .notebook-item.source-article {
+            border-left-color: var(--highlight-border);
+            background-color: #fffde7;
+        }
+
+        /* 自訂筆記的顏色 */
+        .notebook-item.source-custom {
+            border-left-color: #29b6f6;
+            background-color: #e1f5fe;
+        }
+
+        .notebook-content {
+            flex: 1;
+        }
+
+        .notebook-source {
+            display: block;
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .delete-note-btn {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-left: 10px;
+            padding: 0 5px;
+        }
+
+        .delete-note-btn:hover {
+            color: #e74c3c;
+        }
+
+        .empty-msg {
+            color: #999;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .content-section { padding: 20px; }
+            .sidebar { width: 80%; }
+            .input-group { flex-direction: column; }
+            #addNoteBtn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <!-- 側邊選單 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>📚 選單</h2>
+            <button class="close-menu-btn" onclick="closeSidebar()">×</button>
+        </div>
+        <ul class="menu-list" id="menuList">
+            <!-- 筆記本按鈕將由 JS 插入到最上方 -->
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="top-nav">
+            <button class="menu-toggle-btn" onclick="openSidebar()">
+                ☰ 目錄
+            </button>
+            <span class="nav-title" id="currentTitle">請選擇題目</span>
+        </div>
+
+        <!-- ================= 筆記本區域 (新功能) ================= -->
+        <div id="notebook-view" class="content-section">
+            <h1>🌟 我的重點筆記本</h1>
+            <p style="color: #666;">這裡集合了所有你在文章中標記的重點，你也可以自己在下方加入筆記。</p>
+
+            <!-- 1. 自訂筆記輸入區 -->
+            <div class="notebook-input-area">
+                <h3>✍️ 自行加入好句/筆記</h3>
+                <div class="input-group">
+                    <input type="text" id="customNoteInput" placeholder="輸入你想記錄的句子或詞語...">
+                    <button id="addNoteBtn" onclick="addCustomNote()">加入筆記</button>
+                </div>
+            </div>
+
+            <!-- 2. 自訂筆記列表 -->
+            <div class="notebook-section-title">我的自訂筆記</div>
+            <ul id="customNoteList" class="notebook-list">
+                <!-- JS 生成 -->
+            </ul>
+
+            <!-- 3. 文章重點彙整 -->
+            <div class="notebook-section-title">來自文章的重點 (自動同步)</div>
+            <ul id="articleHighlightsList" class="notebook-list">
+                <!-- JS 生成 -->
+            </ul>
+        </div>
+
+        <!-- ================= 文章區域 (保持不變) ================= -->
+        <!-- 1. 一次難忘的經歷 -->
+        <div id="topic-1" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>一次難忘的經歷</h1>
+            <div class="structure-tag">結構：事情起因 ➔ 經過/困難 ➔ 結果 ➔ 感受/得著</div>
+            <div class="fill-in-box">
+                <div class="fill-in-title">📝 萬能填充思考區</div>
+                <div class="fill-in-content">
+                    <p><strong>第一段 (起)：</strong><span class="blank">(時間)</span>，<span class="blank">(人物)</span>在<span class="blank">(地點)</span><span class="blank">(做甚麼)</span>，因為<span class="blank">(原因)</span>。</p>
+                    <p><strong>第二段 (承)：</strong>起初，<span class="blank">(事情開始的情況)</span>，我感到十分<span class="blank">(心情)</span>。突然，<span class="blank">(發生了甚麼意外/變化)</span>。</p>
+                    <p><strong>第三段 (轉)：</strong>當時情況<span class="blank">(形容情況)</span>，我<span class="blank">(當時的反應/動作)</span>。幸好/結果，<span class="blank">(問題如何解決/事情的結果)</span>。</p>
+                    <p><strong>第四段 (合)：</strong>經過這次<span class="blank">(的經歷/過程)</span>，我明白<span class="blank">(道理/重要性)</span>，正所謂「<span class="blank">(諺語：如經一事長一智)</span>」，我日後<span class="blank">(未來的行動)</span>。</p>
+                </div>
+            </div>
+            <h3>範本一：學踏單車 (克服恐懼)</h3>
+            <div class="article-text">
+                <p>在我成長的過程中，發生過許多事情，其中最令我難忘的，就是去年暑假學踏單車的經歷。</p>
+                <p>那天，爸爸帶我到公園學踏單車。剛開始，我總是掌握不到平衡，車頭搖搖晃晃，嚇得我手心冒汗。突然，「砰」的一聲，我連人帶車摔倒在地上，膝蓋擦破了皮，痛得我眼淚直流，心裡想放棄了。</p>
+                <p>爸爸見狀，走過來扶起我，溫柔地鼓勵我說：「失敗乃成功之母，不要怕，再來一次！」聽了爸爸的話，我擦乾眼淚，鼓起勇氣重新騎上單車。經過無數次的跌倒和練習，我終於學會了控制平衡。</p>
+                <p>現在，我已經可以在公園裡自由自在地騎車了。這次經歷讓我明白到，只要有恆心，不怕困難，就一定能克服挑戰。</p>
+            </div>
+        </div>
+
+        <!-- 2. 我做了一件好事 -->
+        <div id="topic-2" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>我做了一件好事</h1>
+            <div class="structure-tag">結構：發現需要幫助的人 ➔ 內心想法 ➔ 行動 ➔ 快樂的結果</div>
+            <div class="article-text">
+                <p>上週六，我在公園的長椅上休息時，發現旁邊有一個黑色的錢包。我撿起來一看，裡面有身份證和不少現金。</p>
+                <p>當時四下無人，我心裡猶豫了一下：如果拿走這些錢，就可以買很多玩具了。但是，我想起爸爸教導我要誠實，失主現在一定很著急。於是我打消了貪念，決定留在原地等待失主。</p>
+                <p>過了半小時，一位叔叔滿頭大汗地跑過來，在長椅附近東張西望。我走上前確認後，把錢包歸還給他。叔叔激動地握著我的手說：「太謝謝你了！這是我的救命錢啊！」</p>
+                <p>看著叔叔失而復得的笑容，我感到無比輕鬆和快樂。這件事讓我明白，誠實和助人比金錢更珍貴。</p>
+            </div>
+        </div>
+
+        <!-- 3. 一次生病的經過 -->
+        <div id="topic-3" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>一次生病的經過</h1>
+            <div class="structure-tag">結構：生病原因 ➔ 病徵/痛苦 ➔ 看醫生/家人照顧 ➔ 康復/健康的重要</div>
+            <div class="article-text">
+                <p>上星期，天氣突然轉涼，我因為沒有穿足夠的衣服，結果感冒了。那天晚上，我覺得渾身發冷，頭痛欲裂，整個人迷迷糊糊的。</p>
+                <p>媽媽摸了摸我的額頭，驚叫道：「哎呀！好燙啊！」她連忙拿出探熱針，原來我發燒到三十九度。媽媽整晚沒睡，一會兒餵我吃藥，一會兒用濕毛巾幫我降溫。</p>
+                <p>第二天，我不得不請假去看醫生。醫生說我是重感冒，要多休息。躺在床上，聽著窗外同學們上學的聲音，我真後悔沒有好好照顧自己。</p>
+                <p>經過幾天的休息，我終於康復了。這次生病讓我深刻體會到「健康勝於財富」的道理。以後我一定會注意天氣變化，適時添衣。</p>
+            </div>
+        </div>
+
+        <!-- 4. 快樂的聖誕聯歡會 -->
+        <div id="topic-4" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>快樂的聖誕聯歡會</h1>
+            <div class="structure-tag">結構：會前氣氛/佈置 ➔ 表演/遊戲/大食會 ➔ 抽獎高潮 ➔ 結束感受</div>
+            <div class="article-text">
+                <p>十二月二十日，學校充滿了濃厚的節日氣氛。為了慶祝聖誕節，我們班舉行了一個盛大的聯歡會。</p>
+                <p>課室被佈置得美輪美奐，黑板上畫滿了聖誕老人和雪人。聯歡會開始了，首先是大食會。桌上擺滿了雞翼、薯片、三文治等美食，大家一邊品嚐美食，一邊談天說地。</p>
+                <p>接著是才藝表演和遊戲環節。小明表演的魔術神奇極了，看得我們目瞪口呆。我們還玩了「爭椅子」遊戲，過程緊張刺激，大家都玩得滿頭大汗。</p>
+                <p>快樂的時光過得特別快，聯歡會在一片歡呼聲中結束了。這次聯歡會不但讓我們放鬆了心情，還增進了師生之間的感情，真是一個難忘的聖誕節。</p>
+            </div>
+        </div>
+
+        <!-- 5. 受傷了 -->
+        <div id="topic-5" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>受傷了</h1>
+            <div class="structure-tag">結構：受傷原因(通常是疏忽) ➔ 受傷經過/痛楚 ➔ 治療/他人關懷 ➔ 教訓</div>
+            <div class="article-text">
+                <p>記得那是三年級的時候，發生了一件令我後悔不已的事。那天小息，因為趕著去操場霸佔球場，我在走廊上飛快地奔跑。</p>
+                <p>正當我得意忘形時，腳下一滑，整個人向前撲倒。「砰」的一聲，我的膝蓋重重地撞在硬邦邦的地板上。一陣劇痛傳遍全身，我低頭一看，膝蓋鮮血直流。</p>
+                <p>老師聞聲趕來，立刻帶我去醫療室消毒和包紮。看著紅紅的藥水塗在傷口上，我痛得齜牙咧嘴。回到家後，媽媽看到我的傷口，既心疼又生氣地責備我不小心。</p>
+                <p>這次受傷讓我足足痛了一個星期。我深深地吸取了教訓，以後在走廊一定要慢慢走，絕不再魯莽奔跑了。</p>
+            </div>
+        </div>
+
+        <!-- 6. 遊公園記 -->
+        <div id="topic-6" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>遊公園記</h1>
+            <div class="structure-tag">結構：步移法(地點轉移) ➔ 入口 ➔ 景點一 ➔ 景點二 ➔ 離開/總結</div>
+            <div class="article-text">
+                <p>上星期天，風和日麗，爸爸媽媽帶我到香港公園遊玩。那裡風景優美，是鬧市中的綠洲。</p>
+                <p>一進公園大門，首先映入眼簾的是一個大型噴水池。水柱隨著音樂高低起伏，在陽光下閃閃發光，美麗極了。接著，我們沿著小徑走到人工湖。湖水碧綠，許多烏龜在石頭上曬太陽。</p>
+                <p>然後，我們來到了著名的尤德觀鳥園。走進網狀的巨型鳥籠，彷彿置身於熱帶雨林。各種珍奇的鳥兒在樹枝上歌唱，有的羽毛鮮豔，有的叫聲清脆。</p>
+                <p>不知不覺，太陽下山了。我們帶著依依不捨的心情離開公園。這次遊覽讓我親近了大自然，也認識了許多鳥類，真是大開眼界。</p>
+            </div>
+        </div>
+
+        <!-- 7. 一次大掃除的經歷 -->
+        <div id="topic-7" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>一次大掃除的經歷</h1>
+            <div class="structure-tag">結構：大掃除的原因 ➔ 分工合作的過程 ➔ 辛苦但快樂 ➔ 成果/感受</div>
+            <div class="article-text">
+                <p>農曆新年快到了，為了迎接新的一年，我們全家總動員進行「歲晚大掃除」。媽媽說這叫「除舊迎新」，要把家裡的霉氣都掃走。</p>
+                <p>我們分工合作，爸爸負責清潔天花板和風扇，媽媽負責廚房，而我就負責整理自己的房間和擦窗戶。我先把書桌上的雜物收拾好，然後拿著濕布用力地擦窗戶。</p>
+                <p>經過一個下午的努力，家裡煥然一新。窗戶明亮得像沒有玻璃一樣，地板乾淨得可以照出人影。看著整潔的家，雖然我們都累得腰酸背痛，但臉上都掛著滿足的笑容。</p>
+                <p>這次大掃除讓我體會到做家務的辛勞，也明白了保持家居衛生的重要。能在乾淨舒適的環境裡過年，真是太好了。</p>
+            </div>
+        </div>
+
+        <!-- 8. 我的好朋友 -->
+        <div id="topic-8" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>我的好朋友</h1>
+            <div class="structure-tag">結構：外貌描寫 ➔ 性格特點 ➔ 記述一件事表現其性格 ➔ 總結友誼</div>
+            <div class="article-text">
+                <p>我的好朋友叫小美，她有一雙水汪汪的大眼睛，笑起來還有兩個可愛的小酒窩。她不但成績優異，而且心地善良，十分樂於助人。</p>
+                <p>記得有一次，我的數學測驗不及格，心情非常低落，獨自坐在角落裡發呆。小美看見了，主動走過來安慰我，還提出每天放學後幫我補習。</p>
+                <p>在接下來的一個月裡，她犧牲了自己的玩耍時間，耐心地教我做數學題。每當我遇到不懂的地方，她總是不厭其煩地講解，直到我明白為止。在她的幫助下，我的數學成績終於有了進步。</p>
+                <p>我很慶幸能有小美這樣的好朋友。她在我困難時伸出援手，讓我感受到友誼的可貴。我希望我們的友誼能天長地久。</p>
+            </div>
+        </div>
+
+        <!-- 9. 一次遲到的教訓 -->
+        <div id="topic-9" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>一次遲到的教訓</h1>
+            <div class="structure-tag">結構：遲到原因 ➔ 趕路過程/焦急 ➔ 遲到後果/被罰 ➔ 反省/改過</div>
+            <div class="article-text">
+                <p>「鈴鈴鈴……」鬧鐘響個不停，我伸手把它按掉，心想：再睡五分鐘吧。沒想到這一睡，就睡過頭了。</p>
+                <p>當我醒來時，發現已經八點了！我嚇得從床上跳起來，胡亂地穿上校服，連早餐都沒吃就衝出家門。等巴士的時候，我急得像熱鍋上的螞蟻，不停地看手錶。</p>
+                <p>當我氣喘吁吁地跑到學校時，大門已經關上了。我被風紀員記了名字，回到課室還被老師批評了一頓。同學們都看著我，我羞愧得無地自容。</p>
+                <p>這次遲到的教訓讓我明白到守時的重要性。貪睡幾分鐘，卻換來了這麼嚴重的後果。我決定以後早睡早起，絕不再讓懶惰害了自己。</p>
+            </div>
+        </div>
+
+        <!-- 10. 發生在小息時的一件事 -->
+        <div id="topic-10" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>發生在小息時的一件事</h1>
+            <div class="structure-tag">結構：小息環境 ➔ 事件發生 ➔ 解決過程 ➔ 反省/感受</div>
+            <div class="article-text">
+                <p>「鈴——」小息的鐘聲響起，同學們像小鳥一樣飛出課室。操場上頓時充滿了歡笑聲，有的在跳繩，有的在吃東西，十分熱鬧。</p>
+                <p>我和小明在玩追逐遊戲。突然，我不小心撞到了正拿著果汁的小華，果汁灑了他一身。小華生氣地推了我一下，大聲說：「你長不長眼睛啊？」我當時也很衝動，正想罵回去。</p>
+                <p>但我看到他衣服上的污漬，我愣住了。我深吸一口氣，冷靜下來，連忙向他道歉：「對不起，我不是故意的，我幫你擦乾淨吧。」小華見我態度誠懇，怒氣也消了。</p>
+                <p>這場風波終於平息了。這件事讓我明白，與同學相處要互相包容，發生摩擦時要冷靜處理，主動道歉是解決問題的最好方法。</p>
+            </div>
+        </div>
+
+        <!-- 11. 我最喜歡的課外活動 -->
+        <div id="topic-11" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>我最喜歡的課外活動</h1>
+            <div class="structure-tag">結構：介紹活動 ➔ 學習過程/樂趣 ➔ 遇到的困難與克服 ➔ 得著</div>
+            <div class="article-text">
+                <p>我有許多課外活動，如畫畫、游泳等，但我最喜歡的還是彈鋼琴。每當手指在黑白琴鍵上飛舞，我就感到無比快樂。</p>
+                <p>剛開始學琴時，我覺得很枯燥，手指也不聽使喚，總是彈錯音。看著密密麻麻的五線譜，我曾經想過放棄。但是媽媽鼓勵我說：「台上一分鐘，台下十年功。」於是我堅持每天練習一小時。</p>
+                <p>慢慢地，我能彈出動聽的樂曲了。當我彈奏《夢中的婚禮》時，美妙的旋律彷彿帶我進入了童話世界，所有的煩惱都消失了。</p>
+                <p>彈鋼琴不但陶冶了我的性情，還培養了我的耐性。我會繼續努力練習，希望將來能成為一名鋼琴家。</p>
+            </div>
+        </div>
+
+        <!-- 12. 我最喜愛的節日 -->
+        <div id="topic-12" class="content-section">
+            <div class="instruction-bar">
+                <span>💡 點擊文字即可標記重點</span>
+                <button class="btn-clear" onclick="clearCurrentHighlights()">清除本頁標記</button>
+            </div>
+            <h1>我最喜愛的節日</h1>
+            <div class="structure-tag">結構：是什麼節日 ➔ 節日氣氛/習俗 ➔ 具體活動 ➔ 喜愛的原因</div>
+            <div class="article-text">
+                <p>一年之中有許多節日，但我最喜愛的是農曆新年。因為這是一個充滿喜慶和歡樂的節日，到處都張燈結綵，喜氣洋洋。</p>
+                <p>大年初一早上，我穿上紅彤彤的新衣服，向爸爸媽媽拜年，祝他們身體健康。爸爸媽媽會給我壓歲錢，寓意快高長大。家裡擺滿了年花和全盒，客人來拜年時，我們會互相祝福。</p>
+                <p>最令我興奮的是晚上的煙花匯演。璀璨的煙花在夜空中綻放，五彩繽紛，把維多利亞港照得如同白晝。我們一家人一邊欣賞煙花，一邊吃著美味的年糕，感覺溫馨極了。</p>
+                <p>農曆新年不但有紅包收，有美食吃，更重要的是一家團圓。這種濃厚的親情和歡樂的氣氛，讓我深深愛上了這個傳統節日。</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 題目列表
+        let topics = [
+            { id: 1, title: "一次難忘的經歷" },
+            { id: 2, title: "我做了一件好事" },
+            { id: 3, title: "一次生病的經過" },
+            { id: 4, title: "快樂的聖誕聯歡會" },
+            { id: 5, title: "受傷了" },
+            { id: 6, title: "遊公園記" },
+            { id: 7, title: "一次大掃除的經歷" },
+            { id: 8, title: "我的好朋友" },
+            { id: 9, title: "一次遲到的教訓" },
+            { id: 10, title: "發生在小息時的一件事" },
+            { id: 11, title: "我最喜歡的課外活動" },
+            { id: 12, title: "我最喜愛的節日" }
+        ];
+
+        const STORAGE_KEY_HIGHLIGHTS = 'essay_highlights_v2';
+        const STORAGE_KEY_NOTES = 'essay_custom_notes_v1';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMenu();
+            processTextAndLoadHighlights(); 
+            loadCustomNotes(); // 載入自訂筆記
+            
+            // 默認打開第一題
+            switchTopic(topics[0].id, topics[0].title, false);
+        });
+
+        // --- 選單控制 ---
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('overlay').classList.add('active');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function renderMenu() {
+            const menuList = document.getElementById('menuList');
+            menuList.innerHTML = ''; 
+
+            // 1. 加入「筆記本」特殊選項
+            const notebookLi = document.createElement('li');
+            notebookLi.className = 'menu-item special-item';
+            notebookLi.innerHTML = '🌟 我的重點筆記本';
+            notebookLi.onclick = () => {
+                openNotebook();
+                closeSidebar();
+            };
+            menuList.appendChild(notebookLi);
+
+            // 2. 加入普通文章選項
+            topics.forEach((topic, index) => {
+                const li = document.createElement('li');
+                li.className = 'menu-item';
+                li.setAttribute('data-id', topic.id);
+                li.innerHTML = `${index + 1}. ${topic.title}`;
+                li.onclick = () => {
+                    switchTopic(topic.id, topic.title, true);
+                };
+                menuList.appendChild(li);
+            });
+        }
+
+        function switchTopic(id, title, autoClose = true) {
+            // 隱藏所有區域
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+
+            // 顯示目標文章
+            const targetSection = document.getElementById(`topic-${id}`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                document.querySelector('.main-content').scrollTop = 0;
+            }
+            
+            // 更新選單狀態
+            const menuItem = document.querySelector(`.menu-item[data-id="${id}"]`);
+            if (menuItem) {
+                menuItem.classList.add('active');
+            }
+
+            document.getElementById('currentTitle').textContent = title;
+
+            if (autoClose) closeSidebar();
+        }
+
+        // --- 筆記本功能 (新) ---
+
+        function openNotebook() {
+            // 隱藏其他區域
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+
+            // 顯示筆記本區域
+            document.getElementById('notebook-view').classList.add('active');
+            document.querySelector('.menu-item.special-item').classList.add('active');
+            document.getElementById('currentTitle').textContent = "我的重點筆記本";
+            document.querySelector('.main-content').scrollTop = 0;
+
+            // 重新渲染文章重點列表 (確保數據最新)
+            renderArticleHighlightsInNotebook();
+        }
+
+        // 渲染來自文章的重點
+        function renderArticleHighlightsInNotebook() {
+            const listEl = document.getElementById('articleHighlightsList');
+            listEl.innerHTML = '';
+
+            // 獲取所有標記了的句子
+            const highlights = document.querySelectorAll('.phrase.highlight');
+
+            if (highlights.length === 0) {
+                listEl.innerHTML = '<li class="empty-msg">還沒有標記任何重點，快去文章中點擊你喜歡的句子吧！</li>';
+                return;
+            }
+
+            // 為了分組，我們先按文章ID整理數據
+            // 結構: { "topic-1": [text1, text2], "topic-2": ... }
+            const groupedData = {};
+
+            highlights.forEach(el => {
+                // 找到該句子所屬的文章標題
+                const section = el.closest('.content-section');
+                if (section) {
+                    const title = section.querySelector('h1').innerText;
+                    if (!groupedData[title]) {
+                        groupedData[title] = [];
+                    }
+                    groupedData[title].push(el.innerText);
+                }
+            });
+
+            // 生成 HTML
+            for (const [title, texts] of Object.entries(groupedData)) {
+                texts.forEach(text => {
+                    const li = document.createElement('li');
+                    li.className = 'notebook-item source-article';
+                    li.innerHTML = `
+                        <div class="notebook-content">
+                            ${text}
+                            <span class="notebook-source">來自：${title}</span>
+                        </div>
+                    `;
+                    listEl.appendChild(li);
+                });
+            }
+        }
+
+        // --- 自訂筆記功能 (新) ---
+        
+        function addCustomNote() {
+            const input = document.getElementById('customNoteInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const notes = JSON.parse(localStorage.getItem(STORAGE_KEY_NOTES)) || [];
+            notes.push({
+                id: Date.now(), // 用時間戳做唯一ID
+                text: text
+            });
+
+            localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notes));
+            input.value = ''; // 清空輸入框
+            loadCustomNotes(); // 重新渲染
+        }
+
+        function deleteCustomNote(id) {
+            if(!confirm("確定要刪除這條筆記嗎？")) return;
+            
+            let notes = JSON.parse(localStorage.getItem(STORAGE_KEY_NOTES)) || [];
+            notes = notes.filter(note => note.id !== id);
+            
+            localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notes));
+            loadCustomNotes();
+        }
+
+        function loadCustomNotes() {
+            const listEl = document.getElementById('customNoteList');
+            listEl.innerHTML = '';
+            
+            const notes = JSON.parse(localStorage.getItem(STORAGE_KEY_NOTES)) || [];
+
+            if (notes.length === 0) {
+                listEl.innerHTML = '<li class="empty-msg">你還沒有加入自訂筆記。</li>';
+                return;
+            }
+
+            // 倒序排列，最新的在最上面
+            notes.reverse().forEach(note => {
+                const li = document.createElement('li');
+                li.className = 'notebook-item source-custom';
+                li.innerHTML = `
+                    <div class="notebook-content">
+                        ${note.text}
+                        <span class="notebook-source">自行加入</span>
+                    </div>
+                    <button class="delete-note-btn" onclick="deleteCustomNote(${note.id})">×</button>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+
+
+        // --- 原有文本處理與標記功能 ---
+
+        function processTextAndLoadHighlights() {
+            const sections = document.querySelectorAll('.content-section');
+            
+            sections.forEach(section => {
+                if(section.id === 'notebook-view') return; // 跳過筆記本區域
+
+                const topicId = section.id; 
+                const paragraphs = section.querySelectorAll('.article-text p');
+                
+                paragraphs.forEach((p, pIndex) => {
+                    const originalText = p.innerText;
+                    const regex = /([^，。！？、；：…\n]+[，。！？、；：…\n]*)/g;
+                    
+                    const newHtml = originalText.replace(regex, (match) => {
+                        return `<span class="phrase">${match}</span>`;
+                    });
+
+                    p.innerHTML = newHtml;
+
+                    const spans = p.querySelectorAll('.phrase');
+                    spans.forEach((span, sIndex) => {
+                        const uniqueKey = `${topicId}-p${pIndex}-s${sIndex}`;
+                        span.setAttribute('data-key', uniqueKey);
+                    });
+                });
+            });
+
+            loadHighlightsFromStorage();
+            document.querySelector('.main-content').addEventListener('click', handlePhraseClick);
+        }
+
+        function loadHighlightsFromStorage() {
+            try {
+                const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY_HIGHLIGHTS)) || {};
+                for (const key in savedData) {
+                    if (savedData[key] === true) {
+                        const el = document.querySelector(`.phrase[data-key="${key}"]`);
+                        if (el) {
+                            el.classList.add('highlight');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("讀取存檔失敗", e);
+            }
+        }
+
+        function handlePhraseClick(e) {
+            const el = e.target.closest('.phrase');
+            
+            if (el) {
+                const key = el.getAttribute('data-key');
+                if (!key) return;
+
+                el.classList.toggle('highlight');
+                
+                const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY_HIGHLIGHTS)) || {};
+                
+                if (el.classList.contains('highlight')) {
+                    savedData[key] = true;
+                } else {
+                    delete savedData[key];
+                }
+                
+                localStorage.setItem(STORAGE_KEY_HIGHLIGHTS, JSON.stringify(savedData));
+            }
+        }
+
+        function clearCurrentHighlights() {
+            if(!confirm("確定要清除本頁的所有標記嗎？")) return;
+
+            const activeSection = document.querySelector('.content-section.active');
+            if (activeSection) {
+                const highlights = activeSection.querySelectorAll('.phrase.highlight');
+                const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY_HIGHLIGHTS)) || {};
+                
+                highlights.forEach(el => {
+                    el.classList.remove('highlight');
+                    const key = el.getAttribute('data-key');
+                    delete savedData[key]; 
+                });
+
+                localStorage.setItem(STORAGE_KEY_HIGHLIGHTS, JSON.stringify(savedData));
+            }
+        }
+    </script>
+</body>
+</html>
