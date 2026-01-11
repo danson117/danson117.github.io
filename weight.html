@@ -18,17 +18,18 @@ const BIRTH_DATES = {
 };
 
 // --- 香港男童生長標準參考數據 (簡化版中位數 50th Percentile) ---
-// 數據來源參考：香港衛生署學生健康服務
 const HK_BOYS_STD = {
   weight: [
     { age: 4, val: 16.3 }, { age: 5, val: 18.4 }, { age: 6, val: 20.9 },
     { age: 7, val: 23.9 }, { age: 8, val: 27.2 }, { age: 9, val: 30.9 },
-    { age: 10, val: 35.0 }, { age: 11, val: 39.6 }, { age: 12, val: 44.8 }
+    { age: 10, val: 35.0 }, { age: 11, val: 39.6 }, { age: 12, val: 44.8 },
+    { age: 13, val: 50.0 }, { age: 14, val: 56.0 }
   ],
   height: [
     { age: 4, val: 103 }, { age: 5, val: 109 }, { age: 6, val: 115 },
     { age: 7, val: 121 }, { age: 8, val: 127 }, { age: 9, val: 132 },
-    { age: 10, val: 137 }, { age: 11, val: 143 }, { age: 12, val: 149 }
+    { age: 10, val: 137 }, { age: 11, val: 143 }, { age: 12, val: 149 },
+    { age: 13, val: 156 }, { age: 14, val: 163 }
   ]
 };
 
@@ -40,14 +41,14 @@ const formatDate = (dateStr) => {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 };
 
-// 計算某個日期時的年齡 (歲)
+// 計算年齡
 const calculateAge = (birthDate, targetDateStr) => {
   const target = new Date(targetDateStr);
   const diffTime = Math.abs(target - birthDate);
   return diffTime / (1000 * 60 * 60 * 24 * 365.25); 
 };
 
-// 取得標準數值 (線性插值)
+// 取得標準數值
 const getStandardValue = (type, age) => {
   const data = HK_BOYS_STD[type];
   if (age < data[0].age) return data[0].val;
@@ -62,7 +63,7 @@ const getStandardValue = (type, age) => {
   return null;
 };
 
-// --- 自訂數字鍵盤組件 ---
+// --- 數字鍵盤組件 ---
 const CustomKeypad = ({ isOpen, onClose, onConfirm, title, initialValue, suffix }) => {
   const [value, setValue] = useState('');
 
@@ -112,41 +113,19 @@ const CustomKeypad = ({ isOpen, onClose, onConfirm, title, initialValue, suffix 
                 <span className="text-xl text-gray-400 ml-1">{suffix}</span>
               </div>
             </div>
-
             <div className="grid grid-cols-4 gap-px bg-gray-200 pb-safe">
               {['7', '8', '9', 'del'].map((key) => (
-                <button
-                  key={key}
-                  onClick={() => handlePress(key)}
-                  className={`h-16 text-2xl font-medium active:bg-gray-300 flex items-center justify-center
-                    ${key === 'del' ? 'bg-gray-100 text-gray-600' : 'bg-white text-gray-800'}`}
-                >
+                <button key={key} onClick={() => handlePress(key)} className={`h-16 text-2xl font-medium active:bg-gray-300 flex items-center justify-center ${key === 'del' ? 'bg-gray-100 text-gray-600' : 'bg-white text-gray-800'}`}>
                   {key === 'del' ? <Delete size={28} /> : key}
                 </button>
               ))}
               {['4', '5', '6', ''].map((key, idx) => (
-                 <button
-                 key={key || idx}
-                 disabled={!key}
-                 onClick={() => key && handlePress(key)}
-                 className={`h-16 text-2xl font-medium active:bg-gray-300 flex items-center justify-center
-                   ${!key ? 'bg-gray-100' : 'bg-white text-gray-800'}`}
-               >
-                 {key}
-               </button>
+                 <button key={key || idx} disabled={!key} onClick={() => key && handlePress(key)} className={`h-16 text-2xl font-medium active:bg-gray-300 flex items-center justify-center ${!key ? 'bg-gray-100' : 'bg-white text-gray-800'}`}>{key}</button>
               ))}
               <button onClick={() => handlePress('1')} className="h-16 text-2xl font-medium bg-white active:bg-gray-300">1</button>
               <button onClick={() => handlePress('2')} className="h-16 text-2xl font-medium bg-white active:bg-gray-300">2</button>
               <button onClick={() => handlePress('3')} className="h-16 text-2xl font-medium bg-white active:bg-gray-300">3</button>
-              
-              <button
-                onClick={handleConfirm}
-                className="row-span-2 bg-blue-600 text-white text-xl font-bold active:bg-blue-700 flex items-center justify-center"
-                style={{ gridColumn: '4', gridRow: '2 / span 2' }}
-              >
-                確定
-              </button>
-
+              <button onClick={handleConfirm} className="row-span-2 bg-blue-600 text-white text-xl font-bold active:bg-blue-700 flex items-center justify-center" style={{ gridColumn: '4', gridRow: '2 / span 2' }}>確定</button>
               <button onClick={() => handlePress('0')} className="col-span-2 h-16 text-2xl font-medium bg-white active:bg-gray-300" style={{ gridRow: '4' }}>0</button>
               <button onClick={() => handlePress('.')} className="h-16 text-2xl font-medium bg-white active:bg-gray-300" style={{ gridRow: '4' }}>.</button>
             </div>
@@ -164,22 +143,13 @@ const EditModal = ({ isOpen, onClose, record, onSave }) => {
 
   useEffect(() => {
     if (record) {
-      setFormData({
-        date: record.date,
-        weight: record.weight,
-        height: record.height || ''
-      });
+      setFormData({ date: record.date, weight: record.weight, height: record.height || '' });
     }
   }, [record]);
 
   const handleSave = () => {
     if (!formData.weight || !formData.date) return;
-    onSave({
-      ...record,
-      date: formData.date,
-      weight: parseFloat(formData.weight),
-      height: formData.height ? parseFloat(formData.height) : null
-    });
+    onSave({ ...record, date: formData.date, weight: parseFloat(formData.weight), height: formData.height ? parseFloat(formData.height) : null });
     onClose();
   };
 
@@ -187,61 +157,17 @@ const EditModal = ({ isOpen, onClose, record, onSave }) => {
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black z-50"
-          />
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white z-50 rounded-2xl shadow-2xl p-6"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black z-50" />
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white z-50 rounded-2xl shadow-2xl p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-gray-800">修改記錄</h3>
               <button onClick={onClose} className="p-1 bg-gray-100 rounded-full"><X size={20}/></button>
             </div>
-            
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">日期</label>
-                <input 
-                  type="date" 
-                  value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">體重 (kg)</label>
-                <input 
-                  type="number" 
-                  step="0.1"
-                  value={formData.weight}
-                  onChange={(e) => setFormData({...formData, weight: e.target.value})}
-                  className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">高度 (cm)</label>
-                <input 
-                  type="number" 
-                  step="0.1"
-                  value={formData.height}
-                  onChange={(e) => setFormData({...formData, height: e.target.value})}
-                  className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800"
-                />
-              </div>
-              
-              <button 
-                onClick={handleSave}
-                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold mt-2 hover:bg-blue-700 active:scale-95 transition-transform"
-              >
-                保存修改
-              </button>
+              <div><label className="block text-sm font-medium text-gray-500 mb-1">日期</label><input type="date" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800"/></div>
+              <div><label className="block text-sm font-medium text-gray-500 mb-1">體重 (kg)</label><input type="number" step="0.1" value={formData.weight} onChange={(e) => setFormData({...formData, weight: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800"/></div>
+              <div><label className="block text-sm font-medium text-gray-500 mb-1">高度 (cm)</label><input type="number" step="0.1" value={formData.height} onChange={(e) => setFormData({...formData, height: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800"/></div>
+              <button onClick={handleSave} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold mt-2 hover:bg-blue-700">保存修改</button>
             </div>
           </motion.div>
         </>
@@ -256,38 +182,12 @@ const ActionMenu = ({ isOpen, onClose, onEdit, onDelete }) => {
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black z-40"
-          />
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 50 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 50 }}
-            className="fixed bottom-8 left-4 right-4 bg-white z-50 rounded-2xl shadow-xl overflow-hidden p-4 flex flex-col gap-3"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black z-40" />
+          <motion.div initial={{ scale: 0.9, opacity: 0, y: 50 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 50 }} className="fixed bottom-8 left-4 right-4 bg-white z-50 rounded-2xl shadow-xl overflow-hidden p-4 flex flex-col gap-3">
             <div className="text-center text-gray-500 font-medium pb-2 border-b">選擇操作</div>
-            <button
-              onClick={onEdit}
-              className="w-full py-3 bg-blue-50 text-blue-600 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
-            >
-              <Edit2 size={20} /> 修改記錄 (含日期)
-            </button>
-            <button
-              onClick={onDelete}
-              className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
-            >
-              <Trash2 size={20} /> 刪除記錄
-            </button>
-            <button
-              onClick={onClose}
-              className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold mt-2 active:scale-95 transition-transform"
-            >
-              取消
-            </button>
+            <button onClick={onEdit} className="w-full py-3 bg-blue-50 text-blue-600 rounded-xl font-bold flex items-center justify-center gap-2"><Edit2 size={20} /> 修改記錄</button>
+            <button onClick={onDelete} className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold flex items-center justify-center gap-2"><Trash2 size={20} /> 刪除記錄</button>
+            <button onClick={onClose} className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold mt-2">取消</button>
           </motion.div>
         </>
       )}
@@ -298,34 +198,20 @@ const ActionMenu = ({ isOpen, onClose, onEdit, onDelete }) => {
 export default function WeightTracker() {
   const [records, setRecords] = useState(INITIAL_DATA);
   const [chartRange, setChartRange] = useState('30');
-  const [chartMetric, setChartMetric] = useState('weight'); // 'weight' | 'height'
-  const [showReference, setShowReference] = useState(false); // 是否顯示標準線
+  const [chartMetric, setChartMetric] = useState('weight'); 
+  const [showReference, setShowReference] = useState(false);
   
-  // 鍵盤狀態
   const [keypadConfig, setKeypadConfig] = useState({ isOpen: false, type: '', initialValue: '', callback: null });
-  
-  // 長按菜單狀態
   const [actionMenu, setActionMenu] = useState({ isOpen: false, recordId: null });
-  
-  // 編輯 Modal 狀態
   const [editModal, setEditModal] = useState({ isOpen: false, record: null });
-
-  // 新增記錄的臨時狀態
   const [inputState, setInputState] = useState({
     brother: { date: getTodayStr(), weight: '', height: '' },
     younger: { date: getTodayStr(), weight: '', height: '' }
   });
 
-  // --- 邏輯處理 ---
-
   const handleAddRecord = (person) => {
     const data = inputState[person];
-    
-    if (!data.weight) {
-      alert('請輸入體重！');
-      return;
-    }
-
+    if (!data.weight) { alert('請輸入體重！'); return; }
     const newItem = {
       id: Date.now().toString(),
       date: data.date,
@@ -334,13 +220,8 @@ export default function WeightTracker() {
       height: data.height ? parseFloat(data.height) : null,
       stickers: 1,
     };
-
     setRecords((prev) => [...prev, newItem].sort((a, b) => new Date(b.date) - new Date(a.date)));
-    
-    setInputState(prev => ({
-      ...prev,
-      [person]: { date: getTodayStr(), weight: '', height: '' }
-    }));
+    setInputState(prev => ({ ...prev, [person]: { date: getTodayStr(), weight: '', height: '' } }));
   };
 
   const handleDelete = () => {
@@ -352,9 +233,7 @@ export default function WeightTracker() {
 
   const handleEditStart = () => {
     const record = records.find(r => r.id === actionMenu.recordId);
-    if (record) {
-      setEditModal({ isOpen: true, record });
-    }
+    if (record) setEditModal({ isOpen: true, record });
     setActionMenu({ isOpen: false, recordId: null });
   };
 
@@ -363,10 +242,7 @@ export default function WeightTracker() {
   };
 
   const exportData = () => {
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + "ID,日期,人物,體重(kg),高度(cm),貼紙\n"
-      + records.map(e => `${e.id},${e.date},${e.person === 'brother' ? '哥哥' : '細佬'},${e.weight},${e.height || ''},${e.stickers}`).join("\n");
-    
+    const csvContent = "data:text/csv;charset=utf-8," + "ID,日期,人物,體重(kg),高度(cm),貼紙\n" + records.map(e => `${e.id},${e.date},${e.person === 'brother' ? '哥哥' : '細佬'},${e.weight},${e.height || ''},${e.stickers}`).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -376,7 +252,6 @@ export default function WeightTracker() {
     document.body.removeChild(link);
   };
 
-  // --- 圖表數據 ---
   const chartData = useMemo(() => {
     const allDates = [...new Set(records.map(r => r.date))].sort();
     let filteredDates = allDates;
@@ -397,299 +272,170 @@ export default function WeightTracker() {
         younger: youngerRec ? youngerRec[chartMetric] : null,
       };
 
-      // 計算參考線 (如果開啟)
       if (showReference) {
         const broAge = calculateAge(BIRTH_DATES.brother, date);
         const youngerAge = calculateAge(BIRTH_DATES.younger, date);
         point.refBrother = parseFloat(getStandardValue(chartMetric, broAge).toFixed(1));
         point.refYounger = parseFloat(getStandardValue(chartMetric, youngerAge).toFixed(1));
       }
-
       return point;
     });
   }, [records, chartRange, chartMetric, showReference]);
 
-  // --- 長按 Hook ---
   const useLongPress = (callback, ms = 800) => {
     const timerRef = useRef(null);
     const start = () => { timerRef.current = setTimeout(callback, ms); };
     const stop = () => { if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; } };
-    return {
-      onMouseDown: start, onMouseUp: stop, onMouseLeave: stop,
-      onTouchStart: start, onTouchEnd: stop,
-    };
+    return { onMouseDown: start, onMouseUp: stop, onMouseLeave: stop, onTouchStart: start, onTouchEnd: stop };
   };
 
-  // --- 列表渲染組件 ---
   const RecordItem = ({ item }) => {
-    const longPressProps = useLongPress(() => {
-      setActionMenu({ isOpen: true, recordId: item.id });
-    });
-
+    const longPressProps = useLongPress(() => setActionMenu({ isOpen: true, recordId: item.id }));
     return (
-      <motion.div
-        layout
-        {...longPressProps}
-        className={`relative p-4 rounded-xl mb-3 shadow-sm border-l-4 select-none touch-callout-none active:scale-[0.98] transition-all
-          ${item.person === 'brother' 
-            ? 'bg-blue-50 border-blue-500 text-blue-900' 
-            : 'bg-green-50 border-green-500 text-green-900'}`}
-      >
+      <motion.div layout {...longPressProps} className={`relative p-3 rounded-xl mb-2 shadow-sm border-l-4 select-none touch-callout-none active:scale-[0.98] transition-all ${item.person === 'brother' ? 'bg-blue-50 border-blue-500 text-blue-900' : 'bg-green-50 border-green-500 text-green-900'}`}>
         <div className="flex justify-between items-center">
           <div>
-            <div className="text-xs opacity-60 font-bold mb-1">{item.date}</div>
-            <div className="flex items-baseline gap-3">
-              <span className="text-2xl font-bold">{item.weight} <span className="text-sm font-normal">kg</span></span>
-              {item.height && (
-                <span className="text-sm bg-white/50 px-2 py-0.5 rounded text-gray-600 flex items-center gap-1">
-                  <Ruler size={12} /> {item.height} cm
-                </span>
-              )}
+            <div className="text-xs opacity-60 font-bold mb-0.5">{item.date}</div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xl font-bold">{item.weight}<span className="text-xs font-normal">kg</span></span>
+              {item.height && <span className="text-xs bg-white/50 px-1.5 py-0.5 rounded text-gray-600 flex items-center gap-0.5"><Ruler size={10} /> {item.height}</span>}
             </div>
           </div>
-          <div className="flex flex-col items-center">
-            <div className="flex">
-              {[...Array(item.stickers)].map((_, i) => (
-                <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-2xl drop-shadow-md">⭐</motion.div>
-              ))}
-            </div>
-          </div>
+          <div className="flex"><motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xl">⭐</motion.div></div>
         </div>
       </motion.div>
     );
   };
 
-  // --- 鍵盤開啟器 ---
   const openKeypad = (person, type, title) => {
     const currentVal = type === 'weight' ? inputState[person].weight : inputState[person].height;
     setKeypadConfig({
-      isOpen: true,
-      type: type,
-      title: title,
-      initialValue: currentVal,
-      suffix: type === 'weight' ? 'kg' : 'cm',
-      callback: (val) => setInputState(prev => ({
-        ...prev,
-        [person]: { ...prev[person], [type]: val }
-      }))
+      isOpen: true, type, title, initialValue: currentVal, suffix: type === 'weight' ? 'kg' : 'cm',
+      callback: (val) => setInputState(prev => ({ ...prev, [person]: { ...prev[person], [type]: val } }))
     });
   };
 
-  // --- 輸入卡片組件 ---
-  const InputCard = ({ person, color, title, icon: Icon }) => {
+  const InputCard = ({ person, title, icon: Icon }) => {
     const isBrother = person === 'brother';
     const state = inputState[person];
     const theme = isBrother 
-      ? { main: 'blue', bg: 'bg-blue-600', text: 'text-blue-600', border: 'border-blue-500', lightBg: 'bg-blue-50' }
-      : { main: 'green', bg: 'bg-green-600', text: 'text-green-600', border: 'border-green-500', lightBg: 'bg-green-50' };
+      ? { bg: 'bg-blue-600', text: 'text-blue-600', border: 'border-blue-500', lightBg: 'bg-blue-50' }
+      : { bg: 'bg-green-600', text: 'text-green-600', border: 'border-green-500', lightBg: 'bg-green-50' };
 
     return (
-      <section className="flex flex-col gap-4 h-full">
-        <div className={`${theme.bg} text-white p-4 rounded-t-2xl shadow-lg flex justify-between items-center`}>
+      <section className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className={`${theme.bg} text-white p-4 flex justify-between items-center`}>
           <div className="font-bold text-lg flex items-center gap-2">
             <div className="bg-white/20 p-1.5 rounded-full"><Icon size={18}/></div>
             {title}
           </div>
-          <div className={`text-${theme.main}-100 text-sm bg-white/20 px-2 py-1 rounded`}>
+          <div className="text-xs bg-white/20 px-2 py-1 rounded">
             總貼紙: {records.filter(r => r.person === person).reduce((acc, cur) => acc + cur.stickers, 0)}
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-b-2xl shadow-sm border-x border-b border-gray-100 -mt-4 z-10">
-          {/* 日期選擇 */}
-          <div className="mb-4 flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-100">
+        <div className="p-4 space-y-4">
+          <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-100">
             <Calendar size={16} className="text-gray-400" />
-            <input 
-              type="date" 
-              value={state.date}
-              onChange={(e) => setInputState(prev => ({ ...prev, [person]: { ...prev[person], date: e.target.value } }))}
-              className="bg-transparent text-sm font-bold text-gray-600 outline-none w-full"
-            />
+            <input type="date" value={state.date} onChange={(e) => setInputState(prev => ({ ...prev, [person]: { ...prev[person], date: e.target.value } }))} className="bg-transparent text-sm font-bold text-gray-600 outline-none w-full"/>
           </div>
 
-          {/* 垂直排列的輸入框 */}
-          <div className="flex flex-col gap-3 mb-4">
-            {/* 體重 */}
-            <div 
-              onClick={() => openKeypad(person, 'weight', `${title}體重`)}
-              className={`p-3 rounded-xl border-2 cursor-pointer transition-colors flex justify-between items-center h-16 px-4
-                ${state.weight ? `${theme.border} ${theme.lightBg}` : 'border-gray-100 bg-gray-50'}`}
-            >
-              <span className="text-sm text-gray-400">體重 (kg)</span>
-              <span className={`text-2xl font-bold ${state.weight ? theme.text : 'text-gray-300'}`}>
-                {state.weight || '0.0'}
-              </span>
+          <div className="grid grid-cols-2 gap-3">
+            <div onClick={() => openKeypad(person, 'weight', `${title}體重`)} className={`p-2 rounded-xl border-2 cursor-pointer flex flex-col justify-center items-center h-20 ${state.weight ? `${theme.border} ${theme.lightBg}` : 'border-gray-100 bg-gray-50'}`}>
+              <span className="text-xs text-gray-400 mb-1">體重 (kg)</span>
+              <span className={`text-xl font-bold ${state.weight ? theme.text : 'text-gray-300'}`}>{state.weight || '0.0'}</span>
             </div>
-
-            {/* 高度 */}
-            <div 
-              onClick={() => openKeypad(person, 'height', `${title}高度`)}
-              className={`p-3 rounded-xl border-2 cursor-pointer transition-colors flex justify-between items-center h-16 px-4
-                ${state.height ? `${theme.border} ${theme.lightBg}` : 'border-dashed border-gray-200 bg-gray-50'}`}
-            >
-              <span className="text-sm text-gray-400">高度 (cm)</span>
-              <span className={`text-2xl font-bold ${state.height ? theme.text : 'text-gray-300'}`}>
-                {state.height || '-'}
-              </span>
+            <div onClick={() => openKeypad(person, 'height', `${title}高度`)} className={`p-2 rounded-xl border-2 cursor-pointer flex flex-col justify-center items-center h-20 ${state.height ? `${theme.border} ${theme.lightBg}` : 'border-dashed border-gray-200 bg-gray-50'}`}>
+              <span className="text-xs text-gray-400 mb-1">高度 (cm)</span>
+              <span className={`text-xl font-bold ${state.height ? theme.text : 'text-gray-300'}`}>{state.height || '-'}</span>
             </div>
           </div>
           
-          <button
-            onClick={() => handleAddRecord(person)}
-            className={`w-full py-3 ${theme.bg} hover:opacity-90 text-white rounded-xl font-bold shadow-lg active:scale-[0.98] transition-all flex justify-center items-center gap-2`}
-          >
-            <Check size={18} /> 記錄並獎勵
+          <button onClick={() => handleAddRecord(person)} className={`w-full py-2.5 ${theme.bg} hover:opacity-90 text-white rounded-xl font-bold shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2`}>
+            <Check size={18} /> 記錄
           </button>
         </div>
 
-        {/* 列表 */}
-        <div className="space-y-1 flex-1">
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-2">最近記錄 (長按編輯)</h3>
-          {records.filter(r => r.person === person).slice(0, 5).map(item => (
-            <RecordItem key={item.id} item={item} />
-          ))}
+        <div className="flex-1 bg-gray-50 p-4 border-t border-gray-100">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">最近記錄</h3>
+          {records.filter(r => r.person === person).slice(0, 5).map(item => <RecordItem key={item.id} item={item} />)}
         </div>
       </section>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 font-sans text-gray-800">
-      <header className="bg-white shadow-sm sticky top-0 z-30 px-6 py-4 flex justify-between items-center">
+    <div className="min-h-screen bg-gray-100 pb-20 font-sans text-gray-800">
+      <header className="bg-white shadow-sm sticky top-0 z-30 px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <div className="bg-yellow-400 p-2 rounded-lg text-white shadow-inner">
-            <Award size={24} />
-          </div>
-          <h1 className="text-xl font-bold text-gray-800 tracking-tight">兄弟成長記錄</h1>
+          <div className="bg-yellow-400 p-1.5 rounded-lg text-white shadow-inner"><Award size={20} /></div>
+          <h1 className="text-lg font-bold text-gray-800">兄弟成長記錄</h1>
         </div>
-        <button onClick={exportData} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 text-gray-600 transition-colors">
-          <Download size={20} />
-        </button>
+        <button onClick={exportData} className="p-2 bg-gray-50 rounded-full hover:bg-gray-100 text-gray-600"><Download size={20} /></button>
       </header>
 
-      {/* 
-         佈局容器：
-         iPad/Desktop (md以上) 使用 grid-cols-2 實現左右並排。
-         max-w-[95%] 確保在 iPad 上有足夠寬度。
-      */}
-      <main className="w-full max-w-[95%] xl:max-w-7xl mx-auto p-4 space-y-8">
+      <main className="w-full max-w-[98%] xl:max-w-7xl mx-auto p-3 space-y-6">
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          <InputCard person="brother" title="哥哥" icon={Weight} />
-          <InputCard person="younger" title="細佬" icon={Weight} />
+        {/* 
+            修正重點：
+            使用 flex-col (手機) -> md:flex-row (iPad/Desktop)
+            並強制子元素寬度為 md:w-1/2，確保左右對分
+        */}
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          <div className="w-full md:w-1/2">
+            <InputCard person="brother" title="哥哥" icon={Weight} />
+          </div>
+          <div className="w-full md:w-1/2">
+            <InputCard person="younger" title="細佬" icon={Weight} />
+          </div>
         </div>
 
-        {/* --- 圖表區域 --- */}
-        <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <div className="flex items-center gap-4">
-              <h2 className="font-bold text-gray-700 flex items-center gap-2 text-lg">
-                <TrendingUp className="text-purple-500" />
-                成長趨勢
-              </h2>
-              
-              {/* 體重/高度切換 Tab */}
+        <section className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+            <div className="flex items-center gap-3">
+              <h2 className="font-bold text-gray-700 flex items-center gap-2"><TrendingUp className="text-purple-500" size={20}/> 趨勢圖</h2>
               <div className="flex bg-gray-100 p-1 rounded-lg">
-                <button
-                  onClick={() => setChartMetric('weight')}
-                  className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${chartMetric === 'weight' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}
-                >
-                  體重
-                </button>
-                <button
-                  onClick={() => setChartMetric('height')}
-                  className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${chartMetric === 'height' ? 'bg-white shadow text-green-600' : 'text-gray-500'}`}
-                >
-                  高度
-                </button>
+                <button onClick={() => setChartMetric('weight')} className={`px-3 py-1 rounded text-xs font-bold transition-all ${chartMetric === 'weight' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}>體重</button>
+                <button onClick={() => setChartMetric('height')} className={`px-3 py-1 rounded text-xs font-bold transition-all ${chartMetric === 'height' ? 'bg-white shadow text-green-600' : 'text-gray-500'}`}>高度</button>
               </div>
             </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-               {/* 參考線開關 */}
-               <button
-                  onClick={() => setShowReference(!showReference)}
-                  className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1 transition-colors
-                    ${showReference ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-white border-gray-200 text-gray-400'}`}
-                >
-                  <Activity size={14} />
-                  {showReference ? '隱藏標準線' : '顯示香港標準'}
+            <div className="flex flex-wrap items-center gap-2">
+               <button onClick={() => setShowReference(!showReference)} className={`px-2 py-1 rounded border text-xs font-bold flex items-center gap-1 transition-colors ${showReference ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-white border-gray-200 text-gray-400'}`}>
+                  <Activity size={12} /> {showReference ? '隱藏標準' : '顯示標準'}
                 </button>
-
-              {/* 時間範圍 */}
               <div className="flex bg-gray-100 rounded-lg p-1 text-xs font-medium">
-                {['7', '30', '90', 'all'].map(r => (
-                  <button
-                    key={r}
-                    onClick={() => setChartRange(r)}
-                    className={`px-3 py-1 rounded-md transition-all ${chartRange === r ? 'bg-white shadow text-purple-600' : 'text-gray-500'}`}
-                  >
-                    {r === 'all' ? '全部' : `${r}天`}
-                  </button>
+                {['30', '90', 'all'].map(r => (
+                  <button key={r} onClick={() => setChartRange(r)} className={`px-2 py-1 rounded transition-all ${chartRange === r ? 'bg-white shadow text-purple-600' : 'text-gray-500'}`}>{r === 'all' ? '全部' : `${r}天`}</button>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="h-80 w-full">
+          <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis dataKey="date" tick={{fontSize: 12}} tickLine={false} axisLine={false} dy={10} />
-                <YAxis domain={['auto', 'auto']} tick={{fontSize: 12}} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                  itemStyle={{ fontSize: '13px', fontWeight: 'bold' }}
-                />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }}/>
-                
-                {/* 實際數據線 */}
-                <Line type="monotone" dataKey="brother" name={`哥哥${chartMetric === 'weight' ? '體重' : '高度'}`} stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }} activeDot={{ r: 6 }} connectNulls />
-                <Line type="monotone" dataKey="younger" name={`細佬${chartMetric === 'weight' ? '體重' : '高度'}`} stroke="#22c55e" strokeWidth={3} dot={{ r: 4, fill: '#22c55e', strokeWidth: 0 }} activeDot={{ r: 6 }} connectNulls />
-                
-                {/* 參考標準線 (虛線) */}
+                <XAxis dataKey="date" tick={{fontSize: 11}} tickLine={false} axisLine={false} dy={10} />
+                <YAxis domain={['auto', 'auto']} tick={{fontSize: 11}} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} itemStyle={{ fontSize: '12px', fontWeight: 'bold' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}/>
+                <Line type="monotone" dataKey="brother" name={`哥哥${chartMetric === 'weight' ? '體重' : '高度'}`} stroke="#3b82f6" strokeWidth={3} dot={{ r: 3, fill: '#3b82f6', strokeWidth: 0 }} activeDot={{ r: 5 }} connectNulls />
+                <Line type="monotone" dataKey="younger" name={`細佬${chartMetric === 'weight' ? '體重' : '高度'}`} stroke="#22c55e" strokeWidth={3} dot={{ r: 3, fill: '#22c55e', strokeWidth: 0 }} activeDot={{ r: 5 }} connectNulls />
                 {showReference && (
                   <>
-                    <Line type="monotone" dataKey="refBrother" name="哥哥標準(HK)" stroke="#93c5fd" strokeWidth={2} strokeDasharray="5 5" dot={false} connectNulls />
-                    <Line type="monotone" dataKey="refYounger" name="細佬標準(HK)" stroke="#86efac" strokeWidth={2} strokeDasharray="5 5" dot={false} connectNulls />
+                    <Line type="monotone" dataKey="refBrother" name="哥哥標準(HK)" stroke="#93c5fd" strokeWidth={2} strokeDasharray="4 4" dot={false} connectNulls />
+                    <Line type="monotone" dataKey="refYounger" name="細佬標準(HK)" stroke="#86efac" strokeWidth={2} strokeDasharray="4 4" dot={false} connectNulls />
                   </>
                 )}
               </LineChart>
             </ResponsiveContainer>
           </div>
-          {showReference && (
-            <div className="text-center mt-2 text-xs text-gray-400">
-              * 參考指標採用香港衛生署男童生長圖表 (中位數)
-            </div>
-          )}
         </section>
-
       </main>
 
-      {/* --- 全局組件 --- */}
-      <CustomKeypad 
-        isOpen={keypadConfig.isOpen}
-        onClose={() => setKeypadConfig(prev => ({ ...prev, isOpen: false }))}
-        onConfirm={keypadConfig.callback}
-        title={keypadConfig.title}
-        initialValue={keypadConfig.initialValue}
-        suffix={keypadConfig.suffix}
-      />
-
-      <ActionMenu 
-        isOpen={actionMenu.isOpen}
-        onClose={() => setActionMenu({ isOpen: false, recordId: null })}
-        onDelete={handleDelete}
-        onEdit={handleEditStart}
-      />
-
-      <EditModal 
-        isOpen={editModal.isOpen}
-        record={editModal.record}
-        onClose={() => setEditModal({ isOpen: false, record: null })}
-        onSave={handleEditSave}
-      />
-
+      <CustomKeypad isOpen={keypadConfig.isOpen} onClose={() => setKeypadConfig(prev => ({ ...prev, isOpen: false }))} onConfirm={keypadConfig.callback} title={keypadConfig.title} initialValue={keypadConfig.initialValue} suffix={keypadConfig.suffix} />
+      <ActionMenu isOpen={actionMenu.isOpen} onClose={() => setActionMenu({ isOpen: false, recordId: null })} onDelete={handleDelete} onEdit={handleEditStart} />
+      <EditModal isOpen={editModal.isOpen} record={editModal.record} onClose={() => setEditModal({ isOpen: false, record: null })} onSave={handleEditSave} />
     </div>
   );
 }
