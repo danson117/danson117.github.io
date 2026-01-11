@@ -3,26 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>兄弟成長記錄 v1.0.1</title>
+    <title>信唯 & 啟淳 成長記錄</title>
     
-    <!-- React 核心 -->
+    <!-- 1. 核心庫 -->
     <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- 樣式與動畫 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
     
-    <!-- 圖表庫 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.0/Recharts.js"></script>
+    <!-- 2. 圖表庫依賴 -->
+    <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+    <!-- 3. 圖表庫 -->
+    <script src="https://unpkg.com/recharts@2.12.0/umd/Recharts.min.js"></script>
+    
+    <!-- 4. 動畫庫 -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
 
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
         .no-select { -webkit-user-select: none; user-select: none; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
@@ -32,34 +34,62 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const { motion, AnimatePresence } = window.Motion;
         
+        // --- 安全獲取 Recharts 組件 ---
         const RechartsLib = window.Recharts || {};
         const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } = RechartsLib;
 
-        // --- 常量定義 ---
-        const VERSION = "v1.0.1";
-        const KG_TO_LBS = 2.20462;
-        const NAMES = { brother: '信唯', younger: '啟淳' };
-        const COLORS = { 
-            brother: { primary: 'blue', bg: 'bg-blue-600', text: 'text-blue-600', border: 'border-blue-500', light: 'bg-blue-50', stroke: '#2563eb' },
-            younger: { primary: 'green', bg: 'bg-green-600', text: 'text-green-600', border: 'border-green-500', light: 'bg-green-50', stroke: '#16a34a' }
+        // --- 版本控制 ---
+        const APP_VERSION = "1.3";
+        const VERSION_NOTES = "修復：沙盒環境下 LocalStorage 權限錯誤 (自動切換至暫存模式)";
+
+        // --- 常量與預設數據 ---
+        const KG_TO_LBS = 2.20462262;
+        const STORAGE_KEY = 'growth_records_v1';
+        
+        const PRELOAD_DATA = [
+            // 信唯 (Brother)
+            { id: 'sw_1', date: '2026-01-09', person: 'shunwai', weight: 22.85, height: null },
+            { id: 'sw_2', date: '2026-01-10', person: 'shunwai', weight: 22.95, height: null },
+            { id: 'sw_3', date: '2026-01-11', person: 'shunwai', weight: 23.10, height: null },
+            // 啟淳 (Younger)
+            { id: 'ks_1', date: '2026-01-09', person: 'kaishun', weight: 20.45, height: null },
+            { id: 'ks_2', date: '2026-01-10', person: 'kaishun', weight: 20.35, height: null },
+            { id: 'ks_3', date: '2026-01-11', person: 'kaishun', weight: 20.70, height: null },
+        ];
+
+        // --- 安全儲存函數 (修復 SecurityError) ---
+        const safeLocalStorage = {
+            getItem: (key) => {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    console.warn('LocalStorage access denied (read). Using default data.');
+                    return null;
+                }
+            },
+            setItem: (key, value) => {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {
+                    console.warn('LocalStorage access denied (write). Data will not persist.');
+                }
+            }
         };
 
         // --- 圖標組件 ---
         const Icons = {
-            Trash2: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
-            Edit2: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
-            Download: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
-            Ruler: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0l12.6 12.6z"/><line x1="14.5" x2="17.5" y1="2.5" y2="5.5"/><line x1="12" x2="15" y1="5" y2="8"/><line x1="9.5" x2="12.5" y1="7.5" y2="10.5"/><line x1="7" x2="10" y1="10" y2="13"/><line x1="4.5" x2="7.5" y1="12.5" y2="15.5"/></svg>,
-            Weight: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.457L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.9-2.5l-2.495-9.043A2 2 0 0 0 17.5 8h-11z"/></svg>,
-            Award: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>,
-            Calendar: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
-            Delete: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/><line x1="18" x2="12" y1="9" y2="15"/><line x1="12" x2="18" y1="9" y2="15"/></svg>,
-            Check: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>,
-            X: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>,
-            TrendingUp: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
-            Star: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-            ChevronDown: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>,
-            ChevronUp: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15"/></svg>
+            Trash2: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
+            Edit2: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+            Weight: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.457L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.9-2.5l-2.495-9.043A2 2 0 0 0 17.5 8h-11z"/></svg>,
+            Award: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>,
+            Calendar: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
+            Delete: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/><line x1="18" x2="12" y1="9" y2="15"/><line x1="12" x2="18" y1="9" y2="15"/></svg>,
+            Check: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+            X: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>,
+            TrendingUp: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+            List: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>,
+            Star: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>,
+            Alert: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
         };
 
         // --- 輔助函數 ---
@@ -69,17 +99,47 @@
             const d = new Date(dateStr);
             return `${d.getMonth() + 1}/${d.getDate()}`;
         };
+        const kgToLbs = (kg) => kg * KG_TO_LBS;
+
+        // --- 核心邏輯：計算貼紙與最高紀錄 ---
+        const recalculateRecords = (rawRecords) => {
+            const sorted = [...rawRecords].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const personStats = { shunwai: { maxLbs: 0 }, kaishun: { maxLbs: 0 } };
+
+            return sorted.map(record => {
+                const lbs = kgToLbs(record.weight);
+                const currentMax = personStats[record.person].maxLbs;
+                let stickers = 0;
+                let isNewRecord = false;
+
+                if (lbs > currentMax) {
+                    if (currentMax > 0) {
+                        const diff = lbs - currentMax;
+                        stickers = Math.floor(diff / 0.1);
+                        if (stickers < 0) stickers = 0;
+                    } else {
+                        stickers = 0;
+                    }
+                    personStats[record.person].maxLbs = lbs;
+                    isNewRecord = true;
+                }
+                return { ...record, stickers, isNewRecord, lbs: parseFloat(lbs.toFixed(2)) };
+            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+        };
 
         // --- 數字鍵盤組件 ---
         const CustomKeypad = ({ isOpen, onClose, onConfirm, title, initialValue, suffix }) => {
             const [value, setValue] = useState('');
-            useEffect(() => { if (isOpen) setValue(initialValue ? String(initialValue) : ''); }, [isOpen, initialValue]);
+
+            useEffect(() => {
+                if (isOpen) setValue(initialValue ? String(initialValue) : '');
+            }, [isOpen, initialValue]);
+
             const handlePress = (key) => {
                 if (key === 'del') setValue(prev => prev.slice(0, -1));
                 else if (key === '.') { if (!value.includes('.')) setValue(prev => prev + '.'); }
                 else { if (value.length < 6) setValue(prev => prev + key); }
             };
-            const handleConfirm = () => { onConfirm(value); onClose(); };
 
             return (
                 <AnimatePresence>
@@ -87,24 +147,21 @@
                         <>
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black z-40" />
                             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="fixed bottom-0 left-0 right-0 bg-white z-50 rounded-t-2xl shadow-2xl overflow-hidden pb-safe">
-                                <div className="bg-gray-100 p-3 flex flex-col items-center border-b border-gray-200">
-                                    <span className="text-gray-500 text-xs mb-1">{title}</span>
-                                    <div className="text-3xl font-bold text-gray-800 flex items-baseline">{value || '0'}<span className="text-lg text-gray-400 ml-1">{suffix}</span></div>
+                                <div className="bg-gray-100 p-4 flex flex-col items-center justify-center border-b border-gray-200">
+                                    <span className="text-gray-500 text-sm mb-1">{title}</span>
+                                    <div className="text-4xl font-bold text-gray-800 flex items-baseline">
+                                        {value || '0'}
+                                        <span className="text-xl text-gray-400 ml-1">{suffix}</span>
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-4 grid-rows-4 gap-px bg-gray-200 h-64 no-select">
-                                    <button onClick={() => handlePress('7')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">7</button>
-                                    <button onClick={() => handlePress('8')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">8</button>
-                                    <button onClick={() => handlePress('9')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">9</button>
-                                    <button onClick={() => handlePress('del')} className="bg-gray-100 active:bg-gray-200 text-gray-600 flex items-center justify-center"><Icons.Delete size={24} /></button>
-                                    <button onClick={() => handlePress('4')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">4</button>
-                                    <button onClick={() => handlePress('5')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">5</button>
-                                    <button onClick={() => handlePress('6')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">6</button>
-                                    <button onClick={handleConfirm} className="row-span-2 bg-blue-600 active:bg-blue-700 text-white text-lg font-bold flex items-center justify-center" style={{ gridColumn: '4', gridRow: '2 / span 2' }}>確定</button>
-                                    <button onClick={() => handlePress('1')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">1</button>
-                                    <button onClick={() => handlePress('2')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">2</button>
-                                    <button onClick={() => handlePress('3')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">3</button>
-                                    <button onClick={() => handlePress('0')} className="col-span-2 bg-white active:bg-gray-200 text-xl font-medium text-gray-800">0</button>
-                                    <button onClick={() => handlePress('.')} className="bg-white active:bg-gray-200 text-xl font-medium text-gray-800">.</button>
+                                <div className="grid grid-cols-4 grid-rows-4 gap-px bg-gray-200 h-80 no-select">
+                                    {['7','8','9'].map(k => <button key={k} onClick={() => handlePress(k)} className="bg-white active:bg-gray-200 text-2xl font-medium text-gray-800">{k}</button>)}
+                                    <button onClick={() => handlePress('del')} className="bg-gray-100 active:bg-gray-200 text-gray-600 flex items-center justify-center"><Icons.Delete size={28} /></button>
+                                    {['4','5','6'].map(k => <button key={k} onClick={() => handlePress(k)} className="bg-white active:bg-gray-200 text-2xl font-medium text-gray-800">{k}</button>)}
+                                    <button onClick={() => { onConfirm(value); onClose(); }} className="row-span-2 bg-blue-600 active:bg-blue-700 text-white text-xl font-bold flex items-center justify-center" style={{ gridColumn: '4', gridRow: '2 / span 2' }}>確定</button>
+                                    {['1','2','3'].map(k => <button key={k} onClick={() => handlePress(k)} className="bg-white active:bg-gray-200 text-2xl font-medium text-gray-800">{k}</button>)}
+                                    <button onClick={() => handlePress('0')} className="col-span-2 bg-white active:bg-gray-200 text-2xl font-medium text-gray-800">0</button>
+                                    <button onClick={() => handlePress('.')} className="bg-white active:bg-gray-200 text-2xl font-medium text-gray-800">.</button>
                                     <div className="bg-gray-100"></div>
                                 </div>
                             </motion.div>
@@ -114,307 +171,270 @@
             );
         };
 
-        // --- 主程式 ---
-        function WeightTracker() {
-            // 安全讀取 LocalStorage
-            const [records, setRecords] = useState(() => {
-                try {
-                    const saved = localStorage.getItem('weightRecords_v1');
-                    return saved ? JSON.parse(saved) : [];
-                } catch (e) {
-                    console.warn("LocalStorage access denied. Using temporary storage.");
-                    return [];
-                }
-            });
+        // --- 歷史記錄 Modal ---
+        const HistoryModal = ({ isOpen, onClose, records, onDelete, onEdit }) => {
+            return (
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-white z-50 overflow-y-auto pb-safe">
+                            <div className="sticky top-0 bg-white border-b px-4 py-3 flex justify-between items-center z-10">
+                                <h2 className="text-lg font-bold">全部歷史記錄</h2>
+                                <button onClick={onClose} className="p-2 bg-gray-100 rounded-full"><Icons.X size={20}/></button>
+                            </div>
+                            <div className="p-4 space-y-2">
+                                {records.map(r => (
+                                    <div key={r.id} className={`p-3 rounded-xl border flex justify-between items-center ${r.person === 'shunwai' ? 'bg-blue-50 border-blue-100' : 'bg-green-50 border-green-100'}`}>
+                                        <div>
+                                            <div className="text-xs text-gray-500 font-bold">{r.date} ({r.person === 'shunwai' ? '信唯' : '啟淳'})</div>
+                                            <div className="font-bold text-lg">{r.weight}kg <span className="text-xs text-gray-400">({r.lbs}lbs)</span></div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            {r.stickers > 0 && <span className="text-yellow-500 font-bold text-sm flex items-center gap-1"><Icons.Star size={14} fill="currentColor"/> x{r.stickers}</span>}
+                                            <button onClick={() => onEdit(r)} className="p-2 text-blue-500 bg-white rounded-lg border border-blue-100"><Icons.Edit2 size={16}/></button>
+                                            <button onClick={() => onDelete(r.id)} className="p-2 text-red-500 bg-white rounded-lg border border-red-100"><Icons.Trash2 size={16}/></button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            );
+        };
 
-            // 安全寫入 LocalStorage
+        // --- 主應用 ---
+        function WeightTracker() {
+            // 安全初始化 state
+            const [records, setRecords] = useState(() => {
+                const saved = safeLocalStorage.getItem(STORAGE_KEY);
+                return saved ? JSON.parse(saved) : PRELOAD_DATA;
+            });
+            
+            const [sharedDate, setSharedDate] = useState(getTodayStr());
+            const [inputState, setInputState] = useState({ shunwai: { weight: '', height: '' }, kaishun: { weight: '', height: '' } });
+            const [keypad, setKeypad] = useState({ isOpen: false, person: '', type: '', title: '' });
+            const [historyModalOpen, setHistoryModalOpen] = useState(false);
+            const [storageError, setStorageError] = useState(false);
+            
+            const processedRecords = useMemo(() => recalculateRecords(records), [records]);
+
+            // 安全儲存 effect
             useEffect(() => {
                 try {
-                    localStorage.setItem('weightRecords_v1', JSON.stringify(records));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                    setStorageError(false);
                 } catch (e) {
-                    console.warn("Could not save to LocalStorage:", e);
+                    setStorageError(true);
                 }
             }, [records]);
 
-            const [chartRange, setChartRange] = useState('30');
-            const [keypadConfig, setKeypadConfig] = useState({ isOpen: false, type: '', initialValue: '', callback: null });
-            const [actionMenu, setActionMenu] = useState({ isOpen: false, recordId: null });
-            const [viewAll, setViewAll] = useState({ brother: false, younger: false });
-
-            const [inputState, setInputState] = useState({
-                brother: { date: getTodayStr(), weight: '', height: '' },
-                younger: { date: getTodayStr(), weight: '', height: '' }
-            });
-
-            const processedData = useMemo(() => {
-                const sorted = [...records].sort((a, b) => new Date(a.date) - new Date(b.date));
-                
-                const result = { brother: [], younger: [] };
-                const maxTracker = { brother: 0, younger: 0 }; 
-
-                sorted.forEach(record => {
-                    const p = record.person;
-                    const weightLbs = record.weight * KG_TO_LBS;
-                    let stickers = 0;
-                    let isNewMax = false;
-
-                    if (weightLbs > maxTracker[p]) {
-                        if (maxTracker[p] > 0) {
-                            const diff = weightLbs - maxTracker[p];
-                            stickers = Math.floor(diff / 0.1);
-                        } else {
-                            stickers = 0; 
-                        }
-                        maxTracker[p] = weightLbs; 
-                        isNewMax = true;
-                    }
-
-                    result[p].push({
-                        ...record,
-                        weightLbs,
-                        stickers: stickers > 0 ? stickers : 0,
-                        isNewMax,
-                        currentMaxLbs: maxTracker[p]
-                    });
-                });
-
-                return {
-                    brother: result.brother.reverse(),
-                    younger: result.younger.reverse(),
-                    currentMax: maxTracker
-                };
-            }, [records]);
+            const getMaxLbs = (person) => {
+                const personRecords = processedRecords.filter(r => r.person === person);
+                if (personRecords.length === 0) return 0;
+                return Math.max(...personRecords.map(r => r.lbs));
+            };
 
             const handleAddRecord = (person) => {
                 const data = inputState[person];
                 if (!data.weight) { alert('請輸入體重！'); return; }
-                
-                const newItem = {
-                    id: Date.now().toString(),
-                    date: data.date,
+                const newRecord = {
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                    date: sharedDate,
                     person,
                     weight: parseFloat(data.weight),
-                    height: data.height ? parseFloat(data.height) : null,
+                    height: data.height ? parseFloat(data.height) : null
                 };
-
-                setRecords(prev => [...prev, newItem]);
-                setInputState(prev => ({ ...prev, [person]: { ...prev[person], weight: '', height: '' } }));
+                setRecords(prev => [...prev, newRecord]);
+                setInputState(prev => ({ ...prev, [person]: { weight: '', height: '' } }));
             };
 
-            const handleDelete = () => {
-                if (actionMenu.recordId) {
-                    setRecords(prev => prev.filter(r => r.id !== actionMenu.recordId));
-                    setActionMenu({ isOpen: false, recordId: null });
+            const handleDelete = (id) => {
+                if(confirm('確定要刪除這條記錄嗎？')) {
+                    setRecords(prev => prev.filter(r => r.id !== id));
                 }
             };
 
-            const exportData = () => {
-                const csvContent = "data:text/csv;charset=utf-8," + 
-                    "ID,日期,人物,體重(kg),體重(lbs),高度(cm),貼紙,是否破紀錄\n" + 
-                    [...processedData.brother, ...processedData.younger]
-                    .sort((a,b) => new Date(b.date) - new Date(a.date))
-                    .map(e => `${e.id},${e.date},${NAMES[e.person]},${e.weight},${e.weightLbs.toFixed(2)},${e.height || ''},${e.stickers},${e.isNewMax ? '是' : ''}`).join("\n");
-                
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `weight_record_${getTodayStr()}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            const handleEdit = (oldRecord) => {
+                const newWeight = prompt("修改體重 (kg):", oldRecord.weight);
+                if (newWeight !== null) {
+                    const w = parseFloat(newWeight);
+                    if (!isNaN(w)) setRecords(prev => prev.map(r => r.id === oldRecord.id ? { ...r, weight: w } : r));
+                }
+            };
+
+            const openKeypad = (person, type, title) => {
+                setKeypad({ isOpen: true, person, type, title, initialValue: inputState[person][type] });
+            };
+
+            const onKeypadConfirm = (val) => {
+                setInputState(prev => ({ ...prev, [keypad.person]: { ...prev[keypad.person], [keypad.type]: val } }));
             };
 
             const chartData = useMemo(() => {
-                const allDates = [...new Set(records.map(r => r.date))].sort();
-                let filteredDates = allDates;
-                if (chartRange !== 'all') {
-                    const days = parseInt(chartRange);
-                    const cutoffDate = new Date();
-                    cutoffDate.setDate(cutoffDate.getDate() - days);
-                    filteredDates = allDates.filter(d => new Date(d) >= cutoffDate);
-                }
-                return filteredDates.map(date => {
-                    const b = records.find(r => r.date === date && r.person === 'brother');
-                    const y = records.find(r => r.date === date && r.person === 'younger');
+                const dates = [...new Set(records.map(r => r.date))].sort();
+                return dates.map(date => {
+                    const sw = records.find(r => r.date === date && r.person === 'shunwai');
+                    const ks = records.find(r => r.date === date && r.person === 'kaishun');
                     return {
                         date: formatDate(date),
-                        brother: b ? b.weight : null,
-                        younger: y ? y.weight : null,
+                        shunwai: sw ? sw.weight : null,
+                        kaishun: ks ? ks.weight : null
                     };
                 });
-            }, [records, chartRange]);
+            }, [records]);
 
-            const useLongPress = (callback, ms = 500) => {
-                const timerRef = useRef(null);
-                const start = () => { timerRef.current = setTimeout(callback, ms); };
-                const stop = () => { if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; } };
-                return { onMouseDown: start, onMouseUp: stop, onMouseLeave: stop, onTouchStart: start, onTouchEnd: stop };
-            };
+            const totalStickers = useMemo(() => {
+                return processedRecords.reduce((acc, curr) => {
+                    acc[curr.person] += curr.stickers;
+                    return acc;
+                }, { shunwai: 0, kaishun: 0 });
+            }, [processedRecords]);
 
-            const RecordItem = ({ item, colorTheme }) => {
-                const longPressProps = useLongPress(() => setActionMenu({ isOpen: true, recordId: item.id }));
-                return (
-                    <motion.div layout {...longPressProps} className={`relative p-2 rounded-lg mb-1.5 border-l-4 select-none touch-callout-none active:scale-[0.98] transition-all flex justify-between items-center ${item.isNewMax ? 'bg-yellow-50 border-yellow-400' : `${colorTheme.light} ${colorTheme.border}`}`}>
-                        <div className="flex items-center gap-3">
-                            <div className="text-[10px] text-gray-500 font-mono w-8 text-center leading-tight">{item.date.slice(5).replace('-','/')}</div>
-                            <div>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-base font-bold text-gray-800">{item.weight} <span className="text-[10px] font-normal text-gray-500">kg</span></span>
-                                    {item.height && <span className="text-[10px] bg-white/60 px-1 rounded text-gray-500 flex items-center ml-1"><Icons.Ruler size={8} className="mr-0.5"/>{item.height}</span>}
-                                </div>
-                                <div className="text-[10px] text-gray-400">≈ {item.weightLbs.toFixed(1)} lbs</div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            {item.stickers > 0 && (
-                                <div className="flex items-center bg-yellow-100 px-2 py-0.5 rounded-full border border-yellow-200 shadow-sm">
-                                    <Icons.Star size={10} className="text-yellow-500 mr-1" />
-                                    <span className="text-xs font-bold text-yellow-700">x{item.stickers}</span>
-                                </div>
-                            )}
-                            {item.isNewMax && <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded font-bold ml-1">新高</span>}
-                        </div>
-                    </motion.div>
-                );
-            };
-
-            const InputCard = ({ person }) => {
-                const name = NAMES[person];
-                const theme = COLORS[person];
+            const InputCard = ({ person, title, icon: Icon, maxLbs }) => {
                 const state = inputState[person];
-                const data = processedData[person];
-                const totalStickers = data.reduce((acc, cur) => acc + cur.stickers, 0);
-                const currentMax = processedData.currentMax[person];
-                
-                const showList = viewAll[person] ? data : data.slice(0, 5);
-                const hasMore = data.length > 5;
-
-                const openKeypad = (type, title) => {
-                    setKeypadConfig({
-                        isOpen: true, type, title, initialValue: state[type], suffix: type === 'weight' ? 'kg' : 'cm',
-                        callback: (val) => setInputState(prev => ({ ...prev, [person]: { ...prev[person], [type]: val } }))
-                    });
-                };
+                const theme = person === 'shunwai' 
+                    ? { bg: 'bg-blue-600', text: 'text-blue-600', border: 'border-blue-500', light: 'bg-blue-50' }
+                    : { bg: 'bg-green-600', text: 'text-green-600', border: 'border-green-500', light: 'bg-green-50' };
 
                 return (
-                    <section className="flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-full">
-                        <div className={`${theme.bg} text-white p-3 flex justify-between items-center`}>
-                            <div className="font-bold text-base flex items-center gap-2">
-                                <div className="bg-white/20 p-1 rounded-full"><Icons.Weight size={14}/></div>
-                                {name}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
+                        <div className={`${theme.bg} p-4 text-white flex justify-between items-center`}>
+                            <div className="flex items-center gap-2 font-bold text-lg">
+                                <div className="bg-white/20 p-1.5 rounded-full"><Icon size={18}/></div>
+                                {title}
                             </div>
-                            <div className="flex items-center gap-2">
-                                <div className="text-xs bg-black/10 px-2 py-1 rounded text-white/90">
-                                    目標: {(currentMax/KG_TO_LBS).toFixed(1)}kg
-                                </div>
-                                <div className="text-xs bg-yellow-400 text-yellow-900 px-2 py-1 rounded font-bold shadow-sm flex items-center gap-1">
-                                    <Icons.Star size={10} /> {totalStickers}
+                            <div className="flex flex-col items-end">
+                                <div className="text-xs opacity-80">總貼紙</div>
+                                <div className="font-bold text-xl flex items-center gap-1">
+                                    <Icons.Star size={16} fill="currentColor" className="text-yellow-300"/> 
+                                    {totalStickers[person]}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-3 bg-gray-50 border-b border-gray-100">
-                            <div className="flex items-center gap-2 mb-2 bg-white p-1.5 rounded border border-gray-200">
-                                <Icons.Calendar size={14} className="text-gray-400 ml-1" />
-                                <input type="date" value={state.date} onChange={(e) => setInputState(prev => ({ ...prev, [person]: { ...prev[person], date: e.target.value } }))} className="bg-transparent text-sm font-bold text-gray-600 outline-none w-full"/>
+                        <div className="p-4 space-y-4">
+                            <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-2 text-center">
+                                <span className="text-xs text-yellow-600 font-bold uppercase tracking-wide">當前最高紀錄 (目標)</span>
+                                <div className="text-xl font-black text-yellow-600">{maxLbs.toFixed(2)} <span className="text-sm font-normal">lbs</span></div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div onClick={() => openKeypad('weight', `${name}體重`)} className={`p-1.5 rounded border cursor-pointer flex flex-col items-center justify-center bg-white active:bg-gray-50 h-14 ${state.weight ? theme.border : 'border-gray-200'}`}>
-                                    <span className="text-[10px] text-gray-400">體重 (kg)</span>
-                                    <span className={`text-lg font-bold ${state.weight ? theme.text : 'text-gray-300'}`}>{state.weight || '0.0'}</span>
-                                </div>
-                                <div onClick={() => openKeypad('height', `${name}高度`)} className={`p-1.5 rounded border cursor-pointer flex flex-col items-center justify-center bg-white active:bg-gray-50 h-14 ${state.height ? theme.border : 'border-dashed border-gray-300'}`}>
-                                    <span className="text-[10px] text-gray-400">高度 (cm)</span>
-                                    <span className={`text-lg font-bold ${state.height ? theme.text : 'text-gray-300'}`}>{state.height || '-'}</span>
-                                </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button onClick={() => openKeypad(person, 'weight', `${title}體重`)} className={`relative p-2 h-20 rounded-xl border-2 flex flex-col items-center justify-center transition-all ${state.weight ? `${theme.border} ${theme.light}` : 'border-gray-100 bg-gray-50'}`}>
+                                    <span className="text-xs text-gray-400">體重 (kg)</span>
+                                    <span className={`text-2xl font-bold ${state.weight ? theme.text : 'text-gray-300'}`}>{state.weight || '0.0'}</span>
+                                    {state.weight && <span className="absolute bottom-1 right-2 text-[10px] text-gray-400">≈ {(state.weight * KG_TO_LBS).toFixed(1)} lbs</span>}
+                                </button>
+                                <button onClick={() => openKeypad(person, 'height', `${title}高度`)} className={`p-2 h-20 rounded-xl border-2 flex flex-col items-center justify-center transition-all ${state.height ? `${theme.border} ${theme.light}` : 'border-dashed border-gray-200 bg-gray-50'}`}>
+                                    <span className="text-xs text-gray-400">高度 (cm)</span>
+                                    <span className={`text-2xl font-bold ${state.height ? theme.text : 'text-gray-300'}`}>{state.height || '-'}</span>
+                                </button>
                             </div>
-                            <button onClick={() => handleAddRecord(person)} className={`w-full mt-2 py-2 ${theme.bg} hover:opacity-90 text-white rounded-lg font-bold text-sm shadow-sm active:scale-[0.98] transition-all flex justify-center items-center gap-1`}>
-                                <Icons.Check size={16} /> 記錄
+
+                            <button onClick={() => handleAddRecord(person)} className={`w-full py-3 ${theme.bg} text-white rounded-xl font-bold shadow-lg active:scale-[0.98] transition-transform flex justify-center items-center gap-2`}>
+                                <Icons.Check size={20} /> 記錄數據
                             </button>
                         </div>
 
-                        <div className="flex-1 p-3 bg-white">
-                            <div className="flex justify-between items-center mb-2">
-                                <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">最近記錄</h3>
+                        <div className="flex-1 bg-gray-50 p-4 border-t border-gray-100">
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">最近 5 次記錄</h3>
+                            <div className="space-y-2">
+                                {processedRecords.filter(r => r.person === person).slice(0, 5).map(item => (
+                                    <div key={item.id} className={`relative p-2.5 rounded-xl border border-transparent transition-all ${item.isNewRecord ? 'bg-yellow-100 border-yellow-300 shadow-sm' : 'bg-white border-gray-100'}`}>
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <div className="text-[10px] text-gray-500 font-bold">{item.date}</div>
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className="font-bold text-gray-800">{item.weight} <span className="text-[10px] font-normal text-gray-400">kg</span></span>
+                                                    <span className="text-xs text-gray-400">/ {item.lbs} lbs</span>
+                                                </div>
+                                            </div>
+                                            {item.stickers > 0 && (
+                                                <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-full shadow-sm border border-yellow-100">
+                                                    <Icons.Star size={12} className="text-yellow-500" fill="currentColor"/>
+                                                    <span className="text-xs font-bold text-yellow-600">x{item.stickers}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {item.isNewRecord && <div className="absolute -top-1.5 -right-1 bg-red-500 text-white text-[9px] px-1.5 rounded-full font-bold shadow-sm">New High!</div>}
+                                    </div>
+                                ))}
                             </div>
-                            <div className="space-y-1">
-                                {showList.map(item => <RecordItem key={item.id} item={item} colorTheme={theme} />)}
-                                {data.length === 0 && <div className="text-center text-gray-300 text-xs py-4">暫無記錄</div>}
-                            </div>
-                            {hasMore && (
-                                <button 
-                                    onClick={() => setViewAll(prev => ({...prev, [person]: !prev[person]}))}
-                                    className="w-full mt-2 py-1.5 text-xs text-gray-500 bg-gray-50 hover:bg-gray-100 rounded border border-gray-100 flex items-center justify-center gap-1 transition-colors"
-                                >
-                                    {viewAll[person] ? <><Icons.ChevronUp size={12}/> 收起</> : <><Icons.ChevronDown size={12}/> 查看全部 ({data.length})</>}
-                                </button>
-                            )}
                         </div>
-                    </section>
+                    </div>
                 );
             };
 
             return (
-                <div className="min-h-screen pb-10 font-sans text-gray-800">
-                    <header className="bg-white shadow-sm sticky top-0 z-30 px-4 py-3 flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-1.5 rounded-lg text-white shadow-sm"><Icons.Award size={18} /></div>
-                            <h1 className="text-base font-bold text-gray-800">兄弟成長記錄</h1>
+                <div className="min-h-screen pb-16 relative">
+                    {storageError && (
+                        <div className="bg-orange-100 text-orange-800 px-4 py-2 text-xs font-bold text-center border-b border-orange-200 flex items-center justify-center gap-2">
+                            <Icons.Alert size={14}/>
+                            瀏覽器限制：數據無法儲存，重新整理後將遺失。
                         </div>
-                        <button onClick={exportData} className="p-2 bg-gray-50 rounded-full hover:bg-gray-100 text-gray-500 active:scale-95"><Icons.Download size={18} /></button>
+                    )}
+                    
+                    <header className="bg-white sticky top-0 z-30 px-4 py-3 shadow-sm flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-1.5 rounded-lg text-white shadow-md">
+                                <Icons.Award size={20} />
+                            </div>
+                            <h1 className="text-lg font-bold text-gray-800">兄弟成長記錄</h1>
+                        </div>
+                        <button onClick={() => setHistoryModalOpen(true)} className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-bold text-gray-600 transition-colors">
+                            <Icons.List size={16}/> 歷史記錄
+                        </button>
                     </header>
 
-                    <main className="w-full max-w-5xl mx-auto p-3 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                            <InputCard person="brother" />
-                            <InputCard person="younger" />
+                    <main className="max-w-4xl mx-auto p-4 space-y-6">
+                        <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3">
+                            <div className="bg-gray-100 p-2 rounded-lg text-gray-500"><Icons.Calendar size={20}/></div>
+                            <div className="flex-1">
+                                <label className="text-xs font-bold text-gray-400 block">記錄日期 (同步)</label>
+                                <input type="date" value={sharedDate} onChange={(e) => setSharedDate(e.target.value)} className="w-full font-bold text-gray-800 bg-transparent outline-none"/>
+                            </div>
                         </div>
 
-                        <section className="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
-                            <div className="flex justify-between items-center mb-2">
-                                <h2 className="font-bold text-sm text-gray-700 flex items-center gap-2"><Icons.TrendingUp className="text-purple-500" size={16}/> 體重趨勢</h2>
-                                <div className="flex bg-gray-100 rounded p-0.5 text-[10px] font-medium">
-                                    {['30', '90', 'all'].map(r => (
-                                        <button key={r} onClick={() => setChartRange(r)} className={`px-2 py-1 rounded transition-all ${chartRange === r ? 'bg-white shadow text-purple-600' : 'text-gray-400'}`}>{r === 'all' ? '全部' : `${r}天`}</button>
-                                    ))}
-                                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <InputCard person="shunwai" title="信唯" icon={Icons.Weight} maxLbs={getMaxLbs('shunwai')} />
+                            <InputCard person="kaishun" title="啟淳" icon={Icons.Weight} maxLbs={getMaxLbs('kaishun')} />
+                        </div>
+
+                        <section className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Icons.TrendingUp className="text-purple-500" size={20}/>
+                                <h2 className="font-bold text-gray-700">體重趨勢 (KG)</h2>
                             </div>
-                            <div className="h-60 w-full text-xs">
+                            <div className="h-64 w-full">
                                 {window.Recharts ? (
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                        <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                            <XAxis dataKey="date" tick={{fontSize: 10, fill: '#9ca3af'}} tickLine={false} axisLine={false} dy={5} />
-                                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10, fill: '#9ca3af'}} tickLine={false} axisLine={false} />
-                                            <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '12px' }} />
-                                            <Legend wrapperStyle={{fontSize: '10px', paddingTop: '10px'}}/>
-                                            <Line type="monotone" dataKey="brother" name={NAMES.brother} stroke={COLORS.brother.stroke} strokeWidth={2} dot={{r:2}} activeDot={{r:4}} connectNulls />
-                                            <Line type="monotone" dataKey="younger" name={NAMES.younger} stroke={COLORS.younger.stroke} strokeWidth={2} dot={{r:2}} activeDot={{r:4}} connectNulls />
+                                            <XAxis dataKey="date" tick={{fontSize: 10}} tickLine={false} axisLine={false} dy={10} />
+                                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10}} tickLine={false} axisLine={false} />
+                                            <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+                                            <Legend wrapperStyle={{ paddingTop: '20px' }}/>
+                                            <Line type="monotone" dataKey="shunwai" name="信唯" stroke="#2563eb" strokeWidth={3} dot={{r:3, fill:'#2563eb', strokeWidth:0}} activeDot={{r:6}} connectNulls />
+                                            <Line type="monotone" dataKey="kaishun" name="啟淳" stroke="#16a34a" strokeWidth={3} dot={{r:3, fill:'#16a34a', strokeWidth:0}} activeDot={{r:6}} connectNulls />
                                         </LineChart>
                                     </ResponsiveContainer>
                                 ) : (
-                                    <div className="flex items-center justify-center h-full text-gray-400 bg-gray-50 rounded-lg">圖表加載中...</div>
+                                    <div className="flex items-center justify-center h-full text-gray-400 bg-gray-50 rounded-lg">
+                                        圖表加載失敗，請檢查網絡 (Recharts)
+                                    </div>
                                 )}
                             </div>
                         </section>
                     </main>
 
-                    <div className="fixed bottom-2 right-2 text-[10px] text-gray-300 font-mono pointer-events-none">{VERSION}</div>
+                    <div className="fixed bottom-2 right-2 text-[10px] text-gray-300 pointer-events-none select-none z-0 text-right">
+                        <div>v{APP_VERSION}</div>
+                        <div className="opacity-0 hover:opacity-100 transition-opacity bg-black/80 text-white p-2 rounded absolute bottom-full right-0 w-48 pointer-events-auto mb-1">
+                            {VERSION_NOTES}
+                        </div>
+                    </div>
 
-                    <CustomKeypad isOpen={keypadConfig.isOpen} onClose={() => setKeypadConfig(prev => ({ ...prev, isOpen: false }))} onConfirm={keypadConfig.callback} title={keypadConfig.title} initialValue={keypadConfig.initialValue} suffix={keypadConfig.suffix} />
-                    
-                    <AnimatePresence>
-                        {actionMenu.isOpen && (
-                            <>
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} onClick={() => setActionMenu({ isOpen: false, recordId: null })} className="fixed inset-0 bg-black z-40" />
-                                <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="fixed bottom-0 left-0 right-0 bg-white z-50 rounded-t-2xl p-4 pb-safe">
-                                    <div className="text-center text-gray-500 text-sm mb-4">操作記錄</div>
-                                    <button onClick={handleDelete} className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold flex items-center justify-center gap-2 mb-2"><Icons.Trash2 size={20} /> 刪除此記錄</button>
-                                    <button onClick={() => setActionMenu({ isOpen: false, recordId: null })} className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold">取消</button>
-                                </motion.div>
-                            </>
-                        )}
-                    </AnimatePresence>
+                    <CustomKeypad {...keypad} onClose={() => setKeypad(p => ({...p, isOpen: false}))} onConfirm={onKeypadConfirm} suffix={keypad.type === 'weight' ? 'kg' : 'cm'} />
+                    <HistoryModal isOpen={historyModalOpen} onClose={() => setHistoryModalOpen(false)} records={processedRecords} onDelete={handleDelete} onEdit={handleEdit} />
                 </div>
             );
         }
