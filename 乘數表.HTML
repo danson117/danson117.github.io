@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>99乘法表（九九表）</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-title {
+            color: #cc4b25;
+            border-left: 5px solid #cc4b25;
+            padding-left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #btn-show {
+            background-color: #4CAF50;
+        }
+        #btn-show:hover {
+            background-color: #45a049;
+        }
+
+        #btn-hide {
+            background-color: #f44336;
+        }
+        #btn-hide:hover {
+            background-color: #da190b;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto; /* 手機版可以左右滑動 */
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            min-width: 900px; /* 稍微加闊以容納更大的字體和空格 */
+            background-color: #fff;
+        }
+
+        .col-header {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px 0;
+            cursor: pointer; /* 加入鼠標變成手指的樣式 */
+            transition: opacity 0.2s;
+            user-select: none;
+        }
+
+        .col-header:hover {
+            opacity: 0.85; /* 滑鼠懸停時稍微變淡，提示可點擊 */
+        }
+
+        .header-green { background-color: #71b212; }
+        .header-orange { background-color: #f0810f; }
+
+        .cell {
+            /* 將原本的淺黃色 (#fefbc6) 改為更淡更淺的黃色 (#fffde6) */
+            background-color: #fffde6; 
+            text-align: center;
+            padding: 12px 5px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            user-select: none; /* 防止反白文字 */
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cell:hover {
+            /* 滑鼠懸停時的顏色也相應調淡 */
+            background-color: #fff9c4; 
+        }
+
+        .equation {
+            display: inline-block;
+            text-align: right;
+        }
+
+        .answer {
+            display: inline-block;
+            width: 35px; /* 加闊以容納更大的答案字體 */
+            text-align: left;
+            opacity: 0; /* 預設隱藏 */
+            transition: opacity 0.2s ease-in-out;
+            
+            /* 字體變大、等號後加空格 */
+            font-size: 24px; /* 答案字體變大 */
+            font-weight: 900; /* 答案字體加粗 */
+            margin-left: 12px; /* 在等號和答案之間加入距離（相當於兩個空格） */
+        }
+
+        /* 根據單雙數設定不同顏色 */
+        .answer-red {
+            color: #b30000; /* 酒紅色 (單數) */
+        }
+        
+        .answer-green {
+            color: #008000; /* 綠色 (雙數) */
+        }
+
+        /* 當加入 revealed class 時顯示答案 */
+        .cell.revealed .answer {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="header-title">99乘法表（九九表）</h1>
+    
+    <div class="controls">
+        <button id="btn-show">顯示全部</button>
+        <button id="btn-hide">隱藏全部</button>
+    </div>
+
+    <div class="table-wrapper">
+        <div class="grid-container" id="multiplication-grid">
+            <!-- 乘法表內容將由 JavaScript 動態生成 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const gridContainer = document.getElementById('multiplication-grid');
+        
+        // 第一排：全部都是標題 (1 到 9)
+        for (let col = 1; col <= 9; col++) {
+            const header = document.createElement('div');
+            // 單數列綠色，雙數列橙色
+            header.className = `col-header ${col % 2 !== 0 ? 'header-green' : 'header-orange'}`;
+            header.textContent = col;
+            
+            // 加入點擊標題控制整列顯示/隱藏的功能
+            header.addEventListener('click', () => {
+                // 找出所有屬於這個直行的格子
+                const columnCells = document.querySelectorAll(`.cell[data-col="${col}"]`);
+                
+                // 檢查是否整列都已經顯示了
+                let allRevealed = true;
+                columnCells.forEach(cell => {
+                    if (!cell.classList.contains('revealed')) {
+                        allRevealed = false;
+                    }
+                });
+                
+                // 如果全部都顯示了，就全部隱藏；否則就全部顯示
+                columnCells.forEach(cell => {
+                    if (allRevealed) {
+                        cell.classList.remove('revealed');
+                    } else {
+                        cell.classList.add('revealed');
+                    }
+                });
+            });
+            
+            gridContainer.appendChild(header);
+        }
+
+        // 第 1 行到第 9 行的算式
+        for (let row = 1; row <= 9; row++) {
+            for (let col = 1; col <= 9; col++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                
+                // 設定一個 data 屬性，用來標記這個格子屬於哪一個直行 (col)
+                cell.setAttribute('data-col', col);
+                
+                // 算式部分 (例如: 1x1=)
+                const equation = document.createElement('span');
+                equation.className = 'equation';
+                equation.textContent = `${col}x${row}=`;
+                
+                // 答案部分 (例如: 1)
+                const answer = document.createElement('span');
+                answer.className = 'answer';
+                
+                // 判斷乘式的第二個數字 (row) 是單數還是雙數，並給予對應顏色
+                if (row % 2 !== 0) {
+                    answer.classList.add('answer-red'); // 單數酒紅色
+                } else {
+                    answer.classList.add('answer-green'); // 雙數綠色
+                }
+                
+                answer.textContent = col * row;
+                
+                cell.appendChild(equation);
+                cell.appendChild(answer);
+                
+                // 點擊事件：切換單個格子的顯示/隱藏
+                cell.addEventListener('click', () => {
+                    cell.classList.toggle('revealed');
+                });
+                
+                gridContainer.appendChild(cell);
+            }
+        }
+
+        // 總控制按鈕邏輯
+        const btnShow = document.getElementById('btn-show');
+        const btnHide = document.getElementById('btn-hide');
+        const allCells = document.querySelectorAll('.cell');
+
+        btnShow.addEventListener('click', () => {
+            allCells.forEach(cell => {
+                cell.classList.add('revealed');
+            });
+        });
+
+        btnHide.addEventListener('click', () => {
+            allCells.forEach(cell => {
+                cell.classList.remove('revealed');
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
