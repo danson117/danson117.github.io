@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>九因歌太空探險 - 錯題庫升級版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap');
+
+        body {
+            font-family: 'Nunito', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #112240, #2a0845);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        .pop { animation: pop 0.3s ease-out forwards; }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .confetti {
+            position: fixed; top: -10px; width: 12px; height: 12px;
+            z-index: 9999; animation: fall linear forwards; border-radius: 2px;
+        }
+        @keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
+
+        .floating-star {
+            position: absolute; font-size: 2rem; pointer-events: none;
+            animation: floatUp 1s ease-out forwards; z-index: 50;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+
+        .custom-checkbox input:checked + div {
+            background-color: #f59e0b; border-color: #f59e0b; transform: scale(1.05);
+        }
+        .option-btn { transition: all 0.2s; }
+        .option-btn:active { transform: scale(0.95); }
+        
+        /* 錯題庫 Checkbox */
+        .mistake-cb { width: 1.5rem; height: 1.5rem; cursor: pointer; }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <!-- 開始畫面 -->
+    <div id="start-screen" class="w-full max-w-md bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/20 text-center flex flex-col">
+        <h1 class="text-3xl font-bold mb-2 text-yellow-400">🚀 九因歌太空探險 🌟</h1>
+        <p class="text-blue-200 mb-6 text-sm">揀你想挑戰嘅乘數表啦！</p>
+        
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <script>
+                for(let i=1; i<=9; i++) {
+                    let checked = i <= 5 ? 'checked' : '';
+                    document.write(`
+                        <label class="custom-checkbox cursor-pointer relative">
+                            <input type="checkbox" value="${i}" class="peer sr-only table-cb" ${checked}>
+                            <div class="rounded-xl border-2 border-blue-400/50 p-3 text-xl font-bold text-white bg-blue-900/50 hover:bg-blue-800/50 transition-all">
+                                ${i}
+                            </div>
+                        </label>
+                    `);
+                }
+            </script>
+        </div>
+
+        <button onclick="startGame(false)" class="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-white font-bold py-4 rounded-2xl text-2xl shadow-lg transform transition hover:scale-105 active:scale-95 mb-4">
+            開始探險！ 🛸
+        </button>
+
+        <div class="flex gap-2">
+            <button onclick="startGame(true)" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                特訓錯題庫 🎯
+            </button>
+            <button onclick="openMistakeManager()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                管理錯題庫 📁
+            </button>
+        </div>
+    </div>
+
+    <!-- 遊戲畫面 -->
+    <div id="game-screen" class="w-full max-w-md hidden flex-col items-center">
+        
+        <!-- 頂部資訊 (進度與對錯) -->
+        <div class="w-full flex justify-between items-center bg-white/10 backdrop-blur-sm p-4 rounded-2xl mb-4 border border-white/20">
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-blue-200">進度 (一回合)</span>
+                <span id="progress-display" class="text-lg font-bold text-white">0/0</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-blue-200">答啱</span>
+                <span id="correct-display" class="text-lg font-bold text-green-400">✅ 0</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-blue-200">答錯</span>
+                <span id="wrong-display" class="text-lg font-bold text-red-400">❌ 0</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-blue-200">連中</span>
+                <span id="combo-display" class="text-lg font-bold text-yellow-400">🔥 0</span>
+            </div>
+        </div>
+
+        <!-- 鼓勵字句 -->
+        <div id="cheer-msg" class="h-8 text-xl font-bold text-pink-400 mb-2 opacity-0 transition-opacity duration-300">
+            好叻！
+        </div>
+
+        <!-- 題目區域 -->
+        <div id="question-container" class="relative w-full bg-gradient-to-b from-blue-500 to-blue-700 p-8 rounded-3xl shadow-2xl border-4 border-blue-400 mb-8 text-center">
+            <h2 id="question-text" class="text-6xl font-extrabold tracking-wider text-white drop-shadow-md">
+                3 × 9 = ?
+            </h2>
+        </div>
+
+        <!-- 選擇按鈕 -->
+        <div id="options-container" class="grid grid-cols-2 gap-4 w-full"></div>
+        
+        <button onclick="backToMenu()" class="mt-8 text-blue-300 underline text-sm hover:text-white">
+            放棄並返去主目錄
+        </button>
+    </div>
+
+    <!-- 錯題庫管理畫面 -->
+    <div id="mistake-screen" class="w-full max-w-md hidden flex-col bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/20">
+        <h2 class="text-2xl font-bold mb-4 text-yellow-400 text-center">📁 錯題庫管理</h2>
+        <p class="text-sm text-blue-200 mb-4 text-center">剔選你已經識嘅題目，然後刪除佢哋。</p>
+        
+        <div id="mistake-list" class="flex flex-col gap-2 max-h-64 overflow-y-auto mb-6 pr-2">
+            <!-- 錯題列表由 JS 產生 -->
+        </div>
+
+        <div class="flex gap-2">
+            <button onclick="deleteSelectedMistakes()" class="flex-1 bg-red-500 hover:bg-red-400 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                刪除所選 🗑️
+            </button>
+            <button onclick="backToMenu()" class="flex-1 bg-gray-500 hover:bg-gray-400 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                返回 🔙
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let selectedTables = [];
+        let questionPool = [];
+        let currentQuestionIndex = 0;
+        let combo = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let currentQuestion = null;
+        let isPracticeMode = false;
+        
+        // 讀取錯題庫 (用 localStorage 保存)
+        let mistakeBank = [];
+        try {
+            const saved = localStorage.getItem('mathMistakes');
+            if (saved) mistakeBank = JSON.parse(saved);
+        } catch(e) { console.log("無法讀取 localStorage"); }
+
+        function saveMistakes() {
+            try {
+                localStorage.setItem('mathMistakes', JSON.stringify(mistakeBank));
+            } catch(e) { console.log("無法儲存至 localStorage"); }
+        }
+
+        function startGame(practiceMode) {
+            isPracticeMode = practiceMode;
+            
+            if (isPracticeMode) {
+                if (mistakeBank.length === 0) {
+                    alert("錯題庫暫時冇題目喎！快啲去探險收集啦！");
+                    return;
+                }
+                questionPool = [...mistakeBank];
+                shuffleArray(questionPool);
+            } else {
+                const checkboxes = document.querySelectorAll('.table-cb:checked');
+                selectedTables = Array.from(checkboxes).map(cb => parseInt(cb.value));
+                if (selectedTables.length === 0) {
+                    alert("請至少揀一個數字呀！");
+                    return;
+                }
+                generateQuestionPool();
+            }
+
+            // 重置統計
+            combo = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            currentQuestionIndex = 0;
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('flex');
+
+            nextQuestion();
+        }
+
+        function generateQuestionPool() {
+            questionPool = [];
+            for (let num of selectedTables) {
+                for (let i = 1; i <= 9; i++) {
+                    questionPool.push({ a: num, b: i, answer: num * i, text: `${num} × ${i}` });
+                }
+            }
+            shuffleArray(questionPool);
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex >= questionPool.length) {
+                // 一回合完成，重新洗牌
+                shuffleArray(questionPool);
+                currentQuestionIndex = 0;
+                correctCount = 0;
+                wrongCount = 0;
+            }
+
+            currentQuestion = questionPool[currentQuestionIndex];
+            document.getElementById('question-text').innerText = currentQuestion.text;
+            
+            updateStats();
+            generateOptions(currentQuestion);
+        }
+
+        function generateOptions(q) {
+            let options = new Set();
+            options.add(q.answer);
+
+            while(options.size < 4) {
+                let strategy = Math.random();
+                let wrongAns;
+                if (strategy < 0.33) {
+                    let offset = Math.random() > 0.5 ? 1 : -1;
+                    let fakeB = q.b + offset;
+                    if (fakeB < 1) fakeB = 2;
+                    if (fakeB > 9) fakeB = 8;
+                    wrongAns = q.a * fakeB;
+                } else if (strategy < 0.66) {
+                    let offset = Math.floor(Math.random() * 5) + 1;
+                    wrongAns = Math.random() > 0.5 ? q.answer + offset : q.answer - offset;
+                } else {
+                    wrongAns = Math.floor(Math.random() * (q.a * 9)) + 1;
+                }
+                
+                if (wrongAns > 0 && wrongAns !== q.answer) {
+                    options.add(wrongAns);
+                }
+            }
+
+            let optionsArray = Array.from(options);
+            shuffleArray(optionsArray);
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            optionsArray.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'option-btn bg-white text-blue-900 font-bold text-3xl py-6 rounded-2xl shadow-[0_6px_0_#94a3b8] hover:bg-blue-50 active:shadow-[0_0px_0_#94a3b8] active:translate-y-[6px]';
+                btn.innerText = opt;
+                btn.onclick = (e) => checkAnswer(opt, btn, e);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, btn, event) {
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.disabled = true);
+
+            if (selected === currentQuestion.answer) {
+                btn.classList.replace('bg-white', 'bg-green-400');
+                btn.classList.replace('text-blue-900', 'text-white');
+                btn.classList.add('pop');
+                
+                combo++;
+                correctCount++;
+                currentQuestionIndex++;
+                
+                showFloatingStar(event.clientX, event.clientY);
+                createConfetti();
+                showCheerMessage();
+                updateStats();
+
+                setTimeout(() => { nextQuestion(); }, 1000);
+            } else {
+                btn.classList.replace('bg-white', 'bg-red-400');
+                btn.classList.replace('text-blue-900', 'text-white');
+                btn.classList.add('shake');
+                
+                combo = 0;
+                wrongCount++;
+                
+                // 加入錯題庫 (檢查是否已存在)
+                let exists = mistakeBank.some(m => m.a === currentQuestion.a && m.b === currentQuestion.b);
+                if (!exists) {
+                    mistakeBank.push(currentQuestion);
+                    saveMistakes();
+                }
+
+                currentQuestionIndex++;
+                updateStats();
+
+                allBtns.forEach(b => {
+                    if(parseInt(b.innerText) === currentQuestion.answer) {
+                        b.classList.replace('bg-white', 'bg-green-300');
+                    }
+                });
+
+                setTimeout(() => { nextQuestion(); }, 1500);
+            }
+        }
+
+        function updateStats() {
+            // 顯示進度: 目前第幾題 / 總題數
+            let currentDisplayNum = currentQuestionIndex + 1;
+            if (currentDisplayNum > questionPool.length) currentDisplayNum = questionPool.length;
+            
+            document.getElementById('progress-display').innerText = `${currentDisplayNum} / ${questionPool.length}`;
+            document.getElementById('correct-display').innerText = `✅ ${correctCount}`;
+            document.getElementById('wrong-display').innerText = `❌ ${wrongCount}`;
+            document.getElementById('combo-display').innerText = `🔥 ${combo}`;
+        }
+
+        function showCheerMessage() {
+            if (combo < 2) return;
+            const cheers = ["好叻！🌟", "太勁啦！🚀", "完美！✨", "繼續保持！🔥", "天才！👑"];
+            const msgDiv = document.getElementById('cheer-msg');
+            msgDiv.innerText = cheers[Math.floor(Math.random() * cheers.length)];
+            msgDiv.style.opacity = 1;
+            msgDiv.classList.add('pop');
+            setTimeout(() => {
+                msgDiv.style.opacity = 0;
+                msgDiv.classList.remove('pop');
+            }, 1000);
+        }
+
+        function showFloatingStar(x, y) {
+            const star = document.createElement('div');
+            star.innerText = '⭐';
+            star.className = 'floating-star';
+            star.style.left = (x - 20) + 'px';
+            star.style.top = (y - 20) + 'px';
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+
+        function createConfetti() {
+            const colors = ['#f59e0b', '#3b82f6', '#ec4899', '#10b981', '#a855f7'];
+            for(let i = 0; i < 30; i++) {
+                let conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animationDuration = (Math.random() * 1.5 + 1) + 's';
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 2500);
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- 錯題庫管理功能 ---
+        function openMistakeManager() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('mistake-screen').classList.remove('hidden');
+            document.getElementById('mistake-screen').classList.add('flex');
+            renderMistakeList();
+        }
+
+        function renderMistakeList() {
+            const list = document.getElementById('mistake-list');
+            list.innerHTML = '';
+            
+            if (mistakeBank.length === 0) {
+                list.innerHTML = '<p class="text-center text-green-300 py-4">太棒啦！暫時冇錯題！🎉</p>';
+                return;
+            }
+
+            mistakeBank.forEach((m, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between bg-white/10 p-3 rounded-lg';
+                div.innerHTML = `
+                    <span class="text-xl font-bold text-white">${m.text} = ${m.answer}</span>
+                    <input type="checkbox" class="mistake-cb" data-index="${index}">
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function deleteSelectedMistakes() {
+            const checkboxes = document.querySelectorAll('.mistake-cb:checked');
+            if (checkboxes.length === 0) {
+                alert("請先剔選想刪除嘅題目！");
+                return;
+            }
+            
+            // 收集要刪除嘅 index (由大至小排，避免刪除時 index 走位)
+            let indexesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-index'))).sort((a, b) => b - a);
+            
+            indexesToDelete.forEach(idx => {
+                mistakeBank.splice(idx, 1);
+            });
+            
+            saveMistakes();
+            renderMistakeList();
+        }
+
+        function backToMenu() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('flex');
+            document.getElementById('mistake-screen').classList.add('hidden');
+            document.getElementById('mistake-screen').classList.remove('flex');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('start-screen').classList.add('flex');
+        }
+    </script>
+</body>
+</html>
