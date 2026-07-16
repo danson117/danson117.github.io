@@ -213,6 +213,22 @@
       padding-right: 4px;
     }
 
+    button.show-done {
+      border: 1px solid var(--cat-border);
+      background: rgba(255,255,255,0.75);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    button.show-done.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
     .items {
       list-style: none;
       margin: 0;
@@ -257,6 +273,9 @@
     .item.done .item-text {
       color: var(--muted);
       text-decoration: line-through;
+    }
+    .item.is-hidden {
+      display: none;
     }
 
     .handle {
@@ -372,6 +391,18 @@
       white-space: nowrap;
     }
 
+    .empty-note {
+      grid-column: 1 / -1;
+      margin: 4px;
+      padding: 10px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      border: 1px dashed var(--cat-border);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.45);
+    }
+
     .hint {
       margin-top: 18px;
       color: var(--muted);
@@ -405,13 +436,12 @@
     <header>
       <div>
         <h1 class="brand">行李收拾清單</h1>
-        <p class="subtitle">D = 你 · Y = 太太 · 其中一個 tick 就算完成 · 本機自動記住</p>
+        <p class="subtitle">D = 你 · Y = 太太 · tick 完自動隱藏 · 本機自動記住</p>
       </div>
       <div class="toolbar">
         <button type="button" class="ghost" id="addCategoryBtn">＋ 新增種類</button>
-        <button type="button" class="ghost" id="exportBtn" title="匯出 JSON 檔">Export</button>
-        <button type="button" class="ghost" id="importBtn" title="匯入 JSON 檔">Import</button>
-        <input type="file" id="importFile" accept="application/json,.json" hidden />
+        <button type="button" class="ghost" id="copyBtn" title="複製 JSON 到剪貼簿，方便傳去另一部裝置">複製</button>
+        <button type="button" class="ghost" id="pasteBtn" title="由剪貼簿貼上 JSON 匯入">貼上</button>
         <button type="button" class="ghost" id="resetBtn" title="只取消全部勾選，保留你改過嘅清單">重設預設</button>
       </div>
     </header>
@@ -420,13 +450,17 @@
     <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
 
     <div class="board" id="board"></div>
-    <p class="hint">提示：種類／項目左邊 ⠿ 可拖拉。Export 下載 JSON；Import 可喺另一部裝置還原。「重設預設」只取消 D／Y 勾選。</p>
+    <p class="hint">
+      tick 完會自動隱藏。每個種類撳「顯示已完成」可暫時睇返隱藏項目。
+      跨裝置：電腦撳<strong>複製</strong> → 傳訊 → 另一部裝置撳<strong>貼上</strong>。
+    </p>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
     const STORAGE_KEY = "luggage-packing-checklist-v3";
+    const UI_KEY = "luggage-packing-checklist-ui-v1";
 
     const THEME_BY_ID = {
       "cat-docs": { bg: "#e8f2fb", head: "#d9eaf8", border: "#bfd7ec" },
@@ -455,16 +489,11 @@
       { bg: "#eef2f8", head: "#e2e8f3", border: "#c9d3e4" }
     ];
 
-    // 已將你提供的 JSON 資料套用為預設資料
     const FACTORY_DATA = [
       {
         "id": "cat-docs",
         "name": "證件",
-        "theme": {
-          "bg": "#e8f2fb",
-          "head": "#d9eaf8",
-          "border": "#bfd7ec"
-        },
+        "theme": { "bg": "#e8f2fb", "head": "#d9eaf8", "border": "#bfd7ec" },
         "items": [
           { "id": "item-mrnnw02p-g2xuk", "text": "護照", "checkedD": false, "checkedY": false },
           { "id": "item-mrnnw02p-6nyky", "text": "身份證", "checkedD": false, "checkedY": false },
@@ -477,11 +506,7 @@
       {
         "id": "cat-itinerary",
         "name": "行程資料",
-        "theme": {
-          "bg": "#e8f7ef",
-          "head": "#d7f0e4",
-          "border": "#b7dfcb"
-        },
+        "theme": { "bg": "#e8f7ef", "head": "#d7f0e4", "border": "#b7dfcb" },
         "items": [
           { "id": "item-mrnnw02p-wvykg", "text": "原子筆", "checkedD": false, "checkedY": false },
           { "id": "item-mrnnw02p-xcla6", "text": "景點地圖", "checkedD": false, "checkedY": false },
@@ -493,11 +518,7 @@
       {
         "id": "cat-electronics",
         "name": "電子產品",
-        "theme": {
-          "bg": "#e9f4f4",
-          "head": "#d8ecec",
-          "border": "#b9d9d9"
-        },
+        "theme": { "bg": "#e9f4f4", "head": "#d8ecec", "border": "#b9d9d9" },
         "items": [
           { "id": "item-mrnnw02p-p17zp", "text": "平板電腦", "checkedD": false, "checkedY": false },
           { "id": "item-mrnnw02p-eeajd", "text": "萬能轉插", "checkedD": false, "checkedY": false },
@@ -512,11 +533,7 @@
       {
         "id": "cat-clothes-summer",
         "name": "衣服（夏天）",
-        "theme": {
-          "bg": "#fff0e8",
-          "head": "#ffe4d6",
-          "border": "#f5cbb6"
-        },
+        "theme": { "bg": "#fff0e8", "head": "#ffe4d6", "border": "#f5cbb6" },
         "items": [
           { "id": "item-mrnnw02p-yn0nc", "text": "衫褲", "checkedD": false, "checkedY": false },
           { "id": "item-mrnnw02p-rlcpc", "text": "泳衣", "checkedD": false, "checkedY": false },
@@ -526,11 +543,7 @@
       {
         "id": "cat-clothes-winter",
         "name": "衣服（冬天）",
-        "theme": {
-          "bg": "#eef2f8",
-          "head": "#e2e8f3",
-          "border": "#c9d3e4"
-        },
+        "theme": { "bg": "#eef2f8", "head": "#e2e8f3", "border": "#c9d3e4" },
         "items": [
           { "id": "item-mrnnw02p-xk1m6", "text": "長衫褲", "checkedD": false, "checkedY": false },
           { "id": "item-mrnnw02p-l8zbc", "text": "圍巾、手套", "checkedD": false, "checkedY": false },
@@ -540,11 +553,7 @@
       {
         "id": "cat-clothes-general",
         "name": "衣服（通用）",
-        "theme": {
-          "bg": "#f4efe6",
-          "head": "#ebe3d6",
-          "border": "#d8cbb8"
-        },
+        "theme": { "bg": "#f4efe6", "head": "#ebe3d6", "border": "#d8cbb8" },
         "items": [
           { "id": "item-mrnnw02p-74u1y", "text": "內衣褲", "checkedD": false, "checkedY": false },
           { "id": "item-mrnokn8t-84uif", "text": "防滑襪", "checkedD": false, "checkedY": false },
@@ -555,11 +564,7 @@
       {
         "id": "cat-personal",
         "name": "個人用品",
-        "theme": {
-          "bg": "#eaf6f2",
-          "head": "#daf0e9",
-          "border": "#bbe0d4"
-        },
+        "theme": { "bg": "#eaf6f2", "head": "#daf0e9", "border": "#bbe0d4" },
         "items": [
           { "id": "item-mrnol9u9-sazv4", "text": "洗髮乳", "checkedD": false, "checkedY": false },
           { "id": "item-mrnoldiz-d6nz0", "text": "沐浴乳", "checkedD": false, "checkedY": false },
@@ -587,11 +592,7 @@
       {
         "id": "cat-medicine",
         "name": "常用藥品",
-        "theme": {
-          "bg": "#fdeeee",
-          "head": "#f9dede",
-          "border": "#ecc0c0"
-        },
+        "theme": { "bg": "#fdeeee", "head": "#f9dede", "border": "#ecc0c0" },
         "items": [
           { "id": "item-mrnnw02p-c0oxs", "text": "防蚊驅蟲水", "checkedD": false, "checkedY": false },
           { "id": "item-mrnnw02p-rbp5f", "text": "膠布、OK繃", "checkedD": false, "checkedY": false },
@@ -608,11 +609,7 @@
       {
         "id": "cat-tasks",
         "name": "出門前任務",
-        "theme": {
-          "bg": "#eaf5f3",
-          "head": "#d9eeea",
-          "border": "#b9ddd5"
-        },
+        "theme": { "bg": "#eaf5f3", "head": "#d9eeea", "border": "#b9ddd5" },
         "items": [
           { "id": "item-mrnnw02p-shl39", "text": "E-MAIL自動回復", "checkedD": false, "checkedY": false },
           { "id": "item-mrnnw02p-0j1db", "text": "告訴家人或朋友自己的行程", "checkedD": false, "checkedY": false }
@@ -621,11 +618,7 @@
       {
         "id": "cat-leaving",
         "name": "臨出門",
-        "theme": {
-          "bg": "#fff4e6",
-          "head": "#ffe9cc",
-          "border": "#f0d2a0"
-        },
+        "theme": { "bg": "#fff4e6", "head": "#ffe9cc", "border": "#f0d2a0" },
         "items": [
           { "id": "item-mrnnw02p-h55x6", "text": "關窗", "checkedD": false, "checkedY": false },
           { "id": "item-mrnnw02p-t6rdd", "text": "關電器", "checkedD": false, "checkedY": false },
@@ -641,10 +634,11 @@
     ];
 
     let state = loadState();
+    let uiState = loadUiState();
     let dragItemId = null;
     let dragFromCatId = null;
     let dragCatId = null;
-    let dragMode = null; // 'item' | 'category'
+    let dragMode = null;
 
     function uid(prefix) {
       return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -666,7 +660,6 @@
       if (typeof item === "string") {
         return { id: uid("item"), text: item, checkedD: false, checkedY: false };
       }
-      // 舊版單一 checked → 遷移為 D（你）已勾
       const legacy = !!item.checked;
       return {
         id: item.id || uid("item"),
@@ -706,9 +699,40 @@
       return normalize(FACTORY_DATA);
     }
 
+    function loadUiState() {
+      try {
+        const saved = localStorage.getItem(UI_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") {
+            return {
+              showDoneByCat: parsed.showDoneByCat && typeof parsed.showDoneByCat === "object"
+                ? parsed.showDoneByCat
+                : {}
+            };
+          }
+        }
+      } catch (_) {}
+      return { showDoneByCat: {} };
+    }
+
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       updateProgress();
+    }
+
+    function saveUiState() {
+      localStorage.setItem(UI_KEY, JSON.stringify(uiState));
+    }
+
+    function isShowDone(catId) {
+      return !!uiState.showDoneByCat[catId];
+    }
+
+    function setShowDone(catId, on) {
+      if (on) uiState.showDoneByCat[catId] = true;
+      else delete uiState.showDoneByCat[catId];
+      saveUiState();
     }
 
     function untickAll() {
@@ -759,12 +783,53 @@
       document.getElementById("progressBar").style.width = `${pct}%`;
     }
 
+    function updateCategoryChrome(section, cat) {
+      const doneCount = cat.items.filter(isDone).length;
+      const showDone = isShowDone(cat.id);
+      section.querySelector(".cat-count").textContent = `${doneCount}/${cat.items.length}`;
+
+      const btn = section.querySelector('[data-action="toggle-show-done"]');
+      if (btn) {
+        btn.classList.toggle("on", showDone);
+        btn.textContent = showDone
+          ? `隱藏已完成${doneCount ? ` (${doneCount})` : ""}`
+          : `顯示已完成${doneCount ? ` (${doneCount})` : ""}`;
+        btn.disabled = doneCount === 0 && !showDone;
+      }
+
+      const list = section.querySelector(".items");
+      let visible = 0;
+      list.querySelectorAll(".item").forEach((li) => {
+        const found = findItem(li.dataset.itemId);
+        const done = found ? isDone(found.item) : false;
+        const hide = done && !showDone;
+        li.classList.toggle("done", done);
+        li.classList.toggle("is-hidden", hide);
+        if (!hide) visible += 1;
+      });
+
+      let note = list.querySelector(".empty-note");
+      if (visible === 0) {
+        if (!note) {
+          note = document.createElement("div");
+          note.className = "empty-note";
+          list.appendChild(note);
+        }
+        note.textContent = doneCount
+          ? "未完成項目已清晒 · 可撳「顯示已完成」睇返"
+          : "未有項目";
+      } else if (note) {
+        note.remove();
+      }
+    }
+
     function render() {
       const board = document.getElementById("board");
       board.innerHTML = "";
 
       state.forEach((cat) => {
-        const checked = cat.items.filter(isDone).length;
+        const doneCount = cat.items.filter(isDone).length;
+        const showDone = isShowDone(cat.id);
         const section = document.createElement("section");
         section.className = "category";
         section.dataset.catId = cat.id;
@@ -776,7 +841,10 @@
           <div class="cat-head">
             <span class="cat-handle" title="拖曳種類排序" draggable="true" data-action="drag-cat">⠿</span>
             <input class="cat-title" type="text" value="${escapeAttr(cat.name)}" aria-label="種類名稱" data-action="rename-cat" />
-            <span class="cat-count">${checked}/${cat.items.length}</span>
+            <span class="cat-count">${doneCount}/${cat.items.length}</span>
+            <button type="button" class="show-done${showDone ? " on" : ""}" data-action="toggle-show-done" ${doneCount === 0 && !showDone ? "disabled" : ""}>
+              ${showDone ? `隱藏已完成${doneCount ? ` (${doneCount})` : ""}` : `顯示已完成${doneCount ? ` (${doneCount})` : ""}`}
+            </button>
             <button type="button" class="icon danger" title="刪除種類" data-action="delete-cat" aria-label="刪除種類">✕</button>
           </div>
           <ul class="items" data-dropzone="true"></ul>
@@ -788,19 +856,21 @@
 
         const list = section.querySelector(".items");
         cat.items.forEach((item) => {
-          list.appendChild(renderItem(item));
+          list.appendChild(renderItem(item, showDone));
         });
 
         board.appendChild(section);
         bindCategoryEvents(section, cat.id);
+        updateCategoryChrome(section, cat);
       });
 
       updateProgress();
     }
 
-    function renderItem(item) {
+    function renderItem(item, showDone) {
+      const done = isDone(item);
       const li = document.createElement("li");
-      li.className = `item${isDone(item) ? " done" : ""}`;
+      li.className = `item${done ? " done" : ""}${done && !showDone ? " is-hidden" : ""}`;
       li.draggable = true;
       li.dataset.itemId = item.id;
       li.innerHTML = `
@@ -847,10 +917,18 @@
         toast("已更新種類");
       });
 
+      section.querySelector('[data-action="toggle-show-done"]').addEventListener("click", () => {
+        setShowDone(catId, !isShowDone(catId));
+        updateCategoryChrome(section, findCategory(catId));
+        toast(isShowDone(catId) ? "顯示已完成項目" : "已隱藏完成項目");
+      });
+
       section.querySelector('[data-action="delete-cat"]').addEventListener("click", () => {
         const cat = findCategory(catId);
         if (!confirm(`刪除種類「${cat.name}」同入面全部項目？`)) return;
         state = state.filter((c) => c.id !== catId);
+        delete uiState.showDoneByCat[catId];
+        saveUiState();
         saveState();
         render();
         toast("已刪除種類");
@@ -888,7 +966,6 @@
         dragCatId = null;
       });
 
-      // Drop category onto another category to reorder (insert before target)
       section.addEventListener("dragover", (e) => {
         if (dragMode !== "category") return;
         e.preventDefault();
@@ -936,7 +1013,6 @@
       if (insertAt < 0) {
         state.push(moved);
       } else {
-        // 拖去目標下半部 → 插去後面；上半部 → 插去前面
         const rect = targetEl.getBoundingClientRect();
         const after = e.clientY > rect.top + rect.height / 2;
         if (after) insertAt += 1;
@@ -972,12 +1048,9 @@
       const syncDoneUI = () => {
         const found = findItem(itemId);
         if (!found) return;
-        li.classList.toggle("done", isDone(found.item));
+        const section = li.closest(".category");
+        updateCategoryChrome(section, found.cat);
         saveState();
-        const catEl = li.closest(".category");
-        const cat = findCategory(catEl.dataset.catId);
-        catEl.querySelector(".cat-count").textContent =
-          `${cat.items.filter(isDone).length}/${cat.items.length}`;
       };
 
       li.querySelector('[data-action="toggle-d"]').addEventListener("change", (e) => {
@@ -1016,7 +1089,6 @@
         toast("已刪除項目");
       });
 
-      // Allow dropping onto another item to insert before it
       li.addEventListener("dragover", (e) => {
         if (dragMode === "category") return;
         e.preventDefault();
@@ -1043,20 +1115,14 @@
       const targetCat = findCategory(targetCatId);
       if (!targetCat) return;
 
-      // Remove from source
       from.cat.items = from.cat.items.filter((i) => i.id !== itemId);
 
-      // Insert into target
       let insertAt = targetCat.items.length;
       if (beforeItemId) {
         const idx = targetCat.items.findIndex((i) => i.id === beforeItemId);
         if (idx >= 0) insertAt = idx;
-      } else {
-        // Dropped on empty area / end of list: append
-        // If mouse is over an item, beforeItemId handles insert
       }
 
-      // Avoid placing after itself incorrectly when same category reorder to end
       targetCat.items.splice(insertAt, 0, from.item);
 
       saveState();
@@ -1088,31 +1154,42 @@
       toast("已全部取消勾選");
     });
 
-    function exportChecklist() {
-      const payload = {
+    function buildPayload() {
+      return {
         app: "luggage-packing-checklist",
         version: 3,
         exportedAt: new Date().toISOString(),
         data: state
       };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const stamp = new Date().toISOString().slice(0, 10);
-      a.href = url;
-      a.download = `行李清單-${stamp}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      toast("已 Export");
     }
 
-    function parseImportPayload(raw) {
+    async function copyChecklist() {
+      const text = JSON.stringify(buildPayload(), null, 2);
+      try {
+        await navigator.clipboard.writeText(text);
+        toast("已複製到剪貼簿");
+      } catch (_) {
+        window.prompt("請手動全選複製：", text);
+      }
+    }
+
+    function applyPastedState(next, label) {
+      if (!confirm(`貼上匯入${label || ""}？會覆蓋呢部裝置而家嘅清單（共 ${next.length} 個種類）。`)) {
+        return false;
+      }
+      state = next;
+      uiState = { showDoneByCat: {} };
+      saveUiState();
+      saveState();
+      render();
+      toast("已貼上匯入");
+      return true;
+    }
+
+    function parsePayload(raw) {
       let parsed = raw;
       if (typeof raw === "string") parsed = JSON.parse(raw);
 
-      // 支援兩種格式：完整 payload，或者直接係 categories array
       let list = null;
       if (Array.isArray(parsed)) {
         list = parsed;
@@ -1123,47 +1200,44 @@
       }
 
       if (!list || !list.length) {
-        throw new Error("檔案格式唔啱：搵唔到清單資料");
+        throw new Error("內容格式唔啱：搵唔到清單資料");
       }
       if (!list.every((cat) => cat && typeof cat.name === "string" && Array.isArray(cat.items))) {
-        throw new Error("檔案內容唔完整：種類／項目結構錯誤");
+        throw new Error("內容唔完整：種類／項目結構錯誤");
       }
       return normalize(list);
     }
 
-    function importChecklistFile(file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const next = parseImportPayload(reader.result);
-          if (!confirm(`匯入「${file.name}」？會覆蓋呢部裝置而家嘅清單（共 ${next.length} 個種類）。`)) {
-            return;
-          }
-          state = next;
-          saveState();
-          render();
-          toast("已 Import");
-        } catch (err) {
-          console.error(err);
-          toast(err.message || "Import 失敗");
+    async function pasteChecklist() {
+      try {
+        let text = "";
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          text = await navigator.clipboard.readText();
         }
-      };
-      reader.onerror = () => toast("讀檔失敗");
-      reader.readAsText(file, "UTF-8");
+        if (!text.trim()) {
+          text = window.prompt("請貼上由另一部裝置複製嘅 JSON：", "") || "";
+        }
+        if (!text.trim()) {
+          toast("剪貼簿冇內容");
+          return;
+        }
+        const next = parsePayload(text);
+        applyPastedState(next, "剪貼簿內容");
+      } catch (err) {
+        console.error(err);
+        const text = window.prompt("無法自動讀取剪貼簿，請手動貼上 JSON：", "") || "";
+        if (!text.trim()) return;
+        try {
+          const next = parsePayload(text);
+          applyPastedState(next, "貼上內容");
+        } catch (e2) {
+          toast(e2.message || "貼上失敗");
+        }
+      }
     }
 
-    document.getElementById("exportBtn").addEventListener("click", exportChecklist);
-
-    document.getElementById("importBtn").addEventListener("click", () => {
-      document.getElementById("importFile").click();
-    });
-
-    document.getElementById("importFile").addEventListener("change", (e) => {
-      const file = e.target.files && e.target.files[0];
-      e.target.value = "";
-      if (!file) return;
-      importChecklistFile(file);
-    });
+    document.getElementById("copyBtn").addEventListener("click", copyChecklist);
+    document.getElementById("pasteBtn").addEventListener("click", pasteChecklist);
 
     render();
   </script>
