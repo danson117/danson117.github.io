@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -429,7 +428,6 @@
   <script>
     const STORAGE_KEY = "luggage-packing-checklist-v3";
 
-    // 淺色主題：每類固定一組底色
     const THEME_BY_ID = {
       "cat-docs": { bg: "#e8f2fb", head: "#d9eaf8", border: "#bfd7ec" },
       "cat-itinerary": { bg: "#e8f7ef", head: "#d7f0e4", border: "#b7dfcb" },
@@ -457,103 +455,187 @@
       { bg: "#eef2f8", head: "#e2e8f3", border: "#c9d3e4" }
     ];
 
+    // 已將你提供的 JSON 資料套用為預設資料
     const FACTORY_DATA = [
       {
-        id: "cat-docs",
-        name: "證件",
-        items: [
-          "護照", "身份證", "簽證", "國際駕照/國內駕照", "機票", "醫療卡 / 保險"
+        "id": "cat-docs",
+        "name": "證件",
+        "theme": {
+          "bg": "#e8f2fb",
+          "head": "#d9eaf8",
+          "border": "#bfd7ec"
+        },
+        "items": [
+          { "id": "item-mrnnw02p-g2xuk", "text": "護照", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-6nyky", "text": "身份證", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-i9lmm", "text": "簽證", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-5hyva", "text": "醫療卡 / 保險", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-p3jp8", "text": "機票", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-b64aw", "text": "國際/國內駕照", "checkedD": false, "checkedY": false }
         ]
       },
       {
-        id: "cat-itinerary",
-        name: "行程資料",
-        items: [
-          "原子筆", "預定飯店、租車資料", "行程資料", "景點地圖"
+        "id": "cat-itinerary",
+        "name": "行程資料",
+        "theme": {
+          "bg": "#e8f7ef",
+          "head": "#d7f0e4",
+          "border": "#b7dfcb"
+        },
+        "items": [
+          { "id": "item-mrnnw02p-wvykg", "text": "原子筆", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-xcla6", "text": "景點地圖", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-3lr27", "text": "酒店", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoadog-ua6uc", "text": "租車", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnobz43-2blf0", "text": "入場券", "checkedD": false, "checkedY": false }
         ]
       },
       {
-        id: "cat-electronics",
-        name: "電子產品",
-        items: [
-          "上網 Sim 卡（SIM卡針）", "筆記本電腦、平板電腦", "萬能轉插、充電器、行動電源"
+        "id": "cat-electronics",
+        "name": "電子產品",
+        "theme": {
+          "bg": "#e9f4f4",
+          "head": "#d8ecec",
+          "border": "#b9d9d9"
+        },
+        "items": [
+          { "id": "item-mrnnw02p-p17zp", "text": "平板電腦", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-eeajd", "text": "萬能轉插", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnodgig-n4jtg", "text": "風筒", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoed0z-nm4b8", "text": "充電線", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoerhe-icq2e", "text": "鬚刨", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnohdrd-axdtx", "text": "牙刷", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnojzjx-qtzf8", "text": "小風扇", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoxgud-a4730", "text": "GPS PIN", "checkedD": false, "checkedY": false }
         ]
       },
       {
-        id: "cat-finance",
-        name: "財務",
-        items: ["換外幣", "信用卡"]
-      },
-      {
-        id: "cat-clothes-summer",
-        name: "衣服（夏天）",
-        items: ["T恤、短褲、輕便外套", "泳衣"]
-      },
-      {
-        id: "cat-clothes-winter",
-        name: "衣服（冬天）",
-        items: ["毛衣、圍巾、手套", "保暖大衣", "長褲"]
-      },
-      {
-        id: "cat-clothes-general",
-        name: "衣服（通用）",
-        items: ["內衣褲、襪子、防滑襪"]
-      },
-      {
-        id: "cat-personal",
-        name: "個人用品",
-        items: ["洗髮乳、沐浴乳、洗面乳"]
-      },
-      {
-        id: "cat-skincare",
-        name: "護膚清潔",
-        items: [
-          "保濕乳液、面霜、卸妝油、化妝棉",
-          "防曬霜、潤唇膏、護手霜",
-          "牙刷、牙膏、鬚刨、毛巾",
-          "拖鞋",
-          "化妝品",
-          "衛生棉",
-          "浴帽、梳子",
-          "眉毛鉗、小剪刀、指甲鉗、指甲挫"
+        "id": "cat-clothes-summer",
+        "name": "衣服（夏天）",
+        "theme": {
+          "bg": "#fff0e8",
+          "head": "#ffe4d6",
+          "border": "#f5cbb6"
+        },
+        "items": [
+          { "id": "item-mrnnw02p-yn0nc", "text": "衫褲", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-rlcpc", "text": "泳衣", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnog8ih-u25xf", "text": "風褸", "checkedD": false, "checkedY": false }
         ]
       },
       {
-        id: "cat-misc",
-        name: "雜項",
-        items: [
-          "太陽帽、水壺、袋",
-          "餐具、潤唇膏",
-          "太陽眼鏡",
-          "濕紙巾/面紙",
-          "塑膠袋/夾鏈袋",
-          "雨傘/輕便雨衣"
+        "id": "cat-clothes-winter",
+        "name": "衣服（冬天）",
+        "theme": {
+          "bg": "#eef2f8",
+          "head": "#e2e8f3",
+          "border": "#c9d3e4"
+        },
+        "items": [
+          { "id": "item-mrnnw02p-xk1m6", "text": "長衫褲", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-l8zbc", "text": "圍巾、手套", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-7tb72", "text": "保暖大衣", "checkedD": false, "checkedY": false }
         ]
       },
       {
-        id: "cat-medicine",
-        name: "常用藥品",
-        items: [
-          "常備藥（暈車藥、退燒藥、止痛藥、腸胃藥）",
-          "綠色藥膏/防蚊驅蟲水",
-          "膠布、OK繃"
+        "id": "cat-clothes-general",
+        "name": "衣服（通用）",
+        "theme": {
+          "bg": "#f4efe6",
+          "head": "#ebe3d6",
+          "border": "#d8cbb8"
+        },
+        "items": [
+          { "id": "item-mrnnw02p-74u1y", "text": "內衣褲", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnokn8t-84uif", "text": "防滑襪", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoi61s-iu0dl", "text": "BRA", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnowu9m-sd0ib", "text": "睡衣", "checkedD": false, "checkedY": false }
         ]
       },
       {
-        id: "cat-leaving",
-        name: "臨出門",
-        items: [
-          "牙刷", "鬚刨", "關窗", "關電器", "叉電線/器", "轉插", "證件",
-          "垃圾", "抽氣扇", "杯麵", "風筒", "眼藥水", "剪鼻毛", "SIM卡針",
-          "KEY", "睡衣", "GPS PIN", "淋花"
+        "id": "cat-personal",
+        "name": "個人用品",
+        "theme": {
+          "bg": "#eaf6f2",
+          "head": "#daf0e9",
+          "border": "#bbe0d4"
+        },
+        "items": [
+          { "id": "item-mrnol9u9-sazv4", "text": "洗髮乳", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoldiz-d6nz0", "text": "沐浴乳", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnolfhr-msb02", "text": "洗面乳", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnom7xw-aedjr", "text": "落妝膏", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoml60-mibm2", "text": "護髮素", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnp39i8-ky83w", "text": "護髮油", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnomp5o-0az9g", "text": "梳", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnonggi-buv82", "text": "面霜", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnons52-av9pg", "text": "防曬霜", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoo4da-k9dac", "text": "潤唇膏", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-xi9hs", "text": "化妝品", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoo6o6-pelnf", "text": "護手霜", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-likw2", "text": "塑膠袋", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-uashi", "text": "拖鞋", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoia4x-2739p", "text": "M巾", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-cf5sw", "text": "浴巾", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnopx0s-7hyue", "text": "太陽帽", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-rbz4r", "text": "濕紙巾/面紙", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-ht5l8", "text": "太陽眼鏡", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-l38on", "text": "雨傘", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoum3c-adfz1", "text": "老花眼鏡", "checkedD": false, "checkedY": false }
         ]
       },
       {
-        id: "cat-tasks",
-        name: "出門前任務",
-        items: [
-          "電子郵件自動回復",
-          "告訴家人或朋友自己的行程"
+        "id": "cat-medicine",
+        "name": "常用藥品",
+        "theme": {
+          "bg": "#fdeeee",
+          "head": "#f9dede",
+          "border": "#ecc0c0"
+        },
+        "items": [
+          { "id": "item-mrnnw02p-c0oxs", "text": "防蚊驅蟲水", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-rbp5f", "text": "膠布、OK繃", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnorlu6-7tlqa", "text": "退燒藥", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnorqgk-yga3a", "text": "止痛藥", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnors08-3ry29", "text": "腸胃藥", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnosmb8-zhvcp", "text": "噴鼻/ 聞氣", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnosnuj-37edr", "text": "N仔", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnosv27-wuwjs", "text": "膽固醇", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnot5lu-q19xy", "text": "收鼻水", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnotcfd-cy1q6", "text": "眼葯水", "checkedD": false, "checkedY": false }
+        ]
+      },
+      {
+        "id": "cat-tasks",
+        "name": "出門前任務",
+        "theme": {
+          "bg": "#eaf5f3",
+          "head": "#d9eeea",
+          "border": "#b9ddd5"
+        },
+        "items": [
+          { "id": "item-mrnnw02p-shl39", "text": "E-MAIL自動回復", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-0j1db", "text": "告訴家人或朋友自己的行程", "checkedD": false, "checkedY": false }
+        ]
+      },
+      {
+        "id": "cat-leaving",
+        "name": "臨出門",
+        "theme": {
+          "bg": "#fff4e6",
+          "head": "#ffe9cc",
+          "border": "#f0d2a0"
+        },
+        "items": [
+          { "id": "item-mrnnw02p-h55x6", "text": "關窗", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-t6rdd", "text": "關電器", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnoy8ae-p6uko", "text": "關水", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-4n5un", "text": "抽氣扇", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-t8le3", "text": "證件", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-d27jd", "text": "垃圾", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-33hab", "text": "剪鼻毛", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-kfmb4", "text": "KEY", "checkedD": false, "checkedY": false },
+          { "id": "item-mrnnw02p-o2rjh", "text": "淋花", "checkedD": false, "checkedY": false }
         ]
       }
     ];
