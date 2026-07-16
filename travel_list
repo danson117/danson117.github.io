@@ -1,0 +1,1089 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>行李收拾清單</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-1: #e8f1f4;
+      --bg-2: #f7f3ea;
+      --ink: #1c2a32;
+      --muted: #5a6b75;
+      --card: rgba(255, 255, 255, 0.82);
+      --line: #d5e0e6;
+      --accent: #0f766e;
+      --accent-soft: #d7f0ec;
+      --danger: #b42318;
+      --danger-soft: #fdecea;
+      --shadow: 0 10px 30px rgba(28, 42, 50, 0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Noto Sans TC", sans-serif;
+      background:
+        radial-gradient(circle at 12% 10%, #cfe8ef 0%, transparent 42%),
+        radial-gradient(circle at 88% 0%, #f3e7c8 0%, transparent 38%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2));
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 16px 64px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      font-family: Outfit, "Noto Sans TC", sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin: 0;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button, .btn {
+      font: inherit;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button.ghost {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    button.danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+    button.icon {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+    }
+    button.icon:hover { background: #eef3f6; color: var(--ink); }
+    button.icon.danger:hover { background: var(--danger-soft); color: var(--danger); }
+
+    .progress {
+      margin-bottom: 18px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      height: 12px;
+      box-shadow: var(--shadow);
+    }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0f766e, #2a9d8f);
+      transition: width 0.25s ease;
+    }
+    .progress-label {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 860px) {
+      .board { grid-template-columns: 1fr; }
+    }
+
+    .category {
+      --cat-bg: #f4f7f8;
+      --cat-head: #eef3f5;
+      --cat-border: #d5e0e6;
+      background: var(--cat-bg);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--cat-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .category.drag-over {
+      outline: 2px dashed var(--accent);
+      outline-offset: -4px;
+      filter: brightness(0.97);
+    }
+    .category.cat-dragging {
+      opacity: 0.45;
+      transform: scale(0.985);
+    }
+    .category.cat-drop-target {
+      outline: 2px solid #2b6cb0;
+      outline-offset: -3px;
+    }
+
+    .cat-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid var(--cat-border);
+      background: var(--cat-head);
+    }
+
+    .cat-handle {
+      color: #9aa8b1;
+      font-size: 1.05rem;
+      letter-spacing: -1px;
+      cursor: grab;
+      padding: 4px 2px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .cat-handle:active { cursor: grabbing; }
+
+    .cat-title {
+      flex: 1;
+      min-width: 0;
+      font-weight: 700;
+      font-size: 1.05rem;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 6px 8px;
+      background: transparent;
+      color: inherit;
+      font-family: inherit;
+    }
+    .cat-title:hover { border-color: var(--line); background: #fff; }
+    .cat-title:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+
+    .cat-count {
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+      padding-right: 4px;
+    }
+
+    .items {
+      list-style: none;
+      margin: 0;
+      padding: 8px;
+      min-height: 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      flex: 1;
+      align-content: start;
+    }
+
+    @media (max-width: 560px) {
+      .items {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: 18px auto 1fr auto;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 6px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      cursor: grab;
+      user-select: none;
+      transition: box-shadow 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+      min-width: 0;
+    }
+    .item:active { cursor: grabbing; }
+    .item.dragging {
+      opacity: 0.45;
+      transform: scale(0.98);
+    }
+    .item.done {
+      background: #f3faf8;
+      border-color: #c7e7e1;
+    }
+    .item.done .item-text {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .handle {
+      color: #9aa8b1;
+      font-size: 0.95rem;
+      text-align: center;
+      letter-spacing: -1px;
+    }
+
+    .who-checks {
+      display: flex;
+      gap: 4px;
+    }
+
+    .who {
+      position: relative;
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      border: 1.5px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--muted);
+      user-select: none;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .who input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      margin: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .who.d {
+      border-color: #8eb6d8;
+      color: #2b6cb0;
+    }
+    .who.y {
+      border-color: #d9a0b5;
+      color: #b83280;
+    }
+    .who.d:has(input:checked) {
+      background: #2b6cb0;
+      border-color: #2b6cb0;
+      color: #fff;
+      box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.18);
+    }
+    .who.y:has(input:checked) {
+      background: #b83280;
+      border-color: #b83280;
+      color: #fff;
+      box-shadow: 0 0 0 2px rgba(184, 50, 128, 0.18);
+    }
+    .who:focus-within {
+      outline: 2px solid rgba(15, 118, 110, 0.35);
+      outline-offset: 1px;
+    }
+
+    .item-text {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 4px 4px;
+      font: inherit;
+      font-size: 0.92rem;
+      width: 100%;
+      min-width: 0;
+      background: transparent;
+      color: inherit;
+    }
+    .item-text:hover { border-color: var(--line); background: #fafcfd; }
+    .item-text:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 2px;
+    }
+
+    .add-row {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px 12px;
+      border-top: 1px solid var(--cat-border);
+      background: color-mix(in srgb, var(--cat-head) 70%, #fff);
+    }
+    .add-row input {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 11px;
+      font: inherit;
+      background: #fff;
+    }
+    .add-row input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+    .add-row button {
+      border-radius: 10px;
+      padding: 9px 12px;
+      white-space: nowrap;
+    }
+
+    .hint {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 20;
+      font-size: 0.9rem;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 class="brand">行李收拾清單</h1>
+        <p class="subtitle">D = 你 · Y = 太太 · 其中一個 tick 就算完成 · 本機自動記住</p>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="ghost" id="addCategoryBtn">＋ 新增種類</button>
+        <button type="button" class="ghost" id="exportBtn" title="匯出 JSON 檔">Export</button>
+        <button type="button" class="ghost" id="importBtn" title="匯入 JSON 檔">Import</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden />
+        <button type="button" class="ghost" id="resetBtn" title="只取消全部勾選，保留你改過嘅清單">重設預設</button>
+      </div>
+    </header>
+
+    <p class="progress-label" id="progressLabel">已帶 0 / 0</p>
+    <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+    <div class="board" id="board"></div>
+    <p class="hint">提示：種類／項目左邊 ⠿ 可拖拉。Export 下載 JSON；Import 可喺另一部裝置還原。「重設預設」只取消 D／Y 勾選。</p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = "luggage-packing-checklist-v3";
+
+    // 淺色主題：每類固定一組底色
+    const THEME_BY_ID = {
+      "cat-docs": { bg: "#e8f2fb", head: "#d9eaf8", border: "#bfd7ec" },
+      "cat-itinerary": { bg: "#e8f7ef", head: "#d7f0e4", border: "#b7dfcb" },
+      "cat-electronics": { bg: "#e9f4f4", head: "#d8ecec", border: "#b9d9d9" },
+      "cat-finance": { bg: "#f8f1df", head: "#f1e6c8", border: "#e2d2a4" },
+      "cat-clothes-summer": { bg: "#fff0e8", head: "#ffe4d6", border: "#f5cbb6" },
+      "cat-clothes-winter": { bg: "#eef2f8", head: "#e2e8f3", border: "#c9d3e4" },
+      "cat-clothes-general": { bg: "#f4efe6", head: "#ebe3d6", border: "#d8cbb8" },
+      "cat-personal": { bg: "#eaf6f2", head: "#daf0e9", border: "#bbe0d4" },
+      "cat-skincare": { bg: "#fceef2", head: "#f8e0e8", border: "#ecc6d2" },
+      "cat-misc": { bg: "#f7f5e6", head: "#efebd3", border: "#ddd6b0" },
+      "cat-medicine": { bg: "#fdeeee", head: "#f9dede", border: "#ecc0c0" },
+      "cat-leaving": { bg: "#fff4e6", head: "#ffe9cc", border: "#f0d2a0" },
+      "cat-tasks": { bg: "#eaf5f3", head: "#d9eeea", border: "#b9ddd5" }
+    };
+
+    const THEME_PALETTE = [
+      { bg: "#e8f2fb", head: "#d9eaf8", border: "#bfd7ec" },
+      { bg: "#e8f7ef", head: "#d7f0e4", border: "#b7dfcb" },
+      { bg: "#fff0e8", head: "#ffe4d6", border: "#f5cbb6" },
+      { bg: "#f8f1df", head: "#f1e6c8", border: "#e2d2a4" },
+      { bg: "#fceef2", head: "#f8e0e8", border: "#ecc6d2" },
+      { bg: "#eaf5f3", head: "#d9eeea", border: "#b9ddd5" },
+      { bg: "#f4efe6", head: "#ebe3d6", border: "#d8cbb8" },
+      { bg: "#eef2f8", head: "#e2e8f3", border: "#c9d3e4" }
+    ];
+
+    const FACTORY_DATA = [
+      {
+        id: "cat-docs",
+        name: "證件",
+        items: [
+          "護照", "身份證", "簽證", "國際駕照/國內駕照", "機票", "醫療卡 / 保險"
+        ]
+      },
+      {
+        id: "cat-itinerary",
+        name: "行程資料",
+        items: [
+          "原子筆", "預定飯店、租車資料", "行程資料", "景點地圖"
+        ]
+      },
+      {
+        id: "cat-electronics",
+        name: "電子產品",
+        items: [
+          "上網 Sim 卡（SIM卡針）", "筆記本電腦、平板電腦", "萬能轉插、充電器、行動電源"
+        ]
+      },
+      {
+        id: "cat-finance",
+        name: "財務",
+        items: ["換外幣", "信用卡"]
+      },
+      {
+        id: "cat-clothes-summer",
+        name: "衣服（夏天）",
+        items: ["T恤、短褲、輕便外套", "泳衣"]
+      },
+      {
+        id: "cat-clothes-winter",
+        name: "衣服（冬天）",
+        items: ["毛衣、圍巾、手套", "保暖大衣", "長褲"]
+      },
+      {
+        id: "cat-clothes-general",
+        name: "衣服（通用）",
+        items: ["內衣褲、襪子、防滑襪"]
+      },
+      {
+        id: "cat-personal",
+        name: "個人用品",
+        items: ["洗髮乳、沐浴乳、洗面乳"]
+      },
+      {
+        id: "cat-skincare",
+        name: "護膚清潔",
+        items: [
+          "保濕乳液、面霜、卸妝油、化妝棉",
+          "防曬霜、潤唇膏、護手霜",
+          "牙刷、牙膏、鬚刨、毛巾",
+          "拖鞋",
+          "化妝品",
+          "衛生棉",
+          "浴帽、梳子",
+          "眉毛鉗、小剪刀、指甲鉗、指甲挫"
+        ]
+      },
+      {
+        id: "cat-misc",
+        name: "雜項",
+        items: [
+          "太陽帽、水壺、袋",
+          "餐具、潤唇膏",
+          "太陽眼鏡",
+          "濕紙巾/面紙",
+          "塑膠袋/夾鏈袋",
+          "雨傘/輕便雨衣"
+        ]
+      },
+      {
+        id: "cat-medicine",
+        name: "常用藥品",
+        items: [
+          "常備藥（暈車藥、退燒藥、止痛藥、腸胃藥）",
+          "綠色藥膏/防蚊驅蟲水",
+          "膠布、OK繃"
+        ]
+      },
+      {
+        id: "cat-leaving",
+        name: "臨出門",
+        items: [
+          "牙刷", "鬚刨", "關窗", "關電器", "叉電線/器", "轉插", "證件",
+          "垃圾", "抽氣扇", "杯麵", "風筒", "眼藥水", "剪鼻毛", "SIM卡針",
+          "KEY", "睡衣", "GPS PIN", "淋花"
+        ]
+      },
+      {
+        id: "cat-tasks",
+        name: "出門前任務",
+        items: [
+          "電子郵件自動回復",
+          "告訴家人或朋友自己的行程"
+        ]
+      }
+    ];
+
+    let state = loadState();
+    let dragItemId = null;
+    let dragFromCatId = null;
+    let dragCatId = null;
+    let dragMode = null; // 'item' | 'category'
+
+    function uid(prefix) {
+      return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    function resolveTheme(cat, index) {
+      if (cat.theme && cat.theme.bg && cat.theme.head && cat.theme.border) {
+        return cat.theme;
+      }
+      if (THEME_BY_ID[cat.id]) return THEME_BY_ID[cat.id];
+      return THEME_PALETTE[index % THEME_PALETTE.length];
+    }
+
+    function isDone(item) {
+      return !!(item.checkedD || item.checkedY);
+    }
+
+    function normalizeItem(item) {
+      if (typeof item === "string") {
+        return { id: uid("item"), text: item, checkedD: false, checkedY: false };
+      }
+      // 舊版單一 checked → 遷移為 D（你）已勾
+      const legacy = !!item.checked;
+      return {
+        id: item.id || uid("item"),
+        text: item.text || "",
+        checkedD: item.checkedD != null ? !!item.checkedD : legacy,
+        checkedY: !!item.checkedY
+      };
+    }
+
+    function normalize(raw) {
+      return raw.map((cat, index) => {
+        const id = cat.id || uid("cat");
+        return {
+          id,
+          name: cat.name,
+          theme: resolveTheme({ ...cat, id }, index),
+          items: (cat.items || []).map(normalizeItem)
+        };
+      });
+    }
+
+    function loadState() {
+      try {
+        const saved =
+          localStorage.getItem(STORAGE_KEY) ||
+          localStorage.getItem("luggage-packing-checklist-v2") ||
+          localStorage.getItem("luggage-packing-checklist-v1");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length) {
+            const normalized = normalize(parsed);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+            return normalized;
+          }
+        }
+      } catch (_) {}
+      return normalize(FACTORY_DATA);
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateProgress();
+    }
+
+    function untickAll() {
+      for (const cat of state) {
+        for (const item of cat.items) {
+          item.checkedD = false;
+          item.checkedY = false;
+        }
+      }
+      saveState();
+      render();
+    }
+
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 1600);
+    }
+
+    function findCategory(catId) {
+      return state.find((c) => c.id === catId);
+    }
+
+    function findItem(itemId) {
+      for (const cat of state) {
+        const item = cat.items.find((i) => i.id === itemId);
+        if (item) return { cat, item };
+      }
+      return null;
+    }
+
+    function updateProgress() {
+      let total = 0;
+      let done = 0;
+      let dCount = 0;
+      let yCount = 0;
+      for (const cat of state) {
+        total += cat.items.length;
+        done += cat.items.filter(isDone).length;
+        dCount += cat.items.filter((i) => i.checkedD).length;
+        yCount += cat.items.filter((i) => i.checkedY).length;
+      }
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      document.getElementById("progressLabel").textContent =
+        `完成 ${done} / ${total}（${pct}%）· D ${dCount} · Y ${yCount}`;
+      document.getElementById("progressBar").style.width = `${pct}%`;
+    }
+
+    function render() {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+
+      state.forEach((cat) => {
+        const checked = cat.items.filter(isDone).length;
+        const section = document.createElement("section");
+        section.className = "category";
+        section.dataset.catId = cat.id;
+        section.style.setProperty("--cat-bg", cat.theme.bg);
+        section.style.setProperty("--cat-head", cat.theme.head);
+        section.style.setProperty("--cat-border", cat.theme.border);
+
+        section.innerHTML = `
+          <div class="cat-head">
+            <span class="cat-handle" title="拖曳種類排序" draggable="true" data-action="drag-cat">⠿</span>
+            <input class="cat-title" type="text" value="${escapeAttr(cat.name)}" aria-label="種類名稱" data-action="rename-cat" />
+            <span class="cat-count">${checked}/${cat.items.length}</span>
+            <button type="button" class="icon danger" title="刪除種類" data-action="delete-cat" aria-label="刪除種類">✕</button>
+          </div>
+          <ul class="items" data-dropzone="true"></ul>
+          <form class="add-row" data-action="add-item">
+            <input type="text" name="text" placeholder="新增項目…" maxlength="80" required />
+            <button type="submit">加入</button>
+          </form>
+        `;
+
+        const list = section.querySelector(".items");
+        cat.items.forEach((item) => {
+          list.appendChild(renderItem(item));
+        });
+
+        board.appendChild(section);
+        bindCategoryEvents(section, cat.id);
+      });
+
+      updateProgress();
+    }
+
+    function renderItem(item) {
+      const li = document.createElement("li");
+      li.className = `item${isDone(item) ? " done" : ""}`;
+      li.draggable = true;
+      li.dataset.itemId = item.id;
+      li.innerHTML = `
+        <span class="handle" title="拖曳">⠿</span>
+        <div class="who-checks">
+          <label class="who d" title="D（我）">
+            <input type="checkbox" ${item.checkedD ? "checked" : ""} aria-label="D 已帶" data-action="toggle-d" />
+            D
+          </label>
+          <label class="who y" title="Y（太太）">
+            <input type="checkbox" ${item.checkedY ? "checked" : ""} aria-label="Y 已帶" data-action="toggle-y" />
+            Y
+          </label>
+        </div>
+        <input class="item-text" type="text" value="${escapeAttr(item.text)}" aria-label="項目名稱" data-action="rename-item" />
+        <div class="item-actions">
+          <button type="button" class="icon danger" title="刪除項目" data-action="delete-item" aria-label="刪除項目">✕</button>
+        </div>
+      `;
+      bindItemEvents(li);
+      return li;
+    }
+
+    function escapeAttr(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function bindCategoryEvents(section, catId) {
+      const title = section.querySelector('[data-action="rename-cat"]');
+      title.addEventListener("change", () => {
+        const cat = findCategory(catId);
+        const next = title.value.trim();
+        if (!next) {
+          title.value = cat.name;
+          toast("種類名唔可以空白");
+          return;
+        }
+        cat.name = next;
+        saveState();
+        toast("已更新種類");
+      });
+
+      section.querySelector('[data-action="delete-cat"]').addEventListener("click", () => {
+        const cat = findCategory(catId);
+        if (!confirm(`刪除種類「${cat.name}」同入面全部項目？`)) return;
+        state = state.filter((c) => c.id !== catId);
+        saveState();
+        render();
+        toast("已刪除種類");
+      });
+
+      section.querySelector('[data-action="add-item"]').addEventListener("submit", (e) => {
+        e.preventDefault();
+        const input = e.target.elements.text;
+        const text = input.value.trim();
+        if (!text) return;
+        const cat = findCategory(catId);
+        cat.items.push({ id: uid("item"), text, checkedD: false, checkedY: false });
+        input.value = "";
+        saveState();
+        render();
+        toast("已加入項目");
+      });
+
+      const catHandle = section.querySelector('[data-action="drag-cat"]');
+      catHandle.addEventListener("dragstart", (e) => {
+        e.stopPropagation();
+        dragMode = "category";
+        dragCatId = catId;
+        section.classList.add("cat-dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", `cat:${catId}`);
+        e.dataTransfer.setData("application/x-cat-id", catId);
+      });
+      catHandle.addEventListener("dragend", () => {
+        section.classList.remove("cat-dragging");
+        document.querySelectorAll(".category").forEach((c) => {
+          c.classList.remove("cat-drop-target", "drag-over");
+        });
+        dragMode = null;
+        dragCatId = null;
+      });
+
+      // Drop category onto another category to reorder (insert before target)
+      section.addEventListener("dragover", (e) => {
+        if (dragMode !== "category") return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (dragCatId === catId) return;
+        section.classList.add("cat-drop-target");
+      });
+      section.addEventListener("dragleave", () => {
+        section.classList.remove("cat-drop-target");
+      });
+      section.addEventListener("drop", (e) => {
+        if (dragMode !== "category") return;
+        e.preventDefault();
+        e.stopPropagation();
+        section.classList.remove("cat-drop-target");
+        handleCategoryDrop(catId, e, section);
+      });
+
+      const dropzone = section.querySelector("[data-dropzone]");
+      dropzone.addEventListener("dragover", (e) => {
+        if (dragMode === "category") return;
+        e.preventDefault();
+        section.classList.add("drag-over");
+      });
+      dropzone.addEventListener("dragleave", () => {
+        section.classList.remove("drag-over");
+      });
+      dropzone.addEventListener("drop", (e) => {
+        if (dragMode === "category") return;
+        e.preventDefault();
+        section.classList.remove("drag-over");
+        handleDrop(catId, e);
+      });
+    }
+
+    function handleCategoryDrop(targetCatId, e, targetEl) {
+      const movingId = dragCatId;
+      if (!movingId || movingId === targetCatId) return;
+
+      const fromIdx = state.findIndex((c) => c.id === movingId);
+      if (fromIdx < 0) return;
+
+      const [moved] = state.splice(fromIdx, 1);
+      let insertAt = state.findIndex((c) => c.id === targetCatId);
+      if (insertAt < 0) {
+        state.push(moved);
+      } else {
+        // 拖去目標下半部 → 插去後面；上半部 → 插去前面
+        const rect = targetEl.getBoundingClientRect();
+        const after = e.clientY > rect.top + rect.height / 2;
+        if (after) insertAt += 1;
+        state.splice(insertAt, 0, moved);
+      }
+
+      saveState();
+      render();
+      toast("已調整種類順序");
+    }
+
+    function bindItemEvents(li) {
+      const itemId = li.dataset.itemId;
+
+      li.addEventListener("dragstart", (e) => {
+        dragMode = "item";
+        dragItemId = itemId;
+        const found = findItem(itemId);
+        dragFromCatId = found ? found.cat.id : null;
+        li.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", itemId);
+      });
+
+      li.addEventListener("dragend", () => {
+        li.classList.remove("dragging");
+        document.querySelectorAll(".category").forEach((c) => c.classList.remove("drag-over", "cat-drop-target"));
+        dragItemId = null;
+        dragFromCatId = null;
+        dragMode = null;
+      });
+
+      const syncDoneUI = () => {
+        const found = findItem(itemId);
+        if (!found) return;
+        li.classList.toggle("done", isDone(found.item));
+        saveState();
+        const catEl = li.closest(".category");
+        const cat = findCategory(catEl.dataset.catId);
+        catEl.querySelector(".cat-count").textContent =
+          `${cat.items.filter(isDone).length}/${cat.items.length}`;
+      };
+
+      li.querySelector('[data-action="toggle-d"]').addEventListener("change", (e) => {
+        const found = findItem(itemId);
+        if (!found) return;
+        found.item.checkedD = e.target.checked;
+        syncDoneUI();
+      });
+
+      li.querySelector('[data-action="toggle-y"]').addEventListener("change", (e) => {
+        const found = findItem(itemId);
+        if (!found) return;
+        found.item.checkedY = e.target.checked;
+        syncDoneUI();
+      });
+
+      li.querySelector('[data-action="rename-item"]').addEventListener("change", (e) => {
+        const found = findItem(itemId);
+        if (!found) return;
+        const next = e.target.value.trim();
+        if (!next) {
+          e.target.value = found.item.text;
+          toast("項目名唔可以空白");
+          return;
+        }
+        found.item.text = next;
+        saveState();
+      });
+
+      li.querySelector('[data-action="delete-item"]').addEventListener("click", () => {
+        const found = findItem(itemId);
+        if (!found) return;
+        found.cat.items = found.cat.items.filter((i) => i.id !== itemId);
+        saveState();
+        render();
+        toast("已刪除項目");
+      });
+
+      // Allow dropping onto another item to insert before it
+      li.addEventListener("dragover", (e) => {
+        if (dragMode === "category") return;
+        e.preventDefault();
+        e.stopPropagation();
+        li.closest(".category")?.classList.add("drag-over");
+      });
+      li.addEventListener("drop", (e) => {
+        if (dragMode === "category") return;
+        e.preventDefault();
+        e.stopPropagation();
+        const catId = li.closest(".category").dataset.catId;
+        handleDrop(catId, e, itemId);
+      });
+    }
+
+    function handleDrop(targetCatId, e, beforeItemId = null) {
+      if (dragMode === "category") return;
+      const itemId = dragItemId || e.dataTransfer.getData("text/plain");
+      if (!itemId || String(itemId).startsWith("cat:")) return;
+
+      const from = findItem(itemId);
+      if (!from) return;
+
+      const targetCat = findCategory(targetCatId);
+      if (!targetCat) return;
+
+      // Remove from source
+      from.cat.items = from.cat.items.filter((i) => i.id !== itemId);
+
+      // Insert into target
+      let insertAt = targetCat.items.length;
+      if (beforeItemId) {
+        const idx = targetCat.items.findIndex((i) => i.id === beforeItemId);
+        if (idx >= 0) insertAt = idx;
+      } else {
+        // Dropped on empty area / end of list: append
+        // If mouse is over an item, beforeItemId handles insert
+      }
+
+      // Avoid placing after itself incorrectly when same category reorder to end
+      targetCat.items.splice(insertAt, 0, from.item);
+
+      saveState();
+      render();
+    }
+
+    document.getElementById("addCategoryBtn").addEventListener("click", () => {
+      const name = prompt("新種類名稱：", "新種類");
+      if (name === null) return;
+      const trimmed = name.trim();
+      if (!trimmed) {
+        toast("種類名唔可以空白");
+        return;
+      }
+      state.push({
+        id: uid("cat"),
+        name: trimmed,
+        theme: THEME_PALETTE[state.length % THEME_PALETTE.length],
+        items: []
+      });
+      saveState();
+      render();
+      toast("已新增種類");
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      if (!confirm("全部取消 D 同 Y 嘅勾選？種類同項目會保留。")) return;
+      untickAll();
+      toast("已全部取消勾選");
+    });
+
+    function exportChecklist() {
+      const payload = {
+        app: "luggage-packing-checklist",
+        version: 3,
+        exportedAt: new Date().toISOString(),
+        data: state
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `行李清單-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast("已 Export");
+    }
+
+    function parseImportPayload(raw) {
+      let parsed = raw;
+      if (typeof raw === "string") parsed = JSON.parse(raw);
+
+      // 支援兩種格式：完整 payload，或者直接係 categories array
+      let list = null;
+      if (Array.isArray(parsed)) {
+        list = parsed;
+      } else if (parsed && Array.isArray(parsed.data)) {
+        list = parsed.data;
+      } else if (parsed && Array.isArray(parsed.categories)) {
+        list = parsed.categories;
+      }
+
+      if (!list || !list.length) {
+        throw new Error("檔案格式唔啱：搵唔到清單資料");
+      }
+      if (!list.every((cat) => cat && typeof cat.name === "string" && Array.isArray(cat.items))) {
+        throw new Error("檔案內容唔完整：種類／項目結構錯誤");
+      }
+      return normalize(list);
+    }
+
+    function importChecklistFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const next = parseImportPayload(reader.result);
+          if (!confirm(`匯入「${file.name}」？會覆蓋呢部裝置而家嘅清單（共 ${next.length} 個種類）。`)) {
+            return;
+          }
+          state = next;
+          saveState();
+          render();
+          toast("已 Import");
+        } catch (err) {
+          console.error(err);
+          toast(err.message || "Import 失敗");
+        }
+      };
+      reader.onerror = () => toast("讀檔失敗");
+      reader.readAsText(file, "UTF-8");
+    }
+
+    document.getElementById("exportBtn").addEventListener("click", exportChecklist);
+
+    document.getElementById("importBtn").addEventListener("click", () => {
+      document.getElementById("importFile").click();
+    });
+
+    document.getElementById("importFile").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if (!file) return;
+      importChecklistFile(file);
+    });
+
+    render();
+  </script>
+</body>
+</html>
