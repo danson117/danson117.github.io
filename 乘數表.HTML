@@ -3,271 +3,903 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>99乘法表（九九表）</title>
+    <title>數學 · 乘數表</title>
+    <link rel="stylesheet" href="math-tailwind.css">
     <style>
-        body {
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap');
+        html, body { margin: 0; padding: 0; }
+
+        #view-table {
             font-family: "Helvetica Neue", Helvetica, Arial, "Microsoft JhengHei", sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f9f9f9;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 0; padding: 20px; background-color: #f9f9f9; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
         }
-
-        .container {
-            max-width: 1100px;
-            width: 100%;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        #view-table.is-hidden { display: none; }
+        #view-table .container {
+            max-width: 1100px; width: 100%; background: white; padding: 20px;
+            border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-
-        .header-title {
-            color: #cc4b25;
-            border-left: 5px solid #cc4b25;
-            padding-left: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 0;
-            margin-bottom: 20px;
+        #view-table .header-title {
+            color: #cc4b25; border-left: 5px solid #cc4b25; padding-left: 10px;
+            font-size: 24px; font-weight: bold; margin-top: 0; margin-bottom: 20px;
         }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            justify-content: center;
+        #view-table .controls {
+            display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap;
         }
+        #view-table button {
+            padding: 10px 20px; font-size: 16px; font-weight: bold; border: none; border-radius: 5px;
+            cursor: pointer; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #view-table button:active { transform: scale(0.95); }
+        #view-table #btn-show { background-color: #4CAF50; }
+        #view-table #btn-hide { background-color: #f44336; }
+        #view-table #btn-quiz { background-color: #2563eb; }
+        #view-table .table-wrapper { width: 100%; overflow-x: auto; }
+        #view-table .grid-container {
+            display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; min-width: 900px; background: #fff;
+        }
+        #view-table .col-header {
+            color: white; font-size: 20px; font-weight: bold; text-align: center;
+            padding: 10px 0; cursor: pointer; user-select: none;
+        }
+        #view-table .header-green { background-color: #71b212; }
+        #view-table .header-orange { background-color: #f0810f; }
+        #view-table .cell {
+            background-color: #fffde6; text-align: center; padding: 12px 5px; font-size: 18px;
+            font-weight: bold; color: #000; cursor: pointer; user-select: none;
+            display: flex; justify-content: center; align-items: center;
+        }
+        #view-table .equation { display: inline-block; text-align: right; }
+        #view-table .answer {
+            display: inline-block; width: 35px; text-align: left; opacity: 0;
+            font-size: 24px; font-weight: 900; margin-left: 12px;
+        }
+        #view-table .answer-red { color: #b30000; }
+        #view-table .answer-green { color: #008000; }
+        #view-table .cell.revealed .answer { opacity: 1; }
 
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+        #view-quiz {
+            display: none;
+            font-family: 'Nunito', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #112240, #2a0845);
+            color: white; min-height: 100vh; overflow-x: hidden; user-select: none;
+            align-items: center; justify-content: center; padding: 1rem;
+        }
+        #view-quiz.is-active { display: flex; }
+
+        #view-quiz {
+            font-family: 'Nunito', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #112240, #2a0845);
             color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
-        #btn-show {
-            background-color: #4CAF50;
-        }
-        #btn-show:hover {
-            background-color: #45a049;
-        }
-
-        #btn-hide {
-            background-color: #f44336;
-        }
-        #btn-hide:hover {
-            background-color: #da190b;
-        }
-
-        .table-wrapper {
-            width: 100%;
-            overflow-x: auto; /* 手機版可以左右滑動 */
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            gap: 2px;
-            min-width: 900px; /* 稍微加闊以容納更大的字體和空格 */
-            background-color: #fff;
-        }
-
-        .col-header {
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            padding: 10px 0;
-            cursor: pointer; /* 加入鼠標變成手指的樣式 */
-            transition: opacity 0.2s;
+            min-height: 100vh;
+            overflow-x: hidden;
             user-select: none;
         }
 
-        .col-header:hover {
-            opacity: 0.85; /* 滑鼠懸停時稍微變淡，提示可點擊 */
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
         }
 
-        .header-green { background-color: #71b212; }
-        .header-orange { background-color: #f0810f; }
+        .pop { animation: pop 0.3s ease-out forwards; }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
 
-        .cell {
-            /* 將原本的淺黃色 (#fefbc6) 改為更淡更淺的黃色 (#fffde6) */
-            background-color: #fffde6; 
-            text-align: center;
-            padding: 12px 5px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #000;
-            cursor: pointer;
-            user-select: none; /* 防止反白文字 */
-            transition: background-color 0.2s;
+        .confetti {
+            position: fixed; top: -10px; width: 12px; height: 12px;
+            z-index: 9999; animation: fall linear forwards; border-radius: 2px;
+        }
+        @keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
+
+        .floating-star {
+            position: absolute; font-size: 2rem; pointer-events: none;
+            animation: floatUp 1s ease-out forwards; z-index: 50;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+
+        .custom-checkbox input:checked + div {
+            background-color: #f59e0b; border-color: #f59e0b; transform: scale(1.05);
+        }
+        /* 數字鍵盤 */
+        #answer-display {
+            width: 100%;
+            min-height: 4.5rem;
+            margin-bottom: 1rem;
+            background: #fff;
+            color: #1e3a8a;
+            font-weight: 800;
+            font-size: 3rem;
+            border-radius: 1rem;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            letter-spacing: 0.12em;
+            box-shadow: 0 6px 0 #94a3b8;
         }
+        #answer-display.is-correct { background: #4ade80; color: #fff; }
+        #answer-display.is-wrong { background: #f87171; color: #fff; }
+        #answer-digits.is-placeholder { color: #94a3b8; letter-spacing: 0; }
+        #keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            width: 100%;
+        }
+        .key-btn {
+            background: #fff;
+            color: #1e3a8a;
+            font-weight: 800;
+            font-size: 1.75rem;
+            padding: 1.1rem 0;
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 6px 0 #94a3b8;
+            cursor: pointer;
+        }
+        .key-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #94a3b8; }
+        .key-btn:disabled { opacity: 0.55; cursor: default; }
+        .key-btn.is-back { background: #cbd5e1; color: #334155; }
+        .key-btn.is-ok { background: #f59e0b; color: #fff; box-shadow: 0 6px 0 #b45309; }
 
-        .cell:hover {
-            /* 滑鼠懸停時的顏色也相應調淡 */
-            background-color: #fff9c4; 
+        /* 錯題庫：每行 3rem（text-xl 1.75rem + padding 0.5rem*2 + border 2px*2），10 行 + 9 個 0.5rem gap */
+        .mistake-cb { width: 1.5rem; height: 1.5rem; cursor: pointer; flex-shrink: 0; }
+        .mistake-row {
+            display: flex; align-items: center; justify-content: space-between;
+            box-sizing: border-box; flex-shrink: 0;
+            gap: 0.75rem; background: rgba(255,255,255,0.1); padding: 0.5rem 1rem;
+            min-height: 3rem;
+            border-radius: 0.75rem; cursor: pointer; border: 2px solid transparent;
         }
-
-        .equation {
-            display: inline-block;
-            text-align: right;
+        .mistake-row.is-picked { background: rgba(245,158,11,0.25); border-color: #f59e0b; }
+        #mistake-list {
+            max-height: calc((3rem * 10) + (0.5rem * 9));
         }
-
-        .answer {
-            display: inline-block;
-            width: 35px; /* 加闊以容納更大的答案字體 */
-            text-align: left;
-            opacity: 0; /* 預設隱藏 */
-            transition: opacity 0.2s ease-in-out;
-            
-            /* 字體變大、等號後加空格 */
-            font-size: 24px; /* 答案字體變大 */
-            font-weight: 900; /* 答案字體加粗 */
-            margin-left: 12px; /* 在等號和答案之間加入距離（相當於兩個空格） */
-        }
-
-        /* 根據單雙數設定不同顏色 */
-        .answer-red {
-            color: #b30000; /* 酒紅色 (單數) */
-        }
-        
-        .answer-green {
-            color: #008000; /* 綠色 (雙數) */
-        }
-
-        /* 當加入 revealed class 時顯示答案 */
-        .cell.revealed .answer {
-            opacity: 1;
-        }
-
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1 class="header-title">99乘法表（九九表）</h1>
-    
-    <div class="controls">
-        <button id="btn-show">顯示全部</button>
-        <button id="btn-hide">隱藏全部</button>
-    </div>
-
-    <div class="table-wrapper">
-        <div class="grid-container" id="multiplication-grid">
-            <!-- 乘法表內容將由 JavaScript 動態生成 -->
+    <div id="view-table">
+        <div class="container">
+            <h1 class="header-title">99乘法表（九九表）</h1>
+            <div class="controls">
+                <button id="btn-show" type="button">顯示全部</button>
+                <button id="btn-hide" type="button">隱藏全部</button>
+                <button id="btn-quiz" type="button">🚀 開始測驗</button>
+            </div>
+            <div class="table-wrapper">
+                <div class="grid-container" id="multiplication-grid"></div>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const gridContainer = document.getElementById('multiplication-grid');
+    <div id="view-quiz">
+
+
+    <!-- 開始畫面 -->
+    <div id="start-screen" class="w-full max-w-md bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/20 text-center flex flex-col">
+        <h1 class="text-3xl font-bold mb-2 text-yellow-400">🚀 數學太空探險 🌟</h1>
+        <p class="text-blue-200 mb-2 text-sm">混合測驗：單位數乘數（2–9）＋ 雙位數加／減</p>
+        <p class="text-blue-300 mb-4 text-xs leading-relaxed">每次大約各佔三分一；題目唔會重複。乘數最多 72 條（2–9 全表）。</p>
         
-        // 第一排：全部都是標題 (1 到 9)
-        for (let col = 1; col <= 9; col++) {
-            const header = document.createElement('div');
-            // 單數列綠色，雙數列橙色
-            header.className = `col-header ${col % 2 !== 0 ? 'header-green' : 'header-orange'}`;
-            header.textContent = col;
-            
-            // 加入點擊標題控制整列顯示/隱藏的功能
-            header.addEventListener('click', () => {
-                // 找出所有屬於這個直行的格子
-                const columnCells = document.querySelectorAll(`.cell[data-col="${col}"]`);
-                
-                // 檢查是否整列都已經顯示了
-                let allRevealed = true;
-                columnCells.forEach(cell => {
-                    if (!cell.classList.contains('revealed')) {
-                        allRevealed = false;
-                    }
-                });
-                
-                // 如果全部都顯示了，就全部隱藏；否則就全部顯示
-                columnCells.forEach(cell => {
-                    if (allRevealed) {
-                        cell.classList.remove('revealed');
-                    } else {
-                        cell.classList.add('revealed');
-                    }
-                });
-            });
-            
-            gridContainer.appendChild(header);
+        <p class="text-yellow-300 font-bold mb-2 text-sm">今次要做幾多題？</p>
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <script>
+                const quizSizes = [50, 100, 150, 200];
+                for (let i = 0; i < quizSizes.length; i++) {
+                    const n = quizSizes[i];
+                    const checked = n === 50 ? 'checked' : '';
+                    document.write(`
+                        <label class="custom-checkbox cursor-pointer relative">
+                            <input type="radio" name="quiz-size" value="${n}" class="peer sr-only quiz-size-cb" ${checked}>
+                            <div class="rounded-xl border-2 border-blue-400/50 p-3 text-xl font-bold text-white bg-blue-900/50 hover:bg-blue-800/50 transition-all">
+                                ${n} 題
+                            </div>
+                        </label>
+                    `);
+                }
+            </script>
+        </div>
+
+        <button onclick="startGame(false)" class="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-white font-bold py-4 rounded-2xl text-2xl shadow-lg transform transition hover:scale-105 active:scale-95 mb-4">
+            開始探險！ 🛸
+        </button>
+
+        <div class="flex gap-2">
+            <button onclick="startGame(true)" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                特訓錯題庫 🎯
+            </button>
+            <button onclick="openMistakeManager()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                管理錯題庫 📁
+            </button>
+        </div>
+        <button type="button" onclick="showTableView()" class="mt-4 w-full bg-white/15 hover:bg-white/25 text-white font-bold py-3 rounded-xl shadow-lg transition border border-white/30">
+            📘 返回乘數表
+        </button>
+    </div>
+
+    <!-- 遊戲畫面 -->
+    <div id="game-screen" class="w-full max-w-md hidden flex-col items-center">
+        
+        <!-- 頂部資訊 (進度與對錯) -->
+        <div class="w-full flex justify-between items-center bg-white/10 backdrop-blur-sm p-4 rounded-2xl mb-4 border border-white/20">
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-blue-200">進度 (一回合)</span>
+                <span id="progress-display" class="text-lg font-bold text-white">0/0</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-blue-200">答啱</span>
+                <span id="correct-display" class="text-lg font-bold text-green-400">✅ 0</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-blue-200">答錯</span>
+                <span id="wrong-display" class="text-lg font-bold text-red-400">❌ 0</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-blue-200">連中</span>
+                <span id="combo-display" class="text-lg font-bold text-yellow-400">🔥 0</span>
+            </div>
+        </div>
+
+        <!-- 鼓勵字句 -->
+        <div id="cheer-msg" class="h-8 text-xl font-bold text-pink-400 mb-2 opacity-0 transition-opacity duration-300">
+            好叻！
+        </div>
+
+        <!-- 題目區域 -->
+        <div id="question-container" class="relative w-full bg-gradient-to-b from-blue-500 to-blue-700 p-6 rounded-3xl shadow-2xl border-4 border-blue-400 mb-4 text-center">
+            <h2 id="question-text" class="text-5xl sm:text-6xl font-extrabold tracking-wider text-white drop-shadow-md">
+                3 × 9 =
+            </h2>
+        </div>
+
+        <!-- 數字鍵盤作答 -->
+        <div id="keypad-wrap" class="w-full">
+            <div id="answer-display">
+                <span id="answer-digits" class="is-placeholder">?</span>
+            </div>
+            <div id="keypad">
+                <button type="button" class="key-btn" data-digit="1">1</button>
+                <button type="button" class="key-btn" data-digit="2">2</button>
+                <button type="button" class="key-btn" data-digit="3">3</button>
+                <button type="button" class="key-btn" data-digit="4">4</button>
+                <button type="button" class="key-btn" data-digit="5">5</button>
+                <button type="button" class="key-btn" data-digit="6">6</button>
+                <button type="button" class="key-btn" data-digit="7">7</button>
+                <button type="button" class="key-btn" data-digit="8">8</button>
+                <button type="button" class="key-btn" data-digit="9">9</button>
+                <button type="button" class="key-btn is-back" id="key-back">⌫</button>
+                <button type="button" class="key-btn" data-digit="0">0</button>
+                <button type="button" class="key-btn is-ok" id="key-ok">確認</button>
+            </div>
+        </div>
+        
+        <button id="quit-game-btn" onclick="backToMenu()" class="mt-8 text-blue-300 underline text-sm hover:text-white">
+            放棄並返去主目錄
+        </button>
+
+        <!-- 全部完成畫面 -->
+        <div id="complete-screen" class="hidden w-full flex-col items-center bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/20 mt-2">
+            <h2 class="text-3xl font-bold text-yellow-400 mb-3 text-center">🎉 全部完成！</h2>
+            <p id="complete-msg" class="text-blue-100 text-center mb-4 text-lg leading-relaxed"></p>
+            <div class="w-full flex justify-around bg-white/10 rounded-2xl p-4 mb-6">
+                <div class="text-center">
+                    <div class="text-xs text-blue-200 mb-1">總題數</div>
+                    <div id="complete-total" class="text-2xl font-bold text-white">0</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-blue-200 mb-1">答啱</div>
+                    <div id="complete-correct" class="text-2xl font-bold text-green-400">0</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-blue-200 mb-1">答錯</div>
+                    <div id="complete-wrong" class="text-2xl font-bold text-red-400">0</div>
+                </div>
+            </div>
+            <button onclick="backToMenu()" class="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-white font-bold py-4 rounded-2xl text-xl shadow-lg transform transition hover:scale-105 active:scale-95">
+                返回主目錄 🏠
+            </button>
+        </div>
+    </div>
+
+    <!-- 錯題庫管理畫面 -->
+    <div id="mistake-screen" class="w-full max-w-md hidden flex-col bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/20">
+        <h2 class="text-2xl font-bold mb-2 text-yellow-400 text-center">📁 錯題庫</h2>
+        <p class="text-sm text-blue-200 mb-3 text-center">顯示題目同答案，方便溫書。剔選之後可以再測或者刪除。</p>
+
+        <button type="button" id="btn-select-all" onclick="toggleSelectAllMistakes()" class="w-full bg-white/15 hover:bg-white/25 text-white font-bold py-3 rounded-xl shadow-lg transition border border-white/30 mb-3">
+            全選
+        </button>
+        
+        <div id="mistake-list" class="flex flex-col gap-2 overflow-y-auto mb-4 pr-2">
+            <!-- 錯題列表由 JS 產生 -->
+        </div>
+
+        <button type="button" onclick="startAllMistakes()" class="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-white font-bold py-4 rounded-2xl text-xl shadow-lg transform transition hover:scale-105 active:scale-95 mb-3">
+            ⚡ 一鍵全測
+        </button>
+        <div class="flex gap-2 mb-2">
+            <button type="button" onclick="startSelectedMistakes()" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                測所選 🚀
+            </button>
+            <button type="button" onclick="deleteSelectedMistakes()" class="flex-1 bg-red-500 hover:bg-red-400 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                刪除所選 🗑️
+            </button>
+        </div>
+        <button type="button" onclick="backToMenu()" class="w-full bg-gray-500 hover:bg-gray-400 text-white font-bold py-3 rounded-xl shadow-lg transition">
+            返回 🔙
+        </button>
+    </div>
+
+    <script>
+        let selectedQuizSize = 50;
+        let questionPool = [];
+        let currentQuestionIndex = 0;
+        let combo = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let currentQuestion = null;
+        let isPracticeMode = false;
+        let typedAnswer = '';
+        let isChecking = false;
+
+        const MUL_MIN = 2;
+        const MUL_MAX = 9;
+        const MUL_OTHER_MAX = 9;
+        const ADD_POOL_SIZE = 100;
+        const SUB_POOL_SIZE = 100;
+        const QUIZ_SIZES = [50, 100, 150, 200];
+        
+        // 讀取錯題庫 (用 localStorage 保存)
+        let mistakeBank = [];
+        try {
+            const saved = localStorage.getItem('mathMistakes');
+            if (saved) mistakeBank = JSON.parse(saved);
+        } catch(e) { console.log("無法讀取 localStorage"); }
+
+        function saveMistakes() {
+            try {
+                localStorage.setItem('mathMistakes', JSON.stringify(mistakeBank));
+            } catch(e) { console.log("無法儲存至 localStorage"); }
         }
 
-        // 第 1 行到第 9 行的算式
+        function startGame(practiceMode, customPool) {
+            isPracticeMode = practiceMode;
+            
+            if (isPracticeMode) {
+                const source = customPool || mistakeBank;
+                if (!source || source.length === 0) {
+                    alert("錯題庫暫時冇題目喎！快啲去探險收集啦！");
+                    return;
+                }
+                questionPool = source.map(m => {
+                    const op = m.op || '×';
+                    const fallback = op === '+' ? m.a + m.b : (op === '-' ? m.a - m.b : m.a * m.b);
+                    return {
+                        a: m.a,
+                        b: m.b,
+                        op,
+                        answer: (m.answer != null && m.answer !== '') ? m.answer : fallback,
+                        text: m.text || (op === '+' ? `${m.a} + ${m.b}` : (op === '-' ? `${m.a} − ${m.b}` : `${m.a} × ${m.b}`))
+                    };
+                });
+                shuffleArray(questionPool);
+            } else {
+                const picked = document.querySelector('.quiz-size-cb:checked');
+                selectedQuizSize = picked ? parseInt(picked.value, 10) : 50;
+                if (!QUIZ_SIZES.includes(selectedQuizSize)) selectedQuizSize = 50;
+                generateQuestionPool(selectedQuizSize);
+            }
+
+            // 重置統計
+            combo = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            currentQuestionIndex = 0;
+
+            resetGameView();
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('mistake-screen').classList.add('hidden');
+            document.getElementById('mistake-screen').classList.remove('flex');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('flex');
+
+            nextQuestion();
+        }
+
+        function questionKey(q) {
+            const op = q.op || '×';
+            return `${op}:${q.a}:${q.b}`;
+        }
+
+        function randInt(min, max) {
+            return min + Math.floor(Math.random() * (max - min + 1));
+        }
+
+        function buildMulPool() {
+            const pool = [];
+            for (let a = MUL_MIN; a <= MUL_MAX; a++) {
+                for (let b = 1; b <= MUL_OTHER_MAX; b++) {
+                    pool.push({ a, b, op: '×', answer: a * b, text: `${a} × ${b}` });
+                }
+            }
+            return pool;
+        }
+
+        function buildAddPool(count) {
+            const pool = [];
+            const seen = new Set();
+            let guard = 0;
+            while (pool.length < count && guard < 30000) {
+                guard++;
+                const a = randInt(10, 99);
+                const b = randInt(10, 99);
+                const key = `+:${a}:${b}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                pool.push({ a, b, op: '+', answer: a + b, text: `${a} + ${b}` });
+            }
+            return pool;
+        }
+
+        function buildSubPool(count) {
+            const pool = [];
+            const seen = new Set();
+            let guard = 0;
+            while (pool.length < count && guard < 30000) {
+                guard++;
+                let a = randInt(10, 99);
+                let b = randInt(10, 99);
+                if (a < b) {
+                    const t = a; a = b; b = t;
+                }
+                const key = `-:${a}:${b}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                pool.push({ a, b, op: '-', answer: a - b, text: `${a} − ${b}` });
+            }
+            return pool;
+        }
+
+        function takeUnique(pool, n) {
+            const copy = pool.slice();
+            shuffleArray(copy);
+            return copy.slice(0, Math.max(0, Math.min(n, copy.length)));
+        }
+
+        function splitQuizCounts(total, mulMax, addMax, subMax) {
+            let mul = Math.round(total / 3);
+            let add = Math.round(total / 3);
+            let sub = total - mul - add;
+
+            const fit = (want, cap) => Math.max(0, Math.min(want, cap));
+            mul = fit(mul, mulMax);
+            add = fit(add, addMax);
+            sub = fit(sub, subMax);
+
+            let leftover = total - mul - add - sub;
+            const extras = [
+                { name: 'add', room: addMax - add },
+                { name: 'sub', room: subMax - sub },
+                { name: 'mul', room: mulMax - mul }
+            ];
+            for (const extra of extras) {
+                if (leftover <= 0) break;
+                const give = Math.min(leftover, extra.room);
+                if (extra.name === 'add') add += give;
+                if (extra.name === 'sub') sub += give;
+                if (extra.name === 'mul') mul += give;
+                leftover -= give;
+            }
+            return { mul, add, sub };
+        }
+
+        function generateQuestionPool(total) {
+            const mulPool = buildMulPool();
+            const addPool = buildAddPool(ADD_POOL_SIZE);
+            const subPool = buildSubPool(SUB_POOL_SIZE);
+            const counts = splitQuizCounts(total, mulPool.length, addPool.length, subPool.length);
+            questionPool = [
+                ...takeUnique(mulPool, counts.mul),
+                ...takeUnique(addPool, counts.add),
+                ...takeUnique(subPool, counts.sub)
+            ];
+            shuffleArray(questionPool);
+        }
+
+        function resetGameView() {
+            document.getElementById('question-container').classList.remove('hidden');
+            document.getElementById('keypad-wrap').classList.remove('hidden');
+            document.getElementById('quit-game-btn').classList.remove('hidden');
+            document.getElementById('cheer-msg').classList.remove('hidden');
+            document.getElementById('complete-screen').classList.add('hidden');
+            document.getElementById('complete-screen').classList.remove('flex');
+            resetAnswerBox();
+        }
+
+        function showCompletion() {
+            document.getElementById('question-container').classList.add('hidden');
+            document.getElementById('keypad-wrap').classList.add('hidden');
+            document.getElementById('quit-game-btn').classList.add('hidden');
+            document.getElementById('cheer-msg').classList.add('hidden');
+
+            const total = questionPool.length;
+            const modeLabel = isPracticeMode ? '錯題特訓' : '混合測驗';
+            document.getElementById('complete-msg').innerText =
+                `你已經完成今次${modeLabel}全部 ${total} 題啦！唔使再開新一套試卷。`;
+            document.getElementById('complete-total').innerText = String(total);
+            document.getElementById('complete-correct').innerText = String(correctCount);
+            document.getElementById('complete-wrong').innerText = String(wrongCount);
+
+            document.getElementById('progress-display').innerText = `${total} / ${total}`;
+            document.getElementById('complete-screen').classList.remove('hidden');
+            document.getElementById('complete-screen').classList.add('flex');
+            createConfetti();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex >= questionPool.length) {
+                showCompletion();
+                return;
+            }
+
+            currentQuestion = questionPool[currentQuestionIndex];
+            document.getElementById('question-text').innerText = currentQuestion.text + ' =';
+            resetAnswerBox();
+            updateStats();
+        }
+
+        function resetAnswerBox() {
+            typedAnswer = '';
+            isChecking = false;
+            const display = document.getElementById('answer-display');
+            display.classList.remove('is-correct', 'is-wrong', 'shake', 'pop');
+            updateAnswerDisplay();
+            setKeypadEnabled(true);
+        }
+
+        function updateAnswerDisplay() {
+            const el = document.getElementById('answer-digits');
+            if (typedAnswer) {
+                el.classList.remove('is-placeholder');
+                el.innerText = typedAnswer;
+            } else {
+                el.classList.add('is-placeholder');
+                el.innerText = '?';
+            }
+        }
+
+        function setKeypadEnabled(on) {
+            document.querySelectorAll('#keypad .key-btn').forEach(btn => {
+                btn.disabled = !on;
+            });
+        }
+
+        function appendDigit(d) {
+            if (isChecking) return;
+            if (typedAnswer.length >= 3) return;
+            typedAnswer += String(d);
+            updateAnswerDisplay();
+        }
+
+        function backspaceDigit() {
+            if (isChecking) return;
+            typedAnswer = typedAnswer.slice(0, -1);
+            updateAnswerDisplay();
+        }
+
+        function submitTypedAnswer() {
+            if (isChecking) return;
+            if (!typedAnswer) {
+                const display = document.getElementById('answer-display');
+                display.classList.remove('shake');
+                void display.offsetWidth;
+                display.classList.add('shake');
+                return;
+            }
+            checkAnswer(parseInt(typedAnswer, 10));
+        }
+
+        function checkAnswer(selected) {
+            if (isChecking || !currentQuestion) return;
+            isChecking = true;
+            setKeypadEnabled(false);
+
+            const display = document.getElementById('answer-display');
+            const rect = display.getBoundingClientRect();
+
+            if (selected === currentQuestion.answer) {
+                display.classList.add('is-correct', 'pop');
+                combo++;
+                correctCount++;
+                currentQuestionIndex++;
+                showFloatingStar(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                createConfetti();
+                showCheerMessage();
+                updateStats();
+                setTimeout(() => { nextQuestion(); }, 900);
+            } else {
+                display.classList.add('is-wrong', 'shake');
+                combo = 0;
+                wrongCount++;
+
+                let exists = mistakeBank.some(m => questionKey(m) === questionKey(currentQuestion));
+                if (!exists) {
+                    mistakeBank.push({
+                        a: currentQuestion.a,
+                        b: currentQuestion.b,
+                        op: currentQuestion.op || '×',
+                        answer: currentQuestion.answer,
+                        text: currentQuestion.text
+                    });
+                    saveMistakes();
+                }
+
+                currentQuestionIndex++;
+                updateStats();
+                setTimeout(() => { nextQuestion(); }, 1100);
+            }
+        }
+
+        function updateStats() {
+            // 顯示進度: 目前第幾題 / 總題數
+            let currentDisplayNum = currentQuestionIndex + 1;
+            if (currentDisplayNum > questionPool.length) currentDisplayNum = questionPool.length;
+            
+            document.getElementById('progress-display').innerText = `${currentDisplayNum} / ${questionPool.length}`;
+            document.getElementById('correct-display').innerText = `✅ ${correctCount}`;
+            document.getElementById('wrong-display').innerText = `❌ ${wrongCount}`;
+            document.getElementById('combo-display').innerText = `🔥 ${combo}`;
+        }
+
+        function showCheerMessage() {
+            if (combo < 2) return;
+            const cheers = ["好叻！🌟", "太勁啦！🚀", "完美！✨", "繼續保持！🔥", "天才！👑"];
+            const msgDiv = document.getElementById('cheer-msg');
+            msgDiv.innerText = cheers[Math.floor(Math.random() * cheers.length)];
+            msgDiv.style.opacity = 1;
+            msgDiv.classList.add('pop');
+            setTimeout(() => {
+                msgDiv.style.opacity = 0;
+                msgDiv.classList.remove('pop');
+            }, 1000);
+        }
+
+        function showFloatingStar(x, y) {
+            const star = document.createElement('div');
+            star.innerText = '⭐';
+            star.className = 'floating-star';
+            star.style.left = (x - 20) + 'px';
+            star.style.top = (y - 20) + 'px';
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+
+        function createConfetti() {
+            const colors = ['#f59e0b', '#3b82f6', '#ec4899', '#10b981', '#a855f7'];
+            for(let i = 0; i < 30; i++) {
+                let conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animationDuration = (Math.random() * 1.5 + 1) + 's';
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 2500);
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- 錯題庫管理功能 ---
+        function openMistakeManager() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('mistake-screen').classList.remove('hidden');
+            document.getElementById('mistake-screen').classList.add('flex');
+            renderMistakeList();
+        }
+
+        function renderMistakeList() {
+            const list = document.getElementById('mistake-list');
+            list.innerHTML = '';
+            
+            if (mistakeBank.length === 0) {
+                list.innerHTML = '<p class="text-center text-green-300 py-4">太棒啦！暫時冇錯題！🎉</p>';
+                updateSelectAllBtn();
+                return;
+            }
+
+            mistakeBank.forEach((m, index) => {
+                const div = document.createElement('label');
+                div.className = 'mistake-row';
+                const op = m.op || '×';
+                const prompt = m.text || (op === '+' ? `${m.a} + ${m.b}` : (op === '-' ? `${m.a} − ${m.b}` : `${m.a} × ${m.b}`));
+                const fallbackAns = op === '+' ? (Number(m.a) + Number(m.b)) : (op === '-' ? (Number(m.a) - Number(m.b)) : (Number(m.a) * Number(m.b)));
+                const ans = (m.answer != null && m.answer !== '') ? m.answer : fallbackAns;
+                div.innerHTML = `
+                    <span class="text-xl font-bold text-white">${prompt} = ${ans}</span>
+                    <input type="checkbox" class="mistake-cb" data-index="${index}">
+                `;
+                const cb = div.querySelector('.mistake-cb');
+                cb.addEventListener('change', () => {
+                    div.classList.toggle('is-picked', cb.checked);
+                    updateSelectAllBtn();
+                });
+                list.appendChild(div);
+            });
+            updateSelectAllBtn();
+        }
+
+        function getSelectedMistakeIndexes() {
+            return Array.from(document.querySelectorAll('.mistake-cb:checked'))
+                .map(cb => parseInt(cb.getAttribute('data-index'), 10))
+                .filter(idx => !Number.isNaN(idx));
+        }
+
+        function startAllMistakes() {
+            startGame(true);
+        }
+
+        function startSelectedMistakes() {
+            const indexes = getSelectedMistakeIndexes();
+            if (indexes.length === 0) {
+                alert("請先剔選想再測嘅題目！");
+                return;
+            }
+            const selected = indexes.map(idx => mistakeBank[idx]).filter(Boolean);
+            startGame(true, selected);
+        }
+
+        function toggleSelectAllMistakes() {
+            const boxes = Array.from(document.querySelectorAll('.mistake-cb'));
+            if (boxes.length === 0) return;
+            const allChecked = boxes.every(cb => cb.checked);
+            boxes.forEach(cb => {
+                cb.checked = !allChecked;
+                const row = cb.closest('.mistake-row');
+                if (row) row.classList.toggle('is-picked', cb.checked);
+            });
+            updateSelectAllBtn();
+        }
+
+        function updateSelectAllBtn() {
+            const btn = document.getElementById('btn-select-all');
+            const boxes = Array.from(document.querySelectorAll('.mistake-cb'));
+            if (!btn) return;
+            if (boxes.length === 0) {
+                btn.innerText = '全選';
+                return;
+            }
+            btn.innerText = boxes.every(cb => cb.checked) ? '取消全選' : '全選';
+        }
+
+        function deleteSelectedMistakes() {
+            const checkboxes = document.querySelectorAll('.mistake-cb:checked');
+            if (checkboxes.length === 0) {
+                alert("請先剔選想刪除嘅題目！");
+                return;
+            }
+            
+            // 收集要刪除嘅 index (由大至小排，避免刪除時 index 走位)
+            let indexesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-index'))).sort((a, b) => b - a);
+            
+            indexesToDelete.forEach(idx => {
+                mistakeBank.splice(idx, 1);
+            });
+            
+            saveMistakes();
+            renderMistakeList();
+        }
+
+        function backToMenu() {
+            resetGameView();
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('flex');
+            document.getElementById('mistake-screen').classList.add('hidden');
+            document.getElementById('mistake-screen').classList.remove('flex');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('start-screen').classList.add('flex');
+        }
+
+        function isQuizPlaying() {
+            const game = document.getElementById('game-screen');
+            const complete = document.getElementById('complete-screen');
+            return game && !game.classList.contains('hidden') && complete && complete.classList.contains('hidden');
+        }
+
+        document.getElementById('keypad').addEventListener('click', (e) => {
+            const btn = e.target.closest('.key-btn');
+            if (!btn || btn.disabled) return;
+            if (btn.id === 'key-back') {
+                backspaceDigit();
+                return;
+            }
+            if (btn.id === 'key-ok') {
+                submitTypedAnswer();
+                return;
+            }
+            if (btn.dataset.digit !== undefined) appendDigit(btn.dataset.digit);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!isQuizPlaying()) return;
+            if (e.key >= '0' && e.key <= '9') {
+                appendDigit(e.key);
+            } else if (e.key === 'Backspace') {
+                e.preventDefault();
+                backspaceDigit();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                submitTypedAnswer();
+            }
+        });
+    </script>
+
+    </div>
+
+<script>
+    function showQuizView() {
+        document.getElementById('view-table').classList.add('is-hidden');
+        document.getElementById('view-quiz').classList.add('is-active');
+        if (typeof backToMenu === 'function') backToMenu();
+    }
+    function showTableView() {
+        document.getElementById('view-quiz').classList.remove('is-active');
+        document.getElementById('view-table').classList.remove('is-hidden');
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('btn-quiz').addEventListener('click', showQuizView);
+        const gridContainer = document.getElementById('multiplication-grid');
+        for (let col = 1; col <= 9; col++) {
+            const header = document.createElement('div');
+            header.className = `col-header ${col % 2 !== 0 ? 'header-green' : 'header-orange'}`;
+            header.textContent = col;
+            header.addEventListener('click', () => {
+                const columnCells = document.querySelectorAll(`#view-table .cell[data-col="${col}"]`);
+                let allRevealed = true;
+                columnCells.forEach(cell => { if (!cell.classList.contains('revealed')) allRevealed = false; });
+                columnCells.forEach(cell => {
+                    if (allRevealed) cell.classList.remove('revealed');
+                    else cell.classList.add('revealed');
+                });
+            });
+            gridContainer.appendChild(header);
+        }
         for (let row = 1; row <= 9; row++) {
             for (let col = 1; col <= 9; col++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
-                
-                // 設定一個 data 屬性，用來標記這個格子屬於哪一個直行 (col)
                 cell.setAttribute('data-col', col);
-                
-                // 算式部分 (例如: 1x1=)
                 const equation = document.createElement('span');
                 equation.className = 'equation';
                 equation.textContent = `${col}x${row}=`;
-                
-                // 答案部分 (例如: 1)
                 const answer = document.createElement('span');
                 answer.className = 'answer';
-                
-                // 判斷乘式的第二個數字 (row) 是單數還是雙數，並給予對應顏色
-                if (row % 2 !== 0) {
-                    answer.classList.add('answer-red'); // 單數酒紅色
-                } else {
-                    answer.classList.add('answer-green'); // 雙數綠色
-                }
-                
+                answer.classList.add(row % 2 !== 0 ? 'answer-red' : 'answer-green');
                 answer.textContent = col * row;
-                
                 cell.appendChild(equation);
                 cell.appendChild(answer);
-                
-                // 點擊事件：切換單個格子的顯示/隱藏
-                cell.addEventListener('click', () => {
-                    cell.classList.toggle('revealed');
-                });
-                
+                cell.addEventListener('click', () => cell.classList.toggle('revealed'));
                 gridContainer.appendChild(cell);
             }
         }
-
-        // 總控制按鈕邏輯
-        const btnShow = document.getElementById('btn-show');
-        const btnHide = document.getElementById('btn-hide');
-        const allCells = document.querySelectorAll('.cell');
-
-        btnShow.addEventListener('click', () => {
-            allCells.forEach(cell => {
-                cell.classList.add('revealed');
-            });
-        });
-
-        btnHide.addEventListener('click', () => {
-            allCells.forEach(cell => {
-                cell.classList.remove('revealed');
-            });
-        });
+        const allCells = document.querySelectorAll('#view-table .cell');
+        document.getElementById('btn-show').addEventListener('click', () => allCells.forEach(c => c.classList.add('revealed')));
+        document.getElementById('btn-hide').addEventListener('click', () => allCells.forEach(c => c.classList.remove('revealed')));
     });
 </script>
-
 </body>
 </html>
