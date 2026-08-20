@@ -109,6 +109,13 @@
         .custom-checkbox input:checked + div {
             background-color: #f59e0b; border-color: #f59e0b; transform: scale(1.05);
         }
+
+        #question-text {
+            font-size: clamp(1.75rem, 7vw, 2.75rem);
+            line-height: 1.25;
+            word-break: keep-all;
+        }
+
         /* 數字鍵盤 */
         #answer-display {
             width: 100%;
@@ -192,7 +199,7 @@
         <p class="text-yellow-300 font-bold mb-2 text-sm">今次要做幾多題？</p>
         <div class="grid grid-cols-2 gap-3 mb-6">
             <script>
-                const quizSizes = [50, 100, 150, 200];
+                const quizSizes = [25, 50, 75, 100];
                 for (let i = 0; i < quizSizes.length; i++) {
                     const n = quizSizes[i];
                     const checked = n === 50 ? 'checked' : '';
@@ -255,7 +262,7 @@
 
         <!-- 題目區域 -->
         <div id="question-container" class="relative w-full bg-gradient-to-b from-blue-500 to-blue-700 p-6 rounded-3xl shadow-2xl border-4 border-blue-400 mb-4 text-center">
-            <h2 id="question-text" class="text-5xl sm:text-6xl font-extrabold tracking-wider text-white drop-shadow-md">
+            <h2 id="question-text" class="font-extrabold tracking-wider text-white drop-shadow-md">
                 3 × 9 =
             </h2>
         </div>
@@ -355,7 +362,7 @@
         const MUL_OTHER_MAX = 9;
         const ADD_POOL_SIZE = 100;
         const SUB_POOL_SIZE = 100;
-        const QUIZ_SIZES = [50, 100, 150, 200];
+        const QUIZ_SIZES = [25, 50, 75, 100];
         
         // 讀取錯題庫 (用 localStorage 保存)
         let mistakeBank = [];
