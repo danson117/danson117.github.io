@@ -627,6 +627,14 @@
                 display.classList.add('is-correct', 'pop');
                 combo++;
                 correctCount++;
+                if (isPracticeMode) {
+                    const key = questionKey(currentQuestion);
+                    const idx = mistakeBank.findIndex(m => questionKey(m) === key);
+                    if (idx !== -1) {
+                        mistakeBank.splice(idx, 1);
+                        saveMistakes();
+                    }
+                }
                 currentQuestionIndex++;
                 showFloatingStar(rect.left + rect.width / 2, rect.top + rect.height / 2);
                 createConfetti();
