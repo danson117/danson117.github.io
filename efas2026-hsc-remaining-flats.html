@@ -21,7 +21,6 @@ h2 { margin:0 0 10px; font-size:16px; }
 .field { display:block; margin:10px 0 6px; font-size:12px; color:var(--muted); font-weight:700; }
 select, input[type=number], input[type=search] { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; font:inherit; }
 select[multiple] { min-height:110px; }
-.row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .checks { display:flex; flex-wrap:wrap; gap:6px; }
 .checks label { display:inline-flex; align-items:center; gap:5px; background:var(--chip); border-radius:999px; padding:4px 8px; font-size:12px; }
 .btns { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
@@ -68,7 +67,6 @@ tr.viewonly a.bldg { color:#5f6b64; }
 .map-col { width:100%; }
 .map-panel { z-index:3; background:var(--card); margin:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; width:100%; }
 .map-head { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:8px 10px; font-size:13px; }
-.map-head a { color:var(--accent); font-weight:700; }
 .map-frame-wrap { position:relative; width:100%; aspect-ratio:1 / 1; background:#eef3ef; }
 .map-panel iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
 .map-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; padding:12px; text-align:center; }
@@ -138,7 +136,6 @@ tr.taken .scorechip { opacity:0.35; cursor:not-allowed; pointer-events:none; }
       <div class="map-head">
         <b id="tMap"></b>
         <span id="mapLabel" class="muted"></span>
-        <a id="mapLink" href="#" target="_blank" rel="noopener" hidden></a>
       </div>
       <div class="map-frame-wrap">
         <iframe id="mapFrame" title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="about:blank"></iframe>
@@ -155,22 +152,8 @@ tr.taken .scorechip { opacity:0.35; cursor:not-allowed; pointer-events:none; }
     <div class="checks" id="districtChecks"></div>
     <label class="field" id="tE"></label>
     <div class="checks" id="estateChecks"></div>
-    <label class="field" id="tPeople"></label>
-    <input id="people" type="number" min="1" max="12" value="2">
-    <div class="row2">
-      <div><label class="field" id="tAreaFrom"></label><input id="areaMin" type="number" step="0.01"></div>
-      <div><label class="field" id="tAreaTo"></label><input id="areaMax" type="number" step="0.01"></div>
-    </div>
-    <div class="row2">
-      <div><label class="field" id="tRentFrom"></label><input id="rentMin" type="number"></div>
-      <div><label class="field" id="tRentTo"></label><input id="rentMax" type="number"></div>
-    </div>
     <label class="field" id="tLift"></label>
     <div class="checks" id="liftChecks"></div>
-    <label class="field" id="tReno"></label>
-    <div class="checks" id="renoChecks"></div>
-    <label class="field" id="tDisc"></label>
-    <select id="discount"></select>
     <label class="field" id="tKw"></label>
     <div class="checks" id="kwChecks"></div>
     <label class="field" id="tScoreFilter"></label>
@@ -232,7 +215,7 @@ function isTaken(u) { return TAKEN_IDS.has(u.id); }
 const NEVER_SHOW_DISTRICT_RE = /離島|坪洲|長洲|梅窩|大澳|南丫|喜靈洲|鴨脷洲|柴灣|筲箕灣|西灣河|北角|太古|小西灣|華富|田灣|薄扶林|西環|堅尼地城|上環|中環|灣仔|銅鑼灣|港島|香港仔|鰂魚涌|赤柱/;
 const DEATH_KEYWORDS = ["\u8eab\u6545", "\u81ea\u6bba\uff0f\u610f\u5916\u6b7b\u4ea1", "\u6b7b\u4ea1\u4e8b\u4ef6"];
 const DEATH_RE = /自殺|意外死亡|自然身故|身故|死亡事件|公眾地方曾發生死亡|死亡|死咗/;
-const T = {"title": "\u7279\u5feb\u516c\u5c4b\u7de8\u914d\u8a08\u5283\uff082026\uff09\u5c1a\u9918\u55ae\u4f4d\u7be9\u9078", "src": "\u4f86\u6e90\uff1a\u623f\u5c4b\u7f72\u5c1a\u9918\u53ef\u4f9b\u63c0\u9078\u55ae\u4f4d\u540d\u55ae\uff08\u6a94\u540d RFL_2026E0001_HSC\uff0c\u5831\u544a PRHAS-EFA6002R06\uff0c\u4e0a\u8f09 02/09/2026\uff09\u3002\u7db2\u4e0a\u540d\u55ae\u53ea\u4f9b\u53c3\u8003\uff0c\u5be6\u969b\u4ee5\u63c0\u623f\u5ba4\u7576\u65e5\u5c55\u793a\u70ba\u6e96\u3002", "you": "\u4f60\u7684\u9032\u5ea6\uff1aP005505\uff0c21/09/2026 11:45\u3002\u9810\u8a2d\u986f\u793a\u8475\u6d8c / \u8343\u7063 / \u9752\u8863 / \u6c99\u7530\u3002\u5176\u4ed6\u5340\u5b8c\u5168\u6536\u57cb\uff1b\u8981\u7747\u8acb\u64b3\u300c\u986f\u793a\u96b1\u85cf\u5730\u5340\u300d\u3002", "filters": "\u7be9\u9078\uff08\u53ef\u96a8\u6642\u6539\uff09", "search": "\u95dc\u9375\u5b57\u641c\u5c0b\uff08\u7de8\u865f\uff0f\u90a8\uff0f\u6a13\uff0f\u623f\u865f\uff0f\u5099\u8a3b\uff09", "ph": "\u4f8b\u5982\uff1a608\u3001\u8c61\u5c71\u90a8\u3001\u5783\u573e\u623f", "g": "\u5340\u57df", "d": "\u5340\u57df\uff08\u53ef\u591a\u9078\uff09", "e": "\u5c4b\u90a8", "people": "\u5bb6\u5ead\u4eba\u6578\uff08\u9810\u8a2d 2 \u4f4d\u9577\u8005\uff09", "areaFrom": "\u9762\u7a4d\u7531\uff08\u5e73\u65b9\u7c73\uff09", "areaTo": "\u9762\u7a4d\u81f3", "rentFrom": "\u79df\u91d1\u7531\uff08\u5143\uff09", "rentTo": "\u79df\u91d1\u81f3", "lift": "\u5347\u964d\u6a5f\u5230\u9054", "yes": "\u6709", "no": "\u7121", "reno": "\u7ffb\u65b0\u72c0\u614b", "done": "\u5df2\u7ffb\u65b0", "doing": "\u7ffb\u65b0\u4e2d", "disc": "\u79df\u91d1\u512a\u60e0\uff08\u6708\uff09", "any": "\u4e0d\u9650", "hasDisc": "\u6709\u512a\u60e0\uff08>0\uff09", "noDisc": "\u7121\u512a\u60e0\uff080\uff09", "m8": "8 \u500b\u6708", "m12": "12 \u500b\u6708", "kw": "\u623f\u7f72\u7279\u5225\u4e8b\u9805", "exkw": "\u6539\u70ba\u300c\u6392\u9664\u300d\u5df2\u525b\u95dc\u9375\u5b57", "hOnly": "\u53ea\u770b\u6709 * \u79df\u91d1\u63f4\u52a9\u9650\u5236", "hNo": "\u6392\u9664\u6709 * \u55ae\u4f4d", "apply": "\u5957\u7528\u7be9\u9078", "reset": "\u91cd\u8a2d", "csv": "\u532f\u51fa CSV", "hint": "\u5927\u63a3\u9810\u8a2d\u6536\u57cb\u5176\u4ed6\u5340\u3002\u6253\u958b\u5f8c\uff0c\u8a72\u7b49\u5340\u6703\u56de\u5230\u7be9\u9078\u5668\uff0c\u4e26\u53ef\u4ee5\u6b63\u5e38\u63c0\u3002", "result": "\u7be9\u9078\u7d50\u679c", "unit": "\u500b\u55ae\u4f4d", "id": "\u7de8\u865f", "group": "\u7d44\u5225", "dist": "\u5340\u57df", "est": "\u5c4b\u90a8", "blk": "\u6a13\u540d", "rm": "\u623f\u865f", "area": "\u9762\u7a4d", "rent": "\u79df\u91d1", "dm": "\u512a\u60e0\u6708", "occ": "\u7de8\u914d\u4eba\u6578", "to": "\u81f3", "star": "*\u79df\u91d1\u63f4\u52a9\u9650\u5236", "sum": "\u5168\u540d\u55ae {n} \u500b\u55ae\u4f4d\u3002\u9810\u8a2d\u53ea\u756b\u8475\u6d8c\u3001\u8343\u7063\u3001\u9752\u8863\u3001\u6c99\u7530\u3002", "exDeath": "\u6392\u9664\u6240\u6709\u6d89\u53ca\u6b7b\u4ea1\u5605\u55ae\u4f4d\uff08\u81ea\u6bba\uff0f\u610f\u5916\u6b7b\u4ea1\uff0f\u81ea\u7136\u8eab\u6545\uff0f\u516c\u773e\u5730\u65b9\u6b7b\u4ea1\uff09", "hideView": "\u96b1\u85cf\u300c\u53ea\u53ef\u7747\u3001\u4e0d\u53ef\u63c0\u300d\u55ae\u4f4d", "viewonly": "\u53ea\u53ef\u7747\u3001\u4e0d\u53ef\u63c0", "pick": "\u63c0", "pickedList": "\u5df2\u63c0\u6e05\u55ae\uff08\u53ea\u5305\u542b\u53ef\u63c0\u5340\uff09", "clearPicked": "\u6e05\u7a7a\u5df2\u63c0", "map": "\u6a13\u5b87\u4f4d\u7f6e\uff08Google \u5730\u5716\uff09", "mapEmpty": "\u64b3\u8868\u683c\u88e1\u5605\u300c\u6a13\u540d\u300d\u7747\u54ea\u4e00\u5ea7\u6a13\uff08\u6703\u641c\u300c\u9999\u6e2f \u5c4b\u90a8 \u6a13\u540d\u300d\uff0c\u4f8b\u5982 \u9999\u6e2f \u8c61\u5c71\u90a8 \u6a02\u5c71\u6a13\uff09", "mapOpen": "\u5728\u65b0\u5206\u9801\u958b\u555f\u5462\u5ea7\u6a13", "score": "\u8a55\u5206", "scoreFilter": "\u8a55\u5206\u72c0\u614b", "scoreAll": "\u5168\u90e8", "scored": "\u5df2\u8a55\u5206", "unscored": "\u672a\u8a55\u5206", "scoreHint": "\u6bcf\u884c\u76f4\u63a5\u64b3 1\u20135 \u5373\u6642\u8a18\u4f4f\uff1b\u518d\u64b3\u540c\u4e00\u5206\u53ef\u53d6\u6d88\u3002\u5206\u6578\u3001\u5df2\u63c0\u3001\u5730\u5716\u540c\u6392\u5e8f\u6703\u7559\u5728\u5462\u90e8\u96fb\u8166\uff08\u91cd\u958b\u9801\u9762\u4e5f\u4efb\u523b\uff09\u3002", "showHidden": "\u986f\u793a\u96b1\u85cf\u5730\u5340", "hideOthers": "\u96b1\u85cf\u5176\u4ed6\u5730\u5340", "hiddenOn": "\u5176\u4ed6\u5730\u5340\u4e00\u4f75\u986f\u793a\uff0c\u53ef\u7be9\u53ef\u63c0", "hiddenOff": "\u5176\u4ed6\u5730\u5340\u5df2\u6536\u57cb", "userNote": "\u5099\u8a3b", "notePh": "\u81ea\u5df1\u5beb\uff0c\u5373\u523b\u8a18\u4f4f", "scoreOrder": "\u6309\u8a55\u5206\u6392\u5e8f\uff085\u21921\uff09", "scoreOrderOff": "\u8fd4\u56de\u4e00\u822c\u6392\u5e8f", "showNoLift": "\u986f\u793a\u7121\u5347\u964d\u6a5f\u55ae\u4f4d"};
+const T = {"title": "\u7279\u5feb\u516c\u5c4b\u7de8\u914d\u8a08\u5283\uff082026\uff09\u5c1a\u9918\u55ae\u4f4d\u7be9\u9078", "src": "\u4f86\u6e90\uff1a\u623f\u5c4b\u7f72\u5c1a\u9918\u53ef\u4f9b\u63c0\u9078\u55ae\u4f4d\u540d\u55ae\uff08\u6a94\u540d RFL_2026E0001_HSC\uff0c\u5831\u544a PRHAS-EFA6002R06\uff0c\u4e0a\u8f09 02/09/2026\uff09\u3002\u7db2\u4e0a\u540d\u55ae\u53ea\u4f9b\u53c3\u8003\uff0c\u5be6\u969b\u4ee5\u63c0\u623f\u5ba4\u7576\u65e5\u5c55\u793a\u70ba\u6e96\u3002", "you": "\u4f60\u7684\u9032\u5ea6\uff1aP005505\uff0c21/09/2026 11:45\u3002\u9810\u8a2d\u986f\u793a\u8475\u6d8c / \u8343\u7063 / \u9752\u8863 / \u6c99\u7530\u3002\u5176\u4ed6\u5340\u5b8c\u5168\u6536\u57cb\uff1b\u8981\u7747\u8acb\u64b3\u300c\u986f\u793a\u96b1\u85cf\u5730\u5340\u300d\u3002", "filters": "\u7be9\u9078\uff08\u53ef\u96a8\u6642\u6539\uff09", "search": "\u95dc\u9375\u5b57\u641c\u5c0b\uff08\u7de8\u865f\uff0f\u90a8\uff0f\u6a13\uff0f\u623f\u865f\uff0f\u5099\u8a3b\uff09", "ph": "\u4f8b\u5982\uff1a608\u3001\u8c61\u5c71\u90a8\u3001\u5783\u573e\u623f", "g": "\u5340\u57df", "d": "\u5340\u57df\uff08\u53ef\u591a\u9078\uff09", "e": "\u5c4b\u90a8", "lift": "\u5347\u964d\u6a5f\u5230\u9054", "yes": "\u6709", "no": "\u7121", "reno": "\u7ffb\u65b0\u72c0\u614b", "kw": "\u623f\u7f72\u7279\u5225\u4e8b\u9805", "exkw": "\u6539\u70ba\u300c\u6392\u9664\u300d\u5df2\u525b\u95dc\u9375\u5b57", "hOnly": "\u53ea\u770b\u6709 * \u79df\u91d1\u63f4\u52a9\u9650\u5236", "hNo": "\u6392\u9664\u6709 * \u55ae\u4f4d", "apply": "\u5957\u7528\u7be9\u9078", "reset": "\u91cd\u8a2d", "csv": "\u532f\u51fa CSV", "hint": "\u5927\u63a3\u9810\u8a2d\u6536\u57cb\u5176\u4ed6\u5340\u3002\u6253\u958b\u5f8c\uff0c\u8a72\u7b49\u5340\u6703\u56de\u5230\u7be9\u9078\u5668\uff0c\u4e26\u53ef\u4ee5\u6b63\u5e38\u63c0\u3002", "result": "\u7be9\u9078\u7d50\u679c", "unit": "\u500b\u55ae\u4f4d", "id": "\u7de8\u865f", "group": "\u7d44\u5225", "dist": "\u5340\u57df", "est": "\u5c4b\u90a8", "blk": "\u6a13\u540d", "rm": "\u623f\u865f", "area": "\u9762\u7a4d", "rent": "\u79df\u91d1", "dm": "\u512a\u60e0\u6708", "occ": "\u7de8\u914d\u4eba\u6578", "to": "\u81f3", "star": "*\u79df\u91d1\u63f4\u52a9\u9650\u5236", "sum": "\u5168\u540d\u55ae {n} \u500b\u55ae\u4f4d\u3002\u9810\u8a2d\u53ea\u756b\u8475\u6d8c\u3001\u8343\u7063\u3001\u9752\u8863\u3001\u6c99\u7530\u3002", "exDeath": "\u6392\u9664\u6240\u6709\u6d89\u53ca\u6b7b\u4ea1\u5605\u55ae\u4f4d\uff08\u81ea\u6bba\uff0f\u610f\u5916\u6b7b\u4ea1\uff0f\u81ea\u7136\u8eab\u6545\uff0f\u516c\u773e\u5730\u65b9\u6b7b\u4ea1\uff09", "hideView": "\u96b1\u85cf\u300c\u53ea\u53ef\u7747\u3001\u4e0d\u53ef\u63c0\u300d\u55ae\u4f4d", "viewonly": "\u53ea\u53ef\u7747\u3001\u4e0d\u53ef\u63c0", "pick": "\u63c0", "pickedList": "\u5df2\u63c0\u6e05\u55ae\uff08\u53ea\u5305\u542b\u53ef\u63c0\u5340\uff09", "clearPicked": "\u6e05\u7a7a\u5df2\u63c0", "map": "\u6a13\u5b87\u4f4d\u7f6e\uff08Google \u5730\u5716\uff09", "mapEmpty": "\u64b3\u8868\u683c\u88e1\u5605\u300c\u6a13\u540d\u300d\u7747\u54ea\u4e00\u5ea7\u6a13\uff08\u6703\u641c\u300c\u9999\u6e2f \u5c4b\u90a8 \u6a13\u540d\u300d\uff0c\u4f8b\u5982 \u9999\u6e2f \u8c61\u5c71\u90a8 \u6a02\u5c71\u6a13\uff09", "score": "\u8a55\u5206", "scoreFilter": "\u8a55\u5206\u72c0\u614b", "scoreAll": "\u5168\u90e8", "scored": "\u5df2\u8a55\u5206", "unscored": "\u672a\u8a55\u5206", "scoreHint": "\u6bcf\u884c\u76f4\u63a5\u64b3 1\u20135 \u5373\u6642\u8a18\u4f4f\uff1b\u518d\u64b3\u540c\u4e00\u5206\u53ef\u53d6\u6d88\u3002\u5206\u6578\u3001\u5df2\u63c0\u3001\u5730\u5716\u540c\u6392\u5e8f\u6703\u7559\u5728\u5462\u90e8\u96fb\u8166\uff08\u91cd\u958b\u9801\u9762\u4e5f\u4efb\u523b\uff09\u3002", "showHidden": "\u986f\u793a\u96b1\u85cf\u5730\u5340", "hideOthers": "\u96b1\u85cf\u5176\u4ed6\u5730\u5340", "hiddenOn": "\u5176\u4ed6\u5730\u5340\u4e00\u4f75\u986f\u793a\uff0c\u53ef\u7be9\u53ef\u63c0", "hiddenOff": "\u5176\u4ed6\u5730\u5340\u5df2\u6536\u57cb", "userNote": "\u5099\u8a3b", "notePh": "\u81ea\u5df1\u5beb\uff0c\u5373\u523b\u8a18\u4f4f", "scoreOrder": "\u6309\u8a55\u5206\u6392\u5e8f\uff085\u21921\uff09", "scoreOrderOff": "\u8fd4\u56de\u4e00\u822c\u6392\u5e8f", "showNoLift": "\u986f\u793a\u7121\u5347\u964d\u6a5f\u55ae\u4f4d"};
 const $ = (id) => document.getElementById(id);
 let sortKey = "districtRank";
 let sortAsc = true;
@@ -282,7 +265,6 @@ function saveUi() {
     map: lastMap,
     scoreFilter: $("scoreFilter") ? $("scoreFilter").value : "",
     q: $("q").value,
-    people: $("people").value,
     excludeDeath: $("excludeDeath").checked,
     showNoLift: showNoLiftOn(),
     showHiddenDistricts: showHiddenDistricts,
@@ -290,13 +272,9 @@ function saveUi() {
     excludeKw: $("excludeKw").checked,
     harmonyOnly: $("harmonyOnly").checked,
     noHarmony: $("noHarmony").checked,
-    discount: $("discount").value,
-    areaMin: $("areaMin").value, areaMax: $("areaMax").value,
-    rentMin: $("rentMin").value, rentMax: $("rentMax").value,
     districts: checkedValues("district"),
     estates: checkedValues("estate"),
     lifts: checkedValues("lift"),
-    renos: checkedValues("reno"),
     kws: checkedValues("kw"),
     showCols: { group: !!showCols.group, lift: !!showCols.lift, renovation: !!showCols.renovation }
   };
@@ -314,9 +292,7 @@ function applyUi(ui) {
   if (ui.map && ui.map.estate && ui.map.building) lastMap = ui.map;
   const setVal = (id, v) => { if ($(id) && v != null) $(id).value = v; };
   const setChk = (id, v) => { if ($(id) && typeof v === "boolean") $(id).checked = v; };
-  setVal("q", ui.q); setVal("people", ui.people); setVal("discount", ui.discount);
-  setVal("areaMin", ui.areaMin); setVal("areaMax", ui.areaMax);
-  setVal("rentMin", ui.rentMin); setVal("rentMax", ui.rentMax);
+  setVal("q", ui.q);
   setVal("scoreFilter", ui.scoreFilter || "");
   setChk("excludeDeath", true);
   setChk("showNoLift", false);
@@ -340,7 +316,6 @@ function applyUi(ui) {
   applyList("district", ui.districts);
   applyList("estate", ui.estates);
   applyList("lift", ui.lifts);
-  applyList("reno", ui.renos);
   applyList("kw", ui.kws);
 }
 function scoreBar(id) {
@@ -412,8 +387,6 @@ function passesHard(u) {
 function passesBase(u) {
   if (!passesHard(u)) return false;
   if (!showHiddenDistricts && !isPreferredDistrict(u.district)) return false;
-  const people = ($("people") && $("people").value) ? Number($("people").value) : 2;
-  if (u.occMin == null || people < u.occMin || people > u.occMax) return false;
   return true;
 }
 function visibleEstates(allowD) {
@@ -534,15 +507,12 @@ function init() {
   document.title = T.title;
   txt("tTitle","title"); txt("tSrc","src"); txt("tYou","you");
   txt("tFilters","filters"); txt("tSearch","search"); $("q").placeholder = T.ph;
-  txt("tG","g"); txt("tE","e"); txt("tPeople","people");
-  txt("tAreaFrom","areaFrom"); txt("tAreaTo","areaTo");
-  txt("tRentFrom","rentFrom"); txt("tRentTo","rentTo");
-  txt("tLift","lift"); txt("tReno","reno"); txt("tDisc","disc"); txt("tKw","kw");
+  txt("tG","g"); txt("tE","e");
+  txt("tLift","lift"); txt("tKw","kw");
   txt("tExkw","exkw"); txt("tHOnly","hOnly"); txt("tHNo","hNo");
   txt("tExDeath","exDeath"); txt("tShowNoLift","showNoLift");
   txt("tMap","map");
   $("mapEmpty").textContent = T.mapEmpty;
-  $("mapLink").textContent = T.mapOpen;
   $("applyBtn").textContent = T.apply;
   $("resetBtn").textContent = T.reset;
   $("csvBtn").textContent = T.csv;
@@ -554,14 +524,6 @@ function init() {
   $("scoreFilter").options[0].text = T.scoreAll;
   $("scoreFilter").options[1].text = T.scored;
   $("scoreFilter").options[2].text = T.unscored;
-  addChecks("renoChecks","reno", [T.done, T.doing], true);
-  if ($("renoChecks")) $("renoChecks").onchange = render;
-  $("discount").innerHTML = `<option value="">${T.any}</option>
-    <option value="gt0">${T.hasDisc}</option>
-    <option value="0">${T.noDisc}</option>
-    <option value="8">${T.m8}</option>
-    <option value="12">${T.m12}</option>`;
-  $("people").value = "2";
   $("excludeDeath").checked = true;
   if ($("showNoLift")) $("showNoLift").checked = false;
   loadScores();
@@ -581,9 +543,9 @@ function init() {
   $("resetBtn").onclick = resetFilters;
   $("csvBtn").onclick = exportCsv;
   $("q").addEventListener("input", render);
-  ["areaMin","areaMax","rentMin","rentMax","discount","excludeKw","harmonyOnly","noHarmony","scoreFilter"]
+  ["excludeKw","harmonyOnly","noHarmony","scoreFilter"]
     .forEach(id => { if ($(id)) $(id).addEventListener("change", render); });
-  ["people","excludeDeath","showNoLift"].forEach(id => {
+  ["excludeDeath","showNoLift"].forEach(id => {
     if ($(id)) $(id).addEventListener("change", () => { rebuildAreaFilters(true); render(); });
   });
   ["col_group","col_lift","col_renovation"].forEach(id => {
@@ -647,16 +609,13 @@ function init() {
 }
 function resetFilters() {
   $("q").value = "";
-  $("people").value = "2";
-  ["areaMin","areaMax","rentMin","rentMax"].forEach(id => $(id).value = "");
-  $("discount").value = "";
   $("excludeKw").checked = false;
   $("harmonyOnly").checked = false;
   $("noHarmony").checked = false;
   $("excludeDeath").checked = true;
   if ($("showNoLift")) $("showNoLift").checked = false;
   rebuildAreaFilters(false);
-  document.querySelectorAll("input[name=lift], input[name=reno]").forEach(el => el.checked = true);
+  document.querySelectorAll("input[name=lift]").forEach(el => el.checked = true);
   document.querySelectorAll("input[name=kw]").forEach(el => el.checked = false);
   if ($("scoreFilter")) $("scoreFilter").value = "";
   showCols = { group: false, lift: false, renovation: false };
@@ -671,14 +630,7 @@ function currentFilters() {
     q: $("q").value.trim().toLowerCase(),
     districts: checkedValues("district"),
     estates: checkedValues("estate"),
-    people: $("people").value ? Number($("people").value) : null,
-    areaMin: $("areaMin").value ? Number($("areaMin").value) : null,
-    areaMax: $("areaMax").value ? Number($("areaMax").value) : null,
-    rentMin: $("rentMin").value ? Number($("rentMin").value) : null,
-    rentMax: $("rentMax").value ? Number($("rentMax").value) : null,
     lifts: checkedValues("lift"),
-    renos: checkedValues("reno"),
-    discount: $("discount").value,
     kws: checkedValues("kw"),
     excludeKw: $("excludeKw").checked,
     harmonyOnly: $("harmonyOnly").checked,
@@ -710,17 +662,7 @@ function match(u, f) {
   if (!showHiddenDistricts && !isPreferredDistrict(u.district)) return false;
   if (!(f.districts || []).includes(u.district)) return false;
   if (f.estates.length && !f.estates.includes(u.estate)) return false;
-  if (f.people != null && (u.occMin == null || f.people < u.occMin || f.people > u.occMax)) return false;
-  if (f.areaMin != null && (u.area == null || u.area < f.areaMin)) return false;
-  if (f.areaMax != null && (u.area == null || u.area > f.areaMax)) return false;
-  if (f.rentMin != null && (u.rent == null || u.rent < f.rentMin)) return false;
-  if (f.rentMax != null && (u.rent == null || u.rent > f.rentMax)) return false;
   if (f.lifts.length && !f.lifts.includes(u.lift)) return false;
-  if (f.renos.length && !f.renos.includes(u.renovation)) return false;
-  if (f.discount === "gt0" && !(u.discountMonths > 0)) return false;
-  if (f.discount === "0" && u.discountMonths !== 0) return false;
-  if (f.discount === "8" && u.discountMonths !== 8) return false;
-  if (f.discount === "12" && u.discountMonths !== 12) return false;
   if (f.harmonyOnly && !u.harmony) return false;
   if (f.noHarmony && u.harmony) return false;
   if (f.kws.length) {
@@ -817,9 +759,6 @@ function showMap(estate, building) {
   const q = mapQuery(estate, building);
   $("mapFrame").src = mapEmbedUrl(q);
   $("mapLabel").textContent = q;
-  const a = $("mapLink");
-  a.href = mapSearchUrl(q);
-  a.hidden = false;
   $("mapEmpty").classList.add("hidden");
 }
 function bldgAnchor(estate, building, label) {
