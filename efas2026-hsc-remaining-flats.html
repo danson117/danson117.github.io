@@ -61,7 +61,9 @@ tr.viewonly.picked td { background:#eeeae3; }
 .countline { font-size:13px; margin-top:4px; }
 .countline b { color:var(--accent); }
 
-a.bldg { color:var(--accent); font-weight:700; text-decoration:underline; cursor:pointer; }
+th.col-estate, td.col-estate { white-space:nowrap; min-width:5.6em; }
+th.col-building, td.col-building { white-space:nowrap; min-width:4.4em; }
+a.bldg { color:var(--accent); font-weight:700; text-decoration:underline; cursor:pointer; white-space:nowrap; }
 a.bldg.active { background:#d7efe3; border-radius:4px; padding:0 3px; }
 tr.viewonly a.bldg { color:#5f6b64; }
 .map-col { width:100%; }
@@ -715,8 +717,8 @@ function colDefs() {
     ["score", T.score, u => `<td>${scoreBar(u.id)}</td>`],
     ["userNote", T.userNote, u => `<td>${noteInput(u.id)}</td>`],
     ["district", T.dist, u => `<td>${u.district}</td>`],
-    ["estate", T.est, u => `<td>${bldgAnchor(u.estate, u.building, u.estate)}</td>`],
-    ["building", T.blk, u => `<td>${bldgAnchor(u.estate, u.building, u.building)}</td>`],
+    ["estate", T.est, u => `<td class="col-estate">${bldgAnchor(u.estate, u.building, u.estate)}</td>`],
+    ["building", T.blk, u => `<td class="col-building">${bldgAnchor(u.estate, u.building, u.building)}</td>`],
     ["room", T.rm, u => `<td>${u.room}${u.harmony ? " *" : ""}</td>`],
     ["area", T.area, u => `<td>${u.area ?? ""}</td>`],
     ["rent", T.rent, u => `<td>${money(u.rent)}</td>`],
@@ -731,7 +733,7 @@ function colDefs() {
 }
 function paintThead() {
   const heads = colDefs();
-  if ($("thead")) $("thead").innerHTML = heads.map(([k,l]) => `<th data-key="${k}">${l}</th>`).join("");
+  if ($("thead")) $("thead").innerHTML = heads.map(([k,l]) => `<th data-key="${k}"${k==="estate"?" class=\"col-estate\"":k==="building"?" class=\"col-building\"":""}>${l}</th>`).join("");
 }
 function paintSortHeaders() {
   paintThead();

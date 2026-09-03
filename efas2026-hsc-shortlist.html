@@ -24,6 +24,8 @@ th { position:sticky; top:0; background:#eef6f1; z-index:1; white-space:nowrap; 
 .units-table th { cursor:pointer; user-select:none; }
 .units-table th.sort-asc::after { content:" ▲"; font-size:11px; color:#1f6b4a; }
 .units-table th.sort-desc::after { content:" ▼"; font-size:11px; color:#1f6b4a; }
+.units-table th[data-key="estate"], .units-table td:nth-child(3) { white-space:nowrap; min-width:5.6em; }
+.units-table th[data-key="building"], .units-table td:nth-child(4) { white-space:nowrap; min-width:4.4em; }
 tr:hover td { background:#f7fbf8; }
 td.id { font-weight:800; font-variant-numeric:tabular-nums; }
 .tag { display:inline-block; background:var(--soft); color:#145338; border-radius:999px; padding:1px 7px; margin:1px 3px 1px 0; font-size:11px; }
