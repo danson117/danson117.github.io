@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title></title>
+<style>
+:root { --bg:#f4f1ea; --card:#fffdf8; --ink:#1f2a24; --muted:#5d6b63; --line:#d9d2c5; --accent:#1f6b4a; --soft:#e4f3eb; --warn:#8a4b12; --chip:#eef3ef; }
+* { box-sizing:border-box; }
+html { height:100%; }
+body { margin:0; min-height:100%; display:flex; flex-direction:column; font-family:"Segoe UI","Microsoft JhengHei","PingFang TC",sans-serif; background:var(--bg); color:var(--ink); }
+header { padding:20px 24px 12px; background:linear-gradient(180deg,#1f6b4a 0%,#245a42 100%); color:#f7fff9; flex-shrink:0; }
+header h1 { margin:0 0 8px; font-size:22px; }
+header p { margin:0 0 6px; font-size:13px; line-height:1.55; color:#dff3e8; }
+.layout { display:grid; grid-template-columns:360px minmax(0,1fr); gap:16px; padding:16px; align-items:stretch; flex:1; min-height:0; }
+.left-col { display:flex; flex-direction:column; gap:16px; width:360px; position:sticky; top:16px; align-self:start; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+main.card { display:flex; flex-direction:column; min-height:100%; min-width:0; }
+main.card > .stats, main.card > .show-cols { flex-shrink:0; }
+h2 { margin:0 0 10px; font-size:16px; }
+.field { display:block; margin:10px 0 6px; font-size:12px; color:var(--muted); font-weight:700; }
+select, input[type=number], input[type=search] { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; font:inherit; }
+select[multiple] { min-height:110px; }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.checks { display:flex; flex-wrap:wrap; gap:6px; }
+.checks label { display:inline-flex; align-items:center; gap:5px; background:var(--chip); border-radius:999px; padding:4px 8px; font-size:12px; }
+.btns { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+button { border:0; border-radius:8px; padding:8px 12px; cursor:pointer; font:inherit; }
+.primary { background:var(--accent); color:#fff; }
+.ghost { background:#ece7dc; }
+.stats { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px; }
+.stats strong { color:var(--accent); font-size:20px; }
+.match-count { font-size:20px; font-weight:800; color:#d8ffe8; margin-top:8px; }
+.match-count.big { font-size:28px; color:var(--accent); margin:0 0 10px; letter-spacing:0.02em; }
+.note { font-size:12px; color:var(--muted); line-height:1.5; }
+.table-wrap { flex:1; max-height:none; min-height:0; overflow:auto; border:1px solid var(--line); border-radius:10px; }
+table { border-collapse:collapse; width:100%; font-size:13px; }
+th, td { border-bottom:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top; }
+th { position:sticky; top:0; background:#eef6f1; z-index:1; cursor:pointer; white-space:nowrap; user-select:none; }
+th.sort-asc::after { content:" ▲"; font-size:11px; color:#1f6b4a; }
+th.sort-desc::after { content:" ▼"; font-size:11px; color:#1f6b4a; }
+tr:hover td { background:#f7fbf8; }
+.tag { display:inline-block; background:var(--soft); color:#145338; border-radius:999px; padding:1px 7px; margin:1px 3px 1px 0; font-size:11px; }
+.tag.warn { background:#f8ead8; color:var(--warn); }
+.muted { color:var(--muted); }
+@media (max-width:1180px) {
+  .layout { grid-template-columns:1fr; align-items:start; }
+  .left-col, .map-col { position:static; width:min(360px,100%); }
+  main.card { min-height:0; }
+  .table-wrap { flex:none; max-height:70vh; min-height:40vh; }
+}
+
+tr.viewonly td { background:#eeeae3; color:#8a867d; }
+tr.viewonly:hover td { background:#e8e4dc; }
+tr.picked td { background:#e7f5ec; }
+tr.viewonly.picked td { background:#eeeae3; }
+.badge-view { display:inline-block; background:#e8e0d4; color:#6d6558; border-radius:999px; padding:1px 7px; font-size:11px; white-space:nowrap; }
+.pickbox { width:16px; height:16px; }
+.pickbox:disabled { opacity:0.35; cursor:not-allowed; }
+.shortlist { margin-top:10px; padding:10px; background:#f3f7f4; border:1px solid var(--line); border-radius:8px; }
+.shortlist ul { margin:6px 0 0; padding-left:18px; font-size:13px; }
+.countline { font-size:13px; margin-top:4px; }
+.countline b { color:var(--accent); }
+
+a.bldg { color:var(--accent); font-weight:700; text-decoration:underline; cursor:pointer; }
+a.bldg.active { background:#d7efe3; border-radius:4px; padding:0 3px; }
+tr.viewonly a.bldg { color:#5f6b64; }
+.map-col { width:100%; }
+.map-panel { z-index:3; background:var(--card); margin:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; width:100%; }
+.map-head { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:8px 10px; font-size:13px; }
+.map-head a { color:var(--accent); font-weight:700; }
+.map-frame-wrap { position:relative; width:100%; aspect-ratio:1 / 1; background:#eef3ef; }
+.map-panel iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+.map-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; padding:12px; text-align:center; }
+.map-empty.hidden { display:none; }
+
+.pdfid { font-weight:800; font-variant-numeric:tabular-nums; font-size:14px; color:#1f2a24; }
+tr.viewonly td.pdfid { color:#1f2a24; font-weight:800; }
+.scorebar { display:inline-flex; gap:3px; white-space:nowrap; }
+.scorechip {
+  width:26px; height:26px; border:1px solid var(--line);
+  border-radius:6px; background:#fff; cursor:pointer;
+  font:inherit; font-weight:700; padding:0; line-height:24px;
+}
+.scorechip:hover { border-color:var(--accent); }
+.scorechip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+tr.viewonly .scorechip { background:#f7f4ee; color:#333; }
+tr.viewonly .scorechip.on { background:#3d6b54; color:#fff; border-color:#3d6b54; }
+tr.taken td { text-decoration:line-through; color:#8a867d; background:#f3efe8; }
+tr.taken:hover td { background:#eeeae3; }
+tr.taken .scorechip { opacity:0.35; cursor:not-allowed; pointer-events:none; }
+.taken-status { font-size:13px; color:#8a4b12; font-weight:700; margin:6px 0 8px; }
+.score-hint { font-size:11px; color:var(--muted); margin-top:4px; }
+
+.hidden-toggle {
+  width:100%; padding:16px 12px; margin:6px 0 14px;
+  font-size:18px; font-weight:800; letter-spacing:0.04em;
+  border-radius:12px; background:#1f6b4a; color:#fff;
+  box-shadow:0 2px 0 #145338;
+}
+.hidden-toggle:hover { filter:brightness(1.05); }
+.hidden-toggle.on { background:#8a4b12; box-shadow:0 2px 0 #5c320c; }
+
+.score-order-btn {
+  width:100%; padding:14px 12px; margin:0 0 12px;
+  font-size:17px; font-weight:800;
+  border-radius:12px; background:#245a8a; color:#fff;
+}
+.score-order-btn.on { background:#8a4b12; }
+.usernote {
+  width:100%; min-width:140px; padding:6px 8px;
+  border:1px solid var(--line); border-radius:6px;
+  font:inherit; background:#fff;
+}
+#estateChecks { max-height:200px; overflow:auto; }
+#districtChecks { margin-bottom:4px; }
+.show-cols {
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px;
+  margin:0 0 10px; padding:8px 10px;
+  background:#f3f7f4; border:1px solid var(--line); border-radius:8px;
+  font-size:13px;
+}
+.show-cols b { color:var(--muted); font-size:12px; }
+.show-cols label { display:inline-flex; align-items:center; gap:5px; cursor:pointer; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="tTitle"></h1>
+  <p id="tSrc"></p>
+  <p id="tYou"></p>
+  <div class="match-count" id="matchCountHead"></div>
+</header>
+<div class="layout">
+  <div class="left-col">
+  <aside class="map-col">
+    <div class="map-panel" id="mapPanel">
+      <div class="map-head">
+        <b id="tMap"></b>
+        <span id="mapLabel" class="muted"></span>
+        <a id="mapLink" href="#" target="_blank" rel="noopener" hidden></a>
+      </div>
+      <div class="map-frame-wrap">
+        <iframe id="mapFrame" title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="about:blank"></iframe>
+        <div id="mapEmpty" class="map-empty"></div>
+      </div>
+    </div>
+  </aside>
+  <aside class="card">
+    <h2 id="tFilters"></h2>
+    <button type="button" id="hiddenToggle" class="hidden-toggle"></button>
+    <label class="field" id="tSearch"></label>
+    <input id="q" type="search">
+    <label class="field" id="tG"></label>
+    <div class="checks" id="districtChecks"></div>
+    <label class="field" id="tE"></label>
+    <div class="checks" id="estateChecks"></div>
+    <label class="field" id="tPeople"></label>
+    <input id="people" type="number" min="1" max="12" value="2">
+    <div class="row2">
+      <div><label class="field" id="tAreaFrom"></label><input id="areaMin" type="number" step="0.01"></div>
+      <div><label class="field" id="tAreaTo"></label><input id="areaMax" type="number" step="0.01"></div>
+    </div>
+    <div class="row2">
+      <div><label class="field" id="tRentFrom"></label><input id="rentMin" type="number"></div>
+      <div><label class="field" id="tRentTo"></label><input id="rentMax" type="number"></div>
+    </div>
+    <label class="field" id="tLift"></label>
+    <div class="checks" id="liftChecks"></div>
+    <label class="field" id="tReno"></label>
+    <div class="checks" id="renoChecks"></div>
+    <label class="field" id="tDisc"></label>
+    <select id="discount"></select>
+    <label class="field" id="tKw"></label>
+    <div class="checks" id="kwChecks"></div>
+    <label class="field" id="tScoreFilter"></label>
+    <select id="scoreFilter">
+      <option value=""></option>
+      <option value="scored"></option>
+      <option value="unscored"></option>
+    </select>
+    <p class="score-hint" id="tScoreHint"></p>
+    <label class="checks" style="display:none"><input type="checkbox" id="excludeDeath" checked> <span id="tExDeath"></span></label>
+    <label class="checks" style="display:none"><input type="checkbox" id="showNoLift"> <span id="tShowNoLift"></span></label>
+    <label class="checks"><input type="checkbox" id="excludeKw"> <span id="tExkw"></span></label>
+    <label class="checks"><input type="checkbox" id="harmonyOnly"> <span id="tHOnly"></span></label>
+    <label class="checks"><input type="checkbox" id="noHarmony"> <span id="tHNo"></span></label>
+    <div class="btns">
+      <button class="primary" id="applyBtn" type="button"></button>
+      <button class="ghost" id="resetBtn" type="button"></button>
+      <button class="ghost" id="csvBtn" type="button"></button>
+    </div>
+    <p class="note" id="tHint"></p>
+  </aside>
+  </div>
+  <main class="card">
+    <div class="stats">
+      <div>
+        <h2 id="tResult"></h2>
+        <div class="match-count big" id="matchCount">符合條件：93／93</div>
+        <div class="muted" style="display:none"><strong id="count">0</strong> <span id="tUnit"></span> <b id="pickableCount">0</b></div>
+        <button type="button" id="scoreOrderBtn" class="score-order-btn"></button>
+        <div class="taken-status" id="takenStatus"></div>
+        <div class="countline"><span id="hiddenState" class="muted"></span></div>
+      </div>
+      <p class="note" id="summary"></p>
+    </div>
+    <div class="show-cols" id="showColsPanel">
+      <b id="tShowCols">顯示欄</b>
+      <label><input type="checkbox" id="col_group"> <span id="tColGroup"></span></label>
+      <label><input type="checkbox" id="col_lift"> <span id="tColLift"></span></label>
+      <label><input type="checkbox" id="col_renovation"> <span id="tColReno"></span></label>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr id="thead"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<script>
+const UNITS = [{"id":15,"estateCode":"CS","blockCode":"LS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"樂山樓","room":"608","area":33.09,"rent":2113,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"單位鄰近垃圾房 ；戶外對殘障人士構成的 障礙(單位門口的門檻)","harmony":false,"keywords":["殘障障礙","鄰近垃圾房"]},{"id":17,"estateCode":"CS","blockCode":"LS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"樂山樓","room":"724","area":33.09,"rent":2113,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":18,"estateCode":"CS","blockCode":"LS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"樂山樓","room":"1317","area":33.09,"rent":2113,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":20,"estateCode":"CS","blockCode":"LS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"樂山樓","room":"1727","area":33.09,"rent":2113,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":22,"estateCode":"CS","blockCode":"LS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"樂山樓","room":"2107","area":33.09,"rent":2113,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":23,"estateCode":"CS","blockCode":"LS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"樂山樓","room":"2211","area":33.09,"rent":2113,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":25,"estateCode":"CS","blockCode":"SS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"秀山樓","room":"212","area":33.09,"rent":2113,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)；單位曾發生具心理影響事件(詳情請向當值 職員查詢)","harmony":false,"keywords":["心理影響","殘障障礙"]},{"id":26,"estateCode":"CS","blockCode":"SS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"秀山樓","room":"515","area":33.09,"rent":2113,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":28,"estateCode":"CS","blockCode":"SS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"秀山樓","room":"1016","area":33.09,"rent":2113,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":30,"estateCode":"CS","blockCode":"SS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"秀山樓","room":"1215","area":33.09,"rent":2113,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":31,"estateCode":"CS","blockCode":"SS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"象山邨","building":"秀山樓","room":"1819","area":33.09,"rent":2113,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":64,"estateCode":"LMS2","blockCode":"PS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"梨木樹二邨","building":"柏樹樓","room":"1105","area":28.61,"rent":1926,"discountMonths":0,"lift":"有","occMin":2,"occMax":4,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":65,"estateCode":"LMS2","blockCode":"PS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"梨木樹二邨","building":"柏樹樓","room":"1406","area":28.61,"rent":1926,"discountMonths":0,"lift":"有","occMin":2,"occMax":4,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":67,"estateCode":"LMSE","blockCode":"HGS","district":"荃灣","group":"荃灣、葵涌、青衣","estate":"梨木樹邨","building":"康樹樓","room":"1402","area":21.96,"rent":2208,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"單位曾發生具心理影響事件(詳情請向當值 職員查詢)","harmony":true,"keywords":["心理影響"]},{"id":71,"estateCode":"TWH","blockCode":"FG","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"大窩口邨","building":"富強樓","room":"902","area":23.3,"rent":1505,"discountMonths":12,"lift":"有","occMin":2,"occMax":3,"renovation":"已翻新","notes":"單位鄰近垃圾房","harmony":false,"keywords":["鄰近垃圾房"]},{"id":78,"estateCode":"KC","blockCode":"CIK","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"葵涌邨","building":"芊葵樓","room":"2913","area":21.96,"rent":2208,"discountMonths":12,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"前住客曾受其他住客滋擾","harmony":true,"keywords":[]},{"id":85,"estateCode":"KC","blockCode":"TZK","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"葵涌邨","building":"芷葵樓","room":"2614","area":21.96,"rent":2208,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"前住客曾受其他住客滋擾","harmony":true,"keywords":[]},{"id":86,"estateCode":"KC","blockCode":"TZK","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"葵涌邨","building":"芷葵樓","room":"3217","area":21.96,"rent":2208,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"單位曾發生具心理影響事件(詳情請向當值 職員查詢)","harmony":true,"keywords":["心理影響"]},{"id":88,"estateCode":"KC","blockCode":"TZK","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"葵涌邨","building":"芷葵樓","room":"3818","area":21.96,"rent":2208,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"前住客曾受其他住客滋擾","harmony":true,"keywords":[]},{"id":114,"estateCode":"KSW","blockCode":"9","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"葵盛西邨","building":"第九座","room":"723","area":22.67,"rent":1543,"discountMonths":12,"lift":"有","occMin":2,"occMax":2,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":115,"estateCode":"KSW","blockCode":"10","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"葵盛西邨","building":"第十座","room":"1239","area":22.67,"rent":1543,"discountMonths":0,"lift":"有","occMin":2,"occMax":2,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)；單位曾發生追討欠債事件","harmony":false,"keywords":["殘障障礙","追討欠債"]},{"id":119,"estateCode":"LK","blockCode":"FK","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"荔景邨","building":"風景樓","room":"454","area":22.67,"rent":1551,"discountMonths":12,"lift":"有","occMin":2,"occMax":2,"renovation":"已翻新","notes":"單位受水平略高噪音的影響(單位面向馬 路)","harmony":false,"keywords":[]},{"id":124,"estateCode":"LK","blockCode":"FK","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"荔景邨","building":"風景樓","room":"1046","area":22.67,"rent":1551,"discountMonths":0,"lift":"有","occMin":2,"occMax":2,"renovation":"翻新中","notes":"單位受水平略高噪音的影響(單位面向馬 路)","harmony":false,"keywords":[]},{"id":125,"estateCode":"LK","blockCode":"FK","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"荔景邨","building":"風景樓","room":"1142","area":22.67,"rent":1551,"discountMonths":0,"lift":"有","occMin":2,"occMax":2,"renovation":"翻新中","notes":"單位受水平略高噪音的影響(單位面向馬 路)","harmony":false,"keywords":[]},{"id":138,"estateCode":"LK","blockCode":"OK","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"荔景邨","building":"安景樓","room":"1202","area":22.67,"rent":1551,"discountMonths":8,"lift":"有","occMin":2,"occMax":2,"renovation":"翻新中","notes":"單位曾發生追討欠債事件","harmony":false,"keywords":["追討欠債"]},{"id":143,"estateCode":"LU","blockCode":"FY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"富瑤樓","room":"603","area":33.07,"rent":2284,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":145,"estateCode":"LU","blockCode":"FY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"富瑤樓","room":"1232","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":147,"estateCode":"LU","blockCode":"KY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"貴瑤樓","room":"512","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":149,"estateCode":"LU","blockCode":"KY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"貴瑤樓","room":"827","area":33.07,"rent":2284,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"單位鄰近垃圾房 ；戶內對殘障人士構成的 障礙(浴室) ；戶內對殘障人士構成的障礙 (廚房)","harmony":false,"keywords":["殘障障礙","鄰近垃圾房"]},{"id":150,"estateCode":"LU","blockCode":"KY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"貴瑤樓","room":"1319","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":153,"estateCode":"LU","blockCode":"KY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"貴瑤樓","room":"1434","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":154,"estateCode":"LU","blockCode":"KY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"貴瑤樓","room":"1606","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":156,"estateCode":"LU","blockCode":"LY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"樂瑤樓","room":"619","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":157,"estateCode":"LU","blockCode":"LY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"樂瑤樓","room":"628","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":158,"estateCode":"LU","blockCode":"LY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"樂瑤樓","room":"1220","area":33.07,"rent":2284,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":159,"estateCode":"LU","blockCode":"LY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"樂瑤樓","room":"1716","area":33.07,"rent":2284,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":161,"estateCode":"LU","blockCode":"LY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"樂瑤樓","room":"1829","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":162,"estateCode":"LU","blockCode":"LY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"樂瑤樓","room":"2103","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":163,"estateCode":"LU","blockCode":"LY","district":"葵涌","group":"荃灣、葵涌、青衣","estate":"麗瑤邨","building":"樂瑤樓","room":"2212","area":33.07,"rent":2284,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室) ；戶內 對殘障人士構成的障礙(廚房)","harmony":false,"keywords":["殘障障礙"]},{"id":185,"estateCode":"CC","blockCode":"CC","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青松樓","room":"316","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":186,"estateCode":"CC","blockCode":"CC","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青松樓","room":"410","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"單位鄰近垃圾房 ；戶外對殘障人士構成的 障礙(大廈入口)","harmony":false,"keywords":["殘障障礙","鄰近垃圾房"]},{"id":188,"estateCode":"CC","blockCode":"CC","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青松樓","room":"1610","area":33.07,"rent":2047,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"單位鄰近垃圾房 ；戶外對殘障人士構成的 障礙(大廈入口)","harmony":false,"keywords":["殘障障礙","鄰近垃圾房"]},{"id":190,"estateCode":"CC","blockCode":"CC","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青松樓","room":"1819","area":33.07,"rent":2047,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":191,"estateCode":"CC","blockCode":"CC","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青松樓","room":"2127","area":33.07,"rent":2047,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"須定期進入單位檢查屋頂排骨樓板工程設施 (詳情請向當值職員查詢)；戶外對殘障人士 構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙","屋頂檢查"]},{"id":192,"estateCode":"CC","blockCode":"CC","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青松樓","room":"2316","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":194,"estateCode":"CC","blockCode":"CE","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青楊樓","room":"420","area":33.07,"rent":1940,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"單位面向山坡 ；戶外對殘障人士構成的障 礙(單位門口的門檻)","harmony":false,"keywords":["殘障障礙","面向山坡"]},{"id":196,"estateCode":"CC","blockCode":"CE","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青楊樓","room":"627","area":33.07,"rent":1940,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)；單位曾發生追討欠債事件","harmony":false,"keywords":["殘障障礙","追討欠債"]},{"id":198,"estateCode":"CC","blockCode":"CE","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青楊樓","room":"907","area":33.07,"rent":1940,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":199,"estateCode":"CC","blockCode":"CE","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青楊樓","room":"1208","area":33.07,"rent":1940,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":200,"estateCode":"CC","blockCode":"CE","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青楊樓","room":"1434","area":33.07,"rent":1940,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":203,"estateCode":"CC","blockCode":"CE","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青楊樓","room":"2127","area":33.07,"rent":1940,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"須定期進入單位檢查屋頂排骨樓板工程設施 (詳情請向當值職員查詢)；戶外對殘障人士 構成的障礙(單位門口的門檻)","harmony":false,"keywords":["殘障障礙","屋頂檢查"]},{"id":210,"estateCode":"CC","blockCode":"CM","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青梅樓","room":"217","area":33.07,"rent":1940,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":211,"estateCode":"CC","blockCode":"CM","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青梅樓","room":"334","area":33.07,"rent":1940,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":212,"estateCode":"CC","blockCode":"CM","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青梅樓","room":"433","area":33.07,"rent":1940,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":214,"estateCode":"CC","blockCode":"CM","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青梅樓","room":"1012","area":33.07,"rent":1940,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)；單位曾發生追討欠債事件","harmony":false,"keywords":["殘障障礙","追討欠債"]},{"id":215,"estateCode":"CC","blockCode":"CM","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青梅樓","room":"1124","area":33.07,"rent":1940,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":216,"estateCode":"CC","blockCode":"CM","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青梅樓","room":"1532","area":33.07,"rent":1940,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":219,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"211","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":220,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"524","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":221,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"817","area":33.07,"rent":2047,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":222,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"912","area":33.07,"rent":2047,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":223,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"1007","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":224,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"1116","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":225,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"1129","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":228,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"1724","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":229,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"1934","area":33.07,"rent":2047,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":230,"estateCode":"CC","blockCode":"CP","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青柏樓","room":"2132","area":33.07,"rent":2047,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"須定期進入單位檢查屋頂排骨樓板工程設施 (詳情請向當值職員查詢)；戶外對殘障人士 構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙","屋頂檢查"]},{"id":231,"estateCode":"CC","blockCode":"CT","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青桃樓","room":"220","area":23.1,"rent":1402,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"單位鄰近電壓房 ；戶外對殘障人士構成的 障礙(單位門口的門檻)","harmony":false,"keywords":["殘障障礙"]},{"id":235,"estateCode":"CC","blockCode":"CW","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青槐樓","room":"527","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":236,"estateCode":"CC","blockCode":"CW","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青槐樓","room":"625","area":33.07,"rent":2047,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":238,"estateCode":"CC","blockCode":"CW","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青槐樓","room":"1332","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":239,"estateCode":"CC","blockCode":"CW","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青槐樓","room":"1603","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":240,"estateCode":"CC","blockCode":"CW","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青槐樓","room":"2102","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":241,"estateCode":"CC","blockCode":"CW","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青槐樓","room":"2127","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"須定期進入單位檢查屋頂排骨樓板工程設施 (詳情請向當值職員查詢)；戶外對殘障人士 構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙","屋頂檢查"]},{"id":244,"estateCode":"CC","blockCode":"CY","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青榕樓","room":"207","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":246,"estateCode":"CC","blockCode":"CY","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青榕樓","room":"1202","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":247,"estateCode":"CC","blockCode":"CY","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青榕樓","room":"1525","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":248,"estateCode":"CC","blockCode":"CY","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青榕樓","room":"2033","area":33.07,"rent":2047,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":249,"estateCode":"CC","blockCode":"CY","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長青邨","building":"青榕樓","room":"2120","area":33.07,"rent":2047,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"須定期進入單位檢查屋頂排骨樓板工程設施 (詳情請向當值職員查詢)；戶外對殘障人士 構成的障礙(單位門口的門檻)","harmony":false,"keywords":["殘障障礙","屋頂檢查"]},{"id":255,"estateCode":"CG","blockCode":"HF","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康富樓","room":"1715","area":28.99,"rent":1817,"discountMonths":0,"lift":"有","occMin":2,"occMax":4,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":256,"estateCode":"CG","blockCode":"HK","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康貴樓","room":"201","area":23.13,"rent":1357,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":257,"estateCode":"CG","blockCode":"HK","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康貴樓","room":"810","area":23.13,"rent":1357,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":259,"estateCode":"CG","blockCode":"HK","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康貴樓","room":"1814","area":23.13,"rent":1357,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":260,"estateCode":"CG","blockCode":"HO","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康和樓","room":"522","area":23.13,"rent":1357,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":261,"estateCode":"CG","blockCode":"HO","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康和樓","room":"1122","area":23.13,"rent":1357,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":262,"estateCode":"CG","blockCode":"HO","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康和樓","room":"1709","area":23.13,"rent":1357,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":265,"estateCode":"CG","blockCode":"HT","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康泰樓","room":"229","area":23.13,"rent":1468,"discountMonths":12,"lift":"有","occMin":2,"occMax":3,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":271,"estateCode":"CG","blockCode":"HW","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康榮樓","room":"515","area":28.99,"rent":1817,"discountMonths":8,"lift":"有","occMin":2,"occMax":4,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":276,"estateCode":"CG","blockCode":"HFG","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康豐樓","room":"C0206","area":30.36,"rent":1905,"discountMonths":12,"lift":"有","occMin":2,"occMax":4,"renovation":"已翻新","notes":"單位鄰近電壓房 ；戶外對殘障人士構成的 障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":277,"estateCode":"CG","blockCode":"HME","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康美樓","room":"A3303","area":31.45,"rent":1963,"discountMonths":0,"lift":"有","occMin":2,"occMax":4,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":283,"estateCode":"CG","blockCode":"HPN","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康平樓","room":"215","area":30.22,"rent":1897,"discountMonths":12,"lift":"有","occMin":2,"occMax":4,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":284,"estateCode":"CG","blockCode":"HSH","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康盛樓","room":"201","area":30.22,"rent":1897,"discountMonths":0,"lift":"有","occMin":2,"occMax":4,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":285,"estateCode":"CG","blockCode":"HSH","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康盛樓","room":"215","area":30.22,"rent":1897,"discountMonths":0,"lift":"有","occMin":2,"occMax":4,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":287,"estateCode":"CG","blockCode":"HSN","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康順樓","room":"A0603","area":24.35,"rent":1519,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":288,"estateCode":"CG","blockCode":"HSN","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康順樓","room":"A2701","area":24.35,"rent":1519,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":289,"estateCode":"CG","blockCode":"HSN","district":"青衣","group":"荃灣、葵涌、青衣","estate":"長康邨","building":"康順樓","room":"B2310","area":24.35,"rent":1519,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":334,"estateCode":"YTT2","blockCode":"MU","district":"東涌","group":"東涌","estate":"逸東二邨","building":"滿逸樓","room":"2910","area":17.81,"rent":1318,"discountMonths":12,"lift":"有","occMin":1,"occMax":2,"renovation":"翻新中","notes":"單位鄰近垃圾房 ；戶外對殘障人士構成輕 微的障礙(公用走廊) ；戶內對殘障人士構 成的障礙(起居室)；前住客曾受其他住客滋擾","harmony":true,"keywords":["殘障障礙","鄰近垃圾房"]},{"id":335,"estateCode":"BE","blockCode":"TC","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶聚樓","room":"210","area":24.93,"rent":1329,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":336,"estateCode":"BE","blockCode":"TC","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶聚樓","room":"517","area":24.93,"rent":1329,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":338,"estateCode":"BE","blockCode":"TL","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶翎樓","room":"325","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室) ；戶內對殘障人士構成的障礙(廚房) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":339,"estateCode":"BE","blockCode":"TL","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶翎樓","room":"652","area":24.93,"rent":1366,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室) ；戶內對殘障人士構成的障礙(廚房) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":340,"estateCode":"BE","blockCode":"TL","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶翎樓","room":"1106","area":24.93,"rent":1366,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":341,"estateCode":"BE","blockCode":"TL","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶翎樓","room":"1329","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":342,"estateCode":"BE","blockCode":"TL","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶翎樓","room":"1635","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":343,"estateCode":"BE","blockCode":"TM","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶舞樓","room":"253","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":344,"estateCode":"BE","blockCode":"TM","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶舞樓","room":"656","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":345,"estateCode":"BE","blockCode":"TM","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶舞樓","room":"706","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":346,"estateCode":"BE","blockCode":"TM","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶舞樓","room":"1018","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":347,"estateCode":"BE","blockCode":"TM","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶舞樓","room":"1420","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":348,"estateCode":"BE","blockCode":"TM","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶舞樓","room":"1712","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":350,"estateCode":"BE","blockCode":"TS","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶心樓","room":"1011","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":351,"estateCode":"BE","blockCode":"TS","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶心樓","room":"1247","area":24.93,"rent":1366,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":353,"estateCode":"BE","blockCode":"TS","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶心樓","room":"1337","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":354,"estateCode":"BE","blockCode":"TS","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶心樓","room":"1810","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(公用走廊)","harmony":false,"keywords":["殘障障礙"]},{"id":357,"estateCode":"BE","blockCode":"TY","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶意樓","room":"301","area":24.93,"rent":1329,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":358,"estateCode":"BE","blockCode":"TY","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶意樓","room":"729","area":24.93,"rent":1329,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":359,"estateCode":"BE","blockCode":"TY","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶意樓","room":"930","area":24.93,"rent":1329,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":360,"estateCode":"BE","blockCode":"TY","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶意樓","room":"1031","area":24.93,"rent":1329,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":361,"estateCode":"BE","blockCode":"TY","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶意樓","room":"1216","area":24.93,"rent":1329,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":362,"estateCode":"BE","blockCode":"TY","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶意樓","room":"1508","area":24.93,"rent":1329,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":364,"estateCode":"BE","blockCode":"TYG","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶影樓","room":"206","area":24.93,"rent":1366,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":365,"estateCode":"BE","blockCode":"TYG","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶影樓","room":"255","area":24.93,"rent":1366,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":367,"estateCode":"BE","blockCode":"TYG","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶影樓","room":"365","area":24.93,"rent":1366,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":368,"estateCode":"BE","blockCode":"TYG","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶影樓","room":"409","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":369,"estateCode":"BE","blockCode":"TYG","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶影樓","room":"458","area":24.93,"rent":1366,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":370,"estateCode":"BE","blockCode":"TYG","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶影樓","room":"607","area":24.93,"rent":1366,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":371,"estateCode":"BE","blockCode":"TYG","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶影樓","room":"938","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":372,"estateCode":"BE","blockCode":"TYG","district":"屯門","group":"屯門、元朗、天水圍","estate":"蝴蝶邨","building":"蝶影樓","room":"1050","area":24.93,"rent":1366,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":384,"estateCode":"SS","blockCode":"MY","district":"屯門","group":"屯門、元朗、天水圍","estate":"三聖邨","building":"滿漁樓","room":"521","area":28.61,"rent":1530,"discountMonths":0,"lift":"有","occMin":2,"occMax":4,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(大廈入口)","harmony":false,"keywords":["殘障障礙"]},{"id":426,"estateCode":"YO","blockCode":"LI","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛廉樓","room":"333","area":33.07,"rent":1790,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻)","harmony":false,"keywords":["殘障障礙"]},{"id":427,"estateCode":"YO","blockCode":"LI","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛廉樓","room":"718","area":33.07,"rent":1790,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻)","harmony":false,"keywords":["殘障障礙"]},{"id":428,"estateCode":"YO","blockCode":"LI","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛廉樓","room":"1310","area":33.07,"rent":1790,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻)","harmony":false,"keywords":["殘障障礙"]},{"id":429,"estateCode":"YO","blockCode":"LI","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛廉樓","room":"1803","area":33.07,"rent":1790,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻)","harmony":false,"keywords":["殘障障礙"]},{"id":439,"estateCode":"YO","blockCode":"OS","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛信樓","room":"824","area":33.07,"rent":1790,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻)","harmony":false,"keywords":["殘障障礙"]},{"id":441,"estateCode":"YO","blockCode":"OS","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛信樓","room":"1406","area":33.07,"rent":1790,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻)","harmony":false,"keywords":["殘障障礙"]},{"id":442,"estateCode":"YO","blockCode":"OS","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛信樓","room":"2006","area":33.07,"rent":1790,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻)","harmony":false,"keywords":["殘障障礙"]},{"id":451,"estateCode":"YO","blockCode":"YE","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛義樓","room":"515","area":33.07,"rent":1790,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"","harmony":false,"keywords":[]},{"id":453,"estateCode":"YO","blockCode":"YE","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛義樓","room":"1916","area":33.07,"rent":1790,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻)；前住客曾受其他住客滋擾","harmony":false,"keywords":["殘障障礙"]},{"id":454,"estateCode":"YO","blockCode":"YE","district":"屯門","group":"屯門、元朗、天水圍","estate":"友愛邨","building":"愛義樓","room":"1924","area":33.07,"rent":1790,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻)","harmony":false,"keywords":["殘障障礙"]},{"id":456,"estateCode":"TCG","blockCode":"CE","district":"天水圍","group":"屯門、元朗、天水圍","estate":"天晴邨","building":"晴喜樓","room":"2124","area":17.78,"rent":1228,"discountMonths":8,"lift":"有","occMin":1,"occMax":2,"renovation":"翻新中","notes":"前住客曾受其他住客滋擾","harmony":true,"keywords":[]},{"id":722,"estateCode":"CO","blockCode":"FC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"富澤樓","room":"208","area":23.3,"rent":1733,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"單位鄰近排煙道/冷氣機房 ；戶外對殘障人 士可能構成的障礙(單位門口的門檻) ；戶 內對殘障人士構成的障礙(浴室) ；戶內對 殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":723,"estateCode":"CO","blockCode":"FC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"富澤樓","room":"313","area":23.3,"rent":1733,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":726,"estateCode":"CO","blockCode":"WC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"榮澤樓","room":"243","area":23.3,"rent":1733,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":727,"estateCode":"CO","blockCode":"WC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"榮澤樓","room":"448","area":23.3,"rent":1733,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":729,"estateCode":"CO","blockCode":"WC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"榮澤樓","room":"1127","area":23.3,"rent":1733,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":733,"estateCode":"CO","blockCode":"WAC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"華澤樓","room":"234","area":23.3,"rent":1733,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻) ；戶內對殘障人士構成的障礙(浴室) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":734,"estateCode":"CO","blockCode":"WAC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"華澤樓","room":"253","area":23.3,"rent":1733,"discountMonths":12,"lift":"有","occMin":2,"occMax":3,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻) ；戶內對殘障人士構成的障礙(浴室) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":736,"estateCode":"CO","blockCode":"WAC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"華澤樓","room":"634","area":23.3,"rent":1733,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":737,"estateCode":"CO","blockCode":"WAC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"華澤樓","room":"758","area":23.3,"rent":1733,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":739,"estateCode":"CO","blockCode":"WAC","district":"深水埗","group":"其餘區域","estate":"澤安邨","building":"華澤樓","room":"1146","area":23.3,"rent":1733,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室) ；戶內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":751,"estateCode":"UC","blockCode":"UC","district":"深水埗","group":"其餘區域","estate":"元州邨","building":"元智樓","room":"2605","area":17.91,"rent":1865,"discountMonths":0,"lift":"有","occMin":1,"occMax":2,"renovation":"翻新中","notes":"戶外對殘障人士構成輕微的障礙(公用走廊)；前住客曾受其他住客滋擾","harmony":true,"keywords":["殘障障礙"]},{"id":755,"estateCode":"UC","blockCode":"UHE","district":"深水埗","group":"其餘區域","estate":"元州邨","building":"元禧樓","room":"1115","area":17.91,"rent":1865,"discountMonths":0,"lift":"有","occMin":1,"occMax":2,"renovation":"翻新中","notes":"單位曾發生縱火案","harmony":true,"keywords":["縱火"]},{"id":758,"estateCode":"PT","blockCode":"LT","district":"石硤尾","group":"其餘區域","estate":"白田邨","building":"麗田樓","room":"3210","area":17.81,"rent":1861,"discountMonths":0,"lift":"有","occMin":1,"occMax":2,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(起居室)；前住客曾受其他住客滋擾","harmony":true,"keywords":["殘障障礙"]},{"id":761,"estateCode":"PT","blockCode":"TAT","district":"石硤尾","group":"其餘區域","estate":"白田邨","building":"太田樓","room":"3513","area":21.96,"rent":2292,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成輕微的障礙(公用走廊)；前住客曾受其他住客滋擾","harmony":true,"keywords":["殘障障礙"]},{"id":799,"estateCode":"MT","blockCode":"MY","district":"九龍城","group":"其餘區域","estate":"美東邨","building":"美仁樓","room":"2717","area":22.0,"rent":2295,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"前住客曾受其他住客滋擾","harmony":true,"keywords":[]},{"id":824,"estateCode":"CYS","blockCode":"SA","district":"黃大仙","group":"其餘區域","estate":"竹園南邨","building":"秀園樓","room":"223","area":23.65,"rent":1772,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)；升降機改善工程預計將於2026年9月完成","harmony":false,"keywords":["殘障障礙"]},{"id":844,"estateCode":"TC","blockCode":"AFB","district":"慈雲山","group":"其餘區域","estate":"慈正邨","building":"服務設施大樓","room":"851","area":22.3,"rent":2334,"discountMonths":8,"lift":"有","occMin":2,"occMax":2,"renovation":"已翻新","notes":"","harmony":true,"keywords":[]},{"id":881,"estateCode":"CH","blockCode":"LC","district":"牛池灣","group":"其餘區域","estate":"彩虹邨","building":"綠晶樓","room":"425","area":24.1,"rent":1718,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"","harmony":false,"keywords":[]},{"id":888,"estateCode":"CT","blockCode":"CYE","district":"牛池灣","group":"其餘區域","estate":"彩德邨","building":"彩義樓","room":"101","area":21.67,"rent":2264,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"","harmony":true,"keywords":[]},{"id":908,"estateCode":"CWN2","blockCode":"KF","district":"牛池灣","group":"其餘區域","estate":"彩雲二邨","building":"啟輝樓","room":"2010","area":33.07,"rent":2223,"discountMonths":0,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"單位鄰近垃圾房 ；戶外對殘障人士構成的 障礙(單位大門)","harmony":false,"keywords":["殘障障礙","鄰近垃圾房"]},{"id":909,"estateCode":"CWN2","blockCode":"ML","district":"牛池灣","group":"其餘區域","estate":"彩雲二邨","building":"明麗樓","room":"1018","area":33.07,"rent":2223,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位大門)","harmony":false,"keywords":["殘障障礙"]},{"id":912,"estateCode":"KY","blockCode":"KI","district":"九龍灣","group":"其餘區域","estate":"啟業邨","building":"啟賢樓","room":"543","area":23.3,"rent":1626,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻) ；戶內對殘障人士構成的障礙(浴室) ；戶內對殘障人士構成的障礙(廚房) ；戶 內對殘障人士構成的障礙(露台)","harmony":false,"keywords":["殘障障礙"]},{"id":931,"estateCode":"CHY","blockCode":"YH","district":"牛頭角","group":"其餘區域","estate":"彩盈邨","building":"盈康樓","room":"1815","area":17.99,"rent":1884,"discountMonths":0,"lift":"有","occMin":1,"occMax":2,"renovation":"翻新中","notes":"前住客曾受其他住客滋擾","harmony":true,"keywords":[]},{"id":933,"estateCode":"CHY","blockCode":"YL","district":"牛頭角","group":"其餘區域","estate":"彩盈邨","building":"盈樂樓","room":"1005","area":17.99,"rent":1884,"discountMonths":12,"lift":"有","occMin":1,"occMax":2,"renovation":"翻新中","notes":"單位鄰近垃圾房","harmony":true,"keywords":["鄰近垃圾房"]},{"id":954,"estateCode":"LWS","blockCode":"HW","district":"牛頭角","group":"其餘區域","estate":"樂華南邨","building":"喜華樓","room":"A0205","area":23.53,"rent":1650,"discountMonths":12,"lift":"有","occMin":2,"occMax":3,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":957,"estateCode":"LWS","blockCode":"MW","district":"牛頭角","group":"其餘區域","estate":"樂華南邨","building":"敏華樓","room":"C0202","area":23.53,"rent":1650,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"單位鄰近垃圾房 ；戶外對殘障人士構成的 障礙(單位門口的門檻)","harmony":false,"keywords":["殘障障礙","鄰近垃圾房"]},{"id":984,"estateCode":"SE","blockCode":"LC","district":"觀塘","group":"其餘區域","estate":"順利邨","building":"利祥樓","room":"1711","area":33.07,"rent":2208,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室)","harmony":false,"keywords":["殘障障礙"]},{"id":988,"estateCode":"SE","blockCode":"LM","district":"觀塘","group":"其餘區域","estate":"順利邨","building":"利明樓","room":"2023","area":33.07,"rent":2208,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶內對殘障人士構成的障礙(浴室)","harmony":false,"keywords":["殘障障礙"]},{"id":991,"estateCode":"SE","blockCode":"LN","district":"觀塘","group":"其餘區域","estate":"順利邨","building":"利恆樓","room":"720","area":33.07,"rent":2208,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室)","harmony":false,"keywords":["殘障障礙"]},{"id":992,"estateCode":"SE","blockCode":"LN","district":"觀塘","group":"其餘區域","estate":"順利邨","building":"利恆樓","room":"817","area":33.07,"rent":2208,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶內對殘障人士構成的障礙(浴室)","harmony":false,"keywords":["殘障障礙"]},{"id":999,"estateCode":"SO","blockCode":"OC","district":"觀塘","group":"其餘區域","estate":"順安邨","building":"安頌樓","room":"2539","area":24.52,"rent":1720,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":1000,"estateCode":"SO","blockCode":"OC","district":"觀塘","group":"其餘區域","estate":"順安邨","building":"安頌樓","room":"2840","area":24.52,"rent":1720,"discountMonths":12,"lift":"有","occMin":2,"occMax":3,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":1006,"estateCode":"ST","blockCode":"TC","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天池樓","room":"L107","area":33.06,"rent":2257,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":1009,"estateCode":"ST","blockCode":"TH","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天衡樓","room":"303","area":23.13,"rent":1578,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1010,"estateCode":"ST","blockCode":"TH","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天衡樓","room":"424","area":23.13,"rent":1578,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1011,"estateCode":"ST","blockCode":"TH","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天衡樓","room":"613","area":23.13,"rent":1578,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1012,"estateCode":"ST","blockCode":"TH","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天衡樓","room":"751","area":23.13,"rent":1578,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1013,"estateCode":"ST","blockCode":"TH","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天衡樓","room":"1402","area":23.13,"rent":1578,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"單位鄰近垃圾房 ；戶外對殘障人士可能構 成的障礙(單位門口的門檻) ；戶內對殘障 人士構成的障礙(浴室)","harmony":false,"keywords":["殘障障礙","鄰近垃圾房"]},{"id":1014,"estateCode":"ST","blockCode":"TH","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天衡樓","room":"1538","area":23.13,"rent":1578,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1024,"estateCode":"ST","blockCode":"TM","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天琴樓","room":"1924","area":33.06,"rent":2257,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"須定期進入單位檢查屋頂排骨樓板工程設施 (詳情請向當值職員查詢)；戶外對殘障人士 構成的障礙(單位門口的門檻)","harmony":false,"keywords":["殘障障礙","屋頂檢查"]},{"id":1027,"estateCode":"ST","blockCode":"TM","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天琴樓","room":"L106","area":33.06,"rent":2257,"discountMonths":12,"lift":"有","occMin":2,"occMax":5,"renovation":"已翻新","notes":"戶外對殘障人士構成的障礙(單位門口的門 檻)","harmony":false,"keywords":["殘障障礙"]},{"id":1028,"estateCode":"ST","blockCode":"TN","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天權樓","room":"214","area":23.13,"rent":1578,"discountMonths":12,"lift":"有","occMin":2,"occMax":3,"renovation":"已翻新","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1029,"estateCode":"ST","blockCode":"TN","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天權樓","room":"218","area":23.13,"rent":1578,"discountMonths":12,"lift":"有","occMin":2,"occMax":3,"renovation":"已翻新","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1030,"estateCode":"ST","blockCode":"TN","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天權樓","room":"426","area":23.13,"rent":1578,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1031,"estateCode":"ST","blockCode":"TN","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天權樓","room":"519","area":23.13,"rent":1578,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1032,"estateCode":"ST","blockCode":"TN","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天權樓","room":"658","area":23.13,"rent":1578,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1034,"estateCode":"ST","blockCode":"TN","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天權樓","room":"1502","area":23.13,"rent":1578,"discountMonths":12,"lift":"有","occMin":2,"occMax":3,"renovation":"已翻新","notes":"單位鄰近垃圾房 ；戶外對殘障人士可能構 成的障礙(單位門口的門檻) ；戶內對殘障 人士構成的障礙(浴室)","harmony":false,"keywords":["殘障障礙","鄰近垃圾房"]},{"id":1035,"estateCode":"ST","blockCode":"TN","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天權樓","room":"1626","area":23.13,"rent":1578,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)；單位內曾發生兇殺事件，該事件約於2008 年發生","harmony":false,"keywords":["殘障障礙"]},{"id":1036,"estateCode":"ST","blockCode":"TN","district":"觀塘","group":"其餘區域","estate":"順天邨","building":"天權樓","room":"1753","area":23.13,"rent":1578,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；戶內對殘障人士構成的障礙(浴 室)","harmony":false,"keywords":["殘障障礙"]},{"id":1049,"estateCode":"TPN","blockCode":"TT","district":"觀塘","group":"其餘區域","estate":"翠屏北邨","building":"翠桃樓","room":"2103","area":23.68,"rent":1632,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"已翻新","notes":"須定期進入單位檢查屋頂排骨樓板工程設施 (詳情請向當值職員查詢)；戶外對殘障人士 構成的障礙(單位門口的門檻)；前住客曾受其他住客滋擾","harmony":false,"keywords":["殘障障礙","屋頂檢查"]},{"id":1059,"estateCode":"WH","blockCode":"HC","district":"觀塘","group":"其餘區域","estate":"雲漢邨","building":"漢松樓","room":"504","area":25.17,"rent":2641,"discountMonths":8,"lift":"有","occMin":2,"occMax":2,"renovation":"已翻新","notes":"戶外對殘障人士可能構成的障礙(單位門口 的門檻) ；","harmony":true,"keywords":["殘障障礙"]},{"id":1070,"estateCode":"SMP","blockCode":"SM","district":"秀茂坪","group":"其餘區域","estate":"秀茂坪邨","building":"秀明樓","room":"207","area":33.18,"rent":2321,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位大門)","harmony":false,"keywords":["殘障障礙"]},{"id":1071,"estateCode":"SMP","blockCode":"SM","district":"秀茂坪","group":"其餘區域","estate":"秀茂坪邨","building":"秀明樓","room":"220","area":33.18,"rent":2321,"discountMonths":8,"lift":"有","occMin":2,"occMax":5,"renovation":"翻新中","notes":"戶外對殘障人士構成的障礙(單位大門)","harmony":false,"keywords":["殘障障礙"]},{"id":1143,"estateCode":"LH","blockCode":"WS","district":"沙田","group":"其餘區域","estate":"隆亨邨","building":"榮心樓","room":"331","area":24.68,"rent":1785,"discountMonths":8,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"","harmony":false,"keywords":[]},{"id":1145,"estateCode":"LY","blockCode":"KW","district":"沙田","group":"其餘區域","estate":"瀝源邨","building":"貴和樓","room":"416","area":29.26,"rent":2002,"discountMonths":0,"lift":"有","occMin":2,"occMax":4,"renovation":"翻新中","notes":"單位曾發生追討欠債事件","harmony":false,"keywords":["追討欠債"]},{"id":1158,"estateCode":"SCO","blockCode":"HEC","district":"沙田","group":"其餘區域","estate":"水泉澳邨","building":"喜泉樓","room":"1007","area":21.96,"rent":2214,"discountMonths":0,"lift":"有","occMin":2,"occMax":3,"renovation":"翻新中","notes":"單位曾發生追討欠債事件","harmony":true,"keywords":["追討欠債"]},{"id":1173,"estateCode":"CHO","blockCode":"CW","district":"馬鞍山","group":"其餘區域","estate":"頌安邨","building":"頌和樓","room":"405","area":21.89,"rent":1995,"discountMonths":8,"lift":"有","occMin":2,"occMax":2,"renovation":"翻新中","notes":"單位曾發生具心理影響事件(詳情請向當值 職員查詢)","harmony":true,"keywords":["心理影響"]},{"id":1186,"estateCode":"CHH","blockCode":"CP","district":"上水","group":"其餘區域","estate":"清河邨","building":"清平樓","room":"2811","area":17.91,"rent":1322,"discountMonths":0,"lift":"有","occMin":1,"occMax":2,"renovation":"翻新中","notes":"單位曾發生縱火案；單位曾發生追討欠債 事件","harmony":true,"keywords":["追討欠債","縱火"]}];
+const DISTRICTS = ["\u4e0a\u6c34", "\u4e5d\u9f8d\u57ce", "\u4e5d\u9f8d\u7063", "\u4f55\u6587\u7530", "\u576a\u6d32", "\u5927\u57d4", "\u5927\u5dbc\u5c71\uff0c\u5927\u6fb3", "\u5927\u5dbc\u5c71\uff0c\u6885\u7aa9", "\u5929\u6c34\u570d", "\u5c07\u8ecd\u6fb3", "\u5c6f\u9580", "\u6148\u96f2\u5c71", "\u6771\u6d8c", "\u67f4\u7063", "\u6a6b\u982d\u78e1", "\u6c99\u7530", "\u6cb9\u5858", "\u6df1\u6c34\u57d7", "\u725b\u6c60\u7063", "\u725b\u982d\u89d2", "\u77f3\u7864\u5c3e", "\u79c0\u8302\u576a", "\u7b72\u7b95\u7063", "\u7c89\u5dba", "\u8343\u7063", "\u8354\u679d\u89d2", "\u8475\u6d8c", "\u85cd\u7530", "\u897f\u7063\u6cb3", "\u89c0\u5858", "\u8d64\u67f1", "\u947d\u77f3\u5c71", "\u9577\u6d32", "\u9752\u8863", "\u9999\u6e2f\u4ed4", "\u99ac\u978d\u5c71", "\u9c02\u9b5a\u6d8c", "\u9d28\u8137\u6d32", "\u9ec3\u5927\u4ed9"];
+const ESTATES = ["\u4e09\u8056\u90a8", "\u5065\u660e\u90a8", "\u5143\u5dde\u90a8", "\u5229\u5b89\u90a8", "\u5357\u5c71\u90a8", "\u535a\u5eb7\u90a8", "\u539a\u5fb7\u90a8", "\u53cb\u611b\u90a8", "\u548c\u6a02\u90a8", "\u555f\u696d\u90a8", "\u555f\u7530\u90a8", "\u5927\u5751\u6771\u90a8", "\u5927\u7aa9\u53e3\u90a8", "\u5927\u8208\u90a8", "\u5929\u6052\u90a8", "\u5929\u6148\u90a8", "\u5929\u6674\u90a8", "\u5929\u6fa4\u90a8", "\u5929\u745e\u4e00\u90a8", "\u5929\u745e\u4e8c\u90a8", "\u5929\u8000\u4e00\u90a8", "\u5929\u8000\u4e8c\u90a8", "\u5929\u83ef\u90a8", "\u5929\u9038\u90a8", "\u592a\u548c\u90a8", "\u5b89\u5b9a\u90a8", "\u5b89\u6cf0\u90a8", "\u5b89\u852d\u90a8", "\u5b89\u9054\u90a8", "\u5bcc\u5c71\u90a8", "\u5bcc\u660c\u90a8", "\u5bcc\u6771\u90a8", "\u5bcc\u6cf0\u90a8", "\u5bf6\u9054\u90a8", "\u5c0f\u897f\u7063\u90a8", "\u5c1a\u5fb7\u90a8", "\u5e73\u7530\u90a8", "\u5eb7\u6771\u90a8", "\u5ee3\u6e90\u90a8", "\u5ee3\u7530\u90a8", "\u5ee3\u798f\u90a8", "\u5f69\u5712\u90a8", "\u5f69\u5fb7\u90a8", "\u5f69\u76c8\u90a8", "\u5f69\u8679\u90a8", "\u5f69\u8f1d\u90a8", "\u5f69\u96f2\u4e00\u90a8", "\u5f69\u96f2\u4e8c\u90a8", "\u5f69\u971e\u90a8", "\u5fb7\u6717\u90a8", "\u5fb7\u7530\u90a8", "\u611b\u6771\u90a8", "\u611b\u6c11\u90a8", "\u6148\u5eb7\u90a8", "\u6148\u6a02\u90a8", "\u6148\u6b63\u90a8", "\u6148\u6c11\u90a8", "\u65b0\u7530\u570d\u90a8", "\u65b0\u7fe0\u90a8", "\u6771\u982d\u4e8c\u90a8", "\u67f4\u7063\u90a8", "\u68a8\u6728\u6a39\u4e00\u90a8", "\u68a8\u6728\u6a39\u4e8c\u90a8", "\u68a8\u6728\u6a39\u90a8", "\u6a02\u5bcc\u90a8", "\u6a02\u83ef\u5317\u90a8", "\u6a02\u83ef\u5357\u90a8", "\u6a21\u7bc4\u90a8", "\u6a6b\u982d\u78e1\u90a8", "\u6c34\u6cc9\u6fb3\u90a8", "\u6c99\u7530\u5773\u90a8", "\u6c99\u89d2\u90a8", "\u6cb9\u5858\u90a8", "\u6cb9\u9e97\u90a8", "\u6d77\u9e97\u90a8", "\u6e05\u6cb3\u90a8", "\u6e56\u666f\u90a8", "\u6eff\u6771\u90a8", "\u6f01\u7063\u90a8", "\u6fa4\u5b89\u90a8", "\u701d\u6e90\u90a8", "\u725b\u982d\u89d2\u4e0a\u90a8", "\u74b0\u7fe0\u90a8", "\u7530\u666f\u90a8", "\u7530\u7063\u90a8", "\u767d\u7530\u90a8", "\u77f3\u570d\u89d2\u90a8", "\u77f3\u6392\u7063\u90a8", "\u77f3\u7864\u5c3e\u90a8", "\u77f3\u7c6c\u4e00\u90a8", "\u77f3\u7c6c\u4e8c\u90a8", "\u77f3\u852d\u6771\u90a8", "\u77f3\u852d\u90a8", "\u78a9\u9580\u90a8", "\u798f\u4f86\u90a8", "\u79be\u8f0b\u90a8", "\u79c0\u8302\u576a\u5357\u90a8", "\u79c0\u8302\u576a\u90a8", "\u79e6\u77f3\u90a8", "\u7af9\u5712\u5317\u90a8 \u8559\u5712\u6a13", "\u7af9\u5712\u5357\u90a8", "\u7f8e\u6771\u90a8", "\u7f8e\u6797\u90a8", "\u7f8e\u7530\u90a8", "\u7fe0\u5c4f\u5317\u90a8", "\u7fe0\u5c4f\u5357\u90a8", "\u7fe0\u6797\u90a8", "\u7fe0\u6a02\u90a8", "\u8000\u6771\u90a8", "\u8208\u6771\u90a8", "\u8208\u6c11\u90a8", "\u8208\u83ef\u4e00\u90a8", "\u8208\u83ef\u4e8c\u90a8", "\u8354\u666f\u90a8", "\u83ef\u5bcc\u4e00\u90a8", "\u83ef\u5bcc\u4e8c\u90a8", "\u83ef\u5ec8\u90a8", "\u83ef\u5fc3\u90a8", "\u83ef\u8cb4\u90a8", "\u8475\u6d8c\u90a8", "\u8475\u76db\u6771\u90a8", "\u8475\u76db\u897f\u90a8", "\u8475\u806f\u90a8", "\u8475\u82b3\u90a8", "\u85cd\u7530\u90a8", "\u8607\u5c4b\u90a8", "\u8774\u8776\u90a8", "\u8c61\u5c71\u90a8", "\u8fce\u6771\u90a8", "\u9038\u6771\u4e00\u90a8", "\u9038\u6771\u4e8c\u90a8", "\u91d1\u576a\u90a8", "\u9280\u7063\u90a8", "\u9577\u4ea8\u90a8", "\u9577\u5b8f\u90a8", "\u9577\u5eb7\u90a8", "\u9577\u8cb4\u90a8", "\u9577\u9752\u90a8", "\u9686\u4ea8\u90a8", "\u96cd\u76db\u82d1", "\u96f2\u6f22\u90a8", "\u9806\u5229\u90a8", "\u9806\u5929\u90a8", "\u9806\u5b89\u90a8", "\u980c\u5b89\u90a8", "\u99ac\u5751\u90a8", "\u9ad8\u6021\u90a8", "\u9ad8\u76db\u81fa", "\u9ad8\u7fd4\u82d1", "\u9bc9\u9b5a\u9580\u90a8", "\u9d28\u8137\u6d32\u90a8", "\u9d28\u8137\u6d32\u90a8 \u5229\u6eff\u6a13", "\u9e97\u5b89\u90a8", "\u9e97\u7464\u90a8", "\u9ec3\u5927\u4ed9\u4e0a\u90a8", "\u9ec3\u5927\u4ed9\u4e0b\u4e00\u90a8", "\u9ec3\u5927\u4ed9\u4e0b\u4e8c\u90a8", "\u9f8d\u7530\u90a8"];
+const GROUPS = ["\u8343\u7063\u3001\u8475\u6d8c\u3001\u9752\u8863", "\u5c6f\u9580\u3001\u5143\u6717\u3001\u5929\u6c34\u570d", "\u5176\u9918\u5340\u57df", "\u6771\u6d8c", "\u96e2\u5cf6"];
+const KEYWORDS = ["\u8eab\u6545", "\u81ea\u6bba\uff0f\u610f\u5916\u6b7b\u4ea1", "\u5fc3\u7406\u5f71\u97ff", "\u6b98\u969c\u969c\u7919", "\u9130\u8fd1\u5783\u573e\u623f", "\u5c4b\u9802\u6aa2\u67e5", "\u9577\u8005\u4f4f\u5c4b\u6539\u5efa", "\u9762\u5411\u5c71\u5761", "\u8ffd\u8a0e\u6b20\u50b5", "\u7e31\u706b", "\u6b7b\u4ea1\u4e8b\u4ef6"];
+const DEFAULT_GROUPS = ["\u8343\u7063\u3001\u8475\u6d8c\u3001\u9752\u8863", "\u6c99\u7530"];
+const PICKABLE_DISTRICT_ORDER = ["\u8475\u6d8c", "\u8343\u7063", "\u9752\u8863", "\u6c99\u7530"];
+const TAKEN_IDS = new Set([124,125,158,159,228,722,761,799,844,881,888,909,912,988,1059,1070,1071,1158]);
+function isTaken(u) { return TAKEN_IDS.has(u.id); }
+const NEVER_SHOW_DISTRICT_RE = /離島|坪洲|長洲|梅窩|大澳|南丫|喜靈洲|鴨脷洲|柴灣|筲箕灣|西灣河|北角|太古|小西灣|華富|田灣|薄扶林|西環|堅尼地城|上環|中環|灣仔|銅鑼灣|港島|香港仔|鰂魚涌|赤柱/;
+const DEATH_KEYWORDS = ["\u8eab\u6545", "\u81ea\u6bba\uff0f\u610f\u5916\u6b7b\u4ea1", "\u6b7b\u4ea1\u4e8b\u4ef6"];
+const DEATH_RE = /自殺|意外死亡|自然身故|身故|死亡事件|公眾地方曾發生死亡|死亡|死咗/;
+const T = {"title": "\u7279\u5feb\u516c\u5c4b\u7de8\u914d\u8a08\u5283\uff082026\uff09\u5c1a\u9918\u55ae\u4f4d\u7be9\u9078", "src": "\u4f86\u6e90\uff1a\u623f\u5c4b\u7f72\u5c1a\u9918\u53ef\u4f9b\u63c0\u9078\u55ae\u4f4d\u540d\u55ae\uff08\u6a94\u540d RFL_2026E0001_HSC\uff0c\u5831\u544a PRHAS-EFA6002R06\uff0c\u4e0a\u8f09 02/09/2026\uff09\u3002\u7db2\u4e0a\u540d\u55ae\u53ea\u4f9b\u53c3\u8003\uff0c\u5be6\u969b\u4ee5\u63c0\u623f\u5ba4\u7576\u65e5\u5c55\u793a\u70ba\u6e96\u3002", "you": "\u4f60\u7684\u9032\u5ea6\uff1aP005505\uff0c21/09/2026 11:45\u3002\u9810\u8a2d\u986f\u793a\u8475\u6d8c / \u8343\u7063 / \u9752\u8863 / \u6c99\u7530\u3002\u5176\u4ed6\u5340\u5b8c\u5168\u6536\u57cb\uff1b\u8981\u7747\u8acb\u64b3\u300c\u986f\u793a\u96b1\u85cf\u5730\u5340\u300d\u3002", "filters": "\u7be9\u9078\uff08\u53ef\u96a8\u6642\u6539\uff09", "search": "\u95dc\u9375\u5b57\u641c\u5c0b\uff08\u7de8\u865f\uff0f\u90a8\uff0f\u6a13\uff0f\u623f\u865f\uff0f\u5099\u8a3b\uff09", "ph": "\u4f8b\u5982\uff1a608\u3001\u8c61\u5c71\u90a8\u3001\u5783\u573e\u623f", "g": "\u5340\u57df", "d": "\u5340\u57df\uff08\u53ef\u591a\u9078\uff09", "e": "\u5c4b\u90a8", "people": "\u5bb6\u5ead\u4eba\u6578\uff08\u9810\u8a2d 2 \u4f4d\u9577\u8005\uff09", "areaFrom": "\u9762\u7a4d\u7531\uff08\u5e73\u65b9\u7c73\uff09", "areaTo": "\u9762\u7a4d\u81f3", "rentFrom": "\u79df\u91d1\u7531\uff08\u5143\uff09", "rentTo": "\u79df\u91d1\u81f3", "lift": "\u5347\u964d\u6a5f\u5230\u9054", "yes": "\u6709", "no": "\u7121", "reno": "\u7ffb\u65b0\u72c0\u614b", "done": "\u5df2\u7ffb\u65b0", "doing": "\u7ffb\u65b0\u4e2d", "disc": "\u79df\u91d1\u512a\u60e0\uff08\u6708\uff09", "any": "\u4e0d\u9650", "hasDisc": "\u6709\u512a\u60e0\uff08>0\uff09", "noDisc": "\u7121\u512a\u60e0\uff080\uff09", "m8": "8 \u500b\u6708", "m12": "12 \u500b\u6708", "kw": "\u623f\u7f72\u7279\u5225\u4e8b\u9805", "exkw": "\u6539\u70ba\u300c\u6392\u9664\u300d\u5df2\u525b\u95dc\u9375\u5b57", "hOnly": "\u53ea\u770b\u6709 * \u79df\u91d1\u63f4\u52a9\u9650\u5236", "hNo": "\u6392\u9664\u6709 * \u55ae\u4f4d", "apply": "\u5957\u7528\u7be9\u9078", "reset": "\u91cd\u8a2d", "csv": "\u532f\u51fa CSV", "hint": "\u5927\u63a3\u9810\u8a2d\u6536\u57cb\u5176\u4ed6\u5340\u3002\u6253\u958b\u5f8c\uff0c\u8a72\u7b49\u5340\u6703\u56de\u5230\u7be9\u9078\u5668\uff0c\u4e26\u53ef\u4ee5\u6b63\u5e38\u63c0\u3002", "result": "\u7be9\u9078\u7d50\u679c", "unit": "\u500b\u55ae\u4f4d", "id": "\u7de8\u865f", "group": "\u7d44\u5225", "dist": "\u5340\u57df", "est": "\u5c4b\u90a8", "blk": "\u6a13\u540d", "rm": "\u623f\u865f", "area": "\u9762\u7a4d", "rent": "\u79df\u91d1", "dm": "\u512a\u60e0\u6708", "occ": "\u7de8\u914d\u4eba\u6578", "to": "\u81f3", "star": "*\u79df\u91d1\u63f4\u52a9\u9650\u5236", "sum": "\u5168\u540d\u55ae {n} \u500b\u55ae\u4f4d\u3002\u9810\u8a2d\u53ea\u756b\u8475\u6d8c\u3001\u8343\u7063\u3001\u9752\u8863\u3001\u6c99\u7530\u3002", "exDeath": "\u6392\u9664\u6240\u6709\u6d89\u53ca\u6b7b\u4ea1\u5605\u55ae\u4f4d\uff08\u81ea\u6bba\uff0f\u610f\u5916\u6b7b\u4ea1\uff0f\u81ea\u7136\u8eab\u6545\uff0f\u516c\u773e\u5730\u65b9\u6b7b\u4ea1\uff09", "hideView": "\u96b1\u85cf\u300c\u53ea\u53ef\u7747\u3001\u4e0d\u53ef\u63c0\u300d\u55ae\u4f4d", "viewonly": "\u53ea\u53ef\u7747\u3001\u4e0d\u53ef\u63c0", "pick": "\u63c0", "pickedList": "\u5df2\u63c0\u6e05\u55ae\uff08\u53ea\u5305\u542b\u53ef\u63c0\u5340\uff09", "clearPicked": "\u6e05\u7a7a\u5df2\u63c0", "map": "\u6a13\u5b87\u4f4d\u7f6e\uff08Google \u5730\u5716\uff09", "mapEmpty": "\u64b3\u8868\u683c\u88e1\u5605\u300c\u6a13\u540d\u300d\u7747\u54ea\u4e00\u5ea7\u6a13\uff08\u6703\u641c\u300c\u9999\u6e2f \u5c4b\u90a8 \u6a13\u540d\u300d\uff0c\u4f8b\u5982 \u9999\u6e2f \u8c61\u5c71\u90a8 \u6a02\u5c71\u6a13\uff09", "mapOpen": "\u5728\u65b0\u5206\u9801\u958b\u555f\u5462\u5ea7\u6a13", "score": "\u8a55\u5206", "scoreFilter": "\u8a55\u5206\u72c0\u614b", "scoreAll": "\u5168\u90e8", "scored": "\u5df2\u8a55\u5206", "unscored": "\u672a\u8a55\u5206", "scoreHint": "\u6bcf\u884c\u76f4\u63a5\u64b3 1\u20135 \u5373\u6642\u8a18\u4f4f\uff1b\u518d\u64b3\u540c\u4e00\u5206\u53ef\u53d6\u6d88\u3002\u5206\u6578\u3001\u5df2\u63c0\u3001\u5730\u5716\u540c\u6392\u5e8f\u6703\u7559\u5728\u5462\u90e8\u96fb\u8166\uff08\u91cd\u958b\u9801\u9762\u4e5f\u4efb\u523b\uff09\u3002", "showHidden": "\u986f\u793a\u96b1\u85cf\u5730\u5340", "hideOthers": "\u96b1\u85cf\u5176\u4ed6\u5730\u5340", "hiddenOn": "\u5176\u4ed6\u5730\u5340\u4e00\u4f75\u986f\u793a\uff0c\u53ef\u7be9\u53ef\u63c0", "hiddenOff": "\u5176\u4ed6\u5730\u5340\u5df2\u6536\u57cb", "userNote": "\u5099\u8a3b", "notePh": "\u81ea\u5df1\u5beb\uff0c\u5373\u523b\u8a18\u4f4f", "scoreOrder": "\u6309\u8a55\u5206\u6392\u5e8f\uff085\u21921\uff09", "scoreOrderOff": "\u8fd4\u56de\u4e00\u822c\u6392\u5e8f", "showNoLift": "\u986f\u793a\u7121\u5347\u964d\u6a5f\u55ae\u4f4d"};
+const $ = (id) => document.getElementById(id);
+let sortKey = "districtRank";
+let sortAsc = true;
+let picked = new Set();
+let lastMap = null;
+let showHiddenDistricts = false;
+let scoreOrderMode = false;
+let showCols = { group: false, lift: false, renovation: false };
+const SCORE_KEY = "efas2026-hsc-scores-v1";
+const UI_KEY = "efas2026-hsc-ui-v1";
+const NOTE_KEY = "efas2026-hsc-notes-v1";
+let scores = {};
+let notes = {};
+function getScore(id) {
+  const v = Number(scores[String(id)]);
+  return (v >= 1 && v <= 5) ? v : null;
+}
+function loadScores() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SCORE_KEY) || "{}");
+    scores = (raw && typeof raw === "object" && !Array.isArray(raw)) ? raw : {};
+  } catch (e) { scores = {}; }
+}
+function saveScores() {
+  localStorage.setItem(SCORE_KEY, JSON.stringify(scores));
+}
+function getNote(id) {
+  const v = notes[String(id)];
+  return (typeof v === "string") ? v : "";
+}
+function loadNotes() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(NOTE_KEY) || "{}");
+    notes = (raw && typeof raw === "object" && !Array.isArray(raw)) ? raw : {};
+  } catch (e) { notes = {}; }
+}
+function saveNotes() {
+  localStorage.setItem(NOTE_KEY, JSON.stringify(notes));
+}
+function noteInput(id) {
+  return `<input class="usernote" data-id="${id}" value="${esc(getNote(id))}" placeholder="${esc(T.notePh)}">`;
+}
+function saveUi() {
+  const ui = {
+    picked: [...picked],
+    sortKey, sortAsc,
+    map: lastMap,
+    scoreFilter: $("scoreFilter") ? $("scoreFilter").value : "",
+    q: $("q").value,
+    people: $("people").value,
+    excludeDeath: $("excludeDeath").checked,
+    showNoLift: showNoLiftOn(),
+    showHiddenDistricts: showHiddenDistricts,
+    scoreOrderMode: scoreOrderMode,
+    excludeKw: $("excludeKw").checked,
+    harmonyOnly: $("harmonyOnly").checked,
+    noHarmony: $("noHarmony").checked,
+    discount: $("discount").value,
+    areaMin: $("areaMin").value, areaMax: $("areaMax").value,
+    rentMin: $("rentMin").value, rentMax: $("rentMax").value,
+    districts: checkedValues("district"),
+    estates: checkedValues("estate"),
+    lifts: checkedValues("lift"),
+    renos: checkedValues("reno"),
+    kws: checkedValues("kw"),
+    showCols: { group: !!showCols.group, lift: !!showCols.lift, renovation: !!showCols.renovation }
+  };
+  localStorage.setItem(UI_KEY, JSON.stringify(ui));
+}
+function loadUi() {
+  try { return JSON.parse(localStorage.getItem(UI_KEY) || "null"); }
+  catch (e) { return null; }
+}
+function applyUi(ui) {
+  if (!ui) return;
+  if (Array.isArray(ui.picked)) picked = new Set(ui.picked.map(Number));
+  if (ui.sortKey) sortKey = ui.sortKey;
+  if (typeof ui.sortAsc === "boolean") sortAsc = ui.sortAsc;
+  if (ui.map && ui.map.estate && ui.map.building) lastMap = ui.map;
+  const setVal = (id, v) => { if ($(id) && v != null) $(id).value = v; };
+  const setChk = (id, v) => { if ($(id) && typeof v === "boolean") $(id).checked = v; };
+  setVal("q", ui.q); setVal("people", ui.people); setVal("discount", ui.discount);
+  setVal("areaMin", ui.areaMin); setVal("areaMax", ui.areaMax);
+  setVal("rentMin", ui.rentMin); setVal("rentMax", ui.rentMax);
+  setVal("scoreFilter", ui.scoreFilter || "");
+  setChk("excludeDeath", true);
+  setChk("showNoLift", false);
+  if (typeof ui.showHiddenDistricts === "boolean") showHiddenDistricts = ui.showHiddenDistricts;
+  if (typeof ui.scoreOrderMode === "boolean") scoreOrderMode = ui.scoreOrderMode;
+  if (ui.showCols && typeof ui.showCols === "object") {
+    showCols.group = ui.showCols.group === true;
+    showCols.lift = ui.showCols.lift === true;
+    showCols.renovation = ui.showCols.renovation === true;
+  }
+  setChk("col_group", showCols.group);
+  setChk("col_lift", showCols.lift);
+  setChk("col_renovation", showCols.renovation);
+  setChk("excludeKw", ui.excludeKw);
+  setChk("harmonyOnly", ui.harmonyOnly);
+  setChk("noHarmony", ui.noHarmony);
+  const applyList = (name, arr) => {
+    if (!Array.isArray(arr)) return;
+    document.querySelectorAll(`input[name="${name}"]`).forEach(el => { el.checked = arr.includes(el.value); });
+  };
+  applyList("district", ui.districts);
+  applyList("estate", ui.estates);
+  applyList("lift", ui.lifts);
+  applyList("reno", ui.renos);
+  applyList("kw", ui.kws);
+}
+function scoreBar(id) {
+  const cur = getScore(id);
+  const taken = TAKEN_IDS.has(id);
+  const chips = [1,2,3,4,5].map(n => `<button type="button" class="scorechip${cur===n?" on":""}" data-id="${id}" data-score="${n}"${taken?" disabled":""}>${n}</button>`).join("");
+  return `<div class="scorebar" title="${taken?"已揀走，唔可以評分":T.scoreHint}">${chips}</div>`;
+}
+
+function txt(id, key) { $(id).textContent = T[key]; }
+function fillSelect(sel, items) {
+  sel.innerHTML = items.map(v => `<option value="${v}">${v}</option>`).join("");
+}
+function checkedValues(name) {
+  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x => x.value);
+}
+function addChecks(boxId, name, values, allOn) {
+  const box = $(boxId);
+  values.forEach(v => {
+    const lab = document.createElement("label");
+    const on = allOn === true || (Array.isArray(allOn) && allOn.includes(v));
+    lab.innerHTML = `<input type="checkbox" name="${name}" value="${v}" ${on ? "checked" : ""}> ${v}`;
+    box.appendChild(lab);
+  });
+}
+function isPreferredDistrict(d) {
+  return PICKABLE_DISTRICT_ORDER.includes(d);
+}
+function isTungChungDistrict(d) {
+  const s = String(d || "");
+  return /東涌/.test(s) && !/大澳|梅窩/.test(s);
+}
+function isNeverShowDistrict(d) {
+  const s = String(d || "");
+  if (isTungChungDistrict(s)) return false;
+  if (/大嶼山/.test(s) && !/東涌/.test(s)) return true;
+  return NEVER_SHOW_DISTRICT_RE.test(s);
+}
+function unitGroup(u) {
+  return (u.district === "\u6c99\u7530") ? "\u6c99\u7530" : u.group;
+}
+function allGroups() {
+  const g = GROUPS.slice();
+  if (!g.includes("\u6c99\u7530")) g.splice(1, 0, "\u6c99\u7530");
+  return g;
+}
+function visibleGroups() {
+  return showHiddenDistricts ? allGroups() : DEFAULT_GROUPS.slice();
+}
+function visibleDistricts() {
+  return districtOptions();
+}
+function hasLift(u) {
+  return u.lift === "有";
+}
+function showNoLiftOn() {
+  return false;
+}
+function fitsTwoPerson(u) {
+  return u.occMin != null && u.occMax != null && u.occMin <= 2 && u.occMax >= 2;
+}
+function passesHard(u) {
+  if (isNeverShowDistrict(u.district)) return false;
+  if (isDeathUnit(u)) return false;
+  if (!fitsTwoPerson(u)) return false;
+  if (!hasLift(u)) return false;
+  return true;
+}
+function passesBase(u) {
+  if (!passesHard(u)) return false;
+  if (!showHiddenDistricts && !isPreferredDistrict(u.district)) return false;
+  const people = ($("people") && $("people").value) ? Number($("people").value) : 2;
+  if (u.occMin == null || people < u.occMin || people > u.occMax) return false;
+  return true;
+}
+function visibleEstates(allowD) {
+  const ds = allowD || checkedValues("district");
+  const set = new Set();
+  UNITS.forEach(u => {
+    if (!u.estate || !passesBase(u)) return;
+    if (!ds.includes(u.district)) return;
+    set.add(u.estate);
+  });
+  return [...set].sort((a,b) => a.localeCompare(b, "zh-Hant"));
+}
+function districtsWithHardUnits() {
+  const set = new Set();
+  UNITS.forEach(u => {
+    if (u.district && passesHard(u)) set.add(u.district);
+  });
+  return set;
+}
+function extraDistricts() {
+  const have = districtsWithHardUnits();
+  return [...have].filter(d => !isPreferredDistrict(d) && !isNeverShowDistrict(d)).sort((a,b) => a.localeCompare(b, "zh-Hant"));
+}
+function districtOptions() {
+  const have = districtsWithHardUnits();
+  const preferred = PICKABLE_DISTRICT_ORDER.filter(d => have.has(d));
+  return showHiddenDistricts ? preferred.concat(extraDistricts()) : preferred;
+}
+function isDeathKeyword(k) {
+  return DEATH_KEYWORDS.includes(k) || /身故|自殺|意外死亡|死亡事件|死咗/.test(k);
+}
+function visibleKeywords(allowD) {
+  const ds = allowD || checkedValues("district");
+  const set = new Set();
+  UNITS.forEach(u => {
+    if (!passesBase(u) || !ds.includes(u.district)) return;
+    (u.keywords || []).forEach(k => { if (k && !isDeathKeyword(k)) set.add(k); });
+  });
+  const ordered = KEYWORDS.filter(k => set.has(k));
+  [...set].forEach(k => { if (!ordered.includes(k)) ordered.push(k); });
+  return ordered;
+}
+function refillChecks(boxId, name, values, checkedList, onChange) {
+  const box = $(boxId);
+  if (!box) return;
+  box.innerHTML = "";
+  addChecks(boxId, name, values, checkedList);
+  box.onchange = onChange || render;
+}
+function updateHiddenBtn() {
+  const btn = $("hiddenToggle");
+  if (!btn) return;
+  btn.textContent = showHiddenDistricts ? T.hideOthers : T.showHidden;
+  btn.classList.toggle("on", showHiddenDistricts);
+  const st = $("hiddenState");
+  if (st) st.textContent = showHiddenDistricts ? T.hiddenOn : T.hiddenOff;
+}
+function rebuildAreaFilters(preserve) {
+  const distAvail = districtOptions();
+  let prevD, prevE, prevKw, prevLift;
+  if (preserve) {
+    prevD = checkedValues("district").filter(d => distAvail.includes(d));
+    prevLift = checkedValues("lift");
+    prevE = checkedValues("estate");
+    prevKw = checkedValues("kw");
+  } else {
+    prevD = PICKABLE_DISTRICT_ORDER.slice();
+    prevE = [];
+    prevKw = [];
+    prevLift = [T.yes];
+  }
+  if (!prevD.length && !preserve) prevD = PICKABLE_DISTRICT_ORDER.filter(d => distAvail.includes(d));
+  refillChecks("districtChecks", "district", distAvail, prevD, () => { rebuildAreaFilters(true); render(); });
+  const estAvail = visibleEstates(prevD);
+  const kwAvail = visibleKeywords(prevD);
+  prevE = prevE.filter(e => estAvail.includes(e));
+  prevKw = prevKw.filter(k => kwAvail.includes(k));
+  refillChecks("estateChecks", "estate", estAvail, prevE, render);
+  const liftVals = showNoLiftOn() ? [T.yes, T.no] : [T.yes];
+  let liftOn = liftVals.filter(v => prevLift.includes(v));
+  if (!liftOn.length) liftOn = liftVals.slice();
+  if (showNoLiftOn() && !liftOn.includes(T.no)) liftOn.push(T.no);
+  refillChecks("liftChecks", "lift", liftVals, liftOn);
+  if ($("tLift")) $("tLift").style.display = showNoLiftOn() ? "" : "none";
+  if ($("liftChecks")) $("liftChecks").style.display = showNoLiftOn() ? "" : "none";
+  refillChecks("kwChecks", "kw", kwAvail, prevKw);
+  if ($("tKw")) $("tKw").style.display = kwAvail.length ? "" : "none";
+  if ($("kwChecks")) $("kwChecks").style.display = kwAvail.length ? "" : "none";
+}
+function updateScoreOrderBtn() {
+  const btn = $("scoreOrderBtn");
+  if (!btn) return;
+  btn.textContent = scoreOrderMode ? T.scoreOrderOff : T.scoreOrder;
+  btn.classList.toggle("on", scoreOrderMode);
+}
+function toggleScoreOrder() {
+  if (!scoreOrderMode) {
+    scoreOrderMode = true;
+    sortKey = "score";
+    sortAsc = false;
+  } else {
+    scoreOrderMode = false;
+    sortKey = "districtRank";
+    sortAsc = true;
+  }
+  updateScoreOrderBtn();
+  saveUi();
+  render();
+}
+function toggleHiddenDistricts() {
+  showHiddenDistricts = !showHiddenDistricts;
+  rebuildAreaFilters(true);
+  updateHiddenBtn();
+  saveUi();
+  render();
+}
+function init() {
+  document.title = T.title;
+  txt("tTitle","title"); txt("tSrc","src"); txt("tYou","you");
+  txt("tFilters","filters"); txt("tSearch","search"); $("q").placeholder = T.ph;
+  txt("tG","g"); txt("tE","e"); txt("tPeople","people");
+  txt("tAreaFrom","areaFrom"); txt("tAreaTo","areaTo");
+  txt("tRentFrom","rentFrom"); txt("tRentTo","rentTo");
+  txt("tLift","lift"); txt("tReno","reno"); txt("tDisc","disc"); txt("tKw","kw");
+  txt("tExkw","exkw"); txt("tHOnly","hOnly"); txt("tHNo","hNo");
+  txt("tExDeath","exDeath"); txt("tShowNoLift","showNoLift");
+  txt("tMap","map");
+  $("mapEmpty").textContent = T.mapEmpty;
+  $("mapLink").textContent = T.mapOpen;
+  $("applyBtn").textContent = T.apply;
+  $("resetBtn").textContent = T.reset;
+  $("csvBtn").textContent = T.csv;
+  txt("tHint","hint"); txt("tResult","result"); txt("tUnit","unit");
+  txt("tScoreFilter","scoreFilter"); txt("tScoreHint","scoreHint");
+  if ($("tColGroup")) $("tColGroup").textContent = T.group;
+  if ($("tColLift")) $("tColLift").textContent = T.lift;
+  if ($("tColReno")) $("tColReno").textContent = T.reno;
+  $("scoreFilter").options[0].text = T.scoreAll;
+  $("scoreFilter").options[1].text = T.scored;
+  $("scoreFilter").options[2].text = T.unscored;
+  addChecks("renoChecks","reno", [T.done, T.doing], true);
+  if ($("renoChecks")) $("renoChecks").onchange = render;
+  $("discount").innerHTML = `<option value="">${T.any}</option>
+    <option value="gt0">${T.hasDisc}</option>
+    <option value="0">${T.noDisc}</option>
+    <option value="8">${T.m8}</option>
+    <option value="12">${T.m12}</option>`;
+  $("people").value = "2";
+  $("excludeDeath").checked = true;
+  if ($("showNoLift")) $("showNoLift").checked = false;
+  loadScores();
+  loadNotes();
+  const savedUi = loadUi();
+  if (savedUi && savedUi.showHiddenDistricts === true) showHiddenDistricts = true;
+  if (savedUi && savedUi.scoreOrderMode === true) { scoreOrderMode = true; sortKey = "score"; sortAsc = false; }
+  rebuildAreaFilters(false);
+  applyUi(savedUi);
+  rebuildAreaFilters(true);
+  updateHiddenBtn();
+  updateScoreOrderBtn();
+  paintThead();
+  $("hiddenToggle").onclick = toggleHiddenDistricts;
+  $("scoreOrderBtn").onclick = toggleScoreOrder;
+  $("applyBtn").onclick = render;
+  $("resetBtn").onclick = resetFilters;
+  $("csvBtn").onclick = exportCsv;
+  $("q").addEventListener("input", render);
+  ["areaMin","areaMax","rentMin","rentMax","discount","excludeKw","harmonyOnly","noHarmony","scoreFilter"]
+    .forEach(id => { if ($(id)) $(id).addEventListener("change", render); });
+  ["people","excludeDeath","showNoLift"].forEach(id => {
+    if ($(id)) $(id).addEventListener("change", () => { rebuildAreaFilters(true); render(); });
+  });
+  ["col_group","col_lift","col_renovation"].forEach(id => {
+    if ($(id)) $(id).addEventListener("change", () => {
+      showCols.group = $("col_group") && $("col_group").checked;
+      showCols.lift = $("col_lift") && $("col_lift").checked;
+      showCols.renovation = $("col_renovation") && $("col_renovation").checked;
+      saveUi();
+      render();
+    });
+  });
+  $("thead").addEventListener("click", (ev) => {
+    const th = ev.target.closest("th[data-key]");
+    if (!th) return;
+    const key = th.dataset.key;
+    if (sortKey === key) sortAsc = !sortAsc;
+    else { sortKey = key; sortAsc = true; }
+    scoreOrderMode = (sortKey === "score" && !sortAsc);
+    saveUi();
+    render();
+  });
+  $("tbody").addEventListener("input", (ev) => {
+    const inp = ev.target.closest(".usernote");
+    if (!inp) return;
+    const key = String(inp.dataset.id);
+    const v = inp.value;
+    if (v) notes[key] = v; else delete notes[key];
+    saveNotes();
+  });
+  $("tbody").addEventListener("change", (ev) => {
+    const inp = ev.target.closest(".usernote");
+    if (!inp) return;
+    const key = String(inp.dataset.id);
+    const v = inp.value;
+    if (v) notes[key] = v; else delete notes[key];
+    saveNotes();
+  });
+  $("tbody").addEventListener("click", (ev) => {
+    const chip = ev.target.closest(".scorechip");
+    if (chip) {
+      const id = Number(chip.dataset.id);
+      if (TAKEN_IDS.has(id) || chip.disabled) return;
+      const n = Number(chip.dataset.score);
+      const key = String(id);
+      if (getScore(id) === n) delete scores[key];
+      else scores[key] = n;
+      saveScores();
+      saveUi();
+      render();
+      return;
+    }
+    const a = ev.target.closest("a.bldg");
+    if (!a) return;
+    ev.preventDefault();
+    showMap(a.dataset.estate, a.dataset.building);
+    document.querySelectorAll("a.bldg.active").forEach(x => x.classList.remove("active"));
+    a.classList.add("active");
+  });
+  if (lastMap) showMap(lastMap.estate, lastMap.building);
+  render();
+}
+function resetFilters() {
+  $("q").value = "";
+  $("people").value = "2";
+  ["areaMin","areaMax","rentMin","rentMax"].forEach(id => $(id).value = "");
+  $("discount").value = "";
+  $("excludeKw").checked = false;
+  $("harmonyOnly").checked = false;
+  $("noHarmony").checked = false;
+  $("excludeDeath").checked = true;
+  if ($("showNoLift")) $("showNoLift").checked = false;
+  rebuildAreaFilters(false);
+  document.querySelectorAll("input[name=lift], input[name=reno]").forEach(el => el.checked = true);
+  document.querySelectorAll("input[name=kw]").forEach(el => el.checked = false);
+  if ($("scoreFilter")) $("scoreFilter").value = "";
+  showCols = { group: false, lift: false, renovation: false };
+  if ($("col_group")) $("col_group").checked = false;
+  if ($("col_lift")) $("col_lift").checked = false;
+  if ($("col_renovation")) $("col_renovation").checked = false;
+  saveUi();
+  render();
+}
+function currentFilters() {
+  return {
+    q: $("q").value.trim().toLowerCase(),
+    districts: checkedValues("district"),
+    estates: checkedValues("estate"),
+    people: $("people").value ? Number($("people").value) : null,
+    areaMin: $("areaMin").value ? Number($("areaMin").value) : null,
+    areaMax: $("areaMax").value ? Number($("areaMax").value) : null,
+    rentMin: $("rentMin").value ? Number($("rentMin").value) : null,
+    rentMax: $("rentMax").value ? Number($("rentMax").value) : null,
+    lifts: checkedValues("lift"),
+    renos: checkedValues("reno"),
+    discount: $("discount").value,
+    kws: checkedValues("kw"),
+    excludeKw: $("excludeKw").checked,
+    harmonyOnly: $("harmonyOnly").checked,
+    noHarmony: $("noHarmony").checked,
+    excludeDeath: $("excludeDeath").checked,
+    showNoLift: showNoLiftOn(),
+    showHiddenDistricts: showHiddenDistricts,
+    scoreFilter: $("scoreFilter") ? $("scoreFilter").value : ""
+  };
+}
+function isDeathUnit(u) {
+  if ((u.keywords || []).some(k => DEATH_KEYWORDS.includes(k))) return true;
+  const blob = [u.notes, ...(u.keywords || [])].join("");
+  return DEATH_RE.test(blob);
+}
+function districtRank(d) {
+  const i = PICKABLE_DISTRICT_ORDER.indexOf(d);
+  return i === -1 ? 100 : i;
+}
+function isPickable(u, f) {
+  if (!passesHard(u)) return false;
+  if (!showHiddenDistricts && !isPreferredDistrict(u.district)) return false;
+  const districts = (f && f.districts) || [];
+  if (!districts.includes(u.district)) return false;
+  return true;
+}
+function match(u, f) {
+  if (!passesHard(u)) return false;
+  if (!showHiddenDistricts && !isPreferredDistrict(u.district)) return false;
+  if (!(f.districts || []).includes(u.district)) return false;
+  if (f.estates.length && !f.estates.includes(u.estate)) return false;
+  if (f.people != null && (u.occMin == null || f.people < u.occMin || f.people > u.occMax)) return false;
+  if (f.areaMin != null && (u.area == null || u.area < f.areaMin)) return false;
+  if (f.areaMax != null && (u.area == null || u.area > f.areaMax)) return false;
+  if (f.rentMin != null && (u.rent == null || u.rent < f.rentMin)) return false;
+  if (f.rentMax != null && (u.rent == null || u.rent > f.rentMax)) return false;
+  if (f.lifts.length && !f.lifts.includes(u.lift)) return false;
+  if (f.renos.length && !f.renos.includes(u.renovation)) return false;
+  if (f.discount === "gt0" && !(u.discountMonths > 0)) return false;
+  if (f.discount === "0" && u.discountMonths !== 0) return false;
+  if (f.discount === "8" && u.discountMonths !== 8) return false;
+  if (f.discount === "12" && u.discountMonths !== 12) return false;
+  if (f.harmonyOnly && !u.harmony) return false;
+  if (f.noHarmony && u.harmony) return false;
+  if (f.kws.length) {
+    const hit = f.kws.some(k => u.keywords.includes(k));
+    if (f.excludeKw ? hit : !hit) return false;
+  }
+  if (f.q) {
+    const blob = [String(u.id),u.estate,u.building,u.room,u.district,u.notes,u.renovation,getNote(u.id),...(u.keywords||[])].join(" ").toLowerCase();
+    if (!blob.includes(f.q)) return false;
+  }
+  if (f.scoreFilter === "scored" && getScore(u.id) == null) return false;
+  if (f.scoreFilter === "unscored" && getScore(u.id) != null) return false;
+  return true;
+}
+function sortValue(u, key) {
+  if (key === "score") return getScore(u.id);
+  if (key === "userNote") return getNote(u.id);
+  if (key === "group") return unitGroup(u);
+  if (key === "notes") return u.notes || "";
+  if (key === "occMin") return u.occMin;
+  if (key === "districtRank") return districtRank(u.district);
+  return u[key];
+}
+function cmp(a,b,f) {
+  const ta = isTaken(a) ? 1 : 0, tb = isTaken(b) ? 1 : 0;
+  if (ta !== tb) return ta - tb;
+  const key = sortKey || "districtRank";
+  if (key === "districtRank") {
+    const ra = districtRank(a.district), rb = districtRank(b.district);
+    if (ra !== rb) return ra - rb;
+    return a.id - b.id;
+  }
+  const av = sortValue(a, key), bv = sortValue(b, key);
+  const emptyA = av == null || av === "";
+  const emptyB = bv == null || bv === "";
+  if (emptyA && emptyB) return a.id - b.id;
+  if (emptyA) return 1;
+  if (emptyB) return -1;
+  const numeric = ["id","score","area","rent","discountMonths","occMin","occMax"];
+  if (numeric.includes(key) || typeof av === "number") {
+    const n = sortAsc ? (Number(av) - Number(bv)) : (Number(bv) - Number(av));
+    return n || (a.id - b.id);
+  }
+  const s = sortAsc ? String(av).localeCompare(String(bv),"zh-Hant") : String(bv).localeCompare(String(av),"zh-Hant");
+  return s || (a.id - b.id);
+}
+function colDefs() {
+  const cols = [
+    ["id", T.id, u => `<td class="pdfid">${u.id ?? ""}</td>`],
+    ["score", T.score, u => `<td>${scoreBar(u.id)}</td>`],
+    ["userNote", T.userNote, u => `<td>${noteInput(u.id)}</td>`],
+    ["district", T.dist, u => `<td>${u.district}</td>`],
+    ["estate", T.est, u => `<td>${bldgAnchor(u.estate, u.building, u.estate)}</td>`],
+    ["building", T.blk, u => `<td>${bldgAnchor(u.estate, u.building, u.building)}</td>`],
+    ["room", T.rm, u => `<td>${u.room}${u.harmony ? " *" : ""}</td>`],
+    ["area", T.area, u => `<td>${u.area ?? ""}</td>`],
+    ["rent", T.rent, u => `<td>${money(u.rent)}</td>`],
+    ["discountMonths", T.dm, u => `<td>${u.discountMonths}</td>`],
+    ["occMin", T.occ, u => `<td>${u.occMin ?? ""} ${T.to} ${u.occMax ?? ""}</td>`],
+    ["notes", T.kw, u => `<td>${tags(u)}${u.notes ? `<div>${u.notes}</div>` : ""}</td>`]
+  ];
+  if (showCols.group) cols.push(["group", T.group, u => `<td>${unitGroup(u)}</td>`]);
+  if (showCols.lift) cols.push(["lift", T.lift, u => `<td>${u.lift}</td>`]);
+  if (showCols.renovation) cols.push(["renovation", T.reno, u => `<td>${u.renovation}</td>`]);
+  return cols;
+}
+function paintThead() {
+  const heads = colDefs();
+  if ($("thead")) $("thead").innerHTML = heads.map(([k,l]) => `<th data-key="${k}">${l}</th>`).join("");
+}
+function paintSortHeaders() {
+  paintThead();
+  document.querySelectorAll("th[data-key]").forEach(th => {
+    th.classList.toggle("sort-asc", sortKey === th.dataset.key && sortAsc);
+    th.classList.toggle("sort-desc", sortKey === th.dataset.key && !sortAsc);
+  });
+}
+function money(n) { return n==null ? "" : "$"+n.toLocaleString("en-HK"); }
+function esc(s) {
+  return String(s ?? "").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+}
+function mapQuery(estate, building) {
+  return ["\u9999\u6e2f", estate, building].filter(Boolean).join(" ");
+}
+function mapEmbedUrl(q) {
+  return "https://maps.google.com/maps?q=" + encodeURIComponent(q) + "&hl=zh-TW&output=embed";
+}
+function mapSearchUrl(q) {
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+}
+function showMap(estate, building) {
+  lastMap = {estate, building};
+  saveUi();
+  const q = mapQuery(estate, building);
+  $("mapFrame").src = mapEmbedUrl(q);
+  $("mapLabel").textContent = q;
+  const a = $("mapLink");
+  a.href = mapSearchUrl(q);
+  a.hidden = false;
+  $("mapEmpty").classList.add("hidden");
+}
+function bldgAnchor(estate, building, label) {
+  const q = mapQuery(estate, building);
+  return `<a class="bldg" href="${mapSearchUrl(q)}" target="_blank" rel="noopener" data-estate="${esc(estate)}" data-building="${esc(building)}">${esc(label)}</a>`;
+}
+function tags(u) {
+  const bits = [];
+  if (u.harmony) bits.push(`<span class="tag warn">${T.star}</span>`);
+  (u.keywords||[]).forEach(k => bits.push(`<span class="tag">${k}</span>`));
+  return bits.join("");
+}
+function filtered() {
+  const f = currentFilters();
+  return UNITS.filter(u => match(u, f)).sort((a,b) => cmp(a,b,f));
+}
+function paintMatchCount() {
+  const f = currentFilters();
+  const x = UNITS.filter(u => match(u, f) && !isTaken(u)).length;
+  const y = UNITS.filter(u => isPickable(u, f) && !isTaken(u)).length;
+  const text = "\u7b26\u5408\u689d\u4ef6\uff1a" + x + "\uff0f" + y;
+  if ($("matchCountHead")) $("matchCountHead").textContent = text;
+  if ($("matchCount")) $("matchCount").textContent = text;
+  if ($("count")) $("count").textContent = x;
+  if ($("pickableCount")) $("pickableCount").textContent = x;
+  const pref = UNITS.filter(u => PICKABLE_DISTRICT_ORDER.includes(u.district));
+  const prefTaken = pref.filter(isTaken).length;
+  const allTaken = UNITS.filter(isTaken).length;
+  const el = $("takenStatus");
+  if (el) el.textContent = "初選仍在 " + (pref.length - prefTaken) + " 個、已揀 " + prefTaken + " 個（劃線排底，唔計入符合條件）；全表仍在 " + (UNITS.length - allTaken) + " 個、已揀 " + allTaken + " 個。";
+}
+function render() {
+  const f = currentFilters();
+  const rows = filtered();
+  paintMatchCount();
+  updateHiddenBtn();
+  updateScoreOrderBtn();
+  paintSortHeaders();
+  $("summary").textContent = T.sum.replace("{n}", String(UNITS.length));
+  const cols = colDefs();
+  $("tbody").innerHTML = rows.map(u => `<tr class="${isTaken(u)?"taken":""}">${cols.map(c => c[2](u)).join("")}</tr>`).join("");
+  saveUi();
+}
+function exportCsv() {
+  const f = currentFilters();
+  const rows = filtered();
+  const cols = ["id","score","userNote","group","district","estate","building","room","area","rent","discountMonths","lift","occMin","occMax","renovation","harmony","keywords","notes"];
+  const lines = [cols.join(",")];
+  rows.forEach(u => {
+    const rec = Object.assign({}, u, {score: getScore(u.id) ?? "", userNote: getNote(u.id)});
+    lines.push(cols.map(c => {
+      let v = rec[c];
+      if (Array.isArray(v)) v = v.join("|");
+      return `"${String(v ?? "").replaceAll('"','""')}"`;
+    }).join(","));
+  });
+  const blob = new Blob(["\ufeff"+lines.join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "efas2026-filtered-flats.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+init();
+</script>
+</body>
+</html>
