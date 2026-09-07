@@ -724,11 +724,11 @@ function colDefs() {
     ["district", T.dist, u => `<td>${u.district}</td>`],
     ["estate", T.est, u => `<td class="col-estate">${bldgAnchor(u.estate, u.building, u.estate)}</td>`],
     ["building", T.blk, u => `<td class="col-building">${bldgAnchor(u.estate, u.building, u.building)}</td>`],
-    ["toKamLung", "去金龍", u => `<td class="mins">${u.toKamLung ?? "–"}</td>`],
-    ["toSunChui", "去新翠", u => `<td class="mins">${u.toSunChui ?? "–"}</td>`],
     ["room", T.rm, u => `<td>${u.room}${u.harmony ? " *" : ""}</td>`],
     ["area", T.area, u => `<td>${u.area ?? ""}</td>`],
     ["rent", T.rent, u => `<td>${money(u.rent)}</td>`],
+    ["toKamLung", "去金龍", u => `<td class="mins">${u.toKamLung ?? "–"}</td>`],
+    ["toSunChui", "去新翠", u => `<td class="mins">${u.toSunChui ?? "–"}</td>`],
     ["discountMonths", T.dm, u => `<td>${u.discountMonths}</td>`],
     ["occMin", T.occ, u => `<td>${u.occMin ?? ""} ${T.to} ${u.occMax ?? ""}</td>`],
     ["notes", T.kw, u => `<td>${tags(u)}${u.notes ? `<div>${u.notes}</div>` : ""}</td>`]
@@ -814,7 +814,7 @@ function render() {
 function exportCsv() {
   const f = currentFilters();
   const rows = filtered();
-  const cols = ["id","score","userNote","group","district","estate","building","toKamLung","toSunChui","room","area","rent","discountMonths","lift","occMin","occMax","renovation","harmony","keywords","notes"];
+  const cols = ["id","score","userNote","group","district","estate","building","room","area","rent","toKamLung","toSunChui","discountMonths","lift","occMin","occMax","renovation","harmony","keywords","notes"];
   const lines = [cols.join(",")];
   rows.forEach(u => {
     const rec = Object.assign({}, u, {score: getScore(u.id) ?? "", userNote: getNote(u.id)});
