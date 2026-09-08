@@ -105,9 +105,17 @@
 
     tr:last-child td { border-bottom: none; }
 
+    td.num {
+      width: 2.4em;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
     td.name { font-weight: 500; }
     td.note { color: var(--ink); }
     td.place { white-space: nowrap; color: var(--muted); }
+
+    th.num { text-align: right; }
 
     .list-card {
       background: var(--card);
@@ -145,24 +153,24 @@
 
   <script>
     const ITEMS = [
-      { place: "公司 Locker", name: "HAECO 頸繩", note: "2 條（其中1條有中警醒）" },
-      { place: "公司 Locker", name: "安全眼鏡", note: "1 副" },
-      { place: "公司 Locker", name: "反光衣", note: "1 件" },
-      { place: "公司 Locker", name: "安全帽", note: "1 頂" },
-      { place: "公司 Locker", name: "膠紙座（連膠紙）", note: "1 個" },
-      { place: "公司 Locker", name: "支票簿", note: "20 張（剩低）" },
-      { place: "公司 Locker", name: "CAD License", note: "1 張" },
-      { place: "公司 Locker", name: "100-650mAh 充電電池", note: "4 粒" },
-      { place: "公司 Locker", name: "電池充電器", note: "1 個" },
-      { place: "公司 Locker", name: "OLIGHT 專用叉電線", note: "1 條" },
-      { place: "公司 Locker", name: "USB 降噪線（華碩）", note: "1 條" },
-      { place: "公司 Locker", name: "HDMI to HDMI 線", note: "1 條" },
-      { place: "公司 Locker", name: "LAN 線", note: "1 條" },
-      { place: "公司 Locker", name: "iPad 螢幕保護貼", note: "1 塊（未貼）" },
-      { place: "公司 Locker", name: "工鞋", note: "1 對" },
-      { place: "公司 Locker", name: "外套內膽", note: "1 件" },
-      { place: "公司 Locker", name: "維修工具", note: "少量" },
-      { place: "書包", name: "工程師印章", note: "1 個" }
+      { no: 1, place: "公司 Locker", name: "HAECO 頸繩", note: "2 條（其中1條有中警醒）" },
+      { no: 2, place: "公司 Locker", name: "安全眼鏡", note: "1 副" },
+      { no: 3, place: "公司 Locker", name: "反光衣", note: "1 件" },
+      { no: 4, place: "公司 Locker", name: "安全帽", note: "1 頂" },
+      { no: 5, place: "公司 Locker", name: "膠紙座（連膠紙）", note: "1 個" },
+      { no: 6, place: "公司 Locker", name: "支票簿", note: "20 張（剩低）" },
+      { no: 7, place: "公司 Locker", name: "CAD License", note: "1 張" },
+      { no: 8, place: "公司 Locker", name: "100-650mAh 充電電池", note: "4 粒" },
+      { no: 9, place: "公司 Locker", name: "電池充電器", note: "1 個" },
+      { no: 10, place: "公司 Locker", name: "OLIGHT 專用叉電線", note: "1 條" },
+      { no: 11, place: "公司 Locker", name: "USB 降噪線（華碩）", note: "1 條" },
+      { no: 12, place: "公司 Locker", name: "HDMI to HDMI 線", note: "1 條" },
+      { no: 13, place: "公司 Locker", name: "LAN 線", note: "1 條" },
+      { no: 14, place: "公司 Locker", name: "iPad 螢幕保護貼", note: "1 塊（未貼）" },
+      { no: 15, place: "公司 Locker", name: "工鞋", note: "1 對" },
+      { no: 16, place: "公司 Locker", name: "外套內膽", note: "1 件" },
+      { no: 17, place: "公司 Locker", name: "維修工具", note: "少量" },
+      { no: 18, place: "書包", name: "工程師印章", note: "1 個" }
     ];
 
     function escapeHtml(str) {
@@ -200,6 +208,7 @@
           <table>
             <thead>
               <tr>
+                <th class="num">#</th>
                 <th>地點</th>
                 <th>物品名稱</th>
                 <th>數量/備註</th>
@@ -208,6 +217,7 @@
             <tbody>
               ${ITEMS.map((item) => `
                 <tr>
+                  <td class="num">${escapeHtml(item.no)}</td>
                   <td class="place">${escapeHtml(item.place)}</td>
                   <td class="name">${escapeHtml(item.name)}</td>
                   <td class="note">${escapeHtml(item.note)}</td>
