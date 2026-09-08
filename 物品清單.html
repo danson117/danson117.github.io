@@ -130,9 +130,10 @@
       td.note {
         color: var(--ink);
       }
-      td.place {
+      td.place-cell {
         white-space: nowrap;
         color: var(--muted);
+        background: transparent;
       }
 
       th.num {
@@ -155,10 +156,6 @@
         padding: 28px 16px;
         text-align: center;
         color: var(--muted);
-      }
-
-      tr.place-row td {
-        background: var(--place-row);
       }
 
       .place-tag {
@@ -243,18 +240,18 @@
       ];
 
       const PLACE_THEME = {
-        "公司 Locker": { tag: "#d7f3ee", ink: "#3f7d74", row: "#f3fbf9" },
-        衣櫃: { tag: "#ebe4f8", ink: "#6b5a8a", row: "#f8f5fc" },
-        書包: { tag: "#fde8d6", ink: "#8b5e3a", row: "#fdf6ef" },
+        "公司 Locker": { tag: "#d7f3ee", ink: "#3f7d74" },
+        衣櫃: { tag: "#ebe4f8", ink: "#6b5a8a" },
+        書包: { tag: "#fde8d6", ink: "#8b5e3a" },
       };
 
       const PLACE_FALLBACK = [
-        { tag: "#e4f0fb", ink: "#4a6d8c", row: "#f4f8fc" },
-        { tag: "#e8f5e3", ink: "#4f7a45", row: "#f5faf3" },
-        { tag: "#fceef3", ink: "#8a5a6e", row: "#fdf6f8" },
-        { tag: "#fff3d6", ink: "#8a7040", row: "#fffaf0" },
-        { tag: "#e8eef8", ink: "#5a6588", row: "#f5f7fb" },
-        { tag: "#f3efe4", ink: "#7a6a4a", row: "#faf8f3" },
+        { tag: "#e4f0fb", ink: "#4a6d8c" },
+        { tag: "#e8f5e3", ink: "#4f7a45" },
+        { tag: "#fceef3", ink: "#8a5a6e" },
+        { tag: "#fff3d6", ink: "#8a7040" },
+        { tag: "#e8eef8", ink: "#5a6588" },
+        { tag: "#f3efe4", ink: "#7a6a4a" },
       ];
 
       function themeForPlace(place) {
@@ -310,9 +307,9 @@
               ${ITEMS.map((item) => {
                 const theme = themeForPlace(item.place);
                 return `
-                <tr class="place-row" style="--place-row:${theme.row}; --place-tag:${theme.tag}; --place-ink:${theme.ink}">
+                <tr style="--place-tag:${theme.tag}; --place-ink:${theme.ink}">
                   <td class="num">${escapeHtml(item.no)}</td>
-                  <td class="place"><span class="place-tag">${escapeHtml(item.place)}</span></td>
+                  <td class="place-cell"><span class="place-tag">${escapeHtml(item.place)}</span></td>
                   <td class="name">${escapeHtml(item.name)}</td>
                   <td class="note">${escapeHtml(item.note)}</td>
                 </tr>
