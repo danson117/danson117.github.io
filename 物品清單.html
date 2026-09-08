@@ -42,56 +42,63 @@
       .wrap {
         max-width: 860px;
         margin: 0 auto;
-        padding: 28px 16px 64px;
+        padding: 20px 16px 64px;
       }
 
-      h1 {
-        font-family: Outfit, "Noto Sans TC", sans-serif;
-        font-size: clamp(1.8rem, 4vw, 2.4rem);
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        margin: 0;
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
       }
 
-      .subtitle {
-        margin: 8px 0 0;
-        color: var(--muted);
+      .search {
+        flex: 1 1 220px;
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--card);
+        color: var(--ink);
+        font: inherit;
         font-size: 0.95rem;
-        line-height: 1.55;
+        padding: 10px 14px;
+        outline: none;
+      }
+
+      .search:focus {
+        border-color: #9ec9c2;
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.08);
+      }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .filter-btn {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .filter-btn.is-on {
+        border-color: transparent;
+        background: var(--place-tag, var(--accent-soft));
+        color: var(--place-ink, var(--accent));
       }
 
       .stats {
-        margin: 18px 0 20px;
+        margin: 0 0 12px;
         color: var(--muted);
         font-size: 0.9rem;
-      }
-
-      .place {
-        background: var(--card);
-        backdrop-filter: blur(8px);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        margin-bottom: 14px;
-      }
-
-      .place-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 12px 14px;
-        background: var(--accent-soft);
-        border-bottom: 1px solid var(--line);
-      }
-
-      .place-name {
-        font-weight: 700;
-      }
-      .place-count {
-        color: var(--muted);
-        font-size: 0.88rem;
       }
 
       table {
@@ -112,6 +119,28 @@
         color: var(--muted);
         font-weight: 500;
         font-size: 0.8rem;
+      }
+
+      th.sort {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      th.sort:hover {
+        color: var(--ink);
+      }
+
+      th.sort .arrow {
+        display: inline-block;
+        min-width: 0.9em;
+        margin-left: 2px;
+        color: #9aa8b0;
+        font-size: 0.75em;
+      }
+
+      th.sort.is-on .arrow {
+        color: var(--accent);
       }
 
       tr:last-child td {
@@ -184,10 +213,16 @@
   </head>
   <body>
     <div class="wrap">
-      <header>
-        <h1>物品清單</h1>
-        <p class="subtitle">冇講數量就當 1；單位跟返該物件原本用量詞。</p>
-      </header>
+      <div class="toolbar">
+        <input
+          class="search"
+          id="search"
+          type="search"
+          placeholder="搜尋物品、備註、地點"
+          autocomplete="off"
+        />
+        <div class="filters" id="filters"></div>
+      </div>
       <p class="stats" id="stats"></p>
       <div id="board"></div>
     </div>
@@ -254,6 +289,20 @@
         { tag: "#f3efe4", ink: "#7a6a4a" },
       ];
 
+      const COLS = [
+        { key: "no", label: "#", cls: "num sort" },
+        { key: "place", label: "地點", cls: "sort" },
+        { key: "name", label: "物品名稱", cls: "sort" },
+        { key: "note", label: "數量/備註", cls: "sort" },
+      ];
+
+      const state = {
+        query: "",
+        place: "",
+        sortKey: "no",
+        sortDir: "asc",
+      };
+
       function themeForPlace(place) {
         if (PLACE_THEME[place]) return PLACE_THEME[place];
         let hash = 0;
@@ -270,25 +319,71 @@
           .replace(/"/g, "&quot;");
       }
 
-      function groupByPlace(items) {
-        const map = new Map();
-        for (const item of items) {
-          const key = item.place || "未分類";
-          if (!map.has(key)) map.set(key, []);
-          map.get(key).push(item);
-        }
-        return map;
+      function uniquePlaces() {
+        return [...new Set(ITEMS.map((item) => item.place || "未分類"))];
+      }
+
+      function visibleItems() {
+        const q = state.query.trim().toLowerCase();
+        const rows = ITEMS.filter((item) => {
+          if (state.place && item.place !== state.place) return false;
+          if (!q) return true;
+          return [item.no, item.place, item.name, item.note]
+            .join(" ")
+            .toLowerCase()
+            .includes(q);
+        });
+
+        const dir = state.sortDir === "desc" ? -1 : 1;
+        const key = state.sortKey;
+        rows.sort((a, b) => {
+          const av = a[key];
+          const bv = b[key];
+          if (typeof av === "number" && typeof bv === "number") {
+            return (av - bv) * dir;
+          }
+          return String(av).localeCompare(String(bv), "zh-Hant") * dir;
+        });
+        return rows;
+      }
+
+      function sortArrow(key) {
+        if (state.sortKey !== key) return "↕";
+        return state.sortDir === "asc" ? "↑" : "↓";
+      }
+
+      function renderFilters() {
+        const box = document.getElementById("filters");
+        const places = uniquePlaces();
+        const buttons = [
+          { value: "", label: "全部", theme: { tag: "#eef3f5", ink: "#4a5b64" } },
+          ...places.map((place) => ({
+            value: place,
+            label: place,
+            theme: themeForPlace(place),
+          })),
+        ];
+        box.innerHTML = buttons
+          .map((btn) => {
+            const on = state.place === btn.value ? " is-on" : "";
+            return `<button type="button" class="filter-btn${on}" data-place="${escapeHtml(btn.value)}" style="--place-tag:${btn.theme.tag}; --place-ink:${btn.theme.ink}">${escapeHtml(btn.label)}</button>`;
+          })
+          .join("");
       }
 
       function render() {
         const board = document.getElementById("board");
         const stats = document.getElementById("stats");
-        const places = groupByPlace(ITEMS);
+        const rows = visibleItems();
+        const placeCount = uniquePlaces().length;
 
-        stats.textContent = `共 ${ITEMS.length} 項 · ${places.size} 個位置`;
+        stats.textContent =
+          rows.length === ITEMS.length
+            ? `共 ${ITEMS.length} 項 · ${placeCount} 個位置`
+            : `顯示 ${rows.length} / ${ITEMS.length} 項`;
 
-        if (!ITEMS.length) {
-          board.innerHTML = '<div class="empty">未有記錄</div>';
+        if (!rows.length) {
+          board.innerHTML = '<div class="empty">未有符合嘅記錄</div>';
           return;
         }
 
@@ -297,16 +392,17 @@
           <table>
             <thead>
               <tr>
-                <th class="num">#</th>
-                <th>地點</th>
-                <th>物品名稱</th>
-                <th>數量/備註</th>
+                ${COLS.map((col) => {
+                  const on = state.sortKey === col.key ? " is-on" : "";
+                  return `<th class="${col.cls}${on}" data-sort="${col.key}">${escapeHtml(col.label)}<span class="arrow">${sortArrow(col.key)}</span></th>`;
+                }).join("")}
               </tr>
             </thead>
             <tbody>
-              ${ITEMS.map((item) => {
-                const theme = themeForPlace(item.place);
-                return `
+              ${rows
+                .map((item) => {
+                  const theme = themeForPlace(item.place);
+                  return `
                 <tr style="--place-tag:${theme.tag}; --place-ink:${theme.ink}">
                   <td class="num">${escapeHtml(item.no)}</td>
                   <td class="place-cell"><span class="place-tag">${escapeHtml(item.place)}</span></td>
@@ -314,13 +410,41 @@
                   <td class="note">${escapeHtml(item.note)}</td>
                 </tr>
               `;
-              }).join("")}
+                })
+                .join("")}
             </tbody>
           </table>
         </div>
       `;
       }
 
+      document.getElementById("search").addEventListener("input", (event) => {
+        state.query = event.target.value;
+        render();
+      });
+
+      document.getElementById("filters").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-place]");
+        if (!btn) return;
+        state.place = btn.getAttribute("data-place") || "";
+        renderFilters();
+        render();
+      });
+
+      document.getElementById("board").addEventListener("click", (event) => {
+        const th = event.target.closest("th[data-sort]");
+        if (!th) return;
+        const key = th.getAttribute("data-sort");
+        if (state.sortKey === key) {
+          state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+        } else {
+          state.sortKey = key;
+          state.sortDir = key === "no" ? "asc" : "asc";
+        }
+        render();
+      });
+
+      renderFilters();
       render();
     </script>
   </body>
