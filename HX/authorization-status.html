@@ -142,6 +142,77 @@
         </table>
       </div>
 
+      <h2>Email cases already covered above (do not duplicate)</h2>
+      <p class="hint">These are the same problems, grouped as handover cases. They are not extra issues.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Handover case</th>
+              <th>Already tracked as</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Case 1 — Unauthorized type used on release</td><td>P7</td></tr>
+            <tr><td>Case 2 — Competency / unused customer procedures</td><td>P6, P12</td></tr>
+            <tr><td>Case 3 — Suspension delayed for manpower</td><td>P5, P10</td></tr>
+            <tr><td>Case 4 — Customer chasing an outdated roster</td><td>P1, P3, P4</td></tr>
+            <tr><td>Case 5 — Inactive holders still listed</td><td>P6</td></tr>
+            <tr><td>Case 6 — Manual acknowledgement overdue</td><td>P8</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Takeover controls not previously on this page</h2>
+      <p class="hint">Five control areas from the duty handover. Each maps to a workspace tab. New fields below are only those the page did not already carry.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Control</th>
+              <th>Watch</th>
+              <th>Already on page</th>
+              <th>Added now</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1. Authorization validity / LMS</td><td>Expired card, missing type, out-of-scope release, LMS accuracy</td><td>P7 types held vs may release</td><td>Expiry date; expiring in 90 days; LMS match</td></tr>
+            <tr><td>2. Customer rosters</td><td>Latest approved / removed / pending list</td><td>Live roster statuses; new applications</td><td>Staff number; approval date; training / exercise status</td></tr>
+            <tr><td>3. Coverage / manpower</td><td>Resign, retire, leave, suspend; one-deep cover</td><td>P4, P5, P10 replacement link</td><td>Coverage matrix: actual vs minimum by customer and fleet</td></tr>
+            <tr><td>4. New applications and training</td><td>Candidate → training → customer approval</td><td>Seven-step pipeline; trainer schedule (P11)</td><td>Customer-approval gate (submitted / awaiting approval)</td></tr>
+            <tr><td>5. Manual acknowledgement</td><td>GMM / read-and-sign due dates</td><td>P8 outstanding list</td><td>Completion percentage</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h3>Weekly checklist (takeover)</h3>
+          <p class="hint">Use this every week. Do not treat it as a second problem register.</p>
+          <ul class="hint" style="margin: 8px 0 0; padding-left: 18px; line-height: 1.6">
+            <li>Review customer rosters and LMS match.</li>
+            <li>List authorizations expiring within 90 days.</li>
+            <li>Follow pending customer approvals and training.</li>
+            <li>Check coverage versus minimum by customer and fleet.</li>
+            <li>Close open findings and overdue acknowledgements.</li>
+            <li>Remove resigned or transferred staff from the active list.</li>
+            <li>Brief duty and front-line supervisors when a validity or type issue arises.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Files to obtain first</h3>
+          <p class="hint">Ask for these on day one. They feed the tables below.</p>
+          <ul class="hint" style="margin: 8px 0 0; padding-left: 18px; line-height: 1.6">
+            <li>Current customer roster by airline.</li>
+            <li>Expiry list for the next 12 months.</li>
+            <li>Pending applications.</li>
+            <li>Suspended / restricted list.</li>
+            <li>Read-and-sign tracker.</li>
+            <li>Minimum certifier coverage matrix by customer and type.</li>
+          </ul>
+        </div>
+      </div>
+
       <div class="tabs" id="tabs">
         <button type="button" class="tab on" data-tab="apps">New applications</button>
         <button type="button" class="tab" data-tab="roster">Live roster</button>
@@ -169,7 +240,9 @@
             <thead>
               <tr>
                 <th>Staff</th>
+                <th>No.</th>
                 <th>Client type</th>
+                <th>Customer gate</th>
                 <th>Current step</th>
                 <th>Status</th>
                 <th>Target</th>
@@ -208,23 +281,45 @@
 
       <section class="panel" id="panel-roster">
         <div class="stats" id="roster-stats"></div>
-        <p class="hint">Closed statuses only. Restricted must carry a review date. Closes P4, P5, P6, P7 and P10.</p>
+        <p class="hint">Closed statuses only. Restricted must carry a review date. New columns: staff number, approval, expiry, LMS match. Closes P4, P5, P6, P7 and P10.</p>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Staff</th>
+                <th>No.</th>
                 <th>Client type</th>
                 <th>Status</th>
+                <th>Approved</th>
+                <th>Expiry</th>
+                <th>LMS</th>
                 <th>Review date</th>
                 <th>Types held</th>
                 <th>May release</th>
                 <th>Last e-log / e-check</th>
+                <th>Training / exercise</th>
                 <th>Replacement</th>
                 <th>Note</th>
               </tr>
             </thead>
             <tbody id="roster-body"></tbody>
+          </table>
+        </div>
+        <h2>Coverage versus minimum (control 3)</h2>
+        <p class="hint">Actual active holders against the minimum needed. One-deep or below minimum is a red flag.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer type</th>
+                <th>Fleet</th>
+                <th>Active authorized</th>
+                <th>Minimum required</th>
+                <th>Gap</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody id="coverage-body"></tbody>
           </table>
         </div>
       </section>
@@ -267,7 +362,7 @@
         </div>
       </section>
     </div>
-    <div class="page-version" data-version="2.1" aria-label="Page version 2.1">v2.1</div>
+    <div class="page-version" data-version="2.2" aria-label="Page version 2.2">v2.2</div>
 
     <script>
       const STEPS = [
@@ -284,6 +379,8 @@
         {
           id: "s01",
           name: "Staff 01",
+          staffNo: "0101",
+          gate: "Training completed",
           role: "Certifying staff",
           client: "EVA-type",
           step: "qa",
@@ -311,6 +408,8 @@
         {
           id: "s02",
           name: "Staff 02",
+          staffNo: "0102",
+          gate: "Approved",
           role: "Certifying staff",
           client: "EVA-type",
           step: "class",
@@ -338,6 +437,8 @@
         {
           id: "s03",
           name: "Staff 03",
+          staffNo: "0103",
+          gate: "Training completed",
           role: "Certifying staff",
           client: "Client B-type",
           step: "schedule",
@@ -365,6 +466,8 @@
         {
           id: "s04",
           name: "Staff 04",
+          staffNo: "0104",
+          gate: "Candidate identified",
           role: "Certifying staff",
           client: "EVA-type",
           step: "client",
@@ -389,6 +492,8 @@
         {
           id: "s05",
           name: "Staff 05",
+          staffNo: "0105",
+          gate: "Approved",
           role: "Certifying staff",
           client: "EVA-type",
           step: "class",
@@ -413,6 +518,8 @@
         {
           id: "s06",
           name: "Staff 06",
+          staffNo: "0106",
+          gate: "Training required",
           role: "Certifying staff",
           client: "Client C-type",
           step: "collect",
@@ -440,6 +547,8 @@
         {
           id: "s07",
           name: "Staff 07",
+          staffNo: "0107",
+          gate: "Approved",
           role: "Certifying staff",
           client: "Client C-type",
           step: "done",
@@ -461,6 +570,8 @@
         {
           id: "s08",
           name: "Staff 08",
+          staffNo: "0108",
+          gate: "Submitted to customer",
           role: "Certifying staff",
           client: "Client B-type",
           step: "exam",
@@ -488,75 +599,112 @@
         {
           id: "s11",
           name: "Staff 11",
+          staffNo: "0111",
           client: "EVA-type",
           status: "restricted",
+          approved: "2022-03-01",
+          expiry: "2026-12-31",
+          lms: "Mismatch",
           review: "2024-09-30",
           typesHeld: "B777",
           mayRelease: "None (restricted)",
           lastUse: "2024-06-20",
+          training: "Not exercised",
           replacement: "Staff 04",
           note: "Use stopped from the event date; still listed pending a review date. Closes P5 / P10.",
         },
         {
           id: "s12",
           name: "Staff 12",
+          staffNo: "0112",
           client: "EVA-type",
           status: "to_remove",
+          approved: "2021-06-15",
+          expiry: "2026-10-31",
+          lms: "Match",
           review: "2024-08-31",
           typesHeld: "A330, B777",
           mayRelease: "None (to be removed)",
           lastUse: "Never recorded",
+          training: "Not exercised",
           replacement: "—",
           note: "No e-log / e-check exercise. Closes P6.",
         },
         {
           id: "s13",
           name: "Staff 13",
+          staffNo: "0113",
           client: "EVA-type",
           status: "active",
+          approved: "2023-01-10",
+          expiry: "2026-11-15",
+          lms: "Match",
           review: "—",
           typesHeld: "A330, B777",
           mayRelease: "A330, B777",
           lastUse: "2026-09-01",
+          training: "Current",
           replacement: "—",
-          note: "Types held match types that may be released.",
+          note: "Types held match types that may be released. Expiry within 90 days.",
         },
         {
           id: "s14",
           name: "Staff 14",
+          staffNo: "0114",
           client: "EVA-type",
           status: "active",
+          approved: "2023-05-20",
+          expiry: "2027-05-20",
+          lms: "Mismatch",
           review: "—",
           typesHeld: "B777",
           mayRelease: "B777 only",
           lastUse: "2026-08-20",
+          training: "Current",
           replacement: "—",
-          note: "Must not release A330. Closes P7.",
+          note: "Must not release A330. LMS does not match the roster. Closes P7.",
         },
         {
           id: "s15",
           name: "Staff 15",
+          staffNo: "0115",
           client: "EVA-type",
           status: "suspended",
+          approved: "2020-09-01",
+          expiry: "2026-09-30",
+          lms: "Match",
           review: "2024-08-09",
           typesHeld: "A330",
           mayRelease: "None (suspended)",
           lastUse: "2024-06-20",
+          training: "Not exercised",
           replacement: "Staff 01",
           note: "Suspension requested; replacement application is Staff 01. Closes P4.",
         },
         {
           id: "s16",
           name: "Staff 16",
+          staffNo: "0116",
           client: "Bangkok Airways-type",
           status: "active",
+          approved: "2024-01-08",
+          expiry: "2027-01-08",
+          lms: "Match",
           review: "—",
           typesHeld: "A320",
           mayRelease: "A320",
           lastUse: "2026-04-10",
+          training: "Recurrent open",
           replacement: "—",
           note: "Manual acknowledgement still open on Client currency.",
         },
+      ];
+
+      const COVERAGE = [
+        { client: "EVA-type", fleet: "A330", actual: 1, minimum: 3, risk: "High" },
+        { client: "EVA-type", fleet: "B777", actual: 2, minimum: 3, risk: "High" },
+        { client: "Bangkok Airways-type", fleet: "A320", actual: 1, minimum: 2, risk: "High" },
+        { client: "Qatar-type", fleet: "B787", actual: 2, minimum: 2, risk: "Watch" },
       ];
 
       const ACKS = Array.from({ length: 19 }, (_, i) => ({
@@ -750,7 +898,11 @@
               '"><td><button class="name" type="button">' +
               p.name +
               "</button></td><td>" +
+              p.staffNo +
+              "</td><td>" +
               p.client +
+              "</td><td>" +
+              p.gate +
               "</td><td>" +
               stepLabel(p.step) +
               '</td><td><span class="pill ' +
@@ -826,6 +978,14 @@
       }
 
       function renderRoster() {
+        const asAt = new Date("2026-09-09");
+        const expiring = ROSTER.filter((r) => {
+          if (!r.expiry) return false;
+          const exp = new Date(r.expiry);
+          const days = (exp - asAt) / 86400000;
+          return days >= 0 && days <= 90;
+        }).length;
+        const lmsFail = ROSTER.filter((r) => r.lms === "Mismatch").length;
         const counts = {
           active: ROSTER.filter((r) => r.status === "active").length,
           restricted: ROSTER.filter((r) => r.status === "restricted").length,
@@ -834,20 +994,27 @@
         };
         document.getElementById("roster-stats").innerHTML = [
           ["Active", counts.active, "ok"],
-          ["Restricted + review date", counts.restricted, "danger"],
-          ["Suspended", counts.suspended, ""],
+          ["Restricted / suspended", counts.restricted + counts.suspended, "danger"],
           ["To be removed", counts.to_remove, "warn"],
-          ["On sample roster", ROSTER.length, "info"],
+          ["Expiring in 90 days", expiring, "warn"],
+          ["LMS mismatch", lmsFail, "danger"],
         ]
           .map(([label, n, cls]) => '<div class="stat ' + cls + '"><b>' + n + "</b><span>" + label + "</span></div>")
           .join("");
 
-        document.getElementById("roster-body").innerHTML = ROSTER.map(
-          (r) =>
+        document.getElementById("roster-body").innerHTML = ROSTER.map((r) => {
+          const expSoon = (() => {
+            const exp = new Date(r.expiry);
+            const days = (exp - asAt) / 86400000;
+            return days >= 0 && days <= 90;
+          })();
+          return (
             '<tr class="' +
             r.status +
             '"><td>' +
             r.name +
+            "</td><td>" +
+            r.staffNo +
             "</td><td>" +
             r.client +
             '</td><td><span class="pill ' +
@@ -855,6 +1022,13 @@
             '">' +
             statusLabel(r.status) +
             "</span></td><td>" +
+            r.approved +
+            "</td><td>" +
+            r.expiry +
+            (expSoon ? '<br><span class="pill risk">90-day watch</span>' : "") +
+            "</td><td>" +
+            (r.lms === "Mismatch" ? '<span class="pill overdue">Mismatch</span>' : r.lms) +
+            "</td><td>" +
             r.review +
             "</td><td>" +
             r.typesHeld +
@@ -863,20 +1037,47 @@
             "</td><td>" +
             r.lastUse +
             "</td><td>" +
+            r.training +
+            "</td><td>" +
             r.replacement +
             "</td><td>" +
             r.note +
-            "</td></tr>",
-        ).join("");
+            "</td></tr>"
+          );
+        }).join("");
+
+        document.getElementById("coverage-body").innerHTML = COVERAGE.map((c) => {
+          const gap = c.actual - c.minimum;
+          const cls = c.risk === "High" ? "blocked" : c.risk === "Watch" ? "risk" : "active";
+          return (
+            '<tr class="' +
+            cls +
+            '"><td>' +
+            c.client +
+            "</td><td>" +
+            c.fleet +
+            "</td><td>" +
+            c.actual +
+            "</td><td>" +
+            c.minimum +
+            "</td><td>" +
+            gap +
+            '</td><td><span class="pill ' +
+            (c.risk === "High" ? "blocked" : "risk") +
+            '">' +
+            c.risk +
+            "</span></td></tr>"
+          );
+        }).join("");
       }
 
       function renderCurrency() {
         document.getElementById("currency-stats").innerHTML = [
           ["Manuals outstanding", ACKS.length, "danger"],
-          ["Day before deadline", "19", "warn"],
+          ["Acknowledgement complete", "0%", "warn"],
           ["Open findings", FINDINGS.length, "danger"],
           ["Client types in view", "2", "info"],
-          ["Sample staff rows", ACKS.length, ""],
+          ["Required cohort", ACKS.length, ""],
         ]
           .map(([label, n, cls]) => '<div class="stat ' + cls + '"><b>' + n + "</b><span>" + label + "</span></div>")
           .join("");
