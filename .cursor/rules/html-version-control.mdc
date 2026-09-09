@@ -1,0 +1,12 @@
+---
+description: This Cloud Agent HTML page must show a bottom-right version
+alwaysApply: true
+---
+
+# HTML version control
+
+改呢頁（或將來任何 Cloud Agent HTML）都要維持右下角版本號。
+
+- 細改：`1.0` → `1.1`（+0.1）
+- 大改：`1.0` → `2.0`（+1.0）
+- 角標文字同 `data-version` 一齊改
