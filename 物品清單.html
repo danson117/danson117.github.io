@@ -199,6 +199,25 @@
         letter-spacing: 0.01em;
       }
 
+      .page-version {
+        position: fixed;
+        right: max(12px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        z-index: 20;
+        font-family: Outfit, "Noto Sans TC", sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 10px;
+        box-shadow: var(--shadow);
+        pointer-events: none;
+        user-select: none;
+      }
+
       @media (max-width: 560px) {
         td.name {
           width: 42%;
@@ -226,6 +245,7 @@
       <p class="stats" id="stats"></p>
       <div id="board"></div>
     </div>
+    <div class="page-version" data-version="1.0" aria-label="頁面版本 1.0">v1.0</div>
 
     <script>
       const ITEMS = [
