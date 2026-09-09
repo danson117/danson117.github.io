@@ -8,6 +8,6 @@ alwaysApply: true
 只改本 branch（`cursor/todo-list-8fad`）根目錄嘅 `todo.html`。
 
 - 改完要 commit + push 返呢條 branch
+- 呢條 branch 只留呢頁同 `.cursor/rules`，唔好加返 `main` 嘅 Learn Hub 檔
 - 唔好喺其他 folder／`main`／`C:\Cursor\Cloud` 再開副本
 - 預覽：https://raw.githack.com/danson117/danson117.github.io/cursor/todo-list-8fad/todo.html
-- 本地同一檔：`C:\Cursor\danson117.github.io-todo-list\todo.html`
