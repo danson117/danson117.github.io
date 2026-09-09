@@ -29,11 +29,7 @@
         --shadow: 0 8px 24px rgba(28, 36, 48, 0.06);
         --radius: 14px;
       }
-
-      * {
-        box-sizing: border-box;
-      }
-
+      * { box-sizing: border-box; }
       body {
         margin: 0;
         min-height: 100vh;
@@ -41,281 +37,66 @@
         font-family: "Source Sans 3", sans-serif;
         background: var(--bg);
       }
-
-      .wrap {
-        max-width: 1180px;
-        margin: 0 auto;
-        padding: 24px 16px 80px;
-      }
-
-      h1 {
-        font-family: Outfit, "Source Sans 3", sans-serif;
-        font-size: clamp(1.6rem, 4vw, 2.1rem);
-        margin: 0 0 6px;
-      }
-
-      h2 {
-        font-size: 1.05rem;
-        margin: 0 0 8px;
-      }
-
-      h3 {
-        font-size: 0.92rem;
-        margin: 0 0 8px;
-      }
-
-      p.lead,
-      .hint {
-        color: var(--muted);
-        font-size: 0.92rem;
-        line-height: 1.5;
-        margin: 0;
-      }
-
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 80px; }
+      h1 { font-family: Outfit, "Source Sans 3", sans-serif; font-size: clamp(1.6rem, 4vw, 2.1rem); margin: 0 0 6px; }
+      h2 { font-size: 1.05rem; margin: 0 0 8px; }
+      h3 { font-size: 0.92rem; margin: 0 0 8px; }
+      p.lead, .hint { color: var(--muted); font-size: 0.92rem; line-height: 1.5; margin: 0; }
       .banner {
-        margin: 14px 0 18px;
-        padding: 12px 14px;
-        border-radius: 12px;
-        background: var(--info-soft);
-        color: #1849a9;
-        font-size: 0.88rem;
-        line-height: 1.45;
+        margin: 14px 0 18px; padding: 12px 14px; border-radius: 12px;
+        background: var(--info-soft); color: #1849a9; font-size: 0.88rem; line-height: 1.45;
       }
-
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 10px;
-        margin-bottom: 16px;
-      }
-
-      .stat {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        padding: 12px 10px;
-        text-align: center;
-      }
-
-      .stat b {
-        display: block;
-        font-family: Outfit, sans-serif;
-        font-size: 1.4rem;
-      }
-
-      .stat span {
-        color: var(--muted);
-        font-size: 0.75rem;
-      }
-
-      .stat.danger b {
-        color: var(--danger);
-      }
-      .stat.warn b {
-        color: var(--warn);
-      }
-      .stat.info b {
-        color: var(--info);
-      }
-      .stat.ok b {
-        color: var(--ok);
-      }
-
-      .toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-        margin-bottom: 18px;
-      }
-
-      .chip {
-        font: inherit;
-        border: 1px solid var(--line);
-        background: #fff;
-        border-radius: 999px;
-        padding: 7px 12px;
-        cursor: pointer;
-      }
-
-      .chip.on {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #fff;
-      }
-
-      select {
-        font: inherit;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        padding: 7px 12px;
-        background: #fff;
-        margin-left: auto;
-      }
-
-      .grid2 {
-        display: grid;
-        grid-template-columns: 1.25fr 0.75fr;
-        gap: 14px;
-        margin-bottom: 22px;
-      }
-
-      .card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        padding: 14px;
-        box-shadow: var(--shadow);
-      }
-
-      .bars {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .bar-row {
-        display: grid;
-        grid-template-columns: 148px 1fr 28px;
-        gap: 8px;
-        align-items: center;
-        font-size: 0.82rem;
-      }
-
-      .bar-track {
-        height: 10px;
-        background: #e8eef2;
-        border-radius: 999px;
-        overflow: hidden;
-      }
-
-      .bar-fill {
-        height: 100%;
-        background: var(--info);
-        border-radius: 999px;
-      }
-
-      .table-wrap {
-        overflow-x: auto;
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        margin: 8px 0 20px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.86rem;
-      }
-
-      th,
-      td {
-        padding: 10px 12px;
-        border-bottom: 1px solid var(--line);
-        text-align: left;
-        vertical-align: top;
-      }
-
-      th {
-        background: #f7f9fb;
-        font-weight: 700;
-        white-space: nowrap;
-      }
-
-      tr.blocked {
-        background: var(--danger-soft);
-      }
-      tr.risk {
-        background: var(--warn-soft);
-      }
-      tr.done {
-        background: #eefaf6;
-      }
-      tr.on_track {
-        background: #fff;
-      }
-      tr.selected td:first-child {
-        box-shadow: inset 3px 0 0 var(--accent);
-      }
-
-      button.name {
-        font: inherit;
-        font-weight: 700;
-        border: none;
-        background: transparent;
-        color: var(--accent);
-        cursor: pointer;
-        padding: 0;
-        text-align: left;
-      }
-
-      .pill {
-        display: inline-block;
-        border-radius: 999px;
-        padding: 2px 8px;
-        font-size: 0.75rem;
-        font-weight: 700;
-      }
-
-      .pill.blocked {
-        background: var(--danger-soft);
-        color: var(--danger);
-      }
-      .pill.risk {
-        background: var(--warn-soft);
-        color: var(--warn);
-      }
-      .pill.on_track {
-        background: var(--info-soft);
-        color: var(--info);
-      }
-      .pill.done {
-        background: var(--ok-soft);
-        color: var(--ok);
-      }
-
-      .req.done {
-        color: var(--ok);
-      }
-      .req.open {
-        color: var(--warn);
-      }
-
-      details.howto {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        padding: 12px 14px;
-        margin-top: 8px;
-      }
-
+      .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+      .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 10px; text-align: center; }
+      .stat b { display: block; font-family: Outfit, sans-serif; font-size: 1.4rem; }
+      .stat span { color: var(--muted); font-size: 0.75rem; }
+      .stat.danger b { color: var(--danger); }
+      .stat.warn b { color: var(--warn); }
+      .stat.info b { color: var(--info); }
+      .stat.ok b { color: var(--ok); }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 18px; }
+      .chip { font: inherit; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+      .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+      select { font: inherit; border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; background: #fff; margin-left: auto; }
+      .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 14px; }
+      .tab { font: inherit; font-weight: 700; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 9px 14px; cursor: pointer; }
+      .tab.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .panel { display: none; }
+      .panel.on { display: block; }
+      .grid2 { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 14px; margin-bottom: 22px; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+      .bars { display: flex; flex-direction: column; gap: 8px; }
+      .bar-row { display: grid; grid-template-columns: 148px 1fr 28px; gap: 8px; align-items: center; font-size: 0.82rem; }
+      .bar-track { height: 10px; background: #e8eef2; border-radius: 999px; overflow: hidden; }
+      .bar-fill { height: 100%; background: var(--info); border-radius: 999px; }
+      .table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin: 8px 0 20px; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+      th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      th { background: #f7f9fb; font-weight: 700; white-space: nowrap; }
+      tr.blocked, tr.restricted, tr.overdue { background: var(--danger-soft); }
+      tr.risk, tr.to_remove { background: var(--warn-soft); }
+      tr.done, tr.active { background: #fff; }
+      tr.suspended { background: #f3f4f6; }
+      tr.on_track { background: #fff; }
+      tr.selected td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+      button.name { font: inherit; font-weight: 700; border: none; background: transparent; color: var(--accent); cursor: pointer; padding: 0; text-align: left; }
+      .pill { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; }
+      .pill.blocked, .pill.restricted, .pill.overdue { background: var(--danger-soft); color: var(--danger); }
+      .pill.risk, .pill.to_remove { background: var(--warn-soft); color: var(--warn); }
+      .pill.on_track, .pill.active { background: var(--info-soft); color: var(--info); }
+      .pill.done { background: var(--ok-soft); color: var(--ok); }
+      .pill.suspended { background: #e5e7eb; color: #374151; }
+      .req.done { color: var(--ok); }
+      .req.open { color: var(--warn); }
       .page-version {
-        position: fixed;
-        right: max(12px, env(safe-area-inset-right));
-        bottom: max(12px, env(safe-area-inset-bottom));
-        z-index: 20;
-        font-family: Outfit, "Source Sans 3", sans-serif;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        color: var(--muted);
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        padding: 4px 10px;
-        pointer-events: none;
+        position: fixed; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom));
+        z-index: 20; font-family: Outfit, "Source Sans 3", sans-serif; font-size: 0.72rem; font-weight: 700;
+        letter-spacing: 0.04em; color: var(--muted); background: var(--card); border: 1px solid var(--line);
+        border-radius: 999px; padding: 4px 10px; pointer-events: none;
       }
-
       @media (max-width: 860px) {
-        .stats,
-        .grid2 {
-          grid-template-columns: 1fr;
-        }
-        select {
-          margin-left: 0;
-        }
+        .stats, .grid2 { grid-template-columns: 1fr; }
+        select { margin-left: 0; }
       }
     </style>
   </head>
@@ -323,109 +104,169 @@
     <div class="wrap">
       <h1>Authorization Progress</h1>
       <p class="lead">
-        A single view of each certified individual’s current step, blockers, outstanding client and internal QA
-        requirements, trainer availability, and estimated completion.
+        Upper section: the authorization problems this page is built to close. Lower section: the workspace that
+        answers each problem. Sample identities are Staff 01, Staff 02, and so on.
       </p>
       <div class="banner">
-        Sample dashboard. The eight individuals and three clients below are illustrative and do not constitute a live
-        roster. Once the required fields are complete, this layout may be populated with operational data.
+        Illustrative data only. Airline labels (EVA-type, Bangkok Airways-type, Qatar-type) describe the case pattern.
+        No live staff names or email text are shown.
       </div>
 
-      <div class="stats" id="stats"></div>
-      <div class="toolbar">
-        <div id="filters"></div>
-        <select id="client"></select>
-      </div>
-
-      <div class="grid2">
-        <div class="card">
-          <h2>Current distribution by step</h2>
-          <p class="hint">Headcount by current step · Sample data · As at 9 September 2026</p>
-          <div class="bars" id="bars" style="margin-top: 12px"></div>
-        </div>
-        <div class="card" id="bottleneck"></div>
-      </div>
-
-      <h2>Team status</h2>
-      <p class="hint">
-        Select a name to review client requirements, internal QA items, and personal availability. Red = blocked; amber =
-        at risk; green = complete.
-      </p>
+      <h2>Problems this page is built to close</h2>
+      <p class="hint">Each row is a real authorization failure mode. The workspace below is how the page answers it.</p>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Certified</th>
-              <th>Client</th>
-              <th>Current step</th>
-              <th>Status</th>
-              <th>Target</th>
-              <th>Days remaining</th>
-              <th>Trainer</th>
-              <th>Session / hours</th>
-              <th>Blocker</th>
+              <th>ID</th>
+              <th>Problem</th>
+              <th>Illustrative case</th>
+              <th>Where this page answers it</th>
             </tr>
           </thead>
-          <tbody id="board"></tbody>
+          <tbody>
+            <tr><td>P1</td><td>No single status view</td><td>EVA-type roster chased for months while replies stayed “soon”.</td><td>New applications · one row per staff</td></tr>
+            <tr><td>P2</td><td>Client requirements mixed with internal QA</td><td>EVA-type initial training already complete; application still with internal QA.</td><td>New applications · two requirement tables</td></tr>
+            <tr><td>P3</td><td>Promised dates slip; the customer has to chase</td><td>Reply promised “next week”; customer wrote again in August and November.</td><td>New applications · last chase / promised date / overdue</td></tr>
+            <tr><td>P4</td><td>Removal not tied to a replacement</td><td>EVA-type asked for a replacement and a timetable; the new application was still forming.</td><td>Live roster · replacement + target on the same row</td></tr>
+            <tr><td>P5</td><td>“Restricted” but still on the roster</td><td>Use stopped, yet the authorization was kept for ad-hoc cover.</td><td>Live roster · Restricted + review date only</td></tr>
+            <tr><td>P6</td><td>Inactive holders still listed</td><td>Holders who had not used e-log / e-check were to be removed, but only in email.</td><td>Live roster · last exercise date</td></tr>
+            <tr><td>P7</td><td>Type authorization not checked at release</td><td>EVA-type aircraft signed off without the required type approval.</td><td>Live roster · types held vs types that may be released</td></tr>
+            <tr><td>P8</td><td>Client manual / read-and-sign overdue</td><td>Bangkok Airways-type: 19 certifying staff still outstanding the day before the deadline.</td><td>Client currency · due date and overdue count</td></tr>
+            <tr><td>P9</td><td>Transit / document check missed</td><td>Qatar-type: aircraft operated with an expired onboard Certificate of Insurance.</td><td>Client currency · open finding</td></tr>
+            <tr><td>P10</td><td>Coverage risk when people leave</td><td>A problem authorization was kept because of resignations until new cards were granted.</td><td>Live roster · coverage vs replacement pipeline</td></tr>
+            <tr><td>P11</td><td>Trainer / course dates only in email</td><td>A request for available training courses was sent, but not shown against each candidate.</td><td>New applications · trainer schedule</td></tr>
+            <tr><td>P12</td><td>Repeat non-compliance after authorization</td><td>EVA-type e-log, e-check and wing-walker shortfalls continued after people were already on the roster.</td><td>Client currency · findings, not only new applications</td></tr>
+          </tbody>
         </table>
       </div>
 
-      <div class="grid2">
-        <div>
-          <div id="detail"></div>
-        </div>
-        <div>
-          <h2>Trainer schedule this week</h2>
-          <p class="hint">Open items only, including confirmed and pending sessions · Sample schedule</p>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Individual</th>
-                  <th>Source</th>
-                  <th>Trainer</th>
-                  <th>Hours</th>
-                  <th>Slot</th>
-                  <th>Booking status</th>
-                </tr>
-              </thead>
-              <tbody id="slots"></tbody>
-            </table>
-          </div>
-          <div class="card">
-            <h3>Minimum fields required for this dashboard</h3>
-            <p class="lead">
-              Each row must record: current step, blocker, client requirements, internal QA requirements, target date,
-              estimated days remaining, trainer source, session duration, earliest available slot, and the owner of the
-              next action.
-            </p>
-            <p class="hint" style="margin-top: 8px">
-              Without these fields, the view is merely a name list. With them, it is possible to identify who requires
-              escalation and who may be scheduled.
-            </p>
-          </div>
-        </div>
+      <div class="tabs" id="tabs">
+        <button type="button" class="tab on" data-tab="apps">New applications</button>
+        <button type="button" class="tab" data-tab="roster">Live roster</button>
+        <button type="button" class="tab" data-tab="currency">Client currency</button>
       </div>
 
-      <details class="howto" open>
-        <summary><strong>How this process should be run</strong></summary>
-        <p class="lead" style="margin-top: 10px">
-          The requirement is not additional spreadsheets. It is one team progress register: current step, point of
-          delay, outstanding client versus internal QA items, and trainer availability.
-        </p>
-        <p class="lead" style="margin-top: 8px">
-          The process is fixed at seven steps: 1 Requirements collection; 2 Client-side; 3 Internal QA; 4 Trainer and
-          session scheduling; 5 Delivery; 6 Examination and authorization; 7 Completion and filing. Client requirements
-          and internal QA must be maintained as separate columns.
-        </p>
-        <p class="lead" style="margin-top: 8px">
-          Week 1: agree the process and fields. Week 2: update step, blocker, and next-action owner each Monday. Week 3:
-          load the live roster into this dashboard. Standardize the process first, complete the fields second, and
-          automate last.
-        </p>
-      </details>
+      <section class="panel on" id="panel-apps">
+        <div class="stats" id="app-stats"></div>
+        <div class="toolbar">
+          <div id="filters"></div>
+          <select id="client"></select>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <h2>Current distribution by step</h2>
+            <p class="hint">Headcount by current step · Sample data · As at 9 September 2026</p>
+            <div class="bars" id="bars" style="margin-top: 12px"></div>
+          </div>
+          <div class="card" id="bottleneck"></div>
+        </div>
+        <h2>Application status</h2>
+        <p class="hint">Select a staff number for client versus internal QA items. Red = blocked; amber = at risk; green = complete.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Staff</th>
+                <th>Client type</th>
+                <th>Current step</th>
+                <th>Status</th>
+                <th>Target</th>
+                <th>Promised reply</th>
+                <th>Days remaining</th>
+                <th>Trainer</th>
+                <th>Blocker</th>
+              </tr>
+            </thead>
+            <tbody id="board"></tbody>
+          </table>
+        </div>
+        <div class="grid2">
+          <div id="detail"></div>
+          <div>
+            <h2>Trainer schedule</h2>
+            <p class="hint">Open items only · Sample schedule · closes P11</p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Staff</th>
+                    <th>Source</th>
+                    <th>Trainer</th>
+                    <th>Hours</th>
+                    <th>Slot</th>
+                    <th>Booking status</th>
+                  </tr>
+                </thead>
+                <tbody id="slots"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-roster">
+        <div class="stats" id="roster-stats"></div>
+        <p class="hint">Closed statuses only. Restricted must carry a review date. Closes P4, P5, P6, P7 and P10.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Staff</th>
+                <th>Client type</th>
+                <th>Status</th>
+                <th>Review date</th>
+                <th>Types held</th>
+                <th>May release</th>
+                <th>Last e-log / e-check</th>
+                <th>Replacement</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody id="roster-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-currency">
+        <div class="stats" id="currency-stats"></div>
+        <h2>Manual acknowledgement (P8)</h2>
+        <p class="hint">Bangkok Airways-type GMM acknowledgement. Snapshot: 19 certifying staff still outstanding the day before the deadline.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Staff</th>
+                <th>Client type</th>
+                <th>Document</th>
+                <th>Due</th>
+                <th>Status</th>
+                <th>Days versus due</th>
+              </tr>
+            </thead>
+            <tbody id="ack-body"></tbody>
+          </table>
+        </div>
+        <h2>Open findings (P9, P12)</h2>
+        <p class="hint">Post-authorization compliance. Getting the card is not the end of the work.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Finding</th>
+                <th>Client type</th>
+                <th>Staff / asset</th>
+                <th>Issue</th>
+                <th>Required control</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="finding-body"></tbody>
+          </table>
+        </div>
+      </section>
     </div>
-    <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
+    <div class="page-version" data-version="2.0" aria-label="Page version 2.0">v2.0</div>
 
     <script>
       const STEPS = [
@@ -440,43 +281,42 @@
 
       const PEOPLE = [
         {
-          id: "p1",
-          name: "Chen Mei-ling",
-          role: "Certified",
-          client: "Apex Bank",
+          id: "s01",
+          name: "Staff 01",
+          role: "Certifying staff",
+          client: "EVA-type",
           step: "qa",
           rag: "blocked",
-          target: "2026-10-03",
+          target: "2024-09-15",
+          promised: "2024-08-16",
+          lastChase: "2024-11-29",
           estimateDays: 18,
           classHours: 16,
-          trainerSource: "internal",
-          trainer: "Chow Kai-ming (internal)",
-          slot: "Pending QA clearance",
-          blocker: "Internal QA is awaiting the client evidence pack; training cannot be scheduled until it is complete.",
-          nextAction: "Follow up with the client project manager on the evidence pack; target this Friday.",
+          trainerSource: "client",
+          trainer: "Client course — completed",
+          slot: "Initial training complete",
+          blocker: "Client training is complete; the application remains with internal QA.",
+          nextAction: "Internal QA to complete the CS pack and publish the roster.",
           clientReqs: [
-            { item: "Client-specified module list", owner: "Client PM", done: true },
-            { item: "Scanned copies of prior authorizations", owner: "Client PM", done: false },
-            { item: "Confirmation of venue or remote delivery", owner: "Client PM", done: true },
+            { item: "Initial training complete", owner: "Client", done: true },
+            { item: "Roster update requested", owner: "Client", done: true },
           ],
           qaReqs: [
-            { item: "Pre-assessment results submitted", owner: "Internal QA", done: true },
-            { item: "Evidence-pack sampling", owner: "Internal QA", done: false },
-            { item: "Mock assessment passed", owner: "Internal QA", done: false },
+            { item: "New CS application reviewed", owner: "Internal QA", done: false },
+            { item: "Roster consolidated", owner: "Internal QA", done: false },
           ],
-          personReqs: [
-            { item: "Available training windows confirmed", owner: "Chen Mei-ling", done: true },
-            { item: "Personal file completed", owner: "Chen Mei-ling", done: true },
-          ],
+          personReqs: [{ item: "Personal file complete", owner: "Staff 01", done: true }],
         },
         {
-          id: "p2",
-          name: "Wong Tai-man",
-          role: "Certified",
-          client: "Apex Bank",
+          id: "s02",
+          name: "Staff 02",
+          role: "Certifying staff",
+          client: "EVA-type",
           step: "class",
           rag: "on_track",
           target: "2026-10-15",
+          promised: "—",
+          lastChase: "—",
           estimateDays: 8,
           classHours: 16,
           trainerSource: "client",
@@ -485,154 +325,272 @@
           blocker: "—",
           nextAction: "Submit attendance records to QA after delivery.",
           clientReqs: [
-            { item: "Client trainer confirmed", owner: "Client", done: true },
+            { item: "Trainer confirmed", owner: "Client", done: true },
             { item: "Session dates locked", owner: "Client", done: true },
           ],
           qaReqs: [
             { item: "Pre-course checklist signed", owner: "Internal QA", done: true },
             { item: "Post-course attendance record", owner: "Internal QA", done: false },
           ],
-          personReqs: [{ item: "Leave / availability approved", owner: "Wong Tai-man", done: true }],
+          personReqs: [{ item: "Availability approved", owner: "Staff 02", done: true }],
         },
         {
-          id: "p3",
-          name: "Lam Ka-yan",
-          role: "Certified",
-          client: "Northline",
+          id: "s03",
+          name: "Staff 03",
+          role: "Certifying staff",
+          client: "Client B-type",
           step: "schedule",
           rag: "blocked",
           target: "2026-10-10",
+          promised: "2026-09-12",
+          lastChase: "2026-09-08",
           estimateDays: 21,
           classHours: 24,
           trainerSource: "internal",
-          trainer: "Ho Chi-keung (internal)",
+          trainer: "Internal trainer 01",
           slot: "Earliest 6–8 October",
-          blocker: "The internal trainer is fully booked in September, and the 24-hour requirement creates a scheduling conflict.",
-          nextAction: "Ask whether the client can appoint its own trainer, or whether the session may be split across two weekends.",
+          blocker: "Internal trainer fully booked; 24-hour requirement creates a conflict.",
+          nextAction: "Ask whether the client can appoint a trainer, or split the session.",
           clientReqs: [
-            { item: "Acceptance of an internal trainer", owner: "Client", done: true },
+            { item: "Accepts internal trainer", owner: "Client", done: true },
             { item: "24-hour mandatory delivery", owner: "Client", done: true },
           ],
           qaReqs: [
-            { item: "Syllabus aligned to internal standard", owner: "Internal QA", done: true },
-            { item: "Post-session question bank sampling", owner: "Internal QA", done: false },
+            { item: "Syllabus aligned", owner: "Internal QA", done: true },
+            { item: "Post-session sampling", owner: "Internal QA", done: false },
           ],
-          personReqs: [
-            { item: "Available at weekends", owner: "Lam Ka-yan", done: true },
-            { item: "Weekdays limited to half-day", owner: "Lam Ka-yan", done: true },
-          ],
+          personReqs: [{ item: "Weekend availability", owner: "Staff 03", done: true }],
         },
         {
-          id: "p4",
-          name: "Cheung Siu-kei",
-          role: "Senior Certified",
-          client: "Northline",
+          id: "s04",
+          name: "Staff 04",
+          role: "Certifying staff",
+          client: "EVA-type",
           step: "client",
           rag: "blocked",
-          target: "2026-09-30",
+          target: "2024-09-30",
+          promised: "2024-08-16",
+          lastChase: "2024-08-20",
           estimateDays: 25,
           classHours: 16,
           trainerSource: "undecided",
           trainer: "To be confirmed",
           slot: "Not scheduled",
-          blocker: "The client authorization application remains unsigned; a company sponsor has not been appointed.",
-          nextAction: "Escalate to the client sponsor and copy both project managers.",
+          blocker: "Replacement for a restricted holder; client pack still incomplete.",
+          nextAction: "Escalate the sponsor signature and keep this row linked to Staff 11.",
           clientReqs: [
             { item: "Company sponsor signature", owner: "Client", done: false },
             { item: "Authorization application form", owner: "Client", done: false },
-            { item: "Background-check consent", owner: "Client", done: true },
           ],
-          qaReqs: [{ item: "QA to open only when the client pack is complete", owner: "Internal QA", done: false }],
-          personReqs: [{ item: "Personal particulars submitted", owner: "Cheung Siu-kei", done: true }],
+          qaReqs: [{ item: "QA opens only when the client pack is complete", owner: "Internal QA", done: false }],
+          personReqs: [{ item: "Personal particulars submitted", owner: "Staff 04", done: true }],
         },
         {
-          id: "p5",
-          name: "Ho Wing-chi",
-          role: "Certified",
-          client: "Apex Bank",
+          id: "s05",
+          name: "Staff 05",
+          role: "Certifying staff",
+          client: "EVA-type",
           step: "class",
           rag: "on_track",
           target: "2026-09-25",
+          promised: "—",
+          lastChase: "—",
           estimateDays: 5,
           classHours: 8,
           trainerSource: "internal",
-          trainer: "Chow Kai-ming (internal)",
+          trainer: "Internal trainer 02",
           slot: "11 September · one-day session",
           blocker: "—",
-          nextAction: "Attend on 11 September; submit the QA post-session form on 12 September.",
-          clientReqs: [{ item: "Acceptance of the eight-hour condensed session", owner: "Client", done: true }],
+          nextAction: "Attend on 11 September; submit the QA form on 12 September.",
+          clientReqs: [{ item: "Accepts eight-hour condensed session", owner: "Client", done: true }],
           qaReqs: [
             { item: "Pre-course QA cleared", owner: "Internal QA", done: true },
             { item: "Post-session form", owner: "Internal QA", done: false },
           ],
-          personReqs: [{ item: "Full-day attendance", owner: "Ho Wing-chi", done: false }],
+          personReqs: [{ item: "Full-day attendance", owner: "Staff 05", done: false }],
         },
         {
-          id: "p6",
-          name: "Ng Chi-wai",
-          role: "Certified",
-          client: "HarborPay",
+          id: "s06",
+          name: "Staff 06",
+          role: "Certifying staff",
+          client: "Client C-type",
           step: "collect",
           rag: "risk",
           target: "2026-10-20",
+          promised: "2026-09-20",
+          lastChase: "2026-09-09",
           estimateDays: 30,
           classHours: 16,
           trainerSource: "client",
-          trainer: "Client will appoint; date to be confirmed",
-          slot: "Client indicated the first week of October",
-          blocker: "The client has added a mandatory module; internal QA has concurrently required a mock assessment.",
-          nextAction: "Align this week on sequencing: the additional client module versus the QA mock assessment.",
+          trainer: "Client will appoint",
+          slot: "First week of October (verbal)",
+          blocker: "Client added a module; internal QA also requires a mock assessment.",
+          nextAction: "Align sequencing this week: extra module versus mock assessment.",
           clientReqs: [
             { item: "Standard modules", owner: "Client", done: true },
             { item: "Additional advanced module", owner: "Client", done: false },
-            { item: "Confirmed trainer slot", owner: "Client", done: false },
           ],
           qaReqs: [
             { item: "Standard pre-assessment", owner: "Internal QA", done: false },
             { item: "Mock assessment added", owner: "Internal QA", done: false },
           ],
-          personReqs: [{ item: "Confirm available training weeks", owner: "Ng Chi-wai", done: false }],
+          personReqs: [{ item: "Confirm available weeks", owner: "Staff 06", done: false }],
         },
         {
-          id: "p7",
-          name: "Tang Yu-hin",
-          role: "Certified",
-          client: "HarborPay",
+          id: "s07",
+          name: "Staff 07",
+          role: "Certifying staff",
+          client: "Client C-type",
           step: "done",
           rag: "done",
           target: "2026-09-05",
+          promised: "—",
+          lastChase: "—",
           estimateDays: 0,
           classHours: 16,
           trainerSource: "internal",
-          trainer: "Ho Chi-keung (internal)",
+          trainer: "Internal trainer 01",
           slot: "Completed 28–29 August",
           blocker: "—",
-          nextAction: "File the certificate; no further follow-up required.",
-          clientReqs: [{ item: "Client confirmation that authorization is in force", owner: "Client", done: true }],
+          nextAction: "File the certificate.",
+          clientReqs: [{ item: "Client confirmation in force", owner: "Client", done: true }],
           qaReqs: [{ item: "QA closure record", owner: "Internal QA", done: true }],
-          personReqs: [{ item: "Certificate uploaded", owner: "Tang Yu-hin", done: true }],
+          personReqs: [{ item: "Certificate uploaded", owner: "Staff 07", done: true }],
         },
         {
-          id: "p8",
-          name: "Au Ka-fai",
-          role: "Certified",
-          client: "Northline",
+          id: "s08",
+          name: "Staff 08",
+          role: "Certifying staff",
+          client: "Client B-type",
           step: "exam",
           rag: "risk",
           target: "2026-09-18",
+          promised: "—",
+          lastChase: "—",
           estimateDays: 12,
           classHours: 16,
           trainerSource: "internal",
-          trainer: "Chow Kai-ming (internal)",
+          trainer: "Internal trainer 02",
           slot: "Delivery completed",
-          blocker: "The only remaining examination slot is 22 September, four days after the target.",
-          nextAction: "Request a reserve slot on 17 September from the examining body and advise the client that the target may slip.",
-          clientReqs: [{ item: "Acceptance of internal examination records", owner: "Client", done: true }],
+          blocker: "Only remaining examination slot is four days after the target.",
+          nextAction: "Request a reserve slot and advise the client that the target may slip.",
+          clientReqs: [{ item: "Accepts internal examination records", owner: "Client", done: true }],
           qaReqs: [
             { item: "Post-course QA cleared", owner: "Internal QA", done: true },
             { item: "Examination venue verified", owner: "Internal QA", done: false },
           ],
-          personReqs: [{ item: "Revision checklist", owner: "Au Ka-fai", done: false }],
+          personReqs: [{ item: "Revision checklist", owner: "Staff 08", done: false }],
+        },
+      ];
+
+      const ROSTER = [
+        {
+          id: "s11",
+          name: "Staff 11",
+          client: "EVA-type",
+          status: "restricted",
+          review: "2024-09-30",
+          typesHeld: "B777",
+          mayRelease: "None (restricted)",
+          lastUse: "2024-06-20",
+          replacement: "Staff 04",
+          note: "Use stopped from the event date; still listed pending a review date. Closes P5 / P10.",
+        },
+        {
+          id: "s12",
+          name: "Staff 12",
+          client: "EVA-type",
+          status: "to_remove",
+          review: "2024-08-31",
+          typesHeld: "A330, B777",
+          mayRelease: "None (to be removed)",
+          lastUse: "Never recorded",
+          replacement: "—",
+          note: "No e-log / e-check exercise. Closes P6.",
+        },
+        {
+          id: "s13",
+          name: "Staff 13",
+          client: "EVA-type",
+          status: "active",
+          review: "—",
+          typesHeld: "A330, B777",
+          mayRelease: "A330, B777",
+          lastUse: "2026-09-01",
+          replacement: "—",
+          note: "Types held match types that may be released.",
+        },
+        {
+          id: "s14",
+          name: "Staff 14",
+          client: "EVA-type",
+          status: "active",
+          review: "—",
+          typesHeld: "B777",
+          mayRelease: "B777 only",
+          lastUse: "2026-08-20",
+          replacement: "—",
+          note: "Must not release A330. Closes P7.",
+        },
+        {
+          id: "s15",
+          name: "Staff 15",
+          client: "EVA-type",
+          status: "suspended",
+          review: "2024-08-09",
+          typesHeld: "A330",
+          mayRelease: "None (suspended)",
+          lastUse: "2024-06-20",
+          replacement: "Staff 01",
+          note: "Suspension requested; replacement application is Staff 01. Closes P4.",
+        },
+        {
+          id: "s16",
+          name: "Staff 16",
+          client: "Bangkok Airways-type",
+          status: "active",
+          review: "—",
+          typesHeld: "A320",
+          mayRelease: "A320",
+          lastUse: "2026-04-10",
+          replacement: "—",
+          note: "Manual acknowledgement still open on Client currency.",
+        },
+      ];
+
+      const ACKS = Array.from({ length: 19 }, (_, i) => ({
+        name: "Staff " + String(21 + i).padStart(2, "0"),
+        client: "Bangkok Airways-type",
+        document: "GMM AOCR Rev.11",
+        due: "2024-04-19",
+        status: "overdue",
+        vsDue: "Outstanding the day before the deadline",
+      }));
+
+      const FINDINGS = [
+        {
+          id: "F1",
+          client: "Qatar-type",
+          who: "Staff 17 / aircraft sample",
+          issue: "Expired onboard Certificate of Insurance in the document folder.",
+          control: "Transit check: Section 1 documents present and valid.",
+          status: "Open",
+        },
+        {
+          id: "F2",
+          client: "EVA-type",
+          who: "Staff 14",
+          issue: "Release signed without the required type approval.",
+          control: "Check types held in the live roster before release.",
+          status: "Open",
+        },
+        {
+          id: "F3",
+          client: "EVA-type",
+          who: "Staff 11",
+          issue: "e-log / e-check / wing-walker procedure not followed.",
+          control: "Post-authorization currency, not only the new-application path.",
+          status: "Open",
         },
       ];
 
@@ -642,9 +600,10 @@
         ["risk", "At risk"],
         ["qa", "QA related"],
         ["training", "Trainer / delivery"],
+        ["overdue", "Promised date overdue"],
       ];
 
-      const state = { filter: "all", client: "all", selected: "p1" };
+      const state = { tab: "apps", filter: "all", client: "all", selected: "s01" };
 
       function stepLabel(id) {
         return STEPS.find((s) => s.id === id)?.label || id;
@@ -652,8 +611,14 @@
       function ragLabel(rag) {
         return { blocked: "Blocked", risk: "At risk", on_track: "On plan", done: "Complete" }[rag];
       }
+      function statusLabel(s) {
+        return { active: "Active", restricted: "Restricted", suspended: "Suspended", to_remove: "To be removed" }[s];
+      }
       function trainerLabel(source) {
         return { client: "Client-arranged", internal: "Internally provided", undecided: "To be confirmed" }[source];
+      }
+      function promisedOverdue(p) {
+        return p.promised && p.promised !== "—" && p.rag !== "done";
       }
       function reqScore(reqs) {
         return reqs.filter((r) => r.done).length + "/" + reqs.length;
@@ -664,9 +629,9 @@
         if (state.filter === "blocked") return p.rag === "blocked";
         if (state.filter === "risk") return p.rag === "risk";
         if (state.filter === "qa") return p.step === "qa" || p.qaReqs.some((r) => !r.done);
+        if (state.filter === "overdue") return promisedOverdue(p) && p.rag !== "on_track";
         return p.step === "schedule" || p.step === "class" || p.step === "exam";
       }
-
       function reqTable(title, rows) {
         return (
           "<h3>" +
@@ -690,7 +655,13 @@
         );
       }
 
-      function render() {
+      function setTab(tab) {
+        state.tab = tab;
+        document.querySelectorAll(".tab").forEach((el) => el.classList.toggle("on", el.getAttribute("data-tab") === tab));
+        document.querySelectorAll(".panel").forEach((el) => el.classList.toggle("on", el.id === "panel-" + tab));
+      }
+
+      function renderApps() {
         const scoped = PEOPLE.filter((p) => state.client === "all" || p.client === state.client);
         const visible = scoped.filter(matches);
         const selected = PEOPLE.find((p) => p.id === state.selected) || visible[0] || PEOPLE[0];
@@ -711,10 +682,10 @@
           .filter((x) => x.step.id !== "done")
           .sort((a, b) => b.blockedHere - a.blockedHere || b.count - a.count)[0];
 
-        document.getElementById("stats").innerHTML = [
-          ["Certified in progress", counts.all, ""],
+        document.getElementById("app-stats").innerHTML = [
+          ["Applications in view", counts.all, ""],
           ["Blocked — escalate", counts.blocked, "danger"],
-          ["At risk of missing target", counts.risk, "warn"],
+          ["At risk / promise slipped", scoped.filter((p) => p.rag === "risk" || promisedOverdue(p)).length, "warn"],
           ["On plan", counts.on_track, "info"],
           ["Authorized", counts.done, "ok"],
         ]
@@ -735,7 +706,7 @@
         const clients = ["all", ...new Set(PEOPLE.map((p) => p.client))];
         const sel = document.getElementById("client");
         sel.innerHTML = clients
-          .map((c) => '<option value="' + c + '">' + (c === "all" ? "All clients" : c) + "</option>")
+          .map((c) => '<option value="' + c + '">' + (c === "all" ? "All client types" : c) + "</option>")
           .join("");
         sel.value = state.client;
 
@@ -760,18 +731,18 @@
           bottleneck.blockedHere +
           " blocked</p><p class=\"hint\" style=\"margin:8px 0 10px\">This step currently holds " +
           bottleneck.count +
-          (bottleneck.count === 1 ? " individual, of whom " : " individuals, of whom ") +
-          bottleneck.blockedHere +
-          " cannot proceed. The value of the dashboard is to surface this immediately.</p>" +
+          " individual(s). The value of the dashboard is to surface this immediately (P1).</p>" +
           stuck
             .map((p) => "<p><strong>" + p.name + "</strong><br><span class=\"hint\">" + p.blocker + "</span></p>")
             .join("");
 
         document.getElementById("board").innerHTML = visible
           .map((p) => {
+            const promiseCls = promisedOverdue(p) && p.rag !== "on_track" ? " overdue" : "";
             return (
               '<tr class="' +
               p.rag +
+              promiseCls +
               (p.id === selected.id ? " selected" : "") +
               '" data-id="' +
               p.id +
@@ -788,16 +759,15 @@
               "</span></td><td>" +
               p.target +
               "</td><td>" +
+              p.promised +
+              (promisedOverdue(p) ? '<br><span class="pill overdue">Chase / overdue</span>' : "") +
+              "</td><td>" +
               (p.estimateDays === 0 ? "—" : p.estimateDays + " days") +
               "</td><td>" +
               trainerLabel(p.trainerSource) +
               " · " +
               p.trainer +
               "</td><td>" +
-              p.slot +
-              " · " +
-              p.classHours +
-              "h</td><td>" +
               p.blocker +
               "</td></tr>"
             );
@@ -809,10 +779,10 @@
           selected.name +
           " · " +
           selected.client +
-          "</h2><p class=\"hint\">" +
-          selected.role +
-          " · Target " +
-          selected.target +
+          "</h2><p class=\"hint\">Last customer chase: " +
+          selected.lastChase +
+          " · Promised reply: " +
+          selected.promised +
           " · Next action: " +
           selected.nextAction +
           "</p><p style=\"margin:10px 0\"><span class=\"pill on_track\">" +
@@ -821,11 +791,9 @@
           selected.rag +
           '">' +
           ragLabel(selected.rag) +
-          "</span> <span class=\"pill on_track\">" +
-          trainerLabel(selected.trainerSource) +
           "</span></p>" +
-          reqTable("Client requirements · " + reqScore(selected.clientReqs), selected.clientReqs) +
-          reqTable("Internal QA · " + reqScore(selected.qaReqs), selected.qaReqs) +
+          reqTable("Client requirements · " + reqScore(selected.clientReqs) + " · P2", selected.clientReqs) +
+          reqTable("Internal QA · " + reqScore(selected.qaReqs) + " · P2", selected.qaReqs) +
           reqTable("Individual actions · " + reqScore(selected.personReqs), selected.personReqs);
 
         document.getElementById("slots").innerHTML = scoped
@@ -856,21 +824,121 @@
           .join("");
       }
 
+      function renderRoster() {
+        const counts = {
+          active: ROSTER.filter((r) => r.status === "active").length,
+          restricted: ROSTER.filter((r) => r.status === "restricted").length,
+          suspended: ROSTER.filter((r) => r.status === "suspended").length,
+          to_remove: ROSTER.filter((r) => r.status === "to_remove").length,
+        };
+        document.getElementById("roster-stats").innerHTML = [
+          ["Active", counts.active, "ok"],
+          ["Restricted + review date", counts.restricted, "danger"],
+          ["Suspended", counts.suspended, ""],
+          ["To be removed", counts.to_remove, "warn"],
+          ["On sample roster", ROSTER.length, "info"],
+        ]
+          .map(([label, n, cls]) => '<div class="stat ' + cls + '"><b>' + n + "</b><span>" + label + "</span></div>")
+          .join("");
+
+        document.getElementById("roster-body").innerHTML = ROSTER.map(
+          (r) =>
+            '<tr class="' +
+            r.status +
+            '"><td>' +
+            r.name +
+            "</td><td>" +
+            r.client +
+            '</td><td><span class="pill ' +
+            r.status +
+            '">' +
+            statusLabel(r.status) +
+            "</span></td><td>" +
+            r.review +
+            "</td><td>" +
+            r.typesHeld +
+            "</td><td>" +
+            r.mayRelease +
+            "</td><td>" +
+            r.lastUse +
+            "</td><td>" +
+            r.replacement +
+            "</td><td>" +
+            r.note +
+            "</td></tr>",
+        ).join("");
+      }
+
+      function renderCurrency() {
+        document.getElementById("currency-stats").innerHTML = [
+          ["Manuals outstanding", ACKS.length, "danger"],
+          ["Day before deadline", "19", "warn"],
+          ["Open findings", FINDINGS.length, "danger"],
+          ["Client types in view", "2", "info"],
+          ["Sample staff rows", ACKS.length, ""],
+        ]
+          .map(([label, n, cls]) => '<div class="stat ' + cls + '"><b>' + n + "</b><span>" + label + "</span></div>")
+          .join("");
+
+        document.getElementById("ack-body").innerHTML = ACKS.map(
+          (a) =>
+            '<tr class="overdue"><td>' +
+            a.name +
+            "</td><td>" +
+            a.client +
+            "</td><td>" +
+            a.document +
+            "</td><td>" +
+            a.due +
+            '</td><td><span class="pill overdue">Outstanding</span></td><td>' +
+            a.vsDue +
+            "</td></tr>",
+        ).join("");
+
+        document.getElementById("finding-body").innerHTML = FINDINGS.map(
+          (f) =>
+            "<tr class=\"blocked\"><td>" +
+            f.id +
+            "</td><td>" +
+            f.client +
+            "</td><td>" +
+            f.who +
+            "</td><td>" +
+            f.issue +
+            "</td><td>" +
+            f.control +
+            "</td><td>" +
+            f.status +
+            "</td></tr>",
+        ).join("");
+      }
+
+      function render() {
+        renderApps();
+        renderRoster();
+        renderCurrency();
+      }
+
+      document.getElementById("tabs").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-tab]");
+        if (!btn) return;
+        setTab(btn.getAttribute("data-tab"));
+      });
       document.getElementById("filters").addEventListener("click", (e) => {
         const btn = e.target.closest("[data-filter]");
         if (!btn) return;
         state.filter = btn.getAttribute("data-filter");
-        render();
+        renderApps();
       });
       document.getElementById("client").addEventListener("change", (e) => {
         state.client = e.target.value;
-        render();
+        renderApps();
       });
       document.getElementById("board").addEventListener("click", (e) => {
         const row = e.target.closest("tr[data-id]");
         if (!row) return;
         state.selected = row.getAttribute("data-id");
-        render();
+        renderApps();
       });
 
       render();
