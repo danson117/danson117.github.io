@@ -1,0 +1,8 @@
+---
+description: Todo page moved to main root
+alwaysApply: true
+---
+
+# 已搬去 main
+
+唔好再改呢條 branch 嘅清單。正本係 `main` 根目錄 `todo.html`。
