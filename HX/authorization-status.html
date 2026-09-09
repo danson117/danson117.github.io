@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Authorization 取證進度</title>
+    <title>Authorization Progress</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Outfit:wght@500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Outfit:wght@500;700&display=swap"
       rel="stylesheet"
     />
     <style>
@@ -38,7 +38,7 @@
         margin: 0;
         min-height: 100vh;
         color: var(--ink);
-        font-family: "Noto Sans TC", sans-serif;
+        font-family: "Source Sans 3", sans-serif;
         background: var(--bg);
       }
 
@@ -49,7 +49,7 @@
       }
 
       h1 {
-        font-family: Outfit, "Noto Sans TC", sans-serif;
+        font-family: Outfit, "Source Sans 3", sans-serif;
         font-size: clamp(1.6rem, 4vw, 2.1rem);
         margin: 0 0 6px;
       }
@@ -176,7 +176,7 @@
 
       .bar-row {
         display: grid;
-        grid-template-columns: 92px 1fr 28px;
+        grid-template-columns: 148px 1fr 28px;
         gap: 8px;
         align-items: center;
         font-size: 0.82rem;
@@ -296,7 +296,7 @@
         right: max(12px, env(safe-area-inset-right));
         bottom: max(12px, env(safe-area-inset-bottom));
         z-index: 20;
-        font-family: Outfit, "Noto Sans TC", sans-serif;
+        font-family: Outfit, "Source Sans 3", sans-serif;
         font-size: 0.72rem;
         font-weight: 700;
         letter-spacing: 0.04em;
@@ -321,12 +321,14 @@
   </head>
   <body>
     <div class="wrap">
-      <h1>Authorization 取證進度</h1>
+      <h1>Authorization Progress</h1>
       <p class="lead">
-        一次過睇晒每位 certified 去到邊一步、卡在邊、客戶要求同內部 QA 差邊項、trainer 檔期同預計完成日。
+        A single view of each certified individual’s current step, blockers, outstanding client and internal QA
+        requirements, trainer availability, and estimated completion.
       </p>
       <div class="banner">
-        示範看板 · 8 位人員、3 個客戶係樣本，唔係正式名單。欄位齊咗之後，同一套版面可以直接換真實數據。
+        Sample dashboard. The eight individuals and three clients below are illustrative and do not constitute a live
+        roster. Once the required fields are complete, this layout may be populated with operational data.
       </div>
 
       <div class="stats" id="stats"></div>
@@ -337,28 +339,31 @@
 
       <div class="grid2">
         <div class="card">
-          <h2>而家人聚在邊一步</h2>
-          <p class="hint">人數按目前步驟 · 示範數據 · 截至 2026-09-09</p>
+          <h2>Current distribution by step</h2>
+          <p class="hint">Headcount by current step · Sample data · As at 9 September 2026</p>
           <div class="bars" id="bars" style="margin-top: 12px"></div>
         </div>
         <div class="card" id="bottleneck"></div>
       </div>
 
-      <h2>全員 status</h2>
-      <p class="hint">撳名睇該人嘅客戶要求、內部 QA、個人檔期。紅=卡住，黃=趕唔切，綠=完成。</p>
+      <h2>Team status</h2>
+      <p class="hint">
+        Select a name to review client requirements, internal QA items, and personal availability. Red = blocked; amber =
+        at risk; green = complete.
+      </p>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Certified</th>
-              <th>客戶</th>
-              <th>而家去到</th>
-              <th>健康</th>
+              <th>Client</th>
+              <th>Current step</th>
+              <th>Status</th>
               <th>Target</th>
-              <th>預估剩餘</th>
+              <th>Days remaining</th>
               <th>Trainer</th>
-              <th>堂期 / 時數</th>
-              <th>卡住原因</th>
+              <th>Session / hours</th>
+              <th>Blocker</th>
             </tr>
           </thead>
           <tbody id="board"></tbody>
@@ -370,65 +375,73 @@
           <div id="detail"></div>
         </div>
         <div>
-          <h2>本週 Trainer / 堂期</h2>
-          <p class="hint">只顯示未完成、已有或待確認嘅堂 · 示範排期</p>
+          <h2>Trainer schedule this week</h2>
+          <p class="hint">Open items only, including confirmed and pending sessions · Sample schedule</p>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>人</th>
-                  <th>來源</th>
+                  <th>Individual</th>
+                  <th>Source</th>
                   <th>Trainer</th>
-                  <th>時數</th>
-                  <th>檔期</th>
-                  <th>排唔排到</th>
+                  <th>Hours</th>
+                  <th>Slot</th>
+                  <th>Booking status</th>
                 </tr>
               </thead>
               <tbody id="slots"></tbody>
             </table>
           </div>
           <div class="card">
-            <h3>做呢個 dashboard 最少要齊嘅欄</h3>
+            <h3>Minimum fields required for this dashboard</h3>
             <p class="lead">
-              每人一列：而家步驟、卡住原因、客戶要求、內部 QA 要求、target 日、預估剩餘日數、trainer 來源、堂幾耐、最早檔期、下一步誰做。
+              Each row must record: current step, blocker, client requirements, internal QA requirements, target date,
+              estimated days remaining, trainer source, session duration, earliest available slot, and the owner of the
+              next action.
             </p>
             <p class="hint" style="margin-top: 8px">
-              未齊呢幾欄，版面只會變成名單；齊咗先可以一次過判斷邊個要升級、邊個可以排堂。
+              Without these fields, the view is merely a name list. With them, it is possible to identify who requires
+              escalation and who may be scheduled.
             </p>
           </div>
         </div>
       </div>
 
       <details class="howto" open>
-        <summary><strong>成件事點理順、點做到</strong></summary>
+        <summary><strong>How this process should be run</strong></summary>
         <p class="lead" style="margin-top: 10px">
-          要解決嘅唔係再多幾個 Excel，而係一張全員進度表：邊個去到邊步、卡在邊、客戶同內部 QA 各欠咩、trainer 排唔排到。
+          The requirement is not additional spreadsheets. It is one team progress register: current step, point of
+          delay, outstanding client versus internal QA items, and trainer availability.
         </p>
         <p class="lead" style="margin-top: 8px">
-          流程定死七步：1 收集要求 → 2 Client-side → 3 內部 QA → 4 排 Trainer／堂 → 5 上課 → 6 考核取牌 → 7 完成歸檔。客戶要求同內部 QA 一定分兩欄。
+          The process is fixed at seven steps: 1 Requirements collection; 2 Client-side; 3 Internal QA; 4 Trainer and
+          session scheduling; 5 Delivery; 6 Examination and authorization; 7 Completion and filing. Client requirements
+          and internal QA must be maintained as separate columns.
         </p>
         <p class="lead" style="margin-top: 8px">
-          第一週定規則同欄位；第二週逢週一更新步驟、卡住原因、下一步誰做；第三週把真實名單餵入呢個看板。先統一步驟，再收齊欄位，最後先自動化。
+          Week 1: agree the process and fields. Week 2: update step, blocker, and next-action owner each Monday. Week 3:
+          load the live roster into this dashboard. Standardize the process first, complete the fields second, and
+          automate last.
         </p>
       </details>
     </div>
-    <div class="page-version" data-version="1.0" aria-label="頁面版本 1.0">v1.0</div>
+    <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
 
     <script>
       const STEPS = [
-        { id: "collect", label: "1. 收集要求", short: "收集要求" },
+        { id: "collect", label: "1. Requirements collection", short: "Requirements" },
         { id: "client", label: "2. Client-side", short: "Client-side" },
-        { id: "qa", label: "3. 內部 QA", short: "內部 QA" },
-        { id: "schedule", label: "4. 排 Trainer / 堂", short: "排堂" },
-        { id: "class", label: "5. 上課", short: "上課" },
-        { id: "exam", label: "6. 考核取牌", short: "考核" },
-        { id: "done", label: "7. 完成", short: "完成" },
+        { id: "qa", label: "3. Internal QA", short: "Internal QA" },
+        { id: "schedule", label: "4. Trainer / session", short: "Scheduling" },
+        { id: "class", label: "5. Delivery", short: "Delivery" },
+        { id: "exam", label: "6. Examination", short: "Examination" },
+        { id: "done", label: "7. Completion", short: "Complete" },
       ];
 
       const PEOPLE = [
         {
           id: "p1",
-          name: "陳美玲",
+          name: "Chen Mei-ling",
           role: "Certified",
           client: "Apex Bank",
           step: "qa",
@@ -437,28 +450,28 @@
           estimateDays: 18,
           classHours: 16,
           trainerSource: "internal",
-          trainer: "周啟明（內部）",
-          slot: "等 QA 過先排",
-          blocker: "內部 QA 等客戶證據包，未交齊就不能排堂",
-          nextAction: "跟客戶 PM 追 evidence pack，目標本週五",
+          trainer: "Chow Kai-ming (internal)",
+          slot: "Pending QA clearance",
+          blocker: "Internal QA is awaiting the client evidence pack; training cannot be scheduled until it is complete.",
+          nextAction: "Follow up with the client project manager on the evidence pack; target this Friday.",
           clientReqs: [
-            { item: "客戶指定模組清單", owner: "客戶 PM", done: true },
-            { item: "過往授權證明掃描", owner: "客戶 PM", done: false },
-            { item: "場地 / 遠端上課確認", owner: "客戶 PM", done: true },
+            { item: "Client-specified module list", owner: "Client PM", done: true },
+            { item: "Scanned copies of prior authorizations", owner: "Client PM", done: false },
+            { item: "Confirmation of venue or remote delivery", owner: "Client PM", done: true },
           ],
           qaReqs: [
-            { item: "提交前測成績", owner: "內部 QA", done: true },
-            { item: "證據包抽查", owner: "內部 QA", done: false },
-            { item: "模擬考核通過", owner: "內部 QA", done: false },
+            { item: "Pre-assessment results submitted", owner: "Internal QA", done: true },
+            { item: "Evidence-pack sampling", owner: "Internal QA", done: false },
+            { item: "Mock assessment passed", owner: "Internal QA", done: false },
           ],
           personReqs: [
-            { item: "確認可上課時段", owner: "陳美玲", done: true },
-            { item: "補齊個人檔案", owner: "陳美玲", done: true },
+            { item: "Available training windows confirmed", owner: "Chen Mei-ling", done: true },
+            { item: "Personal file completed", owner: "Chen Mei-ling", done: true },
           ],
         },
         {
           id: "p2",
-          name: "王大文",
+          name: "Wong Tai-man",
           role: "Certified",
           client: "Apex Bank",
           step: "class",
@@ -467,23 +480,23 @@
           estimateDays: 8,
           classHours: 16,
           trainerSource: "client",
-          trainer: "客戶指定 trainer",
-          slot: "9/16–9/17 · 兩日",
+          trainer: "Client-appointed trainer",
+          slot: "16–17 September · two days",
           blocker: "—",
-          nextAction: "上課後交出席紀錄給 QA",
+          nextAction: "Submit attendance records to QA after delivery.",
           clientReqs: [
-            { item: "客戶 trainer 已確認", owner: "客戶", done: true },
-            { item: "堂期已 Lock", owner: "客戶", done: true },
+            { item: "Client trainer confirmed", owner: "Client", done: true },
+            { item: "Session dates locked", owner: "Client", done: true },
           ],
           qaReqs: [
-            { item: "課前 checklist 已簽", owner: "內部 QA", done: true },
-            { item: "課後出席紀錄", owner: "內部 QA", done: false },
+            { item: "Pre-course checklist signed", owner: "Internal QA", done: true },
+            { item: "Post-course attendance record", owner: "Internal QA", done: false },
           ],
-          personReqs: [{ item: "請假 / 檔期已批", owner: "王大文", done: true }],
+          personReqs: [{ item: "Leave / availability approved", owner: "Wong Tai-man", done: true }],
         },
         {
           id: "p3",
-          name: "林嘉欣",
+          name: "Lam Ka-yan",
           role: "Certified",
           client: "Northline",
           step: "schedule",
@@ -492,26 +505,26 @@
           estimateDays: 21,
           classHours: 24,
           trainerSource: "internal",
-          trainer: "何志強（內部）",
-          slot: "最早 10/06–10/08",
-          blocker: "內部 trainer 九月已滿，堂又要 24 小時，檔期撞車",
-          nextAction: "問客戶可否改用客方 trainer，或拆成兩個週末",
+          trainer: "Ho Chi-keung (internal)",
+          slot: "Earliest 6–8 October",
+          blocker: "The internal trainer is fully booked in September, and the 24-hour requirement creates a scheduling conflict.",
+          nextAction: "Ask whether the client can appoint its own trainer, or whether the session may be split across two weekends.",
           clientReqs: [
-            { item: "接受內部 trainer", owner: "客戶", done: true },
-            { item: "24 小時必修課", owner: "客戶", done: true },
+            { item: "Acceptance of an internal trainer", owner: "Client", done: true },
+            { item: "24-hour mandatory delivery", owner: "Client", done: true },
           ],
           qaReqs: [
-            { item: "課綱對齊內部標準", owner: "內部 QA", done: true },
-            { item: "堂後抽問題庫", owner: "內部 QA", done: false },
+            { item: "Syllabus aligned to internal standard", owner: "Internal QA", done: true },
+            { item: "Post-session question bank sampling", owner: "Internal QA", done: false },
           ],
           personReqs: [
-            { item: "週末可上課", owner: "林嘉欣", done: true },
-            { item: "平日只能半天", owner: "林嘉欣", done: true },
+            { item: "Available at weekends", owner: "Lam Ka-yan", done: true },
+            { item: "Weekdays limited to half-day", owner: "Lam Ka-yan", done: true },
           ],
         },
         {
           id: "p4",
-          name: "張少基",
+          name: "Cheung Siu-kei",
           role: "Senior Certified",
           client: "Northline",
           step: "client",
@@ -520,21 +533,21 @@
           estimateDays: 25,
           classHours: 16,
           trainerSource: "undecided",
-          trainer: "未定",
-          slot: "未排",
-          blocker: "客戶側授權申請表未簽，缺 company sponsor",
-          nextAction: "升級到客戶 sponsor，抄送雙方 PM",
+          trainer: "To be confirmed",
+          slot: "Not scheduled",
+          blocker: "The client authorization application remains unsigned; a company sponsor has not been appointed.",
+          nextAction: "Escalate to the client sponsor and copy both project managers.",
           clientReqs: [
-            { item: "Company sponsor 簽名", owner: "客戶", done: false },
-            { item: "授權申請表", owner: "客戶", done: false },
-            { item: "背景調查授權", owner: "客戶", done: true },
+            { item: "Company sponsor signature", owner: "Client", done: false },
+            { item: "Authorization application form", owner: "Client", done: false },
+            { item: "Background-check consent", owner: "Client", done: true },
           ],
-          qaReqs: [{ item: "等 client pack 齊先開 QA", owner: "內部 QA", done: false }],
-          personReqs: [{ item: "個人資料已交", owner: "張少基", done: true }],
+          qaReqs: [{ item: "QA to open only when the client pack is complete", owner: "Internal QA", done: false }],
+          personReqs: [{ item: "Personal particulars submitted", owner: "Cheung Siu-kei", done: true }],
         },
         {
           id: "p5",
-          name: "何詠芝",
+          name: "Ho Wing-chi",
           role: "Certified",
           client: "Apex Bank",
           step: "class",
@@ -543,20 +556,20 @@
           estimateDays: 5,
           classHours: 8,
           trainerSource: "internal",
-          trainer: "周啟明（內部）",
-          slot: "9/11 一日堂",
+          trainer: "Chow Kai-ming (internal)",
+          slot: "11 September · one-day session",
           blocker: "—",
-          nextAction: "9/11 上課，9/12 交 QA 課後表",
-          clientReqs: [{ item: "接受 8 小時精簡課", owner: "客戶", done: true }],
+          nextAction: "Attend on 11 September; submit the QA post-session form on 12 September.",
+          clientReqs: [{ item: "Acceptance of the eight-hour condensed session", owner: "Client", done: true }],
           qaReqs: [
-            { item: "課前 QA 已過", owner: "內部 QA", done: true },
-            { item: "課後表", owner: "內部 QA", done: false },
+            { item: "Pre-course QA cleared", owner: "Internal QA", done: true },
+            { item: "Post-session form", owner: "Internal QA", done: false },
           ],
-          personReqs: [{ item: "當日全程出席", owner: "何詠芝", done: false }],
+          personReqs: [{ item: "Full-day attendance", owner: "Ho Wing-chi", done: false }],
         },
         {
           id: "p6",
-          name: "吳志偉",
+          name: "Ng Chi-wai",
           role: "Certified",
           client: "HarborPay",
           step: "collect",
@@ -565,24 +578,24 @@
           estimateDays: 30,
           classHours: 16,
           trainerSource: "client",
-          trainer: "客方會派人，日期未定",
-          slot: "客戶口頭說十月第一週",
-          blocker: "客戶加多一個必修模組；內部 QA 同時要求加 mock test",
-          nextAction: "本週對齊：客戶加碼課 vs QA mock test 邊項先做",
+          trainer: "Client will appoint; date to be confirmed",
+          slot: "Client indicated the first week of October",
+          blocker: "The client has added a mandatory module; internal QA has concurrently required a mock assessment.",
+          nextAction: "Align this week on sequencing: the additional client module versus the QA mock assessment.",
           clientReqs: [
-            { item: "原標準模組", owner: "客戶", done: true },
-            { item: "新增進階模組", owner: "客戶", done: false },
-            { item: "Trainer 正式檔期", owner: "客戶", done: false },
+            { item: "Standard modules", owner: "Client", done: true },
+            { item: "Additional advanced module", owner: "Client", done: false },
+            { item: "Confirmed trainer slot", owner: "Client", done: false },
           ],
           qaReqs: [
-            { item: "標準前測", owner: "內部 QA", done: false },
-            { item: "加 mock test", owner: "內部 QA", done: false },
+            { item: "Standard pre-assessment", owner: "Internal QA", done: false },
+            { item: "Mock assessment added", owner: "Internal QA", done: false },
           ],
-          personReqs: [{ item: "回覆可上課週", owner: "吳志偉", done: false }],
+          personReqs: [{ item: "Confirm available training weeks", owner: "Ng Chi-wai", done: false }],
         },
         {
           id: "p7",
-          name: "鄧宇軒",
+          name: "Tang Yu-hin",
           role: "Certified",
           client: "HarborPay",
           step: "done",
@@ -591,17 +604,17 @@
           estimateDays: 0,
           classHours: 16,
           trainerSource: "internal",
-          trainer: "何志強（內部）",
-          slot: "已完成 8/28–8/29",
+          trainer: "Ho Chi-keung (internal)",
+          slot: "Completed 28–29 August",
           blocker: "—",
-          nextAction: "歸檔證書，無需跟進",
-          clientReqs: [{ item: "客戶確認授權生效", owner: "客戶", done: true }],
-          qaReqs: [{ item: "QA 結案紀錄", owner: "內部 QA", done: true }],
-          personReqs: [{ item: "證書已上傳", owner: "鄧宇軒", done: true }],
+          nextAction: "File the certificate; no further follow-up required.",
+          clientReqs: [{ item: "Client confirmation that authorization is in force", owner: "Client", done: true }],
+          qaReqs: [{ item: "QA closure record", owner: "Internal QA", done: true }],
+          personReqs: [{ item: "Certificate uploaded", owner: "Tang Yu-hin", done: true }],
         },
         {
           id: "p8",
-          name: "歐家輝",
+          name: "Au Ka-fai",
           role: "Certified",
           client: "Northline",
           step: "exam",
@@ -610,25 +623,25 @@
           estimateDays: 12,
           classHours: 16,
           trainerSource: "internal",
-          trainer: "周啟明（內部）",
-          slot: "堂已上完",
-          blocker: "考核位只餘 9/22，遲過 target 4 日",
-          nextAction: "問考核機構有無 9/17 後備位；同步預告客戶 target 可能滑",
-          clientReqs: [{ item: "接受內部考核紀錄", owner: "客戶", done: true }],
+          trainer: "Chow Kai-ming (internal)",
+          slot: "Delivery completed",
+          blocker: "The only remaining examination slot is 22 September, four days after the target.",
+          nextAction: "Request a reserve slot on 17 September from the examining body and advise the client that the target may slip.",
+          clientReqs: [{ item: "Acceptance of internal examination records", owner: "Client", done: true }],
           qaReqs: [
-            { item: "課後 QA 已過", owner: "內部 QA", done: true },
-            { item: "考核場地核實", owner: "內部 QA", done: false },
+            { item: "Post-course QA cleared", owner: "Internal QA", done: true },
+            { item: "Examination venue verified", owner: "Internal QA", done: false },
           ],
-          personReqs: [{ item: "溫習清單", owner: "歐家輝", done: false }],
+          personReqs: [{ item: "Revision checklist", owner: "Au Ka-fai", done: false }],
         },
       ];
 
       const FILTERS = [
-        ["all", "全部"],
-        ["blocked", "卡住"],
-        ["risk", "有風險"],
-        ["qa", "QA 相關"],
-        ["training", "Trainer / 上課"],
+        ["all", "All"],
+        ["blocked", "Blocked"],
+        ["risk", "At risk"],
+        ["qa", "QA related"],
+        ["training", "Trainer / delivery"],
       ];
 
       const state = { filter: "all", client: "all", selected: "p1" };
@@ -637,10 +650,10 @@
         return STEPS.find((s) => s.id === id)?.label || id;
       }
       function ragLabel(rag) {
-        return { blocked: "卡住", risk: "有風險", on_track: "按計劃", done: "完成" }[rag];
+        return { blocked: "Blocked", risk: "At risk", on_track: "On plan", done: "Complete" }[rag];
       }
       function trainerLabel(source) {
-        return { client: "客方安排", internal: "己方提供", undecided: "未定" }[source];
+        return { client: "Client-arranged", internal: "Internally provided", undecided: "To be confirmed" }[source];
       }
       function reqScore(reqs) {
         return reqs.filter((r) => r.done).length + "/" + reqs.length;
@@ -658,7 +671,7 @@
         return (
           "<h3>" +
           title +
-          "</h3><div class=\"table-wrap\"><table><thead><tr><th>項目</th><th>負責人</th><th>狀態</th></tr></thead><tbody>" +
+          "</h3><div class=\"table-wrap\"><table><thead><tr><th>Item</th><th>Owner</th><th>Status</th></tr></thead><tbody>" +
           rows
             .map(
               (r) =>
@@ -669,7 +682,7 @@
                 "</td><td class=\"req " +
                 (r.done ? "done" : "open") +
                 "\">" +
-                (r.done ? "已完成" : "未完成") +
+                (r.done ? "Complete" : "Outstanding") +
                 "</td></tr>",
             )
             .join("") +
@@ -699,11 +712,11 @@
           .sort((a, b) => b.blockedHere - a.blockedHere || b.count - a.count)[0];
 
         document.getElementById("stats").innerHTML = [
-          ["跟進中 certified", counts.all, ""],
-          ["卡住，要升級", counts.blocked, "danger"],
-          ["有機會趕唔切", counts.risk, "warn"],
-          ["按計劃", counts.on_track, "info"],
-          ["已取牌", counts.done, "ok"],
+          ["Certified in progress", counts.all, ""],
+          ["Blocked — escalate", counts.blocked, "danger"],
+          ["At risk of missing target", counts.risk, "warn"],
+          ["On plan", counts.on_track, "info"],
+          ["Authorized", counts.done, "ok"],
         ]
           .map(([label, n, cls]) => '<div class="stat ' + cls + '"><b>' + n + "</b><span>" + label + "</span></div>")
           .join("");
@@ -722,7 +735,7 @@
         const clients = ["all", ...new Set(PEOPLE.map((p) => p.client))];
         const sel = document.getElementById("client");
         sel.innerHTML = clients
-          .map((c) => '<option value="' + c + '">' + (c === "all" ? "全部客戶" : c) + "</option>")
+          .map((c) => '<option value="' + c + '">' + (c === "all" ? "All clients" : c) + "</option>")
           .join("");
         sel.value = state.client;
 
@@ -741,15 +754,15 @@
 
         const stuck = scoped.filter((p) => p.step === bottleneck.step.id && p.rag === "blocked");
         document.getElementById("bottleneck").innerHTML =
-          "<h2>最需要拆嘅樽頸</h2><p><strong>" +
+          "<h2>Principal bottleneck</h2><p><strong>" +
           bottleneck.step.label +
           "</strong> · " +
           bottleneck.blockedHere +
-          " 人卡住</p><p class=\"hint\" style=\"margin:8px 0 10px\">呢一步而家有 " +
+          " blocked</p><p class=\"hint\" style=\"margin:8px 0 10px\">This step currently holds " +
           bottleneck.count +
-          " 人，其中 " +
+          (bottleneck.count === 1 ? " individual, of whom " : " individuals, of whom ") +
           bottleneck.blockedHere +
-          " 人完全郁唔到。Dashboard 嘅價值就係第一眼見到呢度。</p>" +
+          " cannot proceed. The value of the dashboard is to surface this immediately.</p>" +
           stuck
             .map((p) => "<p><strong>" + p.name + "</strong><br><span class=\"hint\">" + p.blocker + "</span></p>")
             .join("");
@@ -775,7 +788,7 @@
               "</span></td><td>" +
               p.target +
               "</td><td>" +
-              (p.estimateDays === 0 ? "—" : p.estimateDays + " 日") +
+              (p.estimateDays === 0 ? "—" : p.estimateDays + " days") +
               "</td><td>" +
               trainerLabel(p.trainerSource) +
               " · " +
@@ -800,7 +813,7 @@
           selected.role +
           " · Target " +
           selected.target +
-          " · 下一步：" +
+          " · Next action: " +
           selected.nextAction +
           "</p><p style=\"margin:10px 0\"><span class=\"pill on_track\">" +
           stepLabel(selected.step) +
@@ -811,19 +824,19 @@
           "</span> <span class=\"pill on_track\">" +
           trainerLabel(selected.trainerSource) +
           "</span></p>" +
-          reqTable("客戶要求 · " + reqScore(selected.clientReqs), selected.clientReqs) +
-          reqTable("內部 QA · " + reqScore(selected.qaReqs), selected.qaReqs) +
-          reqTable("本人要配合 · " + reqScore(selected.personReqs), selected.personReqs);
+          reqTable("Client requirements · " + reqScore(selected.clientReqs), selected.clientReqs) +
+          reqTable("Internal QA · " + reqScore(selected.qaReqs), selected.qaReqs) +
+          reqTable("Individual actions · " + reqScore(selected.personReqs), selected.personReqs);
 
         document.getElementById("slots").innerHTML = scoped
           .filter((p) => p.rag !== "done")
           .map((p) => {
             const lock =
               p.step === "schedule" || p.trainerSource === "undecided"
-                ? "未 lock"
+                ? "Unconfirmed"
                 : p.step === "class"
-                  ? "進行中"
-                  : "已有安排";
+                  ? "In progress"
+                  : "Scheduled";
             return (
               "<tr><td>" +
               p.name +
