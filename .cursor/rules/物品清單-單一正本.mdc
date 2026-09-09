@@ -1,13 +1,8 @@
 ---
-description: 物品清單.html is the only inventory source on this branch
+description: Inventory page moved to main root
 alwaysApply: true
 ---
 
-# 物品清單：單一正本
+# 已搬去 main
 
-只改本 branch（`cursor/item-inventory-380e`）根目錄嘅 `物品清單.html`。
-
-- 改完要 commit + push 返呢條 branch
-- 呢條 branch 只留呢頁同 `.cursor/rules`，唔好加返 `main` 嘅 Learn Hub 檔
-- 唔好喺其他 folder／`main` 再開副本
-- 預覽：https://raw.githack.com/danson117/danson117.github.io/cursor/item-inventory-380e/物品清單.html
+唔好再改呢條 branch 嘅清單。正本係 `main` 根目錄 `物品清單.html`。
