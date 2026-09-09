@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>KE HKG A350 / A321 C/S 攞牌流程</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Outfit:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --ink: #1c2430;
+        --muted: #5b6775;
+        --card: #fff;
+        --line: #d7dee6;
+        --accent: #0f4c5c;
+        --danger: #b42318;
+        --danger-soft: #fdecea;
+        --ok: #0f766e;
+        --ok-soft: #d7f0ec;
+        --info: #175cd3;
+        --info-soft: #e0eaff;
+        --warn: #b45309;
+        --warn-soft: #fef3c7;
+        --shadow: 0 8px 24px rgba(28, 36, 48, 0.06);
+        --radius: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family: "Source Sans 3", "Microsoft JhengHei", sans-serif;
+        background: var(--bg);
+      }
+
+      .wrap {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 24px 16px 88px;
+      }
+
+      h1 {
+        font-family: Outfit, "Source Sans 3", sans-serif;
+        font-size: clamp(1.45rem, 3.6vw, 2rem);
+        margin: 0 0 6px;
+      }
+
+      h2 {
+        font-size: 1.08rem;
+        margin: 28px 0 10px;
+      }
+
+      h3 {
+        font-size: 0.95rem;
+        margin: 0 0 8px;
+      }
+
+      .lead,
+      .hint {
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.55;
+        margin: 0;
+      }
+
+      .nav {
+        margin-bottom: 10px;
+        font-size: 0.85rem;
+      }
+
+      .nav a {
+        color: var(--accent);
+      }
+
+      .banner {
+        margin: 14px 0 18px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: var(--info-soft);
+        color: #1849a9;
+        font-size: 0.88rem;
+        line-height: 1.5;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 14px 0 8px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .card p,
+      .card li {
+        font-size: 0.9rem;
+        line-height: 1.55;
+        margin: 0 0 8px;
+      }
+
+      .card ul {
+        margin: 0;
+        padding-left: 1.15rem;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin: 12px 0 8px;
+      }
+
+      .flow-step {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px;
+        text-align: center;
+      }
+
+      .flow-step b {
+        display: block;
+        font-size: 0.78rem;
+        letter-spacing: 0.03em;
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+
+      .flow-step span {
+        display: block;
+        font-size: 0.82rem;
+        line-height: 1.35;
+      }
+
+      .who {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin: 8px 0 6px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.84rem;
+      }
+
+      th,
+      td {
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f7f9fb;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .num {
+        width: 2.2rem;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .status {
+        display: inline-block;
+        min-width: 3.2rem;
+        text-align: center;
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .ok {
+        background: var(--ok-soft);
+        color: var(--ok);
+      }
+
+      .no {
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+
+      tr.row-ok {
+        background: #f3fbf9;
+      }
+
+      tr.row-no {
+        background: #fff7f6;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        font-size: 0.85rem;
+        margin: 8px 0 0;
+        color: var(--muted);
+      }
+
+      .term {
+        font-weight: 700;
+        color: var(--accent);
+      }
+
+      .page-version {
+        position: fixed;
+        right: max(12px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        z-index: 20;
+        font-family: Outfit, "Source Sans 3", sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 10px;
+        pointer-events: none;
+      }
+
+      @media (max-width: 900px) {
+        .cards,
+        .who,
+        .flow {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <p class="nav"><a href="authorization-status.html">Authorization Progress</a></p>
+      <h1>Korean Air / HAECO HKG — A350 C/S 攞牌同 Notification 流程</h1>
+      <p class="lead">
+        根據 2026 年 8 月 11–27 日三組郵件整理。狀態以郵件寫到嘅為準（截到 8 月 27 日）；之後有無交件／上堂，郵件未確認就當未做。
+      </p>
+      <div class="banner">
+        次序唔係 Training 先。KE 自己寫嘅加 C/S 程序係：<strong>先交文件俾 KE QA</strong> → QA 確認資格（A350 仲要完成 KE
+        audit）→ <strong>先至輪到 KE Training</strong> 出 syllabus + CAR → 上堂／Read&amp;Sign → 交 CAR 俾 Training
+        確認 → <strong>最後再由 KE QA 出修訂 CS Roster（Notification）</strong>。之後先入 HAECO 公司授權申請。
+      </div>
+
+      <h2>1. 郵件有冇講 DST、Full-tech syllabus、CAR、MOLIT、兩個 Kim？</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>DST 係咩？郵件有冇定義？</h3>
+          <p>
+            郵件<strong>冇寫 DST 全寫</strong>。按 KE／航線維修慣用語，DST =
+            <strong>Designated Station Trainer（指定航站訓練員）</strong>：航站入面負責帶程序訓練、Read&amp;Sign、確認同事跟 KE
+            手冊做嘢嘅指定人。
+          </p>
+          <ul>
+            <li>이성운（8/12）：HAECO <strong>而家冇 A350 DST</strong>；要「DST 指定」同「加 C/S 인가」。</li>
+            <li>
+              同一人（8/13）：「<strong>無論 DST 有冇 A350 qualification，都可以照常加 C/S</strong>。」即係 DST
+              缺口唔擋住交文件／加名冊；但 DST 指定本身仍未見完成。
+            </li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>「Full-Text Handling Syllabus」其實係咩？</h3>
+          <p>
+            原文唔係 Full-<em>Text</em>，而係
+            <strong>「KE full <em>tech</em> handling training」syllabus</strong>。<em>Tech</em> = technical，即
+            <strong>全權技術處理訓練大綱</strong>。
+          </p>
+          <p>
+            Full technical handling（郵件亦寫 full-handling）= HAECO 以地勤身份做齊航線維修同放行（transit、缺陷、CRS），對比起
+            2026 年 3–5 月 A350 靠 <strong>riding engineer（隨機工程師）</strong> 跟機。
+          </p>
+          <p>
+            呢份 syllabus <strong>唔係一開頭就有</strong>：要等 KE QA 確認申請人資格之後，先由
+            <strong>Jintae Kim（KE Training）</strong> 連 CAR 一齊發俾你。
+          </p>
+        </div>
+        <div class="card">
+          <h3>CAR 係咩？</h3>
+          <p>
+            <strong>CAR = Class Attendance Record（課堂出席紀錄）</strong>。KE Training 連 syllabus 一齊發。上完堂／做完
+            Read&amp;Sign 就要填呢張表，交返
+            <code>jintaekim@koreanair.com</code> 或 <code>SELITP@koreanair.com</code>，等 Training
+            <strong>確認</strong>先算訓練完成。
+          </p>
+          <p>A350 嘅 MOD 2（TR &amp; PRPO，2 小時）可以用 <strong>Read&amp;Sign 自學</strong>，仍然要有 CAR 紀錄。</p>
+        </div>
+        <div class="card">
+          <h3>MOLIT 係咩？有冇批 A350 full-handling？</h3>
+          <p>
+            <strong>MOLIT = Ministry of Land, Infrastructure and Transport</strong>（韓國國土交通部），即韓國民航當局（角色類似
+            HKCAD）。佢發 <strong>AMO 證書</strong> 同 <strong>Opspec</strong>（作業規範）。
+          </p>
+          <p>
+            <strong>D107</strong> 係 Opspec 入面嘅「航線維修授權」條文：邊個航司、邊個機場、邊個機型可以做 line
+            maintenance。
+          </p>
+          <ul>
+            <li>
+              김재혁（8/13）：HAECO 持有嘅 <strong>MOLIT AMO + Opspec D107 已授權 HKG 做 A350-900</strong>。
+            </li>
+            <li>
+              이성운（8/13）仍叫 Irene／Henry：<strong>請確認 A350 full-handling 加項有冇 MOLIT 批</strong>。
+            </li>
+          </ul>
+          <p>
+            即係：<strong>機型已上 HKG Opspec（KE QA 已講）</strong>；<strong>full-handling 呢句，HAECO
+            未喺郵件回覆確認</strong>。另外 KE 仍要做 <strong>A350-900 加項 audit</strong>，審核完先批 C/S。
+          </p>
+        </div>
+      </div>
+
+      <h2>2. 兩個 Kim 點參與、幾時介入？</h2>
+      <div class="who">
+        <div class="card">
+          <h3>Jaehyeok Kim 김재혁 — KE QA（品質）</h3>
+          <p>郵箱 <code>kimjaehyeok@koreanair.com</code>／<code>SELQAP@koreanair.com</code></p>
+          <ul>
+            <li>
+              <strong>第一次介入（加 C/S 第 1 步，QA 閘）</strong>：收 CS 申請包、審核資格。A350 仲話要完成 KE
+              audit 先批 C/S。
+            </li>
+            <li>
+              <strong>第二次介入（加 C/S 第 4 步，收尾）</strong>：Training 確認 CAR 之後，<strong>用 email 出修訂 CS
+              Roster（Notification）</strong>。
+            </li>
+            <li>名冊／Roster 問題永遠搵佢。8/13 已列所需文件；8/25 Geonhyung 代 QA 催交件。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Jintae Kim 김진태 — KE Training（訓練）</h3>
+          <p>郵箱 <code>jintaekim@koreanair.com</code>／<code>SELITP@koreanair.com</code></p>
+          <ul>
+            <li>
+              <strong>8/13 已介入一次（講程序，唔係開班）</strong>：發出加 C/S 四步、MOD 2 可用 Read&amp;Sign、附
+              MOD 1／MOD 2／CAR 連結。
+            </li>
+            <li>
+              <strong>正式訓練介入要等 QA 過關之後</strong>：先出「KE full tech handling」syllabus + CAR。
+            </li>
+            <li>收 CAR、確認訓練完成。訓練問題搵佢。QA 未批之前，唔應該當已經可以上 KE 正式班。</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>3. 攞牌／Notification 次序（邊個先介入）</h2>
+      <div class="flow">
+        <div class="flow-step">
+          <b>0 前置</b>
+          <span>LMS Job Profile、內部名單、確認 MOLIT／Opspec</span>
+        </div>
+        <div class="flow-step">
+          <b>1 QA 先</b>
+          <span>交 5 種文件 → Jaehyeok 審核；A350 另加 KE audit</span>
+        </div>
+        <div class="flow-step">
+          <b>2 先至 Training</b>
+          <span>Jintae 出 syllabus + CAR → 上堂／Read&amp;Sign</span>
+        </div>
+        <div class="flow-step">
+          <b>3 Training 確認</b>
+          <span>交 CAR 俾 Jintae／SELITP</span>
+        </div>
+        <div class="flow-step">
+          <b>4 QA 再出 Notification</b>
+          <span>Jaehyeok 發電郵修訂 CS Roster → 再交 HAECO 公司授權</span>
+        </div>
+      </div>
+      <p class="hint">
+        要交咩：QA 閘交<strong>文件包</strong>（唔使先上 KE 堂）。Training 閘先至<strong>上堂／自學 + 交 CAR</strong>。Roster
+        係 QA 發嘅 <strong>Notification</strong>，唔係 Training 發。
+      </p>
+
+      <h2>4. 成個 Process（做咗＝綠，未做／未確認＝紅）</h2>
+      <p class="lead">
+        PIC = 呢一步嘅把關／對外窗口。負責人 = 實際要做嘢嘅人。A321 同 A350 行同一套 KE 加 C/S
+        程序，但進度唔同。
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>步驟（跟 KE／HAECO 內容，唔單止時間序）</th>
+              <th>介入方</th>
+              <th>要交／要做咩</th>
+              <th>PIC</th>
+              <th>負責人</th>
+              <th>A350</th>
+              <th>A321</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row-ok">
+              <td class="num">0a</td>
+              <td>KE 冬航要 A350 全權處理；Commercial 問訓練要求</td>
+              <td>HAECO Commercial → KE</td>
+              <td>問要求（未交申請包）</td>
+              <td>Irene Siu</td>
+              <td>Irene；cc FS Wong、Christine、SH Cheung、Jacky</td>
+              <td><span class="status ok">做咗</span><br />8/11 已問</td>
+              <td><span class="status ok">不適用</span></td>
+            </tr>
+            <tr class="row-ok">
+              <td class="num">0b</td>
+              <td>KE Training 公布加 C/S／擴大授權四步 + MOD 1／2 + CAR</td>
+              <td>KE Training</td>
+              <td>只係發程序同連結，未開班</td>
+              <td>Jintae Kim</td>
+              <td>KE Training Center</td>
+              <td><span class="status ok">做咗</span><br />8/13</td>
+              <td><span class="status ok">做咗</span></td>
+            </tr>
+            <tr class="row-ok">
+              <td class="num">0c</td>
+              <td>KE QA 列所需文件；說明 Opspec 已有 A350-900，但要 KE audit</td>
+              <td>KE QA</td>
+              <td>列文件清單（未收齊申請包）</td>
+              <td>Jaehyeok Kim</td>
+              <td>KE QA</td>
+              <td><span class="status ok">做咗</span><br />8/13</td>
+              <td><span class="status ok">做咗</span></td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">0d</td>
+              <td>確認 MOLIT 已批 A350 <em>full-handling</em> 加項</td>
+              <td>HAECO 查／回 KE</td>
+              <td>核對 AMO 證書 + Opspec D107；書面確認</td>
+              <td>Irene Siu／Henry（SH Cheung）</td>
+              <td>HAECO QA（Josephine）提供證書解讀；Commercial 回 KE</td>
+              <td>
+                <span class="status no">未做</span><br />QA 話機型已授權；full-handling 一句未見回覆
+              </td>
+              <td><span class="status ok">已有運作</span></td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">0e</td>
+              <td>指定 A350 DST</td>
+              <td>KE HKG + HAECO LM</td>
+              <td>指定航站訓練員（可以同加 C/S 並行）</td>
+              <td>Sung-woon Lee（提出）</td>
+              <td>HAECO LM／OCG 提名；KE 確認</td>
+              <td><span class="status no">未做</span><br />郵件：而家冇 A350 DST</td>
+              <td><span class="status ok">不適用／已有</span></td>
+            </tr>
+            <tr class="row-ok">
+              <td class="num">0f</td>
+              <td>HAECO LMS Job Profile 備好（可交公司授權申請）</td>
+              <td>HAECO QA</td>
+              <td>
+                開好 profile：A359 TXWB B1／B2STAR_KE；A321 V2500 B1／B2STAR_KE；A21N LEAP1A
+                B1／B2STAR_KE
+              </td>
+              <td>Josephine Pang</td>
+              <td>QA LS</td>
+              <td><span class="status ok">做咗</span><br />2026-03 已備</td>
+              <td><span class="status ok">做咗</span></td>
+            </tr>
+            <tr class="row-ok">
+              <td class="num">0g</td>
+              <td>LM 內部 KE 授權／A350 機型名單（Rev.0→Rev.2）</td>
+              <td>HAECO LM</td>
+              <td>交名單俾 SH；Rev.2 加 CHU TAT FU 嘅 KE no.</td>
+              <td>TW Fung</td>
+              <td>TW Fung；cc Billy Chan；收件 SH Cheung</td>
+              <td><span class="status ok">做咗</span><br />8/26–27 Rev.2</td>
+              <td><span class="status ok">做咗</span></td>
+            </tr>
+            <tr class="row-ok">
+              <td class="num">1</td>
+              <td>KE 催交 QA review 文件</td>
+              <td>KE MO／QA</td>
+              <td>要求 Irene／Lily 提供 required documents</td>
+              <td>Geonhyung Lee</td>
+              <td>KE；收件 Irene、SH、Lily</td>
+              <td><span class="status ok">做咗</span><br />8/25 已催</td>
+              <td><span class="status ok">已過呢關</span></td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">2</td>
+              <td>
+                <strong>KE 加 C/S 第 1 步：整齊同提交申請包</strong>
+              </td>
+              <td>HAECO → KE QA（QA 第一次把關）</td>
+              <td>
+                交：① CS Application Form ② 本地維修牌照副本 ③ Type Rating 證書或公司系統訓練紀錄 ④
+                公司授權文件 ⑤ 新 C/S 維修經驗（超過 3 年，近 2 年有 6 個月）
+              </td>
+              <td>Irene Siu／Lily Lin（KE 點名交件）</td>
+              <td>LM／OCG 收集；申請人提供正本；HAECO QA 核文件</td>
+              <td>
+                <span class="status no">未做</span><br />Josephine：pending LM 同 KE 確認資格
+              </td>
+              <td><span class="status ok">做咗</span><br />否則唔會有 8/26 roster</td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">3</td>
+              <td>KE QA 確認申請人資格</td>
+              <td>KE QA</td>
+              <td>審文件；合格先通知 Training。呢步<strong>唔使上堂</strong></td>
+              <td>Jaehyeok Kim</td>
+              <td>KE QA</td>
+              <td><span class="status no">未做</span></td>
+              <td><span class="status ok">做咗</span></td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">4</td>
+              <td>KE 對 HKG 加 A350-900 做 audit</td>
+              <td>KE QA</td>
+              <td>接受審核（現場／文件）。QA 話<strong>audit 完先批 C/S</strong></td>
+              <td>Jaehyeok Kim</td>
+              <td>KE QA 主導；HAECO QA + LM 接待／補件</td>
+              <td><span class="status no">未做</span></td>
+              <td><span class="status ok">不適用</span></td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">5</td>
+              <td>
+                <strong>KE 加 C/S 第 2 步：Training 出 syllabus + CAR</strong>
+              </td>
+              <td>KE Training（QA 過關之後先介入開班）</td>
+              <td>收「KE full tech handling training」大綱 + CAR 表格。未到呢步就未有正式班</td>
+              <td>Jintae Kim</td>
+              <td>KE Training 發；LM 收同安排人</td>
+              <td><span class="status no">未做</span></td>
+              <td><span class="status ok">做咗</span></td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">6</td>
+              <td>完成 KE 程序／機型訓練</td>
+              <td>申請人 + LM 安排</td>
+              <td>
+                <strong>上堂或 Read&amp;Sign</strong>：MOD 1 Procedure（LMM、EDTO、RVSM &amp; CAT）；MOD 2
+                A350 TR &amp; PRPO（2 小時，可自學）；plus full tech handling 大綱要求嘅內容。填 CAR
+              </td>
+              <td>LM 安排（SH Cheung／TW Fung／LMOCG）</td>
+              <td>申請人完成；有 DST 就由 DST 帶 Read&amp;Sign</td>
+              <td><span class="status no">未做</span></td>
+              <td><span class="status ok">做咗</span></td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">7</td>
+              <td>
+                <strong>KE 加 C/S 第 3 步：交 CAR，等 Training 確認</strong>
+              </td>
+              <td>KE Training</td>
+              <td>電郵交 CAR；等 Jintae／SELITP 確認。呢步係交表，唔係再審牌照</td>
+              <td>Jintae Kim</td>
+              <td>LM 匯總交；申請人簽 CAR</td>
+              <td><span class="status no">未做</span></td>
+              <td><span class="status ok">做咗</span></td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">8</td>
+              <td>
+                <strong>KE 加 C/S 第 4 步：QA 出修訂 CS Roster Notification</strong>
+              </td>
+              <td>KE QA（第二次把關）</td>
+              <td>QA 發電郵發佈修訂名冊。入到 roster 先算 KE 認你做 C/S</td>
+              <td>Jaehyeok Kim</td>
+              <td>KE QA 發；HAECO QA／LM 核對名單</td>
+              <td><span class="status no">未做</span></td>
+              <td>
+                <span class="status ok">做咗</span><br />HKG-HA-2026-02<br />加 A321 LEAP-1A／V2500
+              </td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">9</td>
+              <td>HAECO 跟 KE roster 交公司授權申請</td>
+              <td>HAECO QA + LM</td>
+              <td>用已備 Job Profile 交 HAECO authorisation；Ruby 核對修訂名單</td>
+              <td>Josephine Pang</td>
+              <td>Ruby Hung 跟申請；Stephanie 知會；LM 配合</td>
+              <td>
+                <span class="status no">未做</span><br />等 KE 收 CS 資格 + 程序訓練 + 入 roster
+              </td>
+              <td>
+                <span class="status no">未做</span><br />8/26 已叫 Ruby follow up，未見回報完成
+              </td>
+            </tr>
+            <tr class="row-no">
+              <td class="num">10</td>
+              <td>Commercial 同 QA 對齊冬航 A350 安排</td>
+              <td>HAECO Commercial ↔ QA</td>
+              <td>內部溝通（Irene 話 shortly discuss）</td>
+              <td>Irene Siu</td>
+              <td>Irene、Josephine、LM</td>
+              <td><span class="status no">未確認</span><br />8/27 話會傾，未見結論</td>
+              <td><span class="status ok">不適用</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="legend">
+        <span class="status ok">做咗</span> 郵件已證實完成
+        <span class="status no">未做／未確認</span> 未做，或只講咗但未見回覆
+        PIC = Person in charge（呢一步對外／把關）
+      </p>
+
+      <h2>5. 專業名詞</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>名詞</th>
+              <th>意思</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="term">C/S、CS、Certifying Staff</span></td>
+              <td>放行人員。簽 CRS、對該航司該機型負責放行。入 KE CS Roster 先算 KE 認。</td>
+            </tr>
+            <tr>
+              <td><span class="term">CRS</span></td>
+              <td>Certificate of Release to Service，放行證明。C/S 先有權簽。</td>
+            </tr>
+            <tr>
+              <td><span class="term">DST</span></td>
+              <td>
+                Designated Station Trainer，指定航站訓練員。郵件無寫全寫。而家 HAECO 冇 A350
+                DST；但 KE 話唔阻擋按正常程序加 C/S。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">Full technical handling／full-handling</span></td>
+              <td>
+                全權技術處理：地勤 MRO 獨立做齊航線維修同放行。對立面係 riding engineer
+                跟機。郵件「full tech handling training」即教你點樣按 KE 要求做呢種操作。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">Riding engineer</span></td>
+              <td>隨機工程師。3–5 月 A350 嚟 HKG 用呢種支援，地勤未獨立做 A350 C/S。</td>
+            </tr>
+            <tr>
+              <td><span class="term">Syllabus</span></td>
+              <td>訓練大綱（教咩、幾長、點考／點簽）。KE 嘅 full tech handling syllabus 由 Training 喺 QA 過關後先發。</td>
+            </tr>
+            <tr>
+              <td><span class="term">CAR</span></td>
+              <td>Class Attendance Record，課堂出席／完成紀錄。交俾 KE Training 確認。</td>
+            </tr>
+            <tr>
+              <td><span class="term">Read&amp;Sign（Selfstudy）</span></td>
+              <td>自學閱讀指定教材後簽署確認，唔一定實體課堂。MOD 2 A350 可以用呢種。</td>
+            </tr>
+            <tr>
+              <td><span class="term">MOD 1／MOD 2</span></td>
+              <td>
+                KE 訓練模組。MOD 1 Procedure = LMM、EDTO、RVSM、CAT。MOD 2 = A350 TR &amp;
+                PRPO（2 小時）。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">LMM</span></td>
+              <td>Line Maintenance Manual，航線維修手冊（KE 點做 transit／航線工序）。</td>
+            </tr>
+            <tr>
+              <td><span class="term">EDTO</span></td>
+              <td>
+                Extended Diversion Time Operations（前稱 ETOPS）：雙發機遠離備降場嘅延伸航程要求，航線放行要識相關限制。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">RVSM</span></td>
+              <td>Reduced Vertical Separation Minima，縮減垂直間隔（高空 1000 ft）。維修後要確保高度系統符合。</td>
+            </tr>
+            <tr>
+              <td><span class="term">CAT</span></td>
+              <td>
+                呢度同 LMM／EDTO／RVSM 並列，通常指低能見度進場類別（CAT I／II／III）相關程序，唔係「貓」。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">TR</span></td>
+              <td>Type Rating，機型訓練／機型資格。</td>
+            </tr>
+            <tr>
+              <td><span class="term">PRPO</span></td>
+              <td>
+                郵件只寫「A350 TR &amp; PRPO」，無拆全寫。按上下文係同 TR 綁埋嘅 2
+                小時程序／實務模組，可用 Read&amp;Sign。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">MOLIT</span></td>
+              <td>韓國國土交通部，發 AMO 證書同 Opspec 嘅當局。</td>
+            </tr>
+            <tr>
+              <td><span class="term">AMO</span></td>
+              <td>Approved Maintenance Organisation，認可維修機構。HAECO 為 KE 做韓籍機，要有 MOLIT AMO。</td>
+            </tr>
+            <tr>
+              <td><span class="term">Opspec、D107</span></td>
+              <td>
+                Operations Specification = 證書附件，寫明可做範圍。D107 = 航線維修授權：邊個航司、機場、機型。KE QA
+                話 HKG 已有 A350-900。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">Audit</span></td>
+              <td>KE 對加 A350-900 嘅品質審核。Opspec 有機型都仍要 audit，完咗先批 C/S。</td>
+            </tr>
+            <tr>
+              <td><span class="term">CS Roster／Notification</span></td>
+              <td>
+                KE QA 用電郵發佈嘅放行人員名冊。例：<strong>HKG-HA-2026-02</strong> = 加 A321 LEAP-1A／V2500。入冊
+                = KE 通知你已經係該範圍 C/S。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">LMS Job Profile</span></td>
+              <td>
+                HAECO 內部授權系統入面嘅職位檔，用來交<strong>公司授權</strong>。3
+                月已備好；KE roster 未收你之前，A350 申請仍然 pending。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">Company authorisation</span></td>
+              <td>
+                HAECO 自己批俾工程師嘅公司授權（有牌＋有訓練都要公司印先可簽）。KE roster 同 HAECO
+                授權係兩張「牌」：一邊航司認，一邊公司認。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">B1／B2STAR</span></td>
+              <td>
+                牌照／授權類別。B1 = 機體／動力裝置；B2 = 航空電子。B2STAR 係 HAECO job profile
+                名稱，指 B2 連 star 級公司授權範圍。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">A359_TXWB、A321_V2500、A21N_LEAP1A</span></td>
+              <td>
+                機型＋發動機。A350-900 + Rolls-Royce Trent XWB；A321ceo + IAE V2500；A321neo（A21N）+ CFM
+                LEAP-1A。後綴 <code>_KE</code> = 專為 Korean Air 嘅授權檔。
+              </td>
+            </tr>
+            <tr>
+              <td><span class="term">AML</span></td>
+              <td>Aircraft Maintenance Licence，本地當局維修牌照副本（HKAR-66／CAD）。</td>
+            </tr>
+            <tr>
+              <td><span class="term">經驗要求（新 C/S）</span></td>
+              <td>超過 3 年航機維修經驗，兼近 2 年內有 6 個月。KE QA 要書面證明。</td>
+            </tr>
+            <tr>
+              <td><span class="term">LM／LMOCG／OCG</span></td>
+              <td>Line Maintenance；Overseas Customer Group。負責同 KE 收名單、收集文件、安排訓練。</td>
+            </tr>
+            <tr>
+              <td><span class="term">PIC</span></td>
+              <td>Person in charge。呢頁指該步把關或對外窗口，唔等於一個人做晒。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="hint" style="margin-top: 16px">
+        公開頁：呢份只供內部跟進。來源係 Josephine／Irene／TW Fung 轉發嘅 KE 郵件，唔好外傳。
+      </p>
+    </div>
+    <div class="page-version" data-version="1.0" aria-label="頁面版本 1.0">v1.0</div>
+  </body>
+</html>
