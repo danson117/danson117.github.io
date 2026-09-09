@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>待辦清單</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-1: #e8f1f4;
+      --bg-2: #f7f3ea;
+      --ink: #1c2a32;
+      --muted: #5a6b75;
+      --card: rgba(255, 255, 255, 0.88);
+      --line: #d5e0e6;
+      --accent: #0f766e;
+      --accent-soft: #d7f0ec;
+      --warn: #b45309;
+      --warn-soft: #fef3c7;
+      --danger: #b42318;
+      --danger-soft: #fdecea;
+      --done: #2a9d8f;
+      --shadow: 0 10px 30px rgba(28, 42, 50, 0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Noto Sans TC", sans-serif;
+      background:
+        radial-gradient(circle at 12% 10%, #cfe8ef 0%, transparent 42%),
+        radial-gradient(circle at 88% 0%, #f3e7c8 0%, transparent 38%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2));
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px 88px;
+    }
+
+    header { margin-bottom: 18px; }
+
+    .brand {
+      font-family: Outfit, "Noto Sans TC", sans-serif;
+      font-size: clamp(1.8rem, 5vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin: 0;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 8px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .stat b {
+      display: block;
+      font-family: Outfit, sans-serif;
+      font-size: 1.25rem;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .chip {
+      font: inherit;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 7px 12px;
+      cursor: pointer;
+    }
+
+    .chip.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      gap: 10px;
+      align-items: start;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .item.done {
+      background: #f3faf8;
+      border-color: #c7e7e1;
+    }
+
+    .item.overdue:not(.done) {
+      border-color: #f3c4bf;
+      background: #fff8f7;
+    }
+
+    .item.tomorrow:not(.done) {
+      border-color: #f5d38a;
+    }
+
+    .check {
+      width: 28px;
+      height: 28px;
+      margin: 2px 0 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .num {
+      font-family: Outfit, sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 8px;
+      padding: 4px 8px;
+      margin-top: 1px;
+      min-width: 42px;
+      text-align: center;
+    }
+
+    .item.done .title { color: var(--muted); text-decoration: line-through; }
+
+    .title {
+      margin: 0;
+      font-weight: 700;
+      font-size: 1.02rem;
+      line-height: 1.4;
+    }
+
+    .note {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
+    .due {
+      font-size: 0.78rem;
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #eef3f6;
+      color: var(--muted);
+    }
+
+    .due.warn { background: var(--warn-soft); color: var(--warn); }
+    .due.late { background: var(--danger-soft); color: var(--danger); }
+    .due.ok { background: var(--accent-soft); color: var(--accent); }
+
+    .ghost {
+      font: inherit;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+
+    .ghost:hover { background: #eef3f6; color: var(--ink); }
+    .ghost.danger:hover { background: var(--danger-soft); color: var(--danger); }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 36px 12px;
+      background: var(--card);
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+    }
+
+    .composer {
+      margin-top: 18px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .composer h2 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .composer input,
+    .composer textarea {
+      width: 100%;
+      font: inherit;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+
+    .composer textarea { min-height: 68px; resize: vertical; }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .row label {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    button.add {
+      font: inherit;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 16px;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      margin-left: auto;
+    }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .page-version {
+      position: fixed;
+      right: max(12px, env(safe-area-inset-right));
+      bottom: max(12px, env(safe-area-inset-bottom));
+      z-index: 20;
+      font-family: Outfit, "Noto Sans TC", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 10px;
+      box-shadow: var(--shadow);
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 class="brand">待辦清單</h1>
+      <p class="subtitle">Item number 一經編出就唔會改、亦唔會重用。冇講時間就預設聽日跟進。你可以喺呢度剔，或者喺對話直接同我講。</p>
+    </header>
+
+    <div class="stats" id="stats"></div>
+    <div class="filters" id="filters"></div>
+    <div class="list" id="list"></div>
+
+    <form class="composer" id="addForm">
+      <h2>加一項</h2>
+      <input id="title" name="title" required maxlength="160" placeholder="要做咩？" autocomplete="off" />
+      <textarea id="note" name="note" maxlength="400" placeholder="備註（可留空）"></textarea>
+      <div class="row">
+        <label for="due">跟進日期</label>
+        <input id="due" name="due" type="date" />
+        <button class="add" type="submit">加入</button>
+      </div>
+      <p class="hint">唔填日期就自動放聽日。編號會用下一個未用過嘅數字，永遠唔會改。</p>
+    </form>
+  </div>
+  <div class="page-version" data-version="1.1" aria-label="頁面版本 1.1">v1.1</div>
+
+  <script>
+    const STORAGE_KEY = "alpha-todo-v1";
+    const HK = "Asia/Hong_Kong";
+
+    // 對話入面加嘅正項。n 永遠唔改、唔重用。
+    const SEED = [
+      {
+        n: 1,
+        title: "Notebook 唔見咗",
+        note: "跟進，要 update 返 Cafe",
+        due: "2026-09-09",
+        created: "2026-09-08",
+        done: false
+      }
+    ];
+
+    const FILTERS = [
+      ["open", "未做"],
+      ["all", "全部"],
+      ["today", "今日"],
+      ["tomorrow", "聽日"],
+      ["overdue", "過期"],
+      ["done", "已做"]
+    ];
+
+    let filter = "open";
+
+    function hkDate(offsetDays = 0) {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: HK,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(new Date());
+      const get = (type) => Number(parts.find((p) => p.type === type).value);
+      const utc = Date.UTC(get("year"), get("month") - 1, get("day") + offsetDays);
+      const d = new Date(utc);
+      const y = d.getUTCFullYear();
+      const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(d.getUTCDate()).padStart(2, "0");
+      return y + "-" + m + "-" + day;
+    }
+
+    function today() { return hkDate(0); }
+    function tomorrow() { return hkDate(1); }
+
+    function formatDue(iso) {
+      if (!iso) return "";
+      const [y, m, d] = iso.split("-");
+      return Number(m) + "月" + Number(d) + "日";
+    }
+
+    function dueKind(iso, done) {
+      if (done || !iso) return "plain";
+      if (iso < today()) return "late";
+      if (iso === today()) return "warn";
+      if (iso === tomorrow()) return "warn";
+      return "ok";
+    }
+
+    function dueLabel(iso, done) {
+      if (!iso) return "未定";
+      if (done) return "跟進 " + formatDue(iso);
+      if (iso < today()) return "已過期 · " + formatDue(iso);
+      if (iso === today()) return "今日跟進";
+      if (iso === tomorrow()) return "聽日跟進 · " + formatDue(iso);
+      return "跟進 " + formatDue(iso);
+    }
+
+    function blankStore() {
+      return { done: {}, extras: [], archived: [], edits: {}, nextNumber: 2 };
+    }
+
+    function loadStore() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? { ...blankStore(), ...JSON.parse(raw) } : blankStore();
+      } catch (e) {
+        return blankStore();
+      }
+    }
+
+    function saveStore(store) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    }
+
+    function usedNumbers(store) {
+      return [
+        ...SEED.map((s) => s.n),
+        ...store.extras.map((s) => s.n),
+        ...store.archived
+      ];
+    }
+
+    function nextItemNumber(store) {
+      const used = usedNumbers(store);
+      return Math.max(0, ...used, store.nextNumber - 1) + 1;
+    }
+
+    function allItems(store) {
+      const archived = new Set(store.archived);
+      const fromSeed = SEED.filter((s) => !archived.has(s.n)).map((s) => {
+        const edit = store.edits[s.n] || {};
+        return {
+          ...s,
+          ...edit,
+          n: s.n,
+          done: Object.prototype.hasOwnProperty.call(store.done, s.n) ? !!store.done[s.n] : !!s.done
+        };
+      });
+      const extras = store.extras.filter((s) => !archived.has(s.n)).map((s) => ({
+        ...s,
+        done: Object.prototype.hasOwnProperty.call(store.done, s.n) ? !!store.done[s.n] : !!s.done
+      }));
+      return [...fromSeed, ...extras].sort((a, b) => {
+        if (a.done !== b.done) return a.done ? 1 : -1;
+        const ad = a.due || "9999-99-99";
+        const bd = b.due || "9999-99-99";
+        if (ad !== bd) return ad.localeCompare(bd);
+        return a.n - b.n;
+      });
+    }
+
+    function matches(item) {
+      if (filter === "all") return true;
+      if (filter === "open") return !item.done;
+      if (filter === "done") return item.done;
+      if (filter === "today") return !item.done && item.due === today();
+      if (filter === "tomorrow") return !item.done && item.due === tomorrow();
+      if (filter === "overdue") return !item.done && item.due && item.due < today();
+      return true;
+    }
+
+    function render() {
+      const store = loadStore();
+      const items = allItems(store);
+      const open = items.filter((i) => !i.done);
+      const done = items.filter((i) => i.done);
+      const overdue = open.filter((i) => i.due && i.due < today());
+      const tomorrowItems = open.filter((i) => i.due === tomorrow());
+
+      document.getElementById("stats").innerHTML = [
+        ["未做", open.length],
+        ["聽日", tomorrowItems.length],
+        ["過期", overdue.length],
+        ["已做", done.length]
+      ].map(([label, n]) => '<div class="stat"><b>' + n + "</b><span>" + label + "</span></div>").join("");
+
+      document.getElementById("filters").innerHTML = FILTERS.map(([id, label]) =>
+        '<button type="button" class="chip' + (filter === id ? " on" : "") + '" data-filter="' + id + '">' + label + "</button>"
+      ).join("");
+
+      const shown = items.filter(matches);
+      const list = document.getElementById("list");
+      if (!shown.length) {
+        list.innerHTML = '<div class="empty">呢個分類暫時冇項目。</div>';
+      } else {
+        list.innerHTML = shown.map((item) => {
+          const kind = dueKind(item.due, item.done);
+          const cls = [
+            "item",
+            item.done ? "done" : "",
+            !item.done && item.due && item.due < today() ? "overdue" : "",
+            !item.done && item.due === tomorrow() ? "tomorrow" : ""
+          ].filter(Boolean).join(" ");
+          return (
+            '<article class="' + cls + '" data-n="' + item.n + '">' +
+              '<input class="check" type="checkbox" ' + (item.done ? "checked" : "") + ' aria-label="完成 #' + item.n + '" />' +
+              '<span class="num">#' + item.n + "</span>" +
+              "<div>" +
+                '<p class="title"></p>' +
+                (item.note ? '<p class="note"></p>' : "") +
+                '<div class="meta">' +
+                  '<span class="due ' + kind + '">' + dueLabel(item.due, item.done) + "</span>" +
+                  '<button type="button" class="ghost danger" data-archive="' + item.n + '">封存</button>' +
+                "</div>" +
+              "</div>" +
+            "</article>"
+          );
+        }).join("");
+
+        shown.forEach((item, idx) => {
+          const card = list.children[idx];
+          card.querySelector(".title").textContent = item.title;
+          const noteEl = card.querySelector(".note");
+          if (noteEl) noteEl.textContent = item.note;
+        });
+      }
+
+      document.getElementById("due").value = tomorrow();
+    }
+
+    document.getElementById("filters").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-filter]");
+      if (!btn) return;
+      filter = btn.getAttribute("data-filter");
+      render();
+    });
+
+    document.getElementById("list").addEventListener("change", (e) => {
+      if (!e.target.classList.contains("check")) return;
+      const n = Number(e.target.closest("[data-n]").getAttribute("data-n"));
+      const store = loadStore();
+      store.done[n] = e.target.checked;
+      saveStore(store);
+      render();
+    });
+
+    document.getElementById("list").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-archive]");
+      if (!btn) return;
+      const n = Number(btn.getAttribute("data-archive"));
+      if (!confirm("封存 #" + n + "？編號會留低，以後唔會再用。")) return;
+      const store = loadStore();
+      if (!store.archived.includes(n)) store.archived.push(n);
+      saveStore(store);
+      render();
+    });
+
+    document.getElementById("addForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const title = document.getElementById("title").value.trim();
+      if (!title) return;
+      const store = loadStore();
+      const n = nextItemNumber(store);
+      store.extras.push({
+        n,
+        title,
+        note: document.getElementById("note").value.trim(),
+        due: document.getElementById("due").value || tomorrow(),
+        created: today(),
+        done: false
+      });
+      store.nextNumber = n + 1;
+      saveStore(store);
+      document.getElementById("addForm").reset();
+      filter = "open";
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

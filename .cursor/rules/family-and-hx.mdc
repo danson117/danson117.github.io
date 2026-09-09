@@ -1,0 +1,15 @@
+---
+description: main root is family pages; work files go in HX/
+alwaysApply: true
+---
+
+# Family on main root, work in HX
+
+`main` 根目錄 = **家庭**。`HX/` = **工作**。
+
+- 家庭頁：根目錄 `物品清單.html`、`todo.html`
+- 工作檔：只放入 `HX/`
+- 唔好再開 `家庭/` folder
+- 唔好把呢兩頁再複製去其他 branch
+- 改完 commit + push `main`
+- HTML 右下角 version：細改 +0.1，大改 +1.0
