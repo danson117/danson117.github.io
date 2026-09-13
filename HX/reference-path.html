@@ -42,7 +42,7 @@
       .wrap {
         max-width: 960px;
         margin: 0 auto;
-        padding: 20px 16px 64px;
+        padding: 20px 16px 88px;
       }
 
       header {
@@ -275,10 +275,10 @@
         background: var(--accent-soft);
       }
 
-      .act[aria-disabled="true"] {
-        color: #9aa8b0;
-        cursor: default;
-        pointer-events: none;
+      .act.is-done {
+        border-color: transparent;
+        background: var(--accent-soft);
+        color: var(--accent);
       }
 
       .page-version {
@@ -301,16 +301,47 @@
       }
 
       @media (max-width: 640px) {
-        td.name {
-          width: 34%;
+        thead {
+          display: none;
         }
+
+        table,
+        tbody,
+        tr,
+        td {
+          display: block;
+          width: 100%;
+        }
+
+        tr {
+          padding: 12px 12px 14px;
+          border-bottom: 1px solid var(--line);
+        }
+
+        tr:last-child {
+          border-bottom: none;
+        }
+
         th,
         td {
-          padding: 10px 10px;
+          padding: 0;
+          border-bottom: none;
           font-size: 0.9rem;
         }
+
+        td.num {
+          display: none;
+        }
+
         td.place-cell {
           white-space: normal;
+          margin-bottom: 6px;
+        }
+
+        td.name {
+          width: auto;
+          font-size: 1.02rem;
+          margin-bottom: 6px;
         }
       }
     </style>
@@ -339,7 +370,7 @@
       <p class="stats" id="stats"></p>
       <div id="board"></div>
     </div>
-    <div class="page-version" data-version="1.0" aria-label="頁面版本 1.0">v1.0</div>
+    <div class="page-version" data-version="1.1" aria-label="頁面版本 1.1">v1.1</div>
 
     <script>
       const ITEMS = [
@@ -501,6 +532,25 @@
         return item.url || item.path || item.name;
       }
 
+      function writeClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(text);
+        }
+        return new Promise((resolve, reject) => {
+          const area = document.createElement("textarea");
+          area.value = text;
+          area.setAttribute("readonly", "");
+          area.style.position = "fixed";
+          area.style.left = "-9999px";
+          document.body.appendChild(area);
+          area.select();
+          const ok = document.execCommand("copy");
+          area.remove();
+          if (ok) resolve();
+          else reject(new Error("copy failed"));
+        });
+      }
+
       function uniquePlaces() {
         const preferred = [
           "Unily",
@@ -654,16 +704,18 @@
           const item = ITEMS.find((row) => row.no === no);
           if (!item) return;
           try {
-            await navigator.clipboard.writeText(copyText(item));
+            await writeClipboard(copyText(item));
             copyBtn.textContent = "已複製";
+            copyBtn.classList.add("is-done");
             setTimeout(() => {
               copyBtn.textContent = "複製";
-            }, 1200);
+              copyBtn.classList.remove("is-done");
+            }, 1600);
           } catch {
             copyBtn.textContent = "複製失敗";
             setTimeout(() => {
               copyBtn.textContent = "複製";
-            }, 1200);
+            }, 1600);
           }
           return;
         }
