@@ -1,5 +1,5 @@
 ---
-description: This GitHub Pages repo only — pull latest before edits, then commit and push
+description: This GitHub Pages repo only — pull latest before edits, then 自動 push
 alwaysApply: true
 ---
 
@@ -14,12 +14,15 @@ alwaysApply: true
 
 Tracked 網站檔（HTML / HX / README / 規則）動手之前：喺 `main` 先 `git pull`（呢個倉若已用 rebase 就 `git pull --rebase`）。由最新開始改。
 
-## 改完（user-visible：HTML / HX / README）
+## 改完（user-visible：HTML / HX / README）— **自動 push**
+
+改完即刻做晒，**一定要自動 push**（唔係 maybe、唔係等用戶再講 push）：
 
 1. Stage 相關檔（唔好連 leftover junk）
 2. Short commit message
-3. `git push origin HEAD`（或 `main`）
-4. **唔使等用戶再講 push**
+3. **自動** `git push origin HEAD`（或 `main`）
+
+「自動咁 PUSH」（STT 有時變「唔知咁 push」）= 呢個倉改完一定 push。
 
 ## 禁止
 
