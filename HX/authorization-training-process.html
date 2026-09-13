@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HAECO Authorization Training Management Process</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #2a3340;
+    --paper: #f6f4ee;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+    --navy-soft: #e8eef5;
+    --teal: #1d4a46;
+    --teal-soft: #e6f0ee;
+    --olive: #5a4a1c;
+    --olive-soft: #f3efe0;
+    --ops: #2f4a2f;
+    --ops-soft: #e8f0e6;
+    --ta: #3a3f6b;
+    --ta-soft: #eceef6;
+    --qa: #6b2e24;
+    --qa-soft: #f6eae7;
+    --alert: #7a1f1f;
+    --alert-soft: #f8e8e6;
+    --future: #4a5564;
+    --future-soft: #eef0f2;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.45;
+    font-size: 13.5px;
+  }
+
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 28px 48px;
+  }
+
+  h1 {
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    margin: 0 0 6px;
+    color: var(--navy);
+    font-weight: 700;
+  }
+  .subtitle {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .why {
+    border: 1px solid var(--line);
+    background: var(--card);
+    padding: 12px 14px;
+    margin: 0 0 22px;
+  }
+  .why p { margin: 0 0 8px; }
+  .why p:last-child { margin: 0; }
+
+  h2 {
+    font-size: 15px;
+    margin: 26px 0 10px;
+    padding: 6px 10px;
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  h2.alert { background: var(--alert); }
+  h2.future { background: var(--future); }
+
+  h3 {
+    font-size: 13px;
+    margin: 0 0 8px;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  p, li { color: var(--ink); }
+  .note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+
+  .scope {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .box {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 12px 14px;
+  }
+  .box.in { border-left: 6px solid var(--navy); }
+  .box.out { border-left: 6px solid var(--muted); }
+  .box ul { margin: 6px 0 0; padding-left: 18px; }
+  .box li { margin: 2px 0; }
+
+  .cols3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  .lane {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 12px;
+    min-height: 100%;
+  }
+  .lane.home { border-top: 6px solid var(--teal); }
+  .lane.ops { border-top: 6px solid var(--ops); }
+  .lane.ua { border-top: 6px solid var(--olive); }
+  .tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    margin-bottom: 8px;
+    border: 1px solid currentColor;
+  }
+  .home .tag { color: var(--teal); background: var(--teal-soft); }
+  .ops .tag { color: var(--ops); background: var(--ops-soft); }
+  .ua .tag { color: var(--olive); background: var(--olive-soft); }
+  .codes { font-weight: 700; margin: 6px 0 8px; }
+  .lane ul { margin: 6px 0 0; padding-left: 16px; }
+  .lane li { margin: 3px 0; }
+
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 8px 0 12px;
+    flex-wrap: nowrap;
+  }
+  .step {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 10px 8px;
+    text-align: left;
+    min-width: 0;
+  }
+  .step .who {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .step h3 { font-size: 12px; margin: 0 0 6px; }
+  .step ul { margin: 0; padding-left: 14px; font-size: 12px; }
+  .step.ops-c { border-top: 5px solid var(--ops); }
+  .step.ops-c .who { color: var(--ops); }
+  .step.tot-c { border-top: 5px solid var(--navy); }
+  .step.tot-c .who { color: var(--navy); }
+  .step.ta-c { border-top: 5px solid var(--ta); }
+  .step.ta-c .who { color: var(--ta); }
+  .step.qa-c { border-top: 5px solid var(--qa); }
+  .step.qa-c .who { color: var(--qa); }
+  .arrow {
+    width: 18px;
+    flex: 0 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  .decision {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr;
+    gap: 10px;
+    margin: 10px 0;
+    align-items: stretch;
+  }
+  .diamond {
+    background: var(--navy-soft);
+    border: 1px solid var(--navy);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .diamond strong { color: var(--navy); }
+  .path-yes { background: var(--card); border: 1px solid var(--ops); padding: 12px; }
+  .path-no { background: var(--card); border: 1px solid var(--olive); padding: 12px; }
+  .path-yes h3 { color: var(--ops); }
+  .path-no h3 { color: var(--olive); }
+  .seq {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    align-items: center;
+  }
+  .chip {
+    border: 1px solid var(--line);
+    background: var(--olive-soft);
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .chip-arr { color: var(--olive); font-weight: 700; }
+
+  .types {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  .type {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 12px;
+  }
+  .type.risk { border: 2px solid var(--alert); background: var(--alert-soft); }
+  .type .letter {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .type.risk .letter { color: var(--alert); }
+
+  .broken {
+    background: var(--alert-soft);
+    border: 2px solid var(--alert);
+    padding: 14px;
+  }
+  .chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+    margin: 10px 0 4px;
+  }
+  .fail {
+    background: #fff;
+    border: 1px solid var(--alert);
+    color: var(--alert);
+    padding: 8px 10px;
+    font-weight: 650;
+    font-size: 12.5px;
+  }
+  .fail-arr { color: var(--alert); font-weight: 700; padding: 0 6px; font-size: 16px; }
+
+  .cmp {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 8px;
+  }
+  .cmp-step {
+    background: var(--card);
+    border: 1px dashed var(--future);
+    padding: 12px;
+    margin-right: -1px;
+  }
+  .cmp-step h3 { color: var(--future); }
+  .cmp-head {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--future);
+    margin-bottom: 6px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    font-size: 12.5px;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 7px 9px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+  }
+  .unresolved { background: var(--qa-soft); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin: 8px 0 0;
+    font-size: 12px;
+  }
+  .swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--line);
+    vertical-align: -1px;
+    margin-right: 5px;
+  }
+
+  .footer {
+    margin-top: 22px;
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  @media print {
+    body { background: #fff; font-size: 11px; }
+    .page { max-width: none; padding: 10mm 10mm 12mm; }
+    h2 { break-after: avoid; }
+    .lane, .box, .step, .type, .broken, .cmp-step, .decision, table { break-inside: avoid; }
+    .pipeline { break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+  }
+
+  @media screen and (max-width: 900px) {
+    .cols3, .scope, .types, .decision, .cmp { grid-template-columns: 1fr; }
+    .pipeline { flex-wrap: wrap; }
+    .arrow { width: 100%; flex-basis: 100%; height: 16px; transform: rotate(90deg); }
+  }
+
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>HAECO Authorization / Customer Procedure Training Management</h1>
+    <p class="subtitle">Merged process map &middot; TOT coordination with Operations, Training Academy, QA and OCG &middot; Internal LMS (also referred to as LOMS)</p>
+
+    <div class="why">
+      <p><strong>Why this HTML file:</strong> Open it in Chrome, share the single file, or print to PDF. No account, no extra software, and the layout stays readable on a meeting screen or on paper.</p>
+      <p>Mermaid in Markdown is faster to edit later but weaker for a glanceable multi-branch map. PowerPoint is easier for live presenting. Visio or draw.io is better if this must become a controlled engineering drawing. This file is the working briefing version.</p>
+    </div>
+
+    <h2>1. Scope &mdash; what TOT manages</h2>
+    <div class="scope">
+      <div class="box in">
+        <h3>In scope (authorization-impacting)</h3>
+        <p>TOT manages customer procedure training and authorization-related requirements that directly affect engineer authorization. Not general HAECO training.</p>
+        <ul>
+          <li>Customer procedure training</li>
+          <li>Authorization-related procedure training</li>
+          <li>Customer-specific mandatory training</li>
+        </ul>
+      </div>
+      <div class="box out">
+        <h3>Out of scope</h3>
+        <p>If it does not affect authorization, it is ordinary / internal training and is not TOT&rsquo;s procedure-training scope.</p>
+        <ul>
+          <li>General technical training</li>
+          <li>Internal development training</li>
+          <li>Non-authorization related courses</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">Need a working register of: customer, training, assigned person, and status (planned / in progress / complete / in LMS / QA verified).</p>
+
+    <h2>2. Who owns the customer &mdash; three branches</h2>
+    <div class="cols3">
+      <div class="lane home">
+        <span class="tag">Homebase &mdash; TOT proactive</span>
+        <p class="codes">CX &nbsp;|&nbsp; UO (HK Express) &nbsp;|&nbsp; HKA &nbsp;|&nbsp; HKC (Hong Kong Cargo)</p>
+        <p>QT Jason / TOT proactively coordinates training requirements for customers with a significant Hong Kong line-maintenance presence.</p>
+        <ul>
+          <li>TOT initiates and follows through</li>
+          <li>Still needs records into the shared folder and internal LMS</li>
+        </ul>
+      </div>
+      <div class="lane ops">
+        <span class="tag">Other 3rd party &mdash; Operations owns</span>
+        <p class="codes">ANA and other non-home-base operators</p>
+        <p>The respective Operations team manages required customer training and records. TOT does not proactively pull the customer system or backfill LMS.</p>
+        <ul>
+          <li>Highest current gap (see section 6)</li>
+          <li>Ops must file records, then ask TOT to coordinate LMS</li>
+        </ul>
+      </div>
+      <div class="lane ua">
+        <span class="tag">UA exception &mdash; TOT Jack / MIST</span>
+        <p class="codes">United Airlines only</p>
+        <p>TOT Jack pulls CT reports from the UA <strong>MIST</strong> system. MIST has about <strong>20</strong> requirements to keep the licence usable. QA is concerned with about <strong>5</strong> that affect authorization.</p>
+        <ul>
+          <li>Those 5 need training evidence</li>
+          <li>TOT places evidence in the internal LMS</li>
+          <li>QA checks LMS &mdash; not customer systems one-by-one</li>
+          <li>This support is UA-only</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>3. End-to-end process &mdash; before, during, after, LMS, QA</h2>
+    <p class="note">TOT is the coordinator, not the LMS owner. Training Academy (TA) administers the internal LMS. QA verifies compliance from LMS evidence.</p>
+
+    <div class="pipeline">
+      <div class="step ops-c">
+        <div class="who">Operations / TOT (by branch)</div>
+        <h3>Before training</h3>
+        <ul>
+          <li>Identify customer requirement</li>
+          <li>Assign target personnel</li>
+          <li>Confirm or create course code</li>
+          <li>Set the training plan</li>
+        </ul>
+      </div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="step ops-c">
+        <div class="who">Delivery (3 types)</div>
+        <h3>During training</h3>
+        <ul>
+          <li>Customer instructor, or</li>
+          <li>Internal HAECO trainer, or</li>
+          <li>CBT / e-learning / portal</li>
+          <li>Track attendance and completion</li>
+        </ul>
+      </div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="step ops-c">
+        <div class="who">Operations</div>
+        <h3>After training</h3>
+        <ul>
+          <li>Collect evidence / certificates</li>
+          <li>Put files in the correct shared folder, then email TOT</li>
+          <li>Or email the files to TOT</li>
+        </ul>
+      </div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="step tot-c">
+        <div class="who">TOT coordinator</div>
+        <h3>Verify and format</h3>
+        <ul>
+          <li>Check records are complete</li>
+          <li>Convert to a TA-accepted application format</li>
+          <li>Submit to Training Academy</li>
+        </ul>
+      </div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="step ta-c">
+        <div class="who">Training Academy</div>
+        <h3>Update internal LMS</h3>
+        <ul>
+          <li>TA accepts the request</li>
+          <li>TA updates the LMS</li>
+          <li>Record becomes internally visible</li>
+        </ul>
+      </div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="step qa-c">
+        <div class="who">QA</div>
+        <h3>Verify authorization</h3>
+        <ul>
+          <li>Check LMS evidence</li>
+          <li>Approve or reject authorization</li>
+          <li>QA position: audit, not record custody</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="decision">
+      <div class="diamond">
+        <strong>New course gate</strong>
+        <p>Does the customer course already exist in the LMS (course / cost code)?</p>
+        <p class="note">If no code exists, create the course <em>before</em> training and before any LMS update.</p>
+      </div>
+      <div class="path-yes">
+        <h3>Yes &mdash; course exists</h3>
+        <p>Proceed to training, then collect records, then TOT &rarr; TA &rarr; LMS.</p>
+      </div>
+      <div class="path-no">
+        <h3>No &mdash; create the course first</h3>
+        <div class="seq">
+          <span class="chip">Materials / syllabus</span>
+          <span class="chip-arr">&rarr;</span>
+          <span class="chip">Recurrent? Validity? Owner?</span>
+          <span class="chip-arr">&rarr;</span>
+          <span class="chip">Fill the form</span>
+          <span class="chip-arr">&rarr;</span>
+          <span class="chip">Create course code</span>
+          <span class="chip-arr">&rarr;</span>
+          <span class="chip">Then train</span>
+          <span class="chip-arr">&rarr;</span>
+          <span class="chip">Then LMS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>Shared master folder (currently TOT-maintained)</h3>
+      <p>Authorization pack: requirements, matrices, authorization records. Training pack: materials, attendance, completion certificates, supporting evidence. Soft copies live here today. After training, Operations files in the correct folder and emails TOT, or emails the files so TOT can file and coordinate the LMS update.</p>
+    </div>
+
+    <h2>4. Three training delivery types</h2>
+    <div class="types">
+      <div class="type">
+        <div class="letter">A. Customer instructor</div>
+        <p>Customer trainer flies in (or delivers on site) and trains HAECO staff. Attendance and completion evidence still must reach the folder and LMS.</p>
+      </div>
+      <div class="type risk">
+        <div class="letter">B. Internal HAECO trainer &mdash; highest gap</div>
+        <p>Qualified HAECO trainer delivers the course. This is where records are most often missing: trained, but no file, so LMS is not updated and QA treats it as not trained.</p>
+      </div>
+      <div class="type">
+        <div class="letter">C. Computer-based training (CBT)</div>
+        <p>Online / e-learning / web-based modules or customer learning portals. Completion evidence must still be extracted and filed internally.</p>
+      </div>
+    </div>
+
+    <h2 class="alert">5. Priority gap &mdash; trained but not authorized</h2>
+    <div class="broken">
+      <p><strong>The problem is not that training is skipped.</strong> The break is after delivery, especially for non-homebase / non-TOT-owned customer training, and especially when an internal trainer delivers the course.</p>
+      <div class="chain">
+        <span class="fail">Training completed</span>
+        <span class="fail-arr">&rarr;</span>
+        <span class="fail">No record captured</span>
+        <span class="fail-arr">&rarr;</span>
+        <span class="fail">Not submitted to TOT</span>
+        <span class="fail-arr">&rarr;</span>
+        <span class="fail">LMS not updated</span>
+        <span class="fail-arr">&rarr;</span>
+        <span class="fail">QA cannot verify</span>
+        <span class="fail-arr">&rarr;</span>
+        <span class="fail">Authorization rejected</span>
+      </div>
+      <p class="note">Fix first: Operations files the record (correct folder + email, or email the files) so TOT can submit a TA-accepted request and TA can update the internal LMS before QA reviews authorization.</p>
+    </div>
+
+    <h2 class="future">6. CMP future path &mdash; competence personal record</h2>
+    <p class="note">CMP (Competency Management Project). OCG / GoGo supports authorization data, customer training visibility, competency tracking, and authorization compliance monitoring.</p>
+    <div class="cmp">
+      <div class="cmp-step">
+        <div class="cmp-head">Today</div>
+        <h3>Soft copies</h3>
+        <p>Certificates, attendance sheets, training records and authorization evidence sit in the shared folder as files.</p>
+      </div>
+      <div class="cmp-step">
+        <div class="cmp-head">Digitize</div>
+        <h3>Readable data</h3>
+        <p>Convert documents into structured, searchable fields / codes that a system can read.</p>
+      </div>
+      <div class="cmp-step">
+        <div class="cmp-head">Control</div>
+        <h3>QA approve</h3>
+        <p>QA approves the data structure and the evidence before it is used for competency decisions.</p>
+      </div>
+      <div class="cmp-step">
+        <div class="cmp-head">Then CMP judges</div>
+        <h3>Competency view</h3>
+        <p>Courses completed, qualifications held, customer approvals, authorization eligibility, and training gaps.</p>
+      </div>
+    </div>
+
+    <h2>7. Roles and unresolved ownership</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Does</th>
+          <th>Does not / open point</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>TOT (Jason / Jack; coordinator)</td>
+          <td>Authorization-impacting customer procedure training. Proactive for CX, UO, HKA, HKC. UA MIST CT reports (Jack). Maintains the shared folder for now. Formats and submits LMS requests to TA.</td>
+          <td>Does not own the LMS. Does not proactively run other third-party customers (e.g. ANA).</td>
+        </tr>
+        <tr>
+          <td>Operations</td>
+          <td>Owns other third-party customer training and records. Delivers or hosts training. Files completed records and notifies TOT.</td>
+          <td>If records stay on a desk or in email, LMS and authorization fail even when the person was trained.</td>
+        </tr>
+        <tr>
+          <td>Training Academy (TA)</td>
+          <td>System owner of the internal LMS. Accepts a correctly formatted request, then updates the system.</td>
+          <td>Does not invent missing attendance; TOT / Ops must submit complete evidence.</td>
+        </tr>
+        <tr class="unresolved">
+          <td>QA</td>
+          <td>Verifies license, type course, authorization training and customer procedure evidence from internal records. Approves or rejects authorization. Audits compliance.</td>
+          <td>QA&rsquo;s stated position is audit / governance, not custody of all training records. Who is the long-term record owner among QA, Ops, TOT and TA is still open.</td>
+        </tr>
+        <tr>
+          <td>OCG / GoGo (CMP)</td>
+          <td>Support CMP: authorization data, customer training visibility, competency tracking, compliance monitoring.</td>
+          <td>Depends on the current record loop being closed first; CMP cannot judge what was never filed.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="legend">
+      <span><i class="swatch" style="background:#e6f0ee;border-color:#1d4a46"></i>Homebase / Jason</span>
+      <span><i class="swatch" style="background:#e8f0e6;border-color:#2f4a2f"></i>Operations</span>
+      <span><i class="swatch" style="background:#f3efe0;border-color:#5a4a1c"></i>UA / MIST</span>
+      <span><i class="swatch" style="background:#e8eef5;border-color:#1e3a5f"></i>TOT coordinator</span>
+      <span><i class="swatch" style="background:#eceef6;border-color:#3a3f6b"></i>Training Academy / LMS</span>
+      <span><i class="swatch" style="background:#f6eae7;border-color:#6b2e24"></i>QA</span>
+      <span><i class="swatch" style="background:#f8e8e6;border-color:#7a1f1f"></i>Priority gap</span>
+      <span><i class="swatch" style="background:#eef0f2;border-color:#4a5564"></i>CMP future (dashed)</span>
+    </div>
+
+    <div class="footer">
+      Working briefing from the TOT discussion (張晨 / 跳 T, QT Jason) merged with the 12-section Authorization Training Management Process. LMS / LOMS = HAECO internal LMS. UO = HK Express. HKC = Hong Kong Cargo. Print from Chrome: Ctrl+P &rarr; Save as PDF.
+    </div>
+  </div>
+  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+</body>
+</html>

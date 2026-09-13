@@ -4,3 +4,5 @@
 
 - [Authorization Progress](authorization-status.html)
 - [KE HKG A350 / A321 C/S 攞牌流程](ke-a350-cs-process.html)
+- [Authorization Training Management Process](authorization-training-process.html)
+- [EASA / HKAR / CX / HAECO Documentation Hierarchy](easa-cx-hk-document-hierarchy.html)

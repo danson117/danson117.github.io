@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verified: EASA / HKAR / CX / HAECO Documentation Hierarchy</title>
+    <style>
+      :root {
+        --ink: #1a2332;
+        --muted: #5b6573;
+        --line: #d8dee6;
+        --bg: #f4f6f8;
+        --card: #fff;
+        --law: #1b3a4b;
+        --req: #245a8d;
+        --notice: #3d7ab5;
+        --expo: #2d6a4f;
+        --corp: #40916c;
+        --dept: #74c69d;
+        --work: #c45c26;
+        --warn: #8a6d3b;
+        --warnbg: #fff6db;
+        --ok: #1b7f4e;
+        --okbg: #e7f6ee;
+        --mid: #9a6700;
+        --midbg: #fff4d6;
+        --gap: #9b2c2c;
+        --gapbg: #fdecec;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Calibri, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.45;
+      }
+      header {
+        background: linear-gradient(135deg, #16324f, #1f4e79);
+        color: #fff;
+        padding: 28px 32px 24px;
+      }
+      header h1 {
+        margin: 0 0 8px;
+        font-size: 26px;
+      }
+      header p {
+        margin: 0;
+        max-width: 980px;
+        opacity: 0.92;
+      }
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 24px 20px 60px;
+      }
+      h2 {
+        margin: 32px 0 12px;
+        font-size: 22px;
+      }
+      h3 {
+        margin: 18px 0 8px;
+        font-size: 17px;
+      }
+      .note,
+      .warn {
+        padding: 12px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        margin: 12px 0 18px;
+      }
+      .warn {
+        background: var(--warnbg);
+        border-color: #f0e0a2;
+        color: var(--warn);
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      @media (max-width: 900px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px 16px 20px;
+      }
+      .title {
+        text-align: center;
+        font-weight: 700;
+        font-size: 18px;
+        margin-bottom: 14px;
+      }
+      .box {
+        width: min(100%, 320px);
+        margin: 8px auto;
+        padding: 11px 12px;
+        text-align: center;
+        border-radius: 8px;
+        color: #fff;
+        font-weight: 700;
+      }
+      .box small {
+        display: block;
+        font-weight: 500;
+        opacity: 0.92;
+        margin-top: 4px;
+      }
+      .law {
+        background: var(--law);
+      }
+      .req {
+        background: var(--req);
+      }
+      .notice {
+        background: var(--notice);
+      }
+      .expo {
+        background: var(--expo);
+      }
+      .corp {
+        background: var(--corp);
+      }
+      .dept {
+        background: var(--dept);
+        color: #123;
+      }
+      .work {
+        background: var(--work);
+      }
+      .ghost {
+        background: #e9eef3;
+        color: #334;
+        border: 1px dashed #9aa8b5;
+      }
+      .arrow {
+        text-align: center;
+        color: #667;
+        font-size: 18px;
+        margin: 2px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--card);
+      }
+      th {
+        background: #245a8d;
+        color: #fff;
+        text-align: left;
+        padding: 9px;
+      }
+      td {
+        border: 1px solid var(--line);
+        padding: 8px;
+        vertical-align: top;
+      }
+      .ok {
+        background: var(--okbg);
+        color: var(--ok);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .mid {
+        background: var(--midbg);
+        color: var(--mid);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .gap {
+        background: var(--gapbg);
+        color: var(--gap);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      ul.compact {
+        margin: 8px 0 0 18px;
+        padding: 0;
+      }
+      a {
+        color: #1d4f91;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .chain {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin: 10px 0 4px;
+      }
+      .pill {
+        color: #fff;
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .xbar {
+        margin-top: 10px;
+        border-top: 3px solid #e0b000;
+        padding-top: 8px;
+        color: var(--warn);
+        font-weight: 600;
+      }
+      .page-version {
+        position: fixed;
+        right: max(12px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        z-index: 20;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 10px;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>EASA / HKAR / CX / HAECO 文件層級（已核對版）</h1>
+      <p>
+        兩個舊版把「法律層」同「公司手冊名」疊咗一齊。正確讀法：監管層只去到
+        Exposition； GTI、EOMP、EPM、SPM 係公司自己點拆手冊，EASA / CAD
+        冇規定要用呢幾個縮寫。
+      </p>
+    </header>
+    <main>
+      <div class="warn">
+        <strong>點樣用呢份圖：</strong>
+        左邊法律／EASA 係公開可核對。右邊公司層用你張訓練 slide（HAECO Manual
+        Structure + CX Hierarchy of Legislation and
+        documentation）同公開職位／手冊引用去對。 標
+        <em>Company slide</em> 嘅項目，公司內部最新手冊如果改名，以 Quality /
+        Airworthiness 為準。
+      </div>
+
+      <h2>1. 監管層（公開、可核對）</h2>
+      <div class="grid2">
+        <div class="card">
+          <div class="title">香港（CX / HAECO 本地批准）</div>
+          <div class="box law">
+            ICAO SARPs<small>國際標準（香港 SSP 採用）</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box law">
+            Cap. 448 Civil Aviation Ordinance<small>民航條例</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box req">
+            AN(HK)O — Cap. 448C<small
+              >Air Navigation (Hong Kong) Order 1995</small
+            >
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box req">
+            HKAR<small>尤其 HKAR-145 Approved Maintenance Organisations</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box notice">
+            Airworthiness Notices<small>CAD 455；CX slide 寫 AN's</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box expo">
+            Company Exposition<small
+              >HKAR 145.70 MOE（及引用嘅 associated manuals）</small
+            >
+          </div>
+        </div>
+        <div class="card">
+          <div class="title">EASA（只適用於持 EASA Part-145 批准）</div>
+          <div class="box law">
+            Basic Regulation<small>(EU) 2018/1139</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box req">
+            Continuing Airworthiness<small>(EU) No 1321/2014</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box req">
+            Part-145<small>145.A.70 Maintenance Organisation Exposition</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box expo">
+            MOE<small>可直接寫、或 by reference 指向下層手冊</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box ghost">
+            公司自訂程序層<small>EASA 唔規定叫 GTI / EPM / SPM</small>
+          </div>
+        </div>
+      </div>
+
+      <p class="note">
+        <strong>補返舊版空隙：</strong>
+        AN(HK)O 上面仲有 <strong>Cap. 448</strong>。HKAR 同 Exposition 中間，CX
+        訓練圖有 <strong>AN's</strong>，即 CAD
+        <strong>Airworthiness Notices（CAD 455）</strong>。 EASA Part-145
+        <strong>唔係</strong> AN(HK)O
+        下面一層；佢係另一套批准。同一間公司可以同時有 HKAR-145 MOE 同 EASA
+        MOE（HAECO slide 嘅 MOE-EASA）。
+      </p>
+
+      <h2>2. 公司手冊層（兩個系統，唔好撈亂）</h2>
+      <div class="grid2">
+        <div class="card">
+          <div class="title">HAECO EASA 手冊系統</div>
+          <div class="box expo">
+            MOE-EASA<small
+              >Top-level policy / procedures to comply with EASA</small
+            >
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box corp">
+            GTI<small
+              >General Technical Instructions · 公司層、維修及品質系統</small
+            >
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box dept">
+            EPM<small>Engineering Procedure Manual · 部門操作程序</small>
+          </div>
+          <p class="note">
+            來源：你張 HAECO「Manual Structure」slide。GTI 係第二層、全公司；EPM
+            係第三層、部門。兩者<strong>唔係同一級</strong>。呢幅圖<strong
+              >冇 SPM</strong
+            >。
+          </p>
+        </div>
+        <div class="card">
+          <div class="title">CX Engineering 文件鏈</div>
+          <div class="box expo">
+            Expositions<small>包括 HKAR-145 MOE；唔等於 EOMP</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box corp">
+            EOMP<small>Engineering Organisation Manual / Procedures</small>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box dept">
+            EPM<small
+              >Engineering Procedure Manual（例如公開職位提到 EPM6）</small
+            >
+          </div>
+          <div class="arrow">↓</div>
+          <div class="box work">
+            SPMM / SPM<small>Station / Line Station Procedure Manual</small>
+          </div>
+          <div class="chain">
+            <span class="pill law">AN(HK)O</span> →
+            <span class="pill req">HKAR's</span> →
+            <span class="pill notice">AN's</span> →
+            <span class="pill expo">Expositions</span> →
+            <span class="pill corp">EOMP</span> →
+            <span class="pill dept" style="color: #123">EPM</span> →
+            <span class="pill work">SPMM</span>
+          </div>
+          <div class="xbar">
+            Slide 底黃線交叉：唔可以跳級（例如用法例直接當工作指令）。
+          </div>
+        </div>
+      </div>
+
+      <h2>3. 合併後可用嘅完整層級</h2>
+      <div class="card">
+        <pre
+          style="
+            white-space: pre-wrap;
+            margin: 0;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+          "
+        >
+Regulation Layer
+ ├─ ICAO SARPs
+ ├─ Cap. 448 Civil Aviation Ordinance
+ ├─ AN(HK)O (Cap. 448C)
+ ├─ HKAR (HKAR-145, HKAR-66, HKAR-1 …)
+ ├─ CAD Airworthiness Notices (AN's / CAD 455)
+ └─ EASA Part-145          ← 平行批准，唔係 HKAR 下級
+
+Exposition Layer          ← 監管要求停喺呢度
+ ├─ MOE (HKAR 145.70)
+ └─ MOE-EASA (如持 EASA 145)
+     （EOMP 唔係 Exposition）
+
+Corporate Procedure Layer ← 公司拆手冊
+ ├─ HAECO: GTI
+ └─ CX:    EOMP
+
+Department Procedure Layer
+ └─ EPM   （HAECO 同 CX 都用呢個名）
+
+Work / Station Instruction Layer
+ └─ CX: SPMM / SPM / LSPM
+     HAECO EASA 圖未列呢層</pre
+        >
+      </div>
+
+      <h2>4. Validation Checklist</h2>
+      <table>
+        <tr>
+          <th>Item</th>
+          <th>Status</th>
+          <th>Verdict</th>
+          <th>Source</th>
+        </tr>
+        <tr>
+          <td>EASA Part-145 → MOE</td>
+          <td class="ok">Confirmed</td>
+          <td>145.A.70 規定要有 MOE；可 include directly or by reference。</td>
+          <td>
+            <a
+              href="https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-continuing-airworthiness-regulation-eu-no-13212014"
+              >EASA Easy Access Rules (EU) 1321/2014</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>HKAR-145 → MOE</td>
+          <td class="ok">Confirmed</td>
+          <td>
+            HKAR 145.70：MOE + referenced associated manuals 定義點樣符合
+            HKAR-145。CAD 要批准 MOE 及其修訂。
+          </td>
+          <td>
+            <a href="https://www.cad.gov.hk/reports/HKAR-145/HKAR-145.pdf"
+              >HKAR-145 Issue 5 Rev 6</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>AN(HK)O → HKAR → AN's → Exposition</td>
+          <td class="ok">Confirmed</td>
+          <td>
+            同 CX slide 同 CAD AN-2 立法說明一致。補上 Cap. 448 喺 AN(HK)O
+            之上。
+          </td>
+          <td>
+            <a href="https://www.elegislation.gov.hk/hk/cap448C">Cap. 448C</a> ·
+            <a
+              href="https://www.cad.gov.hk/reports/HKAN/Airworthiness_Notices.pdf"
+              >CAD 455</a
+            >
+            ·
+            <a href="https://www.cad.gov.hk/reports/HK-SSP_2022-26.pdf"
+              >HK SSP</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>MOE → GTI</td>
+          <td class="mid">Company slide</td>
+          <td>
+            只確認係 <strong>HAECO EASA</strong> 第二層。EASA
+            法規冇「GTI」呢個名。
+          </td>
+          <td>HAECO Manual Structure training slide</td>
+        </tr>
+        <tr>
+          <td>GTI → EPM</td>
+          <td class="ok">Confirmed (HAECO)</td>
+          <td>
+            Slide 原文：GTI = company-wide，EPM = departmental / third
+            tier。唔係平行同級。
+          </td>
+          <td>HAECO Manual Structure notes</td>
+        </tr>
+        <tr>
+          <td>GTI 同 EPM 同一級？</td>
+          <td class="ok">No</td>
+          <td>舊 HTML 呢題應改做「否」。兩者都引用自 MOE，但 EPM 低一級。</td>
+          <td>HAECO slide</td>
+        </tr>
+        <tr>
+          <td>EOMP = Exposition？</td>
+          <td class="ok">No</td>
+          <td>
+            CX 鏈係 Expositions → EOMP。公開職位把 MOE 同 EOMP 當兩本手冊更新。
+          </td>
+          <td>
+            CX training chain · CX Engineering Quality job text (MOE, EOMP,
+            EPM6)
+          </td>
+        </tr>
+        <tr>
+          <td>EOMP 全寫</td>
+          <td class="mid">Company usage</td>
+          <td>
+            業界用法：Engineering Organisation Manual / Procedures。CAD / EASA
+            網冇法定定義。Engineer 授權範圍會寫 “Refer EOMP 6-1A”。
+          </td>
+          <td>CX line-maintenance authorisation references</td>
+        </tr>
+        <tr>
+          <td>EPM → SPM / SPMM</td>
+          <td class="mid">Company slide (CX only)</td>
+          <td>
+            CX 圖：EOMP → EPM → SPMM。公開又有 LSPM / station SPM。HAECO EASA
+            圖停喺 EPM。
+          </td>
+          <td>CX Hierarchy slide · CX station / manual-revamp job text</td>
+        </tr>
+        <tr>
+          <td>舊版把 GTI 畫入「EASA Structure」</td>
+          <td class="gap">Corrected</td>
+          <td>GTI 唔係 EASA 法定層。EASA 柱只應到 MOE。</td>
+          <td>EASA 145.A.70</td>
+        </tr>
+      </table>
+
+      <h2>5. 舊版錯位（已改）</h2>
+      <ul>
+        <li>唔好做「EASA 一條柱 vs CX 一條柱」好似兩套對等法律。</li>
+        <li>EASA 柱唔應該出現 GTI / EPM / SPM 當法定下級。</li>
+        <li>CX 柱唔好漏 AN's，亦唔好把 EOMP 當成 Exposition。</li>
+        <li>CX 用 EOMP，HAECO EASA 用 GTI：同一功能層、唔同書名。</li>
+        <li>SPM 唔好自動加落 HAECO EASA 樹。</li>
+      </ul>
+
+      <h2>6. 官方出處</h2>
+      <ul class="compact">
+        <li>
+          香港法例 AN(HK)O：<a href="https://www.elegislation.gov.hk/hk/cap448C"
+            >https://www.elegislation.gov.hk/hk/cap448C</a
+          >
+        </li>
+        <li>
+          民航條例 Cap. 448：<a href="https://www.elegislation.gov.hk/hk/cap448"
+            >https://www.elegislation.gov.hk/hk/cap448</a
+          >
+        </li>
+        <li>
+          CAD 適航要求一覽：<a
+            href="https://www.cad.gov.hk/english/airworthiness.html"
+            >https://www.cad.gov.hk/english/airworthiness.html</a
+          >
+        </li>
+        <li>
+          HKAR-145 PDF：<a
+            href="https://www.cad.gov.hk/reports/HKAR-145/HKAR-145.pdf"
+            >https://www.cad.gov.hk/reports/HKAR-145/HKAR-145.pdf</a
+          >
+        </li>
+        <li>
+          Airworthiness Notices CAD 455：<a
+            href="https://www.cad.gov.hk/reports/HKAN/Airworthiness_Notices.pdf"
+            >https://www.cad.gov.hk/reports/HKAN/Airworthiness_Notices.pdf</a
+          >
+        </li>
+        <li>
+          香港航空安全方案（AN(HK)O 授權說明）：<a
+            href="https://www.cad.gov.hk/reports/HK-SSP_2022-26.pdf"
+            >https://www.cad.gov.hk/reports/HK-SSP_2022-26.pdf</a
+          >
+        </li>
+        <li>
+          EASA Easy Access Rules Part-145：<a
+            href="https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-continuing-airworthiness-regulation-eu-no-13212014"
+            >EASA (EU) No 1321/2014</a
+          >
+        </li>
+      </ul>
+
+      <footer>
+        公司內部手冊（MOE / EOMP / GTI / EPM / SPM）正文唔公開。若要交 audit
+        或考試，用 Quality 發佈嘅受控版本核對書名同層級。
+        本頁核對日期：2026-09-13。
+      </footer>
+    </main>
+    <div class="page-version" data-version="1.0" aria-label="頁面版本 1.0">v1.0</div>
+  </body>
+</html>
