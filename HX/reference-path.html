@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Reference Path</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Outfit:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-1: #e8f1f4;
+        --bg-2: #f7f3ea;
+        --ink: #1c2a32;
+        --muted: #5a6b75;
+        --card: rgba(255, 255, 255, 0.86);
+        --line: #d5e0e6;
+        --accent: #0f766e;
+        --accent-soft: #d7f0ec;
+        --shadow: 0 10px 30px rgba(28, 42, 50, 0.08);
+        --radius: 16px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family: "Noto Sans TC", sans-serif;
+        background:
+          radial-gradient(circle at 12% 10%, #cfe8ef 0%, transparent 42%),
+          radial-gradient(circle at 88% 0%, #f3e7c8 0%, transparent 38%),
+          linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      }
+
+      .wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 20px 16px 64px;
+      }
+
+      header {
+        margin-bottom: 14px;
+      }
+
+      .brand {
+        font-family: Outfit, "Noto Sans TC", sans-serif;
+        font-size: clamp(1.6rem, 4vw, 2.1rem);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        margin: 0;
+      }
+
+      .subtitle {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      .nav {
+        margin: 8px 0 0;
+        font-size: 0.85rem;
+      }
+
+      .nav a {
+        color: var(--accent);
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .search {
+        flex: 1 1 220px;
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--card);
+        color: var(--ink);
+        font: inherit;
+        font-size: 0.95rem;
+        padding: 10px 14px;
+        outline: none;
+      }
+
+      .search:focus {
+        border-color: #9ec9c2;
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.08);
+      }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .filter-btn {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .filter-btn.is-on {
+        border-color: transparent;
+        background: var(--place-tag, var(--accent-soft));
+        color: var(--place-ink, var(--accent));
+      }
+
+      .stats {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--line);
+        font-size: 0.95rem;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 0.8rem;
+      }
+
+      th.sort {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      th.sort:hover {
+        color: var(--ink);
+      }
+
+      th.sort .arrow {
+        display: inline-block;
+        min-width: 0.9em;
+        margin-left: 2px;
+        color: #9aa8b0;
+        font-size: 0.75em;
+      }
+
+      th.sort.is-on .arrow {
+        color: var(--accent);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      td.num {
+        width: 2.4em;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+      }
+
+      td.name {
+        font-weight: 500;
+      }
+
+      td.place-cell {
+        white-space: nowrap;
+        color: var(--muted);
+        background: transparent;
+      }
+
+      td.path {
+        color: var(--ink);
+      }
+
+      th.num {
+        text-align: right;
+      }
+
+      .list-card {
+        background: var(--card);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: auto;
+      }
+
+      .empty {
+        background: var(--card);
+        border: 1px dashed var(--line);
+        border-radius: var(--radius);
+        padding: 28px 16px;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      .place-tag {
+        display: inline-block;
+        padding: 0.18em 0.72em;
+        border-radius: 999px;
+        background: var(--place-tag);
+        color: var(--place-ink);
+        font-weight: 600;
+        font-size: 0.86rem;
+        line-height: 1.45;
+        letter-spacing: 0.01em;
+      }
+
+      .crumb {
+        display: block;
+        color: var(--ink);
+        font-size: 0.9rem;
+        line-height: 1.45;
+        word-break: break-word;
+      }
+
+      .host {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        word-break: break-all;
+      }
+
+      .missing {
+        color: #9aa8b0;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .act {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--accent);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .act:hover {
+        border-color: #9ec9c2;
+        background: var(--accent-soft);
+      }
+
+      .act[aria-disabled="true"] {
+        color: #9aa8b0;
+        cursor: default;
+        pointer-events: none;
+      }
+
+      .page-version {
+        position: fixed;
+        right: max(12px, env(safe-area-inset-right));
+        bottom: max(12px, env(safe-area-inset-bottom));
+        z-index: 20;
+        font-family: Outfit, "Noto Sans TC", sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 10px;
+        box-shadow: var(--shadow);
+        pointer-events: none;
+        user-select: none;
+      }
+
+      @media (max-width: 640px) {
+        td.name {
+          width: 34%;
+        }
+        th,
+        td {
+          padding: 10px 10px;
+          font-size: 0.9rem;
+        }
+        td.place-cell {
+          white-space: normal;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1 class="brand">Reference Path</h1>
+        <p class="subtitle">工作資料去邊度搵：一個位收埋系統、內聯網同報告路徑。</p>
+        <p class="nav">
+          <a href="authorization-status.html">Authorization Progress</a>
+          ·
+          <a href="ke-a350-cs-process.html">KE A350 / A321 C/S 流程</a>
+        </p>
+      </header>
+      <div class="toolbar">
+        <input
+          class="search"
+          id="search"
+          type="search"
+          placeholder="搜尋名稱、去邊度、路徑"
+          autocomplete="off"
+        />
+        <div class="filters" id="filters"></div>
+      </div>
+      <p class="stats" id="stats"></p>
+      <div id="board"></div>
+    </div>
+    <div class="page-version" data-version="1.0" aria-label="頁面版本 1.0">v1.0</div>
+
+    <script>
+      const ITEMS = [
+        { no: 1, place: "未有連結", name: "EPM", path: "", url: "" },
+        { no: 2, place: "未有連結", name: "GTI", path: "", url: "" },
+        {
+          no: 3,
+          place: "Unily",
+          name: "SOP",
+          path: "Unily › Departments › LM › SOP",
+          url: "",
+        },
+        { no: 4, place: "未有連結", name: "Safety", path: "", url: "" },
+        {
+          no: 5,
+          place: "LMS",
+          name: "LMS",
+          path: "",
+          url: "https://lms.haeco.com/ekp/servlet/ekp/login?target=%2Fekp%2Fservlet%2Fekp%2FTABLISTSESSIONS%3FDECORATEPAGE%3DY&TEMPLATE=&getnews=N&FAIL=Y&UID=236051&ERR=9",
+        },
+        {
+          no: 6,
+          place: "Power BI",
+          name: "R&S",
+          path: "",
+          url: "https://app.powerbi.com.mcas.ms/groups/me/reports/fc8178bb-011e-45c1-8f79-ca15a072d4e6/ReportSectionac7fe663ab81dcb1531a?ctid=99e838ef-4ec1-4ce2-9229-2efbb56fb03c&experience=power-bi",
+        },
+        {
+          no: 7,
+          place: "GlobalProtect",
+          name: "ECHO / AMOS / AMOSmobile",
+          path: "GlobalProtect portal，入去再開 ECHO / AMOS / AMOSmobile",
+          url: "https://secureaccess.haeco.com/global-protect/portal/portal.esp",
+        },
+        {
+          no: 8,
+          place: "Airport",
+          name: "Airside Driving Handbook",
+          path: "",
+          url: "https://opsportal.hongkongairport.com/SitePages/Procedure%20Manuals-view.aspx",
+        },
+        {
+          no: 9,
+          place: "Unily",
+          name: "Quality Healthcare",
+          path: "",
+          url: "https://haeco.unily.com/redir/1765?sci=B9AD7085-E29E-44DB-9E3F-2E93A1273CC0&search=Quality%2520Healthcare",
+        },
+        {
+          no: 10,
+          place: "Unily",
+          name: "KC Bus",
+          path: "",
+          url: "https://haeco.unily.com/sites/hxhkg-site/SitePageModern/2296/hxhkg-transport",
+        },
+        {
+          no: 11,
+          place: "Unily",
+          name: "Audit Schedule",
+          path: "",
+          url: "https://haeco.unily.com/sites/hxhkg-site/SitePageModern/16342/audits",
+        },
+        {
+          no: 12,
+          place: "Unily",
+          name: "Licence and Authorisation User Guide (General User)",
+          path: "",
+          url: "https://haeco.unily.com/sites/hxhkg-departments/quality/documentPreview/6047/LMS-Licence-and-Authorisation-User-Guide-General-User",
+        },
+        {
+          no: 13,
+          place: "Step GPS",
+          name: "Step GPS",
+          path: "",
+          url: "https://monitor.haeco-tracking.v3.iot.pn/login",
+        },
+        {
+          no: 14,
+          place: "Power BI",
+          name: "Auth & Lic Summary (All Staff)",
+          path: "",
+          url: "https://app.powerbi.com/groups/me/reports/375e3fcb-0e06-4d55-95ca-4ed907a386a7/ReportSection076eba1a400abd14687e?ctid=99e838ef-4ec1-4ce2-9229-2efbb56fb03c&experience=power-bi&bookmarkGuid=c7c9d255-e9b8-4944-b3e4-567693e32023",
+        },
+        {
+          no: 15,
+          place: "Power BI",
+          name: "Training record (All Staff)",
+          path: "",
+          url: "https://app.powerbi.com/groups/me/reports/448bac17-8838-4e56-a06b-fcfac723db1c/ReportSection?ctid=99e838ef-4ec1-4ce2-9229-2efbb56fb03c&experience=power-bi",
+        },
+        {
+          no: 16,
+          place: "Forms",
+          name: "LM Ramp Surveillance Report",
+          path: "",
+          url: "https://forms.office.com.mcas.ms/Pages/DesignPageV2.aspx?origin=NeoPortalPage&subpage=design&wdlor=c689AF7B0-B311-42CB-A571-50E64F4831B7&id=7zjomcFO4kySKS77tW-wPBYbh8fR6ttCjpEPucSjbcxUNDJZQTFCNTFBWjRSMEtIQkhGTFdFU0VYVSQlQCN0PWcu&topview=Preview&preview=%257B%2522ViewModeIndex%2522%3A0%257D",
+        },
+      ];
+
+      const PLACE_THEME = {
+        Unily: { tag: "#d7f3ee", ink: "#3f7d74" },
+        "Power BI": { tag: "#fff3d6", ink: "#8a7040" },
+        LMS: { tag: "#e4f0fb", ink: "#4a6d8c" },
+        GlobalProtect: { tag: "#fde8d6", ink: "#8b5e3a" },
+        Airport: { tag: "#ebe4f8", ink: "#6b5a8a" },
+        Forms: { tag: "#fceef3", ink: "#8a5a6e" },
+        "Step GPS": { tag: "#e8f5e3", ink: "#4f7a45" },
+        未有連結: { tag: "#eef3f5", ink: "#4a5b64" },
+      };
+
+      const PLACE_FALLBACK = [
+        { tag: "#e4f0fb", ink: "#4a6d8c" },
+        { tag: "#e8f5e3", ink: "#4f7a45" },
+        { tag: "#fceef3", ink: "#8a5a6e" },
+        { tag: "#fff3d6", ink: "#8a7040" },
+        { tag: "#e8eef8", ink: "#5a6588" },
+        { tag: "#f3efe4", ink: "#7a6a4a" },
+      ];
+
+      const COLS = [
+        { key: "no", label: "#", cls: "num sort" },
+        { key: "place", label: "去邊度", cls: "sort" },
+        { key: "name", label: "名稱", cls: "sort" },
+        { key: "path", label: "路徑", cls: "sort" },
+      ];
+
+      const state = {
+        query: "",
+        place: "",
+        sortKey: "no",
+        sortDir: "asc",
+      };
+
+      function themeForPlace(place) {
+        if (PLACE_THEME[place]) return PLACE_THEME[place];
+        let hash = 0;
+        for (const ch of String(place))
+          hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+        return PLACE_FALLBACK[hash % PLACE_FALLBACK.length];
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function hostOf(url) {
+        try {
+          return new URL(url).hostname.replace(/^www\./, "");
+        } catch {
+          return "";
+        }
+      }
+
+      function copyText(item) {
+        return item.url || item.path || item.name;
+      }
+
+      function uniquePlaces() {
+        const preferred = [
+          "Unily",
+          "Power BI",
+          "LMS",
+          "GlobalProtect",
+          "Airport",
+          "Forms",
+          "Step GPS",
+          "未有連結",
+        ];
+        const present = new Set(ITEMS.map((item) => item.place || "未分類"));
+        return preferred.filter((place) => present.has(place));
+      }
+
+      function visibleItems() {
+        const q = state.query.trim().toLowerCase();
+        const rows = ITEMS.filter((item) => {
+          if (state.place && item.place !== state.place) return false;
+          if (!q) return true;
+          const hay = [item.no, item.place, item.name, item.path, item.url, hostOf(item.url)]
+            .join(" ")
+            .toLowerCase();
+          return hay.includes(q);
+        });
+
+        const dir = state.sortDir === "desc" ? -1 : 1;
+        const key = state.sortKey;
+        rows.sort((a, b) => {
+          const av = key === "path" ? a.path || a.url || "" : a[key];
+          const bv = key === "path" ? b.path || b.url || "" : b[key];
+          if (typeof av === "number" && typeof bv === "number") {
+            return (av - bv) * dir;
+          }
+          return String(av).localeCompare(String(bv), "zh-Hant") * dir;
+        });
+        return rows;
+      }
+
+      function sortArrow(key) {
+        if (state.sortKey !== key) return "↕";
+        return state.sortDir === "asc" ? "↑" : "↓";
+      }
+
+      function renderPath(item) {
+        if (!item.path && !item.url) {
+          return '<span class="missing">未有路徑</span>';
+        }
+        const crumb = item.path
+          ? `<span class="crumb">${escapeHtml(item.path)}</span>`
+          : "";
+        const host = item.url
+          ? `<span class="host">${escapeHtml(hostOf(item.url))}</span>`
+          : "";
+        const open = item.url
+          ? `<a class="act" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">開啟</a>`
+          : "";
+        return `
+          ${crumb}${host}
+          <div class="actions">
+            ${open}
+            <button type="button" class="act" data-copy="${escapeHtml(String(item.no))}">複製</button>
+          </div>
+        `;
+      }
+
+      function renderFilters() {
+        const box = document.getElementById("filters");
+        const places = uniquePlaces();
+        const buttons = [
+          { value: "", label: "全部", theme: { tag: "#eef3f5", ink: "#4a5b64" } },
+          ...places.map((place) => ({
+            value: place,
+            label: place,
+            theme: themeForPlace(place),
+          })),
+        ];
+        box.innerHTML = buttons
+          .map((btn) => {
+            const on = state.place === btn.value ? " is-on" : "";
+            return `<button type="button" class="filter-btn${on}" data-place="${escapeHtml(btn.value)}" style="--place-tag:${btn.theme.tag}; --place-ink:${btn.theme.ink}">${escapeHtml(btn.label)}</button>`;
+          })
+          .join("");
+      }
+
+      function render() {
+        const board = document.getElementById("board");
+        const stats = document.getElementById("stats");
+        const rows = visibleItems();
+        const placeCount = uniquePlaces().length;
+        const linked = ITEMS.filter((item) => item.url || item.path).length;
+
+        stats.textContent =
+          rows.length === ITEMS.length
+            ? `共 ${ITEMS.length} 項 · ${placeCount} 個去處 · ${linked} 項有路徑`
+            : `顯示 ${rows.length} / ${ITEMS.length} 項`;
+
+        if (!rows.length) {
+          board.innerHTML = '<div class="empty">未有符合嘅記錄</div>';
+          return;
+        }
+
+        board.innerHTML = `
+        <div class="list-card">
+          <table>
+            <thead>
+              <tr>
+                ${COLS.map((col) => {
+                  const on = state.sortKey === col.key ? " is-on" : "";
+                  return `<th class="${col.cls}${on}" data-sort="${col.key}">${escapeHtml(col.label)}<span class="arrow">${sortArrow(col.key)}</span></th>`;
+                }).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${rows
+                .map((item) => {
+                  const theme = themeForPlace(item.place);
+                  return `
+                <tr style="--place-tag:${theme.tag}; --place-ink:${theme.ink}">
+                  <td class="num">${escapeHtml(item.no)}</td>
+                  <td class="place-cell"><span class="place-tag">${escapeHtml(item.place)}</span></td>
+                  <td class="name">${escapeHtml(item.name)}</td>
+                  <td class="path">${renderPath(item)}</td>
+                </tr>
+              `;
+                })
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+      }
+
+      document.getElementById("search").addEventListener("input", (event) => {
+        state.query = event.target.value;
+        render();
+      });
+
+      document.getElementById("filters").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-place]");
+        if (!btn) return;
+        state.place = btn.getAttribute("data-place") || "";
+        renderFilters();
+        render();
+      });
+
+      document.getElementById("board").addEventListener("click", async (event) => {
+        const copyBtn = event.target.closest("[data-copy]");
+        if (copyBtn) {
+          const no = Number(copyBtn.getAttribute("data-copy"));
+          const item = ITEMS.find((row) => row.no === no);
+          if (!item) return;
+          try {
+            await navigator.clipboard.writeText(copyText(item));
+            copyBtn.textContent = "已複製";
+            setTimeout(() => {
+              copyBtn.textContent = "複製";
+            }, 1200);
+          } catch {
+            copyBtn.textContent = "複製失敗";
+            setTimeout(() => {
+              copyBtn.textContent = "複製";
+            }, 1200);
+          }
+          return;
+        }
+
+        const th = event.target.closest("th[data-sort]");
+        if (!th) return;
+        const key = th.getAttribute("data-sort");
+        if (state.sortKey === key) {
+          state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+        } else {
+          state.sortKey = key;
+          state.sortDir = "asc";
+        }
+        render();
+      });
+
+      renderFilters();
+      render();
+    </script>
+  </body>
+</html>
