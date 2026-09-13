@@ -40,7 +40,7 @@
       }
 
       .wrap {
-        max-width: 960px;
+        max-width: 1240px;
         margin: 0 auto;
         padding: 20px 16px 88px;
       }
@@ -137,16 +137,16 @@
       th,
       td {
         text-align: left;
-        padding: 11px 14px;
+        padding: 11px 12px;
         border-bottom: 1px solid var(--line);
-        font-size: 0.95rem;
+        font-size: 0.92rem;
         vertical-align: top;
       }
 
       th {
         color: var(--muted);
         font-weight: 500;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
       }
 
       th.sort {
@@ -176,7 +176,7 @@
       }
 
       td.num {
-        width: 2.4em;
+        width: 2.2em;
         color: var(--muted);
         font-variant-numeric: tabular-nums;
         text-align: right;
@@ -184,16 +184,21 @@
 
       td.name {
         font-weight: 500;
+        min-width: 10em;
       }
 
-      td.place-cell {
-        white-space: nowrap;
+      td.aka {
         color: var(--muted);
-        background: transparent;
+        min-width: 10em;
+      }
+
+      td.kind-cell {
+        white-space: nowrap;
       }
 
       td.path {
         color: var(--ink);
+        min-width: 12em;
       }
 
       th.num {
@@ -225,7 +230,7 @@
         background: var(--place-tag);
         color: var(--place-ink);
         font-weight: 600;
-        font-size: 0.86rem;
+        font-size: 0.82rem;
         line-height: 1.45;
         letter-spacing: 0.01em;
       }
@@ -233,7 +238,7 @@
       .crumb {
         display: block;
         color: var(--ink);
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         line-height: 1.45;
         word-break: break-word;
       }
@@ -242,7 +247,7 @@
         display: block;
         margin-top: 4px;
         color: var(--muted);
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         word-break: break-all;
       }
 
@@ -264,7 +269,7 @@
         border-radius: 999px;
         padding: 4px 10px;
         font: inherit;
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
         text-decoration: none;
         cursor: pointer;
@@ -279,6 +284,10 @@
         border-color: transparent;
         background: var(--accent-soft);
         color: var(--accent);
+      }
+
+      .path-label {
+        display: none;
       }
 
       .page-version {
@@ -300,7 +309,7 @@
         user-select: none;
       }
 
-      @media (max-width: 640px) {
+      @media (max-width: 860px) {
         thead {
           display: none;
         }
@@ -314,7 +323,7 @@
         }
 
         tr {
-          padding: 12px 12px 14px;
+          padding: 14px 12px 16px;
           border-bottom: 1px solid var(--line);
         }
 
@@ -333,15 +342,30 @@
           display: none;
         }
 
-        td.place-cell {
-          white-space: normal;
+        td.kind-cell {
           margin-bottom: 6px;
         }
 
         td.name {
           width: auto;
           font-size: 1.02rem;
-          margin-bottom: 6px;
+          margin-bottom: 2px;
+        }
+
+        td.aka {
+          margin-bottom: 10px;
+        }
+
+        td.path {
+          margin-top: 8px;
+        }
+
+        .path-label {
+          display: block;
+          margin-bottom: 4px;
+          color: var(--muted);
+          font-size: 0.74rem;
+          font-weight: 700;
         }
       }
     </style>
@@ -350,7 +374,9 @@
     <div class="wrap">
       <header>
         <h1 class="brand">Reference Path</h1>
-        <p class="subtitle">工作資料去邊度搵：一個位收埋系統、內聯網同報告路徑。</p>
+        <p class="subtitle">
+          路徑 A 係原本收錄；路徑 B 係建議路徑。兩條都會留低，之後再定用邊條。
+        </p>
         <p class="nav">
           <a href="authorization-status.html">Authorization Progress</a>
           ·
@@ -362,7 +388,7 @@
           class="search"
           id="search"
           type="search"
-          placeholder="搜尋名稱、去邊度、路徑"
+          placeholder="搜尋名稱、係乜嚟、分類、路徑 A / B"
           autocomplete="off"
         />
         <div class="filters" id="filters"></div>
@@ -370,153 +396,216 @@
       <p class="stats" id="stats"></p>
       <div id="board"></div>
     </div>
-    <div class="page-version" data-version="1.2" aria-label="頁面版本 1.2">v1.2</div>
+    <div class="page-version" data-version="2.2" aria-label="頁面版本 2.2">v2.2</div>
 
     <script>
       const ITEMS = [
-        { no: 1, place: "未有連結", name: "EPM", path: "", url: "" },
-        { no: 2, place: "未有連結", name: "GTI", path: "", url: "" },
+        {
+          no: 1,
+          name: "EPM",
+          aka: "Engineering Procedures Manual",
+          kind: "Procedure",
+          pathA: "",
+          url: "",
+          pathB: "Unily / Quality › Departments → Quality → Engineering Procedures Manual",
+        },
+        {
+          no: 2,
+          name: "GTI",
+          aka: "General Technical Instruction",
+          kind: "Procedure",
+          pathA: "",
+          url: "",
+          pathB: "Unily / Quality › Departments → Quality → GTI Library",
+        },
         {
           no: 3,
-          place: "Unily",
           name: "SOP",
-          path: "Unily › Departments › LM › SOP",
+          aka: "Standard Operating Procedure",
+          kind: "Procedure",
+          pathA: "Unily › Departments › LM › SOP",
           url: "",
+          pathB: "Unily › Departments → LM → SOP",
         },
-        { no: 4, place: "未有連結", name: "Safety", path: "", url: "" },
+        {
+          no: 4,
+          name: "Safety",
+          aka: "安全管理文件",
+          kind: "Safety",
+          pathA: "",
+          url: "",
+          pathB: "Unily › Departments → EHS / Safety",
+        },
         {
           no: 5,
-          place: "LMS",
           name: "LMS",
-          path: "",
+          aka: "Learning Management System",
+          kind: "System",
+          pathA: "LMS Home",
           url: "https://lms.haeco.com/ekp/servlet/ekp/login?target=%2Fekp%2Fservlet%2Fekp%2FTABLISTSESSIONS%3FDECORATEPAGE%3DY&TEMPLATE=&getnews=N&FAIL=Y&UID=236051&ERR=9",
+          pathB: "LMS › LMS Home",
         },
         {
           no: 6,
-          place: "Power BI",
           name: "R&S",
-          path: "",
+          aka: "Roster & Staffing Dashboard",
+          kind: "Report",
+          pathA: "",
           url: "https://app.powerbi.com.mcas.ms/groups/me/reports/fc8178bb-011e-45c1-8f79-ca15a072d4e6/ReportSectionac7fe663ab81dcb1531a?ctid=99e838ef-4ec1-4ce2-9229-2efbb56fb03c&experience=power-bi",
+          pathB: "Power BI › LM Dashboard",
         },
         {
           no: 7,
-          place: "GlobalProtect",
           name: "ECHO / AMOS / AMOSmobile",
-          path: "GlobalProtect portal，入去再開 ECHO / AMOS / AMOSmobile",
+          aka: "維修生產系統",
+          kind: "System",
+          pathA: "GlobalProtect portal，入去再開 ECHO / AMOS / AMOSmobile",
           url: "https://secureaccess.haeco.com/global-protect/portal/portal.esp",
+          pathB: "GlobalProtect › Portal → AMOS / ECHO",
         },
         {
           no: 8,
-          place: "Airport",
           name: "Airside Driving Handbook",
-          path: "",
+          aka: "機場駕駛手冊",
+          kind: "Reference",
+          pathA: "",
           url: "https://opsportal.hongkongairport.com/SitePages/Procedure%20Manuals-view.aspx",
+          pathB: "HKIA Portal › Procedure Manuals",
         },
         {
           no: 9,
-          place: "Unily",
           name: "Quality Healthcare",
-          path: "",
+          aka: "醫療福利資訊",
+          kind: "Employee Service",
+          pathA: "",
           url: "https://haeco.unily.com/redir/1765?sci=B9AD7085-E29E-44DB-9E3F-2E93A1273CC0&search=Quality%2520Healthcare",
+          pathB: "Unily › People Services → Medical Benefits",
         },
         {
           no: 10,
-          place: "Unily",
           name: "KC Bus",
-          path: "",
+          aka: "員工巴士服務",
+          kind: "Employee Service",
+          pathA: "",
           url: "https://haeco.unily.com/sites/hxhkg-site/SitePageModern/2296/hxhkg-transport",
+          pathB: "Unily › Transport Services",
         },
         {
           no: 11,
-          place: "Unily",
           name: "Audit Schedule",
-          path: "",
+          aka: "審核計劃",
+          kind: "Audit",
+          pathA: "",
           url: "https://haeco.unily.com/sites/hxhkg-site/SitePageModern/16342/audits",
+          pathB: "Unily › Quality → Audit Schedule",
         },
         {
           no: 12,
-          place: "Unily",
           name: "Licence and Authorisation User Guide (General User)",
-          path: "",
+          aka: "授權系統用戶手冊",
+          kind: "Authorization",
+          pathA: "",
           url: "https://haeco.unily.com/sites/hxhkg-departments/quality/documentPreview/6047/LMS-Licence-and-Authorisation-User-Guide-General-User",
+          pathB: "Unily / Quality › Quality → LMS User Guide",
         },
         {
           no: 13,
-          place: "Step GPS",
           name: "Step GPS",
-          path: "",
+          aka: "車隊定位系統",
+          kind: "System",
+          pathA: "",
           url: "https://monitor.haeco-tracking.v3.iot.pn/login",
+          pathB: "Step GPS › Fleet Tracking Dashboard",
         },
         {
           no: 14,
-          place: "Power BI",
           name: "Auth & Lic Summary (All Staff)",
-          path: "",
+          aka: "授權總覽 Dashboard",
+          kind: "Authorization",
+          pathA: "",
           url: "https://app.powerbi.com/groups/me/reports/375e3fcb-0e06-4d55-95ca-4ed907a386a7/ReportSection076eba1a400abd14687e?ctid=99e838ef-4ec1-4ce2-9229-2efbb56fb03c&experience=power-bi&bookmarkGuid=c7c9d255-e9b8-4944-b3e4-567693e32023",
+          pathB: "Power BI › Authorization Dashboard",
         },
         {
           no: 15,
-          place: "Power BI",
-          name: "Training record (All Staff)",
-          path: "",
+          name: "Training Record (All Staff)",
+          aka: "培訓記錄 Dashboard",
+          kind: "Training",
+          pathA: "",
           url: "https://app.powerbi.com/groups/me/reports/448bac17-8838-4e56-a06b-fcfac723db1c/ReportSection?ctid=99e838ef-4ec1-4ce2-9229-2efbb56fb03c&experience=power-bi",
+          pathB: "Power BI › Training Dashboard",
         },
         {
           no: 16,
-          place: "Forms",
           name: "LM Ramp Surveillance Report",
-          path: "",
+          aka: "停機坪監察報告",
+          kind: "Safety",
+          pathA: "",
           url: "https://forms.office.com.mcas.ms/Pages/DesignPageV2.aspx?origin=NeoPortalPage&subpage=design&wdlor=c689AF7B0-B311-42CB-A571-50E64F4831B7&id=7zjomcFO4kySKS77tW-wPBYbh8fR6ttCjpEPucSjbcxUNDJZQTFCNTFBWjRSMEtIQkhGTFdFU0VYVSQlQCN0PWcu&topview=Preview&preview=%257B%2522ViewModeIndex%2522%3A0%257D",
+          pathB: "Forms / Safety › LM Safety Observation Reporting",
         },
         {
           no: 17,
-          place: "Unily",
           name: "External Audit Notice",
-          path: "HAECO › Departments › Quality",
+          aka: "外部審核通知",
+          kind: "Audit",
+          pathA: "HAECO › Departments › Quality",
           url: "",
+          pathB: "Unily / Quality › Quality → External Audit",
         },
         {
           no: 18,
-          place: "Unily",
           name: "List of Aviation Authority Approvals",
-          path: "HAECO › Departments › Quality",
+          aka: "航空機構批准清單",
+          kind: "Compliance",
+          pathA: "HAECO › Departments › Quality",
           url: "",
+          pathB: "Unily / Quality › Quality → Authority Approval List",
         },
         {
           no: 19,
-          place: "Unily",
           name: "Record of Experience Review for Basic Licence Application",
-          path: "HAECO › Departments › Quality",
+          aka: "AML 經驗審查表",
+          kind: "AML",
+          pathA: "HAECO › Departments › Quality",
           url: "",
+          pathB: "Unily / Quality › Quality → Licence Application Forms",
         },
         {
           no: 20,
-          place: "Unily",
           name: "Record of Experience Review for Licence Type Application",
-          path: "HAECO › Departments › Quality",
+          aka: "AML Type 經驗審查表",
+          kind: "AML",
+          pathA: "HAECO › Departments › Quality",
           url: "",
+          pathB: "Unily / Quality › Quality → Type Application Forms",
         },
         {
           no: 21,
-          place: "Unily",
-          name: "New HKAR-66 AML application procedure",
-          path: "HAECO › Departments › Quality",
+          name: "New HKAR-66 AML Application Procedure",
+          aka: "AML 申請程序",
+          kind: "AML",
+          pathA: "HAECO › Departments › Quality",
           url: "",
+          pathB: "Unily / Quality › Quality → HKAR-66 Procedures",
         },
       ];
 
-      const PLACE_THEME = {
-        Unily: { tag: "#d7f3ee", ink: "#3f7d74" },
-        "Power BI": { tag: "#fff3d6", ink: "#8a7040" },
-        LMS: { tag: "#e4f0fb", ink: "#4a6d8c" },
-        GlobalProtect: { tag: "#fde8d6", ink: "#8b5e3a" },
-        Airport: { tag: "#ebe4f8", ink: "#6b5a8a" },
-        Forms: { tag: "#fceef3", ink: "#8a5a6e" },
-        "Step GPS": { tag: "#e8f5e3", ink: "#4f7a45" },
-        未有連結: { tag: "#eef3f5", ink: "#4a5b64" },
+      const KIND_THEME = {
+        Procedure: { tag: "#d7f3ee", ink: "#3f7d74" },
+        Safety: { tag: "#fde8d6", ink: "#8b5e3a" },
+        System: { tag: "#e4f0fb", ink: "#4a6d8c" },
+        Report: { tag: "#fff3d6", ink: "#8a7040" },
+        Reference: { tag: "#ebe4f8", ink: "#6b5a8a" },
+        "Employee Service": { tag: "#fceef3", ink: "#8a5a6e" },
+        Audit: { tag: "#f3efe4", ink: "#7a6a4a" },
+        Authorization: { tag: "#dceef8", ink: "#3d6b86" },
+        Training: { tag: "#e8f5e3", ink: "#4f7a45" },
+        Compliance: { tag: "#e8eef8", ink: "#5a6588" },
+        AML: { tag: "#f6e7dc", ink: "#8a5a3a" },
       };
 
-      const PLACE_FALLBACK = [
+      const KIND_FALLBACK = [
         { tag: "#e4f0fb", ink: "#4a6d8c" },
         { tag: "#e8f5e3", ink: "#4f7a45" },
         { tag: "#fceef3", ink: "#8a5a6e" },
@@ -525,26 +614,41 @@
         { tag: "#f3efe4", ink: "#7a6a4a" },
       ];
 
+      const KIND_ORDER = [
+        "Procedure",
+        "Authorization",
+        "AML",
+        "Training",
+        "Audit",
+        "Compliance",
+        "Safety",
+        "System",
+        "Report",
+        "Reference",
+        "Employee Service",
+      ];
+
       const COLS = [
         { key: "no", label: "#", cls: "num sort" },
-        { key: "place", label: "去邊度", cls: "sort" },
         { key: "name", label: "名稱", cls: "sort" },
-        { key: "path", label: "路徑", cls: "sort" },
+        { key: "aka", label: "係乜嚟", cls: "sort" },
+        { key: "kind", label: "分類", cls: "sort" },
+        { key: "pathA", label: "路徑 A", cls: "sort" },
+        { key: "pathB", label: "路徑 B", cls: "sort" },
       ];
 
       const state = {
         query: "",
-        place: "",
+        kind: "",
         sortKey: "no",
         sortDir: "asc",
       };
 
-      function themeForPlace(place) {
-        if (PLACE_THEME[place]) return PLACE_THEME[place];
+      function themeForKind(kind) {
+        if (KIND_THEME[kind]) return KIND_THEME[kind];
         let hash = 0;
-        for (const ch of String(place))
-          hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-        return PLACE_FALLBACK[hash % PLACE_FALLBACK.length];
+        for (const ch of String(kind)) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+        return KIND_FALLBACK[hash % KIND_FALLBACK.length];
       }
 
       function escapeHtml(str) {
@@ -563,8 +667,9 @@
         }
       }
 
-      function copyText(item) {
-        return item.url || item.path || item.name;
+      function copyText(item, which) {
+        if (which === "B") return item.pathB || item.name;
+        return item.url || item.pathA || item.name;
       }
 
       function writeClipboard(text) {
@@ -586,27 +691,30 @@
         });
       }
 
-      function uniquePlaces() {
-        const preferred = [
-          "Unily",
-          "Power BI",
-          "LMS",
-          "GlobalProtect",
-          "Airport",
-          "Forms",
-          "Step GPS",
-          "未有連結",
-        ];
-        const present = new Set(ITEMS.map((item) => item.place || "未分類"));
-        return preferred.filter((place) => present.has(place));
+      function uniqueKinds() {
+        const present = new Set(ITEMS.map((item) => item.kind || "未分類"));
+        return KIND_ORDER.filter((kind) => present.has(kind));
+      }
+
+      function pathAValue(item) {
+        return item.pathA || item.url || "";
       }
 
       function visibleItems() {
         const q = state.query.trim().toLowerCase();
         const rows = ITEMS.filter((item) => {
-          if (state.place && item.place !== state.place) return false;
+          if (state.kind && item.kind !== state.kind) return false;
           if (!q) return true;
-          const hay = [item.no, item.place, item.name, item.path, item.url, hostOf(item.url)]
+          const hay = [
+            item.no,
+            item.name,
+            item.aka,
+            item.kind,
+            item.pathA,
+            item.pathB,
+            item.url,
+            hostOf(item.url),
+          ]
             .join(" ")
             .toLowerCase();
           return hay.includes(q);
@@ -615,8 +723,8 @@
         const dir = state.sortDir === "desc" ? -1 : 1;
         const key = state.sortKey;
         rows.sort((a, b) => {
-          const av = key === "path" ? a.path || a.url || "" : a[key];
-          const bv = key === "path" ? b.path || b.url || "" : b[key];
+          const av = key === "pathA" ? pathAValue(a) : a[key];
+          const bv = key === "pathA" ? pathAValue(b) : b[key];
           if (typeof av === "number" && typeof bv === "number") {
             return (av - bv) * dir;
           }
@@ -630,12 +738,15 @@
         return state.sortDir === "asc" ? "↑" : "↓";
       }
 
-      function renderPath(item) {
-        if (!item.path && !item.url) {
-          return '<span class="missing">未有路徑</span>';
+      function renderPathA(item) {
+        if (!item.pathA && !item.url) {
+          return `
+            <span class="path-label">路徑 A</span>
+            <span class="missing">未有路徑</span>
+          `;
         }
-        const crumb = item.path
-          ? `<span class="crumb">${escapeHtml(item.path)}</span>`
+        const crumb = item.pathA
+          ? `<span class="crumb">${escapeHtml(item.pathA)}</span>`
           : "";
         const host = item.url
           ? `<span class="host">${escapeHtml(hostOf(item.url))}</span>`
@@ -644,29 +755,46 @@
           ? `<a class="act" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">開啟</a>`
           : "";
         return `
+          <span class="path-label">路徑 A</span>
           ${crumb}${host}
           <div class="actions">
             ${open}
-            <button type="button" class="act" data-copy="${escapeHtml(String(item.no))}">複製</button>
+            <button type="button" class="act" data-copy="${escapeHtml(String(item.no))}" data-which="A">複製 A</button>
+          </div>
+        `;
+      }
+
+      function renderPathB(item) {
+        if (!item.pathB) {
+          return `
+            <span class="path-label">路徑 B</span>
+            <span class="missing">未有路徑</span>
+          `;
+        }
+        return `
+          <span class="path-label">路徑 B</span>
+          <span class="crumb">${escapeHtml(item.pathB)}</span>
+          <div class="actions">
+            <button type="button" class="act" data-copy="${escapeHtml(String(item.no))}" data-which="B">複製 B</button>
           </div>
         `;
       }
 
       function renderFilters() {
         const box = document.getElementById("filters");
-        const places = uniquePlaces();
+        const kinds = uniqueKinds();
         const buttons = [
           { value: "", label: "全部", theme: { tag: "#eef3f5", ink: "#4a5b64" } },
-          ...places.map((place) => ({
-            value: place,
-            label: place,
-            theme: themeForPlace(place),
+          ...kinds.map((kind) => ({
+            value: kind,
+            label: kind,
+            theme: themeForKind(kind),
           })),
         ];
         box.innerHTML = buttons
           .map((btn) => {
-            const on = state.place === btn.value ? " is-on" : "";
-            return `<button type="button" class="filter-btn${on}" data-place="${escapeHtml(btn.value)}" style="--place-tag:${btn.theme.tag}; --place-ink:${btn.theme.ink}">${escapeHtml(btn.label)}</button>`;
+            const on = state.kind === btn.value ? " is-on" : "";
+            return `<button type="button" class="filter-btn${on}" data-kind="${escapeHtml(btn.value)}" style="--place-tag:${btn.theme.tag}; --place-ink:${btn.theme.ink}">${escapeHtml(btn.label)}</button>`;
           })
           .join("");
       }
@@ -675,12 +803,11 @@
         const board = document.getElementById("board");
         const stats = document.getElementById("stats");
         const rows = visibleItems();
-        const placeCount = uniquePlaces().length;
-        const linked = ITEMS.filter((item) => item.url || item.path).length;
+        const kindCount = uniqueKinds().length;
 
         stats.textContent =
           rows.length === ITEMS.length
-            ? `共 ${ITEMS.length} 項 · ${placeCount} 個去處 · ${linked} 項有路徑`
+            ? `共 ${ITEMS.length} 項 · ${kindCount} 個分類 · 路徑 A / B 並列`
             : `顯示 ${rows.length} / ${ITEMS.length} 項`;
 
         if (!rows.length) {
@@ -702,13 +829,15 @@
             <tbody>
               ${rows
                 .map((item) => {
-                  const theme = themeForPlace(item.place);
+                  const theme = themeForKind(item.kind);
                   return `
                 <tr style="--place-tag:${theme.tag}; --place-ink:${theme.ink}">
                   <td class="num">${escapeHtml(item.no)}</td>
-                  <td class="place-cell"><span class="place-tag">${escapeHtml(item.place)}</span></td>
                   <td class="name">${escapeHtml(item.name)}</td>
-                  <td class="path">${renderPath(item)}</td>
+                  <td class="aka">${escapeHtml(item.aka)}</td>
+                  <td class="kind-cell"><span class="place-tag">${escapeHtml(item.kind)}</span></td>
+                  <td class="path">${renderPathA(item)}</td>
+                  <td class="path">${renderPathB(item)}</td>
                 </tr>
               `;
                 })
@@ -725,9 +854,9 @@
       });
 
       document.getElementById("filters").addEventListener("click", (event) => {
-        const btn = event.target.closest("[data-place]");
+        const btn = event.target.closest("[data-kind]");
         if (!btn) return;
-        state.place = btn.getAttribute("data-place") || "";
+        state.kind = btn.getAttribute("data-kind") || "";
         renderFilters();
         render();
       });
@@ -736,20 +865,21 @@
         const copyBtn = event.target.closest("[data-copy]");
         if (copyBtn) {
           const no = Number(copyBtn.getAttribute("data-copy"));
+          const which = copyBtn.getAttribute("data-which") || "A";
           const item = ITEMS.find((row) => row.no === no);
           if (!item) return;
           try {
-            await writeClipboard(copyText(item));
+            await writeClipboard(copyText(item, which));
             copyBtn.textContent = "已複製";
             copyBtn.classList.add("is-done");
             setTimeout(() => {
-              copyBtn.textContent = "複製";
+              copyBtn.textContent = which === "B" ? "複製 B" : "複製 A";
               copyBtn.classList.remove("is-done");
             }, 1600);
           } catch {
             copyBtn.textContent = "複製失敗";
             setTimeout(() => {
-              copyBtn.textContent = "複製";
+              copyBtn.textContent = which === "B" ? "複製 B" : "複製 A";
             }, 1600);
           }
           return;
