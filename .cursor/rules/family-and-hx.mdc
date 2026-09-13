@@ -11,5 +11,5 @@ alwaysApply: true
 - 工作檔：只放入 `HX/`
 - 唔好再開 `家庭/` folder
 - 唔好把呢兩頁再複製去其他 branch
-- 改完 commit + push `main`
+- 改之前先 pull 最新，改完 commit + 自動 push `main`
 - HTML 右下角 version：細改 +0.1，大改 +1.0
