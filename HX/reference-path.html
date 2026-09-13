@@ -243,47 +243,20 @@
         word-break: break-word;
       }
 
-      .host {
-        display: block;
-        margin-top: 4px;
-        color: var(--muted);
-        font-size: 0.76rem;
-        word-break: break-all;
+      a.path-link {
+        color: var(--accent);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        word-break: break-word;
+      }
+
+      a.path-link:hover {
+        color: #0b5c56;
       }
 
       .missing {
         color: #9aa8b0;
-      }
-
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 8px;
-      }
-
-      .act {
-        border: 1px solid var(--line);
-        background: #fff;
-        color: var(--accent);
-        border-radius: 999px;
-        padding: 4px 10px;
-        font: inherit;
-        font-size: 0.76rem;
-        font-weight: 700;
-        text-decoration: none;
-        cursor: pointer;
-      }
-
-      .act:hover {
-        border-color: #9ec9c2;
-        background: var(--accent-soft);
-      }
-
-      .act.is-done {
-        border-color: transparent;
-        background: var(--accent-soft);
-        color: var(--accent);
       }
 
       .path-label {
@@ -396,7 +369,7 @@
       <p class="stats" id="stats"></p>
       <div id="board"></div>
     </div>
-    <div class="page-version" data-version="2.2" aria-label="頁面版本 2.2">v2.2</div>
+    <div class="page-version" data-version="2.3" aria-label="頁面版本 2.3">v2.3</div>
 
     <script>
       const ITEMS = [
@@ -667,30 +640,6 @@
         }
       }
 
-      function copyText(item, which) {
-        if (which === "B") return item.pathB || item.name;
-        return item.url || item.pathA || item.name;
-      }
-
-      function writeClipboard(text) {
-        if (navigator.clipboard && window.isSecureContext) {
-          return navigator.clipboard.writeText(text);
-        }
-        return new Promise((resolve, reject) => {
-          const area = document.createElement("textarea");
-          area.value = text;
-          area.setAttribute("readonly", "");
-          area.style.position = "fixed";
-          area.style.left = "-9999px";
-          document.body.appendChild(area);
-          area.select();
-          const ok = document.execCommand("copy");
-          area.remove();
-          if (ok) resolve();
-          else reject(new Error("copy failed"));
-        });
-      }
-
       function uniqueKinds() {
         const present = new Set(ITEMS.map((item) => item.kind || "未分類"));
         return KIND_ORDER.filter((kind) => present.has(kind));
@@ -745,22 +694,13 @@
             <span class="missing">未有路徑</span>
           `;
         }
-        const crumb = item.pathA
-          ? `<span class="crumb">${escapeHtml(item.pathA)}</span>`
-          : "";
-        const host = item.url
-          ? `<span class="host">${escapeHtml(hostOf(item.url))}</span>`
-          : "";
-        const open = item.url
-          ? `<a class="act" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">開啟</a>`
-          : "";
+        const label = item.pathA || hostOf(item.url) || item.url;
+        const body = item.url
+          ? `<a class="path-link crumb" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`
+          : `<span class="crumb">${escapeHtml(item.pathA)}</span>`;
         return `
           <span class="path-label">路徑 A</span>
-          ${crumb}${host}
-          <div class="actions">
-            ${open}
-            <button type="button" class="act" data-copy="${escapeHtml(String(item.no))}" data-which="A">複製 A</button>
-          </div>
+          ${body}
         `;
       }
 
@@ -774,9 +714,6 @@
         return `
           <span class="path-label">路徑 B</span>
           <span class="crumb">${escapeHtml(item.pathB)}</span>
-          <div class="actions">
-            <button type="button" class="act" data-copy="${escapeHtml(String(item.no))}" data-which="B">複製 B</button>
-          </div>
         `;
       }
 
@@ -861,30 +798,7 @@
         render();
       });
 
-      document.getElementById("board").addEventListener("click", async (event) => {
-        const copyBtn = event.target.closest("[data-copy]");
-        if (copyBtn) {
-          const no = Number(copyBtn.getAttribute("data-copy"));
-          const which = copyBtn.getAttribute("data-which") || "A";
-          const item = ITEMS.find((row) => row.no === no);
-          if (!item) return;
-          try {
-            await writeClipboard(copyText(item, which));
-            copyBtn.textContent = "已複製";
-            copyBtn.classList.add("is-done");
-            setTimeout(() => {
-              copyBtn.textContent = which === "B" ? "複製 B" : "複製 A";
-              copyBtn.classList.remove("is-done");
-            }, 1600);
-          } catch {
-            copyBtn.textContent = "複製失敗";
-            setTimeout(() => {
-              copyBtn.textContent = which === "B" ? "複製 B" : "複製 A";
-            }, 1600);
-          }
-          return;
-        }
-
+      document.getElementById("board").addEventListener("click", (event) => {
         const th = event.target.closest("th[data-sort]");
         if (!th) return;
         const key = th.getAttribute("data-sort");
