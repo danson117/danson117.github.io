@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>New customer / type / engine — tooling scope</title>
+<title>New type application — tooling (LM Operations record)</title>
 <style>
   :root {
     --ink: #1c2430;
@@ -13,20 +13,13 @@
     --card: #ffffff;
     --navy: #1e3a5f;
     --navy-soft: #e8eef5;
-    --teal: #1d4a46;
-    --teal-soft: #e6f0ee;
-    --olive: #5a4a1c;
-    --olive-soft: #f3efe0;
     --ops: #2f4a2f;
     --ops-soft: #e8f0e6;
     --ta: #3a3f6b;
-    --ta-soft: #eceef6;
+    --olive: #5a4a1c;
+    --olive-soft: #f3efe0;
     --qa: #6b2e24;
     --qa-soft: #f6eae7;
-    --alert: #7a1f1f;
-    --alert-soft: #f8e8e6;
-    --future: #4a5564;
-    --future-soft: #eef0f2;
   }
 
   * { box-sizing: border-box; }
@@ -76,6 +69,7 @@
     letter-spacing: 0.03em;
     text-transform: uppercase;
   }
+  h2.other { background: var(--qa); }
 
   h3 {
     font-size: 13px;
@@ -99,8 +93,8 @@
     border: 1px solid var(--line);
     padding: 12px 14px;
   }
-  .box.in { border-left: 6px solid var(--navy); }
-  .box.out { border-left: 6px solid var(--muted); }
+  .box.lm { border-left: 6px solid var(--ops); }
+  .box.other { border-left: 6px solid var(--qa); }
   .box ul { margin: 6px 0 0; padding-left: 18px; }
   .box li { margin: 2px 0; }
 
@@ -134,6 +128,8 @@
   .step.inv-c .who { color: var(--ta); }
   .step.ops-c { border-top: 5px solid var(--ops); }
   .step.ops-c .who { color: var(--ops); }
+  .step.qa-c { border-top: 5px solid var(--qa); }
+  .step.qa-c .who { color: var(--qa); }
   .arrow {
     width: 18px;
     flex: 0 0 18px;
@@ -145,32 +141,12 @@
     font-weight: 700;
   }
 
-  .decision {
-    display: grid;
-    grid-template-columns: 220px 1fr 1fr;
-    gap: 10px;
-    margin: 10px 0;
-    align-items: stretch;
-  }
-  .diamond {
-    background: var(--navy-soft);
-    border: 1px solid var(--navy);
-    padding: 14px 12px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .diamond strong { color: var(--navy); }
-  .path-yes { background: var(--card); border: 1px solid var(--ops); padding: 12px; }
-  .path-no { background: var(--card); border: 1px solid var(--olive); padding: 12px; }
-  .path-yes h3 { color: var(--ops); }
-  .path-no h3 { color: var(--olive); }
-
   table {
     width: 100%;
     border-collapse: collapse;
     background: var(--card);
     font-size: 12.5px;
+    margin-bottom: 10px;
   }
   th, td {
     border: 1px solid var(--line);
@@ -183,6 +159,8 @@
     color: #fff;
     font-weight: 650;
   }
+  th.qa { background: var(--qa); }
+  td.date { white-space: nowrap; font-variant-numeric: tabular-nums; }
 
   .legend {
     display: flex;
@@ -212,13 +190,12 @@
     body { background: #fff; font-size: 11px; }
     .page { max-width: none; padding: 10mm 10mm 12mm; }
     h2 { break-after: avoid; }
-    .box, .step, .decision, table { break-inside: avoid; }
+    .box, .step, table { break-inside: avoid; }
     .pipeline { break-inside: avoid; }
-    a { color: inherit; text-decoration: none; }
   }
 
   @media screen and (max-width: 900px) {
-    .scope, .decision { grid-template-columns: 1fr; }
+    .scope { grid-template-columns: 1fr; }
     .pipeline { flex-wrap: wrap; }
     .arrow { width: 100%; flex-basis: 100%; height: 16px; transform: rotate(90deg); }
   }
@@ -242,161 +219,218 @@
 </head>
 <body>
   <div class="page">
-    <h1>新客／新機型／新引擎 — Tooling scope</h1>
-    <p class="subtitle">Line Maintenance (LM) 日常紀錄 · Commercial 簽新客 · TS 對 AMM · 常見 Tires &amp; Brakes</p>
+    <h1>申請新機種 — Tooling 部分（LM Operations 紀錄）</h1>
+    <p class="subtitle">我哋：LM Operations。其他部門電郵只作 record：邊個、邊日、講過咩。</p>
 
     <div class="why">
-      <p><strong>點解有呢頁：</strong> 記低外勤 LM 點做。Commercial 先有新客／新機／新引擎；TS 對應該次工作睇 AMM，列出要準備嘅 tooling。</p>
-      <p><strong>理論上唔關 Production 事。</strong> 主線係 Commercial → TS 睇 AMM → 用 AMM 所需 tooling 核自己有冇。Production 唔係啟動者，亦唔係睇 AMM 嗰個。只有確認冇刀、要買／借，先可能出現其他人。</p>
+      <p><strong>呢頁記咩：</strong> 申請新飛機機種嘅要求入面，其中一截係 tooling。唔當第二部門嘅信係我哋自己嘅 SOP。</p>
+      <p><strong>我哋：</strong> Line Maintenance / Operations。外勤最高做到 A check，其下 Weekly / Daily / Transit。常見要準備 <strong>Tires &amp; Brakes</strong> tooling。</p>
+      <p><strong>其他人：</strong> 每句要求寫部門、人名、職銜、日期。之後你再丟電郵，照同一格加。</p>
     </div>
 
-    <h2>1. 幾時啟動</h2>
+    <h2>1. 我哋（LM Operations）記低嘅主線</h2>
     <div class="scope">
-      <div class="box in">
-        <h3>會啟動（Commercial）</h3>
+      <div class="box lm">
+        <h3>我哋點理解</h3>
         <ul>
-          <li>Commercial 簽咗新客（唔係 QA 發起）</li>
-          <li>新機型，或同一客加新機型</li>
-          <li>新引擎（同一機型換咗引擎系列）</li>
+          <li>Commercial 簽新客／新機／新引擎，先有申請新機種。</li>
+          <li>LM 工作範圍最高 A check。</li>
+          <li>TS 對應該 check 睇 AMM，列 tooling；常見 Tires &amp; Brakes。</li>
+          <li>跟住用 AMM 核有冇呢啲 tooling。</li>
         </ul>
       </div>
-      <div class="box out">
-        <h3>LM 工作範圍（我哋做得到）</h3>
+      <div class="box other">
+        <h3>唔係我哋部門做</h3>
         <ul>
-          <li><strong>最高：A check</strong></li>
-          <li>其下：Weekly check → Daily check → Transit</li>
-          <li>唔包 A check 以上（C check 等）</li>
+          <li>TS 出正式 required tool list（MPD / AMM / TEM）。</li>
+          <li>QA 用 tooling list 去撐牌照／authorization 申請。</li>
+          <li>Production：TS 話「可能」審清單、CAPEX 或 tool loan — 唔係 LM 主線。</li>
         </ul>
       </div>
     </div>
 
-    <h2>2. 流程（主線，無 Production）</h2>
+    <h2 class="other">2. 其他部門而家做緊咩（由電郵抽出）</h2>
     <div class="pipeline">
       <div class="step ops-c">
         <div class="who">Commercial</div>
-        <h3>1. 新客／新機／新引擎</h3>
+        <h3>確認 scope + 交手冊</h3>
         <ul>
-          <li>外勤 LM 要接手呢個客</li>
-          <li>工作範圍最高 A check</li>
+          <li>YS Fung 叫 Commercial 同 QA 確認維修範圍</li>
+          <li>交齊文件俾 TS 先做得 tool list</li>
         </ul>
       </div>
       <div class="arrow">&rarr;</div>
       <div class="step ts-c">
-        <div class="who">Tech Service (TS)</div>
-        <h3>2. 對 AMM</h3>
+        <div class="who">Technical Services · Tooling</div>
+        <h3>出 required tool list</h3>
         <ul>
-          <li>按 A / Weekly / Daily / Transit 搵對應 AMM</li>
-          <li>睇要準備咩 tooling</li>
-          <li>最常見：<strong>Tires &amp; Brakes</strong></li>
+          <li>用 MPD、AMM、TEM</li>
+          <li>按 FH / FC / Mo interval</li>
+          <li>缺嘅睇 option tool</li>
+        </ul>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="step qa-c">
+        <div class="who">Quality</div>
+        <h3>牌照／authorization</h3>
+        <ul>
+          <li>用 tooling availability list</li>
+          <li>KE A380：QA 等 TS 出 list</li>
         </ul>
       </div>
       <div class="arrow">&rarr;</div>
       <div class="step inv-c">
-        <div class="who">仍係對 AMM</div>
-        <h3>3. 有冇呢啲 tooling</h3>
+        <div class="who">Production（TS 所述）</div>
+        <h3>可能補 gap</h3>
         <ul>
-          <li>AMM 寫咗要咩刀，就對有冇</li>
-          <li>唔使經 Production 先至知「要咩」</li>
+          <li>Budget / CAPEX</li>
+          <li>或 tool loan 理由</li>
+          <li>唔係 LM 發起</li>
         </ul>
       </div>
     </div>
-    <p class="note">第二、三步都係 TS 用 AMM：先抽出所需 tooling，再核自己有冇。主線停喺呢度。</p>
 
-    <h2>3. TS 實際做咩</h2>
-    <div class="box in">
-      <h3>AMM → tooling 清單 → 有冇</h3>
-      <ul>
-        <li>定 check 級：A check、Weekly、Daily 或 Transit。</li>
-        <li>開該機型／引擎對應 AMM（Aircraft Maintenance Manual）相關章。</li>
-        <li>列出該次工作所需 special tooling。</li>
-        <li>最常、最優先：<strong>Tires &amp; Brakes</strong>。</li>
-        <li>跟住仍用同一份 AMM 清單，核我哋有冇呢啲 tooling。</li>
-      </ul>
-    </div>
-
-    <h2>4. 有冇 tooling — 分岔</h2>
-    <div class="decision">
-      <div class="diamond">
-        <strong>AMM 要嘅 tooling，我哋有冇？</strong>
-        <p class="note">TS 對 AMM 之後。呢步仍然唔經 Production。</p>
-      </div>
-      <div class="path-yes">
-        <h3>有 — 主線完</h3>
-        <p>可以按 AMM 開工。唔使叫 Production。</p>
-      </div>
-      <div class="path-no">
-        <h3>冇 — 先至可能出主線</h3>
-        <p>先要補刀。舊電郵先提到 CAPEX 或 tool loan。呢啲唔係日常主線，亦唔係「因為 QA」。</p>
-      </div>
-    </div>
-
-    <h2>5. 實例（Korean Air A380 / Raya B767）</h2>
+    <h2 class="other">3. 來源紀錄 — 邊個、邊日、講過咩</h2>
     <table>
       <thead>
         <tr>
-          <th>個案</th>
-          <th>TS 對 AMM 出咩</th>
-          <th>目標時間（該電郵）</th>
+          <th>日期</th>
+          <th>邊個（部門）</th>
+          <th>講過咩</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>A380 · Korean Air</td>
-          <td>該機 AMM 所需 generic tooling，加 Tires &amp; Brakes tooling。</td>
-          <td>兩星期內（on or before 10 September）</td>
+          <td class="date">2026-08-21 11:30</td>
+          <td>YS Fung<br>Head of Section (Tooling), Technical Services</td>
+          <td>
+            寫俾 Lily LL Lin、Levin Lai。<br>
+            TS 平時用對方提供嘅 <strong>MPD、AMM、TEM</strong>，按維修範圍（FH / FC / Mo interval）出 required tool list，並 review outstanding 嘅 option tool。<br>
+            Production <em>may</em> 審清單，準備 budget／CAPEX，或寫 tool loan 理由補 gap。<br>
+            QA <em>may</em> 用 tooling availability list 支援 licence application。<br>
+            <strong>KE A380 (RR Trent 900) authorization：</strong> AMM available；TEM available；MPD unavailable。<br>
+            <strong>Raya B767-200F certification HKG：</strong> MPD available；AMM unavailable（無 access right）。<br>
+            手冊齊嘅話，TS 完成 review（例如 C-Check）大約要兩個月。請將 A380 同 B767 分開排期。<br>
+            請 Commercial 同 QA 確認 maintenance scope，並交齊 supporting documents 俾 TS。
+          </td>
         </tr>
         <tr>
-          <td>B767 · Raya</td>
-          <td>B767-200（電郵寫 PW-80A，引擎型號要再核）同 B767-300F / CF6-80C2；範圍做到 750 FH / 21 FC 及對應 MO interval。</td>
-          <td>A380 清單完成後兩個月內</td>
+          <td class="date">2026-08-21 11:35</td>
+          <td>Josephine Pang<br>Quality Surveyor, Quality Department</td>
+          <td>將 <strong>Victor Wu, Quality Manager (Line Maintenance)</strong> loop 入同一封電郵。</td>
+        </tr>
+        <tr>
+          <td class="date">2026-08-24 09:57</td>
+          <td>Josephine Pang<br>Quality Surveyor, Quality Department</td>
+          <td>
+            寫俾 YS Fung。<br>
+            <strong>KE A380 (RR Trent 900) C/S certificates authorization：</strong> 請提供 HAECO 而家嘅 A380 tool list，並<strong>包含 Korean 提供嘅 tooling list</strong>。<br>
+            <strong>Raya B767-200F HKG certification：</strong> Raya 已俾 AMM download access；請出 tooling，範圍 <strong>up to A Check</strong>。
+          </td>
+        </tr>
+        <tr>
+          <td class="date">2026-08-24 之後<br>（回覆未見 Sent 時間）</td>
+          <td>YS Fung<br>Head of Section (Tooling), Technical Services</td>
+          <td>
+            寫俾 Josephine Pang。Based on QA request，TS 會準備：<br>
+            <strong>A380：</strong> HAECO inventory 已有嘅 A380 generic tooling + Wheel／Brake R&amp;I tooling。目標兩星期內（on or before 10 September）。<br>
+            <strong>B767：</strong> Raya B767-200／CF6-80A 同 B767-300F／CF6-80C，做到 750 FH／212 FC 及對應 Mo interval。目標：A380 清單完成後兩個月內。<br>
+            再重申 Production <em>may</em> 審清單、CAPEX 或 tool loan。
+          </td>
+        </tr>
+        <tr>
+          <td class="date">2026-09-14</td>
+          <td>Josephine Pang<br>Quality Surveyor, Quality Department</td>
+          <td>
+            寫俾 Siu Chung Chan（OCG／LM 線）。<br>
+            <strong>LM action：</strong> reply Korean A380 (RR Trent 900) email；prepare document。<br>
+            <strong>QA action：</strong> HAECO Korean MOLIT Certificate 加 A380 T900 — QA <strong>pending Tech Services 出 A380 tooling list</strong>。<br>
+            有時間：對照 TS 同 Korean 列出嘅 <strong>wheel change / A380 wheel and brake tooling</strong>。
+          </td>
         </tr>
       </tbody>
     </table>
-    <p class="note">舊電郵抬頭寫「QA request／Production may review」——當例外補刀路徑，<strong>唔改寫主線</strong>。主線以 Commercial + TS／AMM 為準。</p>
+    <p class="note">YS Fung 回覆 Josephine 嗰封（「Based on QA request…」）轉寄入面冇 Sent 時間，只知係 2026-08-24 09:57 之後。有原信時間再補。</p>
 
-    <h2>6. 角色</h2>
+    <h2 class="other">4. 由以上電郵抽出嘅 tooling 要求</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>機種／客</th>
+          <th>要求（誰講）</th>
+          <th>手冊狀態（2026-08-21 YS Fung）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A380 · Korean Air · RR Trent 900</td>
+          <td>
+            Josephine 2026-08-24：HAECO 現有 A380 tool list + Korean 提供嘅 list。<br>
+            YS Fung（08-24 後）：generic inventory list + Wheel／Brake R&amp;I；目標 2026-09-10 或之前。<br>
+            Josephine 2026-09-14：QA 等 TS 出 A380 tooling list 先繼續 MOLIT 加 T900。
+          </td>
+          <td>AMM 有；TEM 有；MPD 無</td>
+        </tr>
+        <tr>
+          <td>B767 · Raya · 200F／300F</td>
+          <td>
+            Josephine 2026-08-24：AMM 已有 access；tooling <strong>up to A Check</strong>。<br>
+            YS Fung（08-24 後）：B767-200／CF6-80A 同 B767-300F／CF6-80C，做到 750 FH／212 FC + Mo interval；A380 清單後兩個月。
+          </td>
+          <td>2026-08-21：MPD 有；AMM 當時未有 access。08-24 Josephine 話 Raya 已開放 AMM。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>5. 點樣讀（LM vs 其他人）</h2>
     <table>
       <thead>
         <tr>
           <th>角色</th>
-          <th>做</th>
-          <th>唔做</th>
+          <th>我哋點記</th>
+          <th>來源</th>
         </tr>
       </thead>
       <tbody>
         <tr>
+          <td>LM Operations（我哋）</td>
+          <td>申請新機種入面 tooling 呢截：知 scope 最高 A check；常見 Tires &amp; Brakes。2026-09-14 QA 叫 LM reply KE A380 電郵，有空對 wheel／brake tooling。</td>
+          <td>口述 + Josephine 2026-09-14</td>
+        </tr>
+        <tr>
+          <td>Technical Services · Tooling</td>
+          <td>正式出 required tool list。用 MPD／AMM／TEM。YS Fung 係呢截嘅發言人。</td>
+          <td>YS Fung 2026-08-21 同之後回覆</td>
+        </tr>
+        <tr>
+          <td>Quality</td>
+          <td>為 authorization／licence／MOLIT 追 tooling list。Josephine Pang 係呢截發言人。Victor Wu（QM LM）2026-08-21 被 loop 入。</td>
+          <td>Josephine 2026-08-21、08-24、09-14</td>
+        </tr>
+        <tr>
           <td>Commercial</td>
-          <td>簽新客／新機／新引擎，LM 先要準備 tooling。</td>
-          <td>唔讀 AMM。</td>
-        </tr>
-        <tr>
-          <td>Tech Service (TS)</td>
-          <td>對應該 check 級睇 AMM；列出 tooling（常見 Tires &amp; Brakes）；再對 AMM 核有冇。</td>
-          <td>唔等 QA 先開始。</td>
-        </tr>
-        <tr>
-          <td>QA</td>
-          <td>唔喺呢條主線。</td>
-          <td>唔係因為 QA 有新客先做。</td>
+          <td>TS 要求佢哋同 QA 確認 scope 同交文件。未見 Commercial 自己回覆喺呢疊信。</td>
+          <td>YS Fung 2026-08-21</td>
         </tr>
         <tr>
           <td>Production</td>
-          <td>理論上<strong>唔關事</strong>。</td>
-          <td>唔睇 AMM、唔出 tooling 清單。只有確認冇刀、要買／借，先可能出現。</td>
+          <td>只有 TS 講「可能」審清單／CAPEX／loan。未見 Production 自己發言。LM 主線當佢唔存在。</td>
+          <td>YS Fung 2026-08-21 同之後回覆</td>
         </tr>
       </tbody>
     </table>
 
     <div class="legend">
-      <span><i class="swatch" style="background:#e8f0e6;border-color:#2f4a2f"></i>Commercial</span>
-      <span><i class="swatch" style="background:#e8eef5;border-color:#1e3a5f"></i>Tech Service / AMM</span>
-      <span><i class="swatch" style="background:#eceef6;border-color:#3a3f6b"></i>對 AMM 核有冇 tooling</span>
+      <span><i class="swatch" style="background:#e8f0e6;border-color:#2f4a2f"></i>LM Operations（我哋）</span>
+      <span><i class="swatch" style="background:#e8eef5;border-color:#1e3a5f"></i>TS Tooling</span>
+      <span><i class="swatch" style="background:#f6eae7;border-color:#6b2e24"></i>Quality（其他部門 record）</span>
+      <span><i class="swatch" style="background:#eceef6;border-color:#3a3f6b"></i>Production（僅 TS 所述）</span>
     </div>
 
     <div class="footer">
-      日常流程紀錄第一條（v1.1 按口述更正）。HX 側欄可翻睇。Print：Chrome Ctrl+P → Save as PDF。
+      Record 頁 v2.0。之後再有電郵：部門 + 人名 + 年月日 + 原句要求。Print：Chrome Ctrl+P → Save as PDF。
     </div>
   </div>
-  <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
+  <div class="page-version" data-version="2.0" aria-label="Page version 2.0">v2.0</div>
 </body>
 </html>
