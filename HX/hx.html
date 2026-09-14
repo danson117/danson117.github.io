@@ -15,8 +15,14 @@
         --side-dim: #9eb0c4;
         --pick: #fff;
       }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
       body {
         font-family: "Segoe UI", Calibri, Arial, sans-serif;
         color: var(--ink);
@@ -34,7 +40,9 @@
         flex-direction: column;
         gap: 6px;
         overflow: hidden;
-        transition: width 0.15s ease, padding 0.15s ease;
+        transition:
+          width 0.15s ease,
+          padding 0.15s ease;
       }
       .nav-head {
         display: flex;
@@ -53,11 +61,18 @@
         cursor: pointer;
         white-space: nowrap;
       }
-      button.fold:hover { background: rgba(255, 255, 255, 0.08); }
-      body.nav-off nav { width: 48px; padding: 12px 8px; }
+      button.fold:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      body.nav-off nav {
+        width: 48px;
+        padding: 12px 8px;
+      }
       body.nav-off nav h1,
       body.nav-off nav p,
-      body.nav-off #topics { display: none; }
+      body.nav-off #topics {
+        display: none;
+      }
       nav h1 {
         font-size: 15px;
         margin: 0 0 4px;
@@ -82,7 +97,9 @@
         font-size: 13px;
         cursor: grab;
       }
-      button.topic:hover { background: rgba(255, 255, 255, 0.08); }
+      button.topic:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
       button.topic.on {
         background: var(--pick);
         color: var(--side);
@@ -95,9 +112,16 @@
         opacity: 0.75;
         margin-top: 2px;
       }
-      .row { position: relative; }
-      .row.drag { opacity: 0.45; }
-      .row .topic { padding-right: 26px; padding-bottom: 18px; }
+      .row {
+        position: relative;
+      }
+      .row.drag {
+        opacity: 0.45;
+      }
+      .row .topic {
+        padding-right: 26px;
+        padding-bottom: 18px;
+      }
       button.pin {
         position: absolute;
         right: 4px;
@@ -137,9 +161,15 @@
         fill: currentColor;
         stroke: none;
       }
-      .row:has(.topic.on) .pin { color: var(--muted); }
-      .row:has(.topic.on) .pin.on { color: var(--side); }
-      .row.pinned .topic { box-shadow: inset 3px 0 0 #fff; }
+      .row:has(.topic.on) .pin {
+        color: var(--muted);
+      }
+      .row:has(.topic.on) .pin.on {
+        color: var(--side);
+      }
+      .row.pinned .topic {
+        box-shadow: inset 3px 0 0 #fff;
+      }
       main {
         flex: 1;
         display: flex;
@@ -157,7 +187,9 @@
         font-size: 12px;
         color: var(--muted);
       }
-      .bar a { color: var(--side); }
+      .bar a {
+        color: var(--side);
+      }
       .bar .fold {
         color: var(--side);
         border-color: var(--line);
@@ -177,9 +209,16 @@
         color: var(--side-dim);
       }
       @media (max-width: 720px) {
-        body { flex-direction: column; }
-        nav { width: 100%; padding-bottom: 12px; }
-        iframe { min-height: 70vh; }
+        body {
+          flex-direction: column;
+        }
+        nav {
+          width: 100%;
+          padding-bottom: 12px;
+        }
+        iframe {
+          min-height: 70vh;
+        }
       }
     </style>
   </head>
@@ -190,21 +229,35 @@
           <h1>HX</h1>
           <p>揀主題。右下角圖釘置頂。拖動改排序。</p>
         </div>
-        <button type="button" class="fold" id="fold" aria-expanded="true">收起</button>
+        <button type="button" class="fold" id="fold" aria-expanded="true">
+          收起
+        </button>
       </div>
       <div id="topics"></div>
     </nav>
     <main>
       <div class="bar">
         <span>
-          <button type="button" class="fold" id="fold-bar" hidden>展開主題</button>
+          <button type="button" class="fold" id="fold-bar" hidden>
+            展開主題
+          </button>
           <span id="now">Authorization Training Process</span>
         </span>
-        <a id="solo" href="authorization-training-process.html" target="_blank" rel="noopener">單獨打開呢頁</a>
+        <a
+          id="solo"
+          href="authorization-training-process.html"
+          target="_blank"
+          rel="noopener"
+          >單獨打開呢頁</a
+        >
       </div>
-      <iframe id="frame" title="HX topic" src="authorization-training-process.html"></iframe>
+      <iframe
+        id="frame"
+        title="HX topic"
+        src="authorization-training-process.html"
+      ></iframe>
     </main>
-    <div class="page-version" data-version="1.7">v1.7</div>
+    <div class="page-version" data-version="1.8">v1.8</div>
     <script>
       const TOPICS = [
         {
@@ -218,6 +271,12 @@
           file: "easa-cx-hk-document-hierarchy.html",
           title: "EASA / CX / HK document hierarchy",
           blurb: "文件層級",
+        },
+        {
+          id: "tooling",
+          file: "new-customer-tooling-scope.html",
+          title: "New customer tooling scope",
+          blurb: "新客／新機／新引擎刀單",
         },
       ];
 
@@ -233,35 +292,55 @@
         fold.setAttribute("aria-expanded", open ? "true" : "false");
         fold.textContent = open ? "收起" : "開";
         foldBar.hidden = open;
-        try { localStorage.setItem("hx-nav", open ? "1" : "0"); } catch (e) {}
+        try {
+          localStorage.setItem("hx-nav", open ? "1" : "0");
+        } catch (e) {}
       }
-      fold.addEventListener("click", () => setNav(document.body.classList.contains("nav-off")));
+      fold.addEventListener("click", () =>
+        setNav(document.body.classList.contains("nav-off")),
+      );
       foldBar.addEventListener("click", () => setNav(true));
-      try { if (localStorage.getItem("hx-nav") === "0") setNav(false); } catch (e) {}
+      try {
+        if (localStorage.getItem("hx-nav") === "0") setNav(false);
+      } catch (e) {}
 
       function loadOrder() {
         let ids = [];
-        try { ids = JSON.parse(localStorage.getItem("hx-order") || "[]"); } catch (e) {}
+        try {
+          ids = JSON.parse(localStorage.getItem("hx-order") || "[]");
+        } catch (e) {}
         const known = new Set(TOPICS.map((t) => t.id));
         ids = ids.filter((id) => known.has(id));
-        TOPICS.forEach((t) => { if (!ids.includes(t.id)) ids.push(t.id); });
+        TOPICS.forEach((t) => {
+          if (!ids.includes(t.id)) ids.push(t.id);
+        });
         return ids;
       }
       function saveOrder(ids) {
-        try { localStorage.setItem("hx-order", JSON.stringify(ids)); } catch (e) {}
+        try {
+          localStorage.setItem("hx-order", JSON.stringify(ids));
+        } catch (e) {}
       }
       function loadPins() {
         let ids = [];
         try {
-          ids = JSON.parse(localStorage.getItem("hx-pins") || localStorage.getItem("hx-stars") || "[]");
+          ids = JSON.parse(
+            localStorage.getItem("hx-pins") ||
+              localStorage.getItem("hx-stars") ||
+              "[]",
+          );
         } catch (e) {}
         const known = new Set(TOPICS.map((t) => t.id));
         return ids.filter((id) => known.has(id));
       }
       function savePins(ids) {
-        try { localStorage.setItem("hx-pins", JSON.stringify(ids)); } catch (e) {}
+        try {
+          localStorage.setItem("hx-pins", JSON.stringify(ids));
+        } catch (e) {}
       }
-      function isPinned(id) { return loadPins().includes(id); }
+      function isPinned(id) {
+        return loadPins().includes(id);
+      }
       function togglePin(id) {
         const ids = loadPins();
         const i = ids.indexOf(id);
@@ -275,7 +354,10 @@
         const order = loadOrder();
         const pins = new Set(loadPins());
         const pick = (pred) =>
-          order.filter(pred).map((id) => TOPICS.find((t) => t.id === id)).filter(Boolean);
+          order
+            .filter(pred)
+            .map((id) => TOPICS.find((t) => t.id === id))
+            .filter(Boolean);
         return pick((id) => pins.has(id)).concat(pick((id) => !pins.has(id)));
       }
       function show(id) {
@@ -306,19 +388,30 @@
           b.type = "button";
           b.className = "topic";
           b.dataset.id = t.id;
-          b.innerHTML = t.title + (t.blurb ? "<small>" + t.blurb + "</small>" : "");
+          b.innerHTML =
+            t.title + (t.blurb ? "<small>" + t.blurb + "</small>" : "");
           b.addEventListener("click", () => show(t.id));
           const pin = document.createElement("button");
           pin.type = "button";
           pin.className = "pin" + (isPinned(t.id) ? " on" : "");
           pin.title = isPinned(t.id) ? "取消置頂" : "置頂";
           pin.setAttribute("aria-label", pin.title);
-          pin.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 1.5a3.3 3.3 0 0 0-3.3 3.3c0 2.55 3.3 7.4 3.3 7.4s3.3-4.85 3.3-7.4A3.3 3.3 0 0 0 8 1.5zm0 4.85a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7z"/></svg>';
+          pin.innerHTML =
+            '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 1.5a3.3 3.3 0 0 0-3.3 3.3c0 2.55 3.3 7.4 3.3 7.4s3.3-4.85 3.3-7.4A3.3 3.3 0 0 0 8 1.5zm0 4.85a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7z"/></svg>';
           pin.addEventListener("mousedown", (e) => e.stopPropagation());
-          pin.addEventListener("click", (e) => { e.stopPropagation(); togglePin(t.id); });
+          pin.addEventListener("click", (e) => {
+            e.stopPropagation();
+            togglePin(t.id);
+          });
           row.append(b, pin);
-          row.addEventListener("dragstart", () => { dragId = t.id; row.classList.add("drag"); });
-          row.addEventListener("dragend", () => { dragId = null; row.classList.remove("drag"); });
+          row.addEventListener("dragstart", () => {
+            dragId = t.id;
+            row.classList.add("drag");
+          });
+          row.addEventListener("dragend", () => {
+            dragId = null;
+            row.classList.remove("drag");
+          });
           row.addEventListener("dragover", (e) => e.preventDefault());
           row.addEventListener("drop", (e) => {
             e.preventDefault();
@@ -337,7 +430,9 @@
       renderTopics();
       const start = location.hash.replace(/^#/, "");
       show(start);
-      window.addEventListener("hashchange", () => show(location.hash.replace(/^#/, "")));
+      window.addEventListener("hashchange", () =>
+        show(location.hash.replace(/^#/, "")),
+      );
     </script>
   </body>
 </html>

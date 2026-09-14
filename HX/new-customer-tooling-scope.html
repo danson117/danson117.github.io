@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New customer / type / engine — tooling scope</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #2a3340;
+    --paper: #f6f4ee;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+    --navy-soft: #e8eef5;
+    --teal: #1d4a46;
+    --teal-soft: #e6f0ee;
+    --olive: #5a4a1c;
+    --olive-soft: #f3efe0;
+    --ops: #2f4a2f;
+    --ops-soft: #e8f0e6;
+    --ta: #3a3f6b;
+    --ta-soft: #eceef6;
+    --qa: #6b2e24;
+    --qa-soft: #f6eae7;
+    --alert: #7a1f1f;
+    --alert-soft: #f8e8e6;
+    --future: #4a5564;
+    --future-soft: #eef0f2;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.45;
+    font-size: 13.5px;
+  }
+
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 28px 48px;
+  }
+
+  h1 {
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    margin: 0 0 6px;
+    color: var(--navy);
+    font-weight: 700;
+  }
+  .subtitle {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .why {
+    border: 1px solid var(--line);
+    background: var(--card);
+    padding: 12px 14px;
+    margin: 0 0 22px;
+  }
+  .why p { margin: 0 0 8px; }
+  .why p:last-child { margin: 0; }
+
+  h2 {
+    font-size: 15px;
+    margin: 26px 0 10px;
+    padding: 6px 10px;
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  h2.alert { background: var(--alert); }
+
+  h3 {
+    font-size: 13px;
+    margin: 0 0 8px;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  p, li { color: var(--ink); }
+  .note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+
+  .scope {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .box {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 12px 14px;
+  }
+  .box.in { border-left: 6px solid var(--navy); }
+  .box.out { border-left: 6px solid var(--muted); }
+  .box ul { margin: 6px 0 0; padding-left: 18px; }
+  .box li { margin: 2px 0; }
+
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 8px 0 12px;
+    flex-wrap: nowrap;
+  }
+  .step {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 10px 8px;
+    text-align: left;
+    min-width: 0;
+  }
+  .step .who {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .step h3 { font-size: 12px; margin: 0 0 6px; }
+  .step ul { margin: 0; padding-left: 14px; font-size: 12px; }
+  .step.qa-c { border-top: 5px solid var(--qa); }
+  .step.qa-c .who { color: var(--qa); }
+  .step.ts-c { border-top: 5px solid var(--navy); }
+  .step.ts-c .who { color: var(--navy); }
+  .step.inv-c { border-top: 5px solid var(--ta); }
+  .step.inv-c .who { color: var(--ta); }
+  .step.ops-c { border-top: 5px solid var(--ops); }
+  .step.ops-c .who { color: var(--ops); }
+  .arrow {
+    width: 18px;
+    flex: 0 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  .decision {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr;
+    gap: 10px;
+    margin: 10px 0;
+    align-items: stretch;
+  }
+  .diamond {
+    background: var(--navy-soft);
+    border: 1px solid var(--navy);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .diamond strong { color: var(--navy); }
+  .path-yes { background: var(--card); border: 1px solid var(--ops); padding: 12px; }
+  .path-no { background: var(--card); border: 1px solid var(--olive); padding: 12px; }
+  .path-yes h3 { color: var(--ops); }
+  .path-no h3 { color: var(--olive); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    font-size: 12.5px;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 7px 9px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+  }
+  .unresolved { background: var(--qa-soft); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin: 8px 0 0;
+    font-size: 12px;
+  }
+  .swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--line);
+    vertical-align: -1px;
+    margin-right: 5px;
+  }
+
+  .footer {
+    margin-top: 22px;
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  @media print {
+    body { background: #fff; font-size: 11px; }
+    .page { max-width: none; padding: 10mm 10mm 12mm; }
+    h2 { break-after: avoid; }
+    .box, .step, .decision, table { break-inside: avoid; }
+    .pipeline { break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+  }
+
+  @media screen and (max-width: 900px) {
+    .scope, .decision { grid-template-columns: 1fr; }
+    .pipeline { flex-wrap: wrap; }
+    .arrow { width: 100%; flex-basis: 100%; height: 16px; transform: rotate(90deg); }
+  }
+
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>新客／新機型／新引擎 — Tooling scope</h1>
+    <p class="subtitle">日常工作流程紀錄 · Tech Service 先出清單 · 再確認庫存 · Production 處理缺口</p>
+
+    <div class="why">
+      <p><strong>點解有呢頁：</strong> 記低日常點做，之後可以喺 HX 翻睇。第一條流程：有新客戶、新機型或新引擎要做維修時，要確保 tooling 齊同符合該次工作範圍。</p>
+      <p>來源：你口述嘅 TS 步驟，加 YS Fung 電郵（A380 Korean Air / B767 Raya tooling list）。未寫死嘅崗位用橙色底，方便之後改。</p>
+    </div>
+
+    <h2>1. 幾時啟動</h2>
+    <div class="scope">
+      <div class="box in">
+        <h3>會啟動</h3>
+        <ul>
+          <li>新客戶（例如 Korean Air A380、Raya B767）</li>
+          <li>新機型，或同一客加新機型</li>
+          <li>新引擎（同一機型換咗引擎系列）</li>
+          <li>QA 要求 TS 出 tooling scope</li>
+        </ul>
+      </div>
+      <div class="box out">
+        <h3>呢頁未覆蓋</h3>
+        <ul>
+          <li>日常已經有、只係借刀／補數</li>
+          <li>授權／訓練（見 Authorization Training Process）</li>
+          <li>採購落 PO 之後嘅收貨細節</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>2. 流程</h2>
+    <div class="pipeline">
+      <div class="step qa-c">
+        <div class="who">QA</div>
+        <h3>1. 提出要求</h3>
+        <ul>
+          <li>新客／新機／新引擎要做維修</li>
+          <li>要求 TS 出 tooling scope</li>
+        </ul>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="step ts-c">
+        <div class="who">Tech Service (TS)</div>
+        <h3>2. 睇 check sheet</h3>
+        <ul>
+          <li>A check 同／或「樓下」線上工作</li>
+          <li>逐張 check sheet 抽出要準備嘅 tooling</li>
+          <li>最常見：換轆／換掣（wheel / brake R&amp;I）</li>
+        </ul>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="step inv-c">
+        <div class="who">Confirm 庫存</div>
+        <h3>3. 有冇呢啲刀</h3>
+        <ul>
+          <li>對 HAECO inventory</li>
+          <li>分：庫有／缺／可借</li>
+          <li>崗位見第 5 節（未完全定死）</li>
+        </ul>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="step ops-c">
+        <div class="who">Production</div>
+        <h3>4. 缺口點補</h3>
+        <ul>
+          <li>審所需清單</li>
+          <li>Budget / CAPEX 買</li>
+          <li>或 tool loan 理由，補 gap</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">TS 負責「要咩刀」。確認「有冇」同「點買／點借」係下一步，唔好停喺清單。</p>
+
+    <h2>3. TS 實際做咩</h2>
+    <div class="box in">
+      <h3>Check sheet → tooling 清單</h3>
+      <ul>
+        <li>定工作範圍：A check，定樓下（線上／停機坪常見工，例如換轆換掣）。</li>
+        <li>攞齊該機型／引擎、該 check 嘅 check sheet。</li>
+        <li>每張 sheet 列所需 special tooling，合成一份 required tooling list。</li>
+        <li>最常、最優先：<strong>Wheel / Brake R&amp;I</strong>（換轆、換掣）。</li>
+        <li>可先出 HAECO inventory 入面已有嘅 generic 清單（A380 電郵就係咁）。</li>
+        <li>引擎要寫清楚系列（例如 B767-300F / CF6-80C2），同埋做到邊個 FH／FC／MO interval。</li>
+      </ul>
+    </div>
+
+    <h2>4. 有冇刀 — 分岔</h2>
+    <div class="decision">
+      <div class="diamond">
+        <strong>庫存有冇所需 tooling？</strong>
+        <p class="note">對完 HAECO inventory 之後。</p>
+      </div>
+      <div class="path-yes">
+        <h3>有 — 可以用</h3>
+        <p>列入 available。Production 知到開工前刀喺邊。唔使為呢項開 CAPEX。</p>
+      </div>
+      <div class="path-no">
+        <h3>冇 — 要補 gap</h3>
+        <p>Production 檢視清單：開 budget／CAPEX 買，或者寫 tool loan 理由向外借，直到 outstanding gap 清晒。</p>
+      </div>
+    </div>
+
+    <h2>5. 實例（電郵）</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>個案</th>
+          <th>TS 要出咩</th>
+          <th>目標時間</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A380 · Korean Air</td>
+          <td>HAECO inventory 已有嘅 A380 generic tooling，加 wheel / brake R&amp;I tooling。</td>
+          <td>兩星期內（電郵寫 on or before 10 September）</td>
+        </tr>
+        <tr>
+          <td>B767 · Raya</td>
+          <td>B767-200（電郵寫 PW-80A，引擎型號要再核）同 B767-300F / CF6-80C2；範圍做到 750 FH / 21 FC 及對應 MO interval 所需 tooling。</td>
+          <td>A380 清單完成後兩個月內</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">電郵：Based on QA request, TS to prepare tooling scope。Production may review the required tool list and prepare budget／CAPEX，或 justification for tool loan。</p>
+
+    <h2 class="alert">6. 角色同未定點</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>角色</th>
+          <th>做</th>
+          <th>未定／唔做</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>QA</td>
+          <td>因新客／新機／新引擎提出 tooling scope 要求。</td>
+          <td>唔代替 TS 讀 check sheet。</td>
+        </tr>
+        <tr>
+          <td>Tech Service (TS)</td>
+          <td>第一步。按 A check 或樓下工作，睇晒 check sheet，出所需 tooling 清單（包括換轆換掣）。</td>
+          <td>唔負責最後話「庫有、可以開工」——要交去 confirm。</td>
+        </tr>
+        <tr class="unresolved">
+          <td>Confirm 庫存（Tool store / Inventory？）</td>
+          <td>對清單：每項有／冇／可借。</td>
+          <td>你講「交俾可以 confirm 有冇嘅人」。電郵未寫死部門名。係 tool store、inventory 定 Production 自己對？之後補。</td>
+        </tr>
+        <tr>
+          <td>Production</td>
+          <td>審 required tool list；缺口用 CAPEX 買，或 tool loan 補。</td>
+          <td>未有清單之前唔好估預算。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="legend">
+      <span><i class="swatch" style="background:#f6eae7;border-color:#6b2e24"></i>QA</span>
+      <span><i class="swatch" style="background:#e8eef5;border-color:#1e3a5f"></i>Tech Service</span>
+      <span><i class="swatch" style="background:#eceef6;border-color:#3a3f6b"></i>Confirm 庫存</span>
+      <span><i class="swatch" style="background:#e8f0e6;border-color:#2f4a2f"></i>Production</span>
+      <span><i class="swatch" style="background:#f6eae7;border-color:#6b2e24"></i>未定崗位</span>
+    </div>
+
+    <div class="footer">
+      日常流程紀錄第一條。HX 側欄可翻睇。Print：Chrome Ctrl+P → Save as PDF。
+    </div>
+  </div>
+  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+</body>
+</html>
