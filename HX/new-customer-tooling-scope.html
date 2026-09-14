@@ -76,7 +76,6 @@
     letter-spacing: 0.03em;
     text-transform: uppercase;
   }
-  h2.alert { background: var(--alert); }
 
   h3 {
     font-size: 13px;
@@ -129,8 +128,6 @@
   }
   .step h3 { font-size: 12px; margin: 0 0 6px; }
   .step ul { margin: 0; padding-left: 14px; font-size: 12px; }
-  .step.qa-c { border-top: 5px solid var(--qa); }
-  .step.qa-c .who { color: var(--qa); }
   .step.ts-c { border-top: 5px solid var(--navy); }
   .step.ts-c .who { color: var(--navy); }
   .step.inv-c { border-top: 5px solid var(--ta); }
@@ -186,7 +183,6 @@
     color: #fff;
     font-weight: 650;
   }
-  .unresolved { background: var(--qa-soft); }
 
   .legend {
     display: flex;
@@ -247,175 +243,160 @@
 <body>
   <div class="page">
     <h1>新客／新機型／新引擎 — Tooling scope</h1>
-    <p class="subtitle">日常工作流程紀錄 · Tech Service 先出清單 · 再確認庫存 · Production 處理缺口</p>
+    <p class="subtitle">Line Maintenance (LM) 日常紀錄 · Commercial 簽新客 · TS 對 AMM · 常見 Tires &amp; Brakes</p>
 
     <div class="why">
-      <p><strong>點解有呢頁：</strong> 記低日常點做，之後可以喺 HX 翻睇。第一條流程：有新客戶、新機型或新引擎要做維修時，要確保 tooling 齊同符合該次工作範圍。</p>
-      <p>來源：你口述嘅 TS 步驟，加 YS Fung 電郵（A380 Korean Air / B767 Raya tooling list）。未寫死嘅崗位用橙色底，方便之後改。</p>
+      <p><strong>點解有呢頁：</strong> 記低外勤 LM 點做。Commercial 先有新客／新機／新引擎；TS 對應該次工作睇 AMM，列出要準備嘅 tooling。</p>
+      <p><strong>理論上唔關 Production 事。</strong> 主線係 Commercial → TS 睇 AMM → 用 AMM 所需 tooling 核自己有冇。Production 唔係啟動者，亦唔係睇 AMM 嗰個。只有確認冇刀、要買／借，先可能出現其他人。</p>
     </div>
 
     <h2>1. 幾時啟動</h2>
     <div class="scope">
       <div class="box in">
-        <h3>會啟動</h3>
+        <h3>會啟動（Commercial）</h3>
         <ul>
-          <li>新客戶（例如 Korean Air A380、Raya B767）</li>
+          <li>Commercial 簽咗新客（唔係 QA 發起）</li>
           <li>新機型，或同一客加新機型</li>
           <li>新引擎（同一機型換咗引擎系列）</li>
-          <li>QA 要求 TS 出 tooling scope</li>
         </ul>
       </div>
       <div class="box out">
-        <h3>呢頁未覆蓋</h3>
+        <h3>LM 工作範圍（我哋做得到）</h3>
         <ul>
-          <li>日常已經有、只係借刀／補數</li>
-          <li>授權／訓練（見 Authorization Training Process）</li>
-          <li>採購落 PO 之後嘅收貨細節</li>
+          <li><strong>最高：A check</strong></li>
+          <li>其下：Weekly check → Daily check → Transit</li>
+          <li>唔包 A check 以上（C check 等）</li>
         </ul>
       </div>
     </div>
 
-    <h2>2. 流程</h2>
+    <h2>2. 流程（主線，無 Production）</h2>
     <div class="pipeline">
-      <div class="step qa-c">
-        <div class="who">QA</div>
-        <h3>1. 提出要求</h3>
+      <div class="step ops-c">
+        <div class="who">Commercial</div>
+        <h3>1. 新客／新機／新引擎</h3>
         <ul>
-          <li>新客／新機／新引擎要做維修</li>
-          <li>要求 TS 出 tooling scope</li>
+          <li>外勤 LM 要接手呢個客</li>
+          <li>工作範圍最高 A check</li>
         </ul>
       </div>
       <div class="arrow">&rarr;</div>
       <div class="step ts-c">
         <div class="who">Tech Service (TS)</div>
-        <h3>2. 睇 check sheet</h3>
+        <h3>2. 對 AMM</h3>
         <ul>
-          <li>A check 同／或「樓下」線上工作</li>
-          <li>逐張 check sheet 抽出要準備嘅 tooling</li>
-          <li>最常見：換轆／換掣（wheel / brake R&amp;I）</li>
+          <li>按 A / Weekly / Daily / Transit 搵對應 AMM</li>
+          <li>睇要準備咩 tooling</li>
+          <li>最常見：<strong>Tires &amp; Brakes</strong></li>
         </ul>
       </div>
       <div class="arrow">&rarr;</div>
       <div class="step inv-c">
-        <div class="who">Confirm 庫存</div>
-        <h3>3. 有冇呢啲刀</h3>
+        <div class="who">仍係對 AMM</div>
+        <h3>3. 有冇呢啲 tooling</h3>
         <ul>
-          <li>對 HAECO inventory</li>
-          <li>分：庫有／缺／可借</li>
-          <li>崗位見第 5 節（未完全定死）</li>
-        </ul>
-      </div>
-      <div class="arrow">&rarr;</div>
-      <div class="step ops-c">
-        <div class="who">Production</div>
-        <h3>4. 缺口點補</h3>
-        <ul>
-          <li>審所需清單</li>
-          <li>Budget / CAPEX 買</li>
-          <li>或 tool loan 理由，補 gap</li>
+          <li>AMM 寫咗要咩刀，就對有冇</li>
+          <li>唔使經 Production 先至知「要咩」</li>
         </ul>
       </div>
     </div>
-    <p class="note">TS 負責「要咩刀」。確認「有冇」同「點買／點借」係下一步，唔好停喺清單。</p>
+    <p class="note">第二、三步都係 TS 用 AMM：先抽出所需 tooling，再核自己有冇。主線停喺呢度。</p>
 
     <h2>3. TS 實際做咩</h2>
     <div class="box in">
-      <h3>Check sheet → tooling 清單</h3>
+      <h3>AMM → tooling 清單 → 有冇</h3>
       <ul>
-        <li>定工作範圍：A check，定樓下（線上／停機坪常見工，例如換轆換掣）。</li>
-        <li>攞齊該機型／引擎、該 check 嘅 check sheet。</li>
-        <li>每張 sheet 列所需 special tooling，合成一份 required tooling list。</li>
-        <li>最常、最優先：<strong>Wheel / Brake R&amp;I</strong>（換轆、換掣）。</li>
-        <li>可先出 HAECO inventory 入面已有嘅 generic 清單（A380 電郵就係咁）。</li>
-        <li>引擎要寫清楚系列（例如 B767-300F / CF6-80C2），同埋做到邊個 FH／FC／MO interval。</li>
+        <li>定 check 級：A check、Weekly、Daily 或 Transit。</li>
+        <li>開該機型／引擎對應 AMM（Aircraft Maintenance Manual）相關章。</li>
+        <li>列出該次工作所需 special tooling。</li>
+        <li>最常、最優先：<strong>Tires &amp; Brakes</strong>。</li>
+        <li>跟住仍用同一份 AMM 清單，核我哋有冇呢啲 tooling。</li>
       </ul>
     </div>
 
-    <h2>4. 有冇刀 — 分岔</h2>
+    <h2>4. 有冇 tooling — 分岔</h2>
     <div class="decision">
       <div class="diamond">
-        <strong>庫存有冇所需 tooling？</strong>
-        <p class="note">對完 HAECO inventory 之後。</p>
+        <strong>AMM 要嘅 tooling，我哋有冇？</strong>
+        <p class="note">TS 對 AMM 之後。呢步仍然唔經 Production。</p>
       </div>
       <div class="path-yes">
-        <h3>有 — 可以用</h3>
-        <p>列入 available。Production 知到開工前刀喺邊。唔使為呢項開 CAPEX。</p>
+        <h3>有 — 主線完</h3>
+        <p>可以按 AMM 開工。唔使叫 Production。</p>
       </div>
       <div class="path-no">
-        <h3>冇 — 要補 gap</h3>
-        <p>Production 檢視清單：開 budget／CAPEX 買，或者寫 tool loan 理由向外借，直到 outstanding gap 清晒。</p>
+        <h3>冇 — 先至可能出主線</h3>
+        <p>先要補刀。舊電郵先提到 CAPEX 或 tool loan。呢啲唔係日常主線，亦唔係「因為 QA」。</p>
       </div>
     </div>
 
-    <h2>5. 實例（電郵）</h2>
+    <h2>5. 實例（Korean Air A380 / Raya B767）</h2>
     <table>
       <thead>
         <tr>
           <th>個案</th>
-          <th>TS 要出咩</th>
-          <th>目標時間</th>
+          <th>TS 對 AMM 出咩</th>
+          <th>目標時間（該電郵）</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>A380 · Korean Air</td>
-          <td>HAECO inventory 已有嘅 A380 generic tooling，加 wheel / brake R&amp;I tooling。</td>
-          <td>兩星期內（電郵寫 on or before 10 September）</td>
+          <td>該機 AMM 所需 generic tooling，加 Tires &amp; Brakes tooling。</td>
+          <td>兩星期內（on or before 10 September）</td>
         </tr>
         <tr>
           <td>B767 · Raya</td>
-          <td>B767-200（電郵寫 PW-80A，引擎型號要再核）同 B767-300F / CF6-80C2；範圍做到 750 FH / 21 FC 及對應 MO interval 所需 tooling。</td>
+          <td>B767-200（電郵寫 PW-80A，引擎型號要再核）同 B767-300F / CF6-80C2；範圍做到 750 FH / 21 FC 及對應 MO interval。</td>
           <td>A380 清單完成後兩個月內</td>
         </tr>
       </tbody>
     </table>
-    <p class="note">電郵：Based on QA request, TS to prepare tooling scope。Production may review the required tool list and prepare budget／CAPEX，或 justification for tool loan。</p>
+    <p class="note">舊電郵抬頭寫「QA request／Production may review」——當例外補刀路徑，<strong>唔改寫主線</strong>。主線以 Commercial + TS／AMM 為準。</p>
 
-    <h2 class="alert">6. 角色同未定點</h2>
+    <h2>6. 角色</h2>
     <table>
       <thead>
         <tr>
           <th>角色</th>
           <th>做</th>
-          <th>未定／唔做</th>
+          <th>唔做</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>QA</td>
-          <td>因新客／新機／新引擎提出 tooling scope 要求。</td>
-          <td>唔代替 TS 讀 check sheet。</td>
+          <td>Commercial</td>
+          <td>簽新客／新機／新引擎，LM 先要準備 tooling。</td>
+          <td>唔讀 AMM。</td>
         </tr>
         <tr>
           <td>Tech Service (TS)</td>
-          <td>第一步。按 A check 或樓下工作，睇晒 check sheet，出所需 tooling 清單（包括換轆換掣）。</td>
-          <td>唔負責最後話「庫有、可以開工」——要交去 confirm。</td>
+          <td>對應該 check 級睇 AMM；列出 tooling（常見 Tires &amp; Brakes）；再對 AMM 核有冇。</td>
+          <td>唔等 QA 先開始。</td>
         </tr>
-        <tr class="unresolved">
-          <td>Confirm 庫存（Tool store / Inventory？）</td>
-          <td>對清單：每項有／冇／可借。</td>
-          <td>你講「交俾可以 confirm 有冇嘅人」。電郵未寫死部門名。係 tool store、inventory 定 Production 自己對？之後補。</td>
+        <tr>
+          <td>QA</td>
+          <td>唔喺呢條主線。</td>
+          <td>唔係因為 QA 有新客先做。</td>
         </tr>
         <tr>
           <td>Production</td>
-          <td>審 required tool list；缺口用 CAPEX 買，或 tool loan 補。</td>
-          <td>未有清單之前唔好估預算。</td>
+          <td>理論上<strong>唔關事</strong>。</td>
+          <td>唔睇 AMM、唔出 tooling 清單。只有確認冇刀、要買／借，先可能出現。</td>
         </tr>
       </tbody>
     </table>
 
     <div class="legend">
-      <span><i class="swatch" style="background:#f6eae7;border-color:#6b2e24"></i>QA</span>
-      <span><i class="swatch" style="background:#e8eef5;border-color:#1e3a5f"></i>Tech Service</span>
-      <span><i class="swatch" style="background:#eceef6;border-color:#3a3f6b"></i>Confirm 庫存</span>
-      <span><i class="swatch" style="background:#e8f0e6;border-color:#2f4a2f"></i>Production</span>
-      <span><i class="swatch" style="background:#f6eae7;border-color:#6b2e24"></i>未定崗位</span>
+      <span><i class="swatch" style="background:#e8f0e6;border-color:#2f4a2f"></i>Commercial</span>
+      <span><i class="swatch" style="background:#e8eef5;border-color:#1e3a5f"></i>Tech Service / AMM</span>
+      <span><i class="swatch" style="background:#eceef6;border-color:#3a3f6b"></i>對 AMM 核有冇 tooling</span>
     </div>
 
     <div class="footer">
-      日常流程紀錄第一條。HX 側欄可翻睇。Print：Chrome Ctrl+P → Save as PDF。
+      日常流程紀錄第一條（v1.1 按口述更正）。HX 側欄可翻睇。Print：Chrome Ctrl+P → Save as PDF。
     </div>
   </div>
-  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+  <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
 </body>
 </html>
