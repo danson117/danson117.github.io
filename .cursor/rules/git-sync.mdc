@@ -1,0 +1,13 @@
+---
+description: Pull latest before editing; auto-push after every update
+alwaysApply: true
+---
+
+# Git 同步：改前 pull，改完自動 push
+
+只要而家連住呢個 GitHub account / 呢個 repo，一律跟呢個循環：
+
+1. **改之前先同步**：`git fetch`，再 `git pull` 而家條 branch 嘅最新（家庭頁就係 `origin/main`）。對住拉低嚟嘅最新先開始改。唔好用過期 checkout。
+2. **遠端已經有新 commit**：先 pull 再改；唔好覆蓋未拉嘅更新。
+3. **改完自動 push**：commit 之後即刻 `git push` 返同一條 branch。有更新就唔好只留喺本機。
+4. 家庭頁（`物品清單.html`、`todo.html`）改完 push `main`。工作檔只放入 `HX/`，一樣係改前 pull、改完 push。
