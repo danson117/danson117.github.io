@@ -8,6 +8,7 @@
 
 - [Authorization Training Management Process](authorization-training-process.html)
 - [EASA / HKAR / CX / HAECO Documentation Hierarchy](easa-cx-hk-document-hierarchy.html)
+- [LM audit / visitor schedule](lm-audit-schedule.html)
 
 ## 加新 HX HTML
 
