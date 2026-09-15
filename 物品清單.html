@@ -245,7 +245,7 @@
       <p class="stats" id="stats"></p>
       <div id="board"></div>
     </div>
-    <div class="page-version" data-version="1.1" aria-label="頁面版本 1.1">v1.1</div>
+    <div class="page-version" data-version="1.2" aria-label="頁面版本 1.2">v1.2</div>
 
     <script>
       const ITEMS = [
@@ -293,12 +293,19 @@
         { no: 17, place: "公司 Locker", name: "維修工具", note: "少量" },
         { no: 18, place: "書包", name: "工程師印章", note: "1 個" },
         { no: 19, place: "書包", name: "北京交通大學證書", note: "1 張" },
+        {
+          no: 20,
+          place: "第二個櫃桶電腦盒",
+          name: "HDMI 線",
+          note: "3 條",
+        },
       ];
 
       const PLACE_THEME = {
         "公司 Locker": { tag: "#d7f3ee", ink: "#3f7d74" },
         衣櫃: { tag: "#ebe4f8", ink: "#6b5a8a" },
         書包: { tag: "#fde8d6", ink: "#8b5e3a" },
+        第二個櫃桶電腦盒: { tag: "#e4f0fb", ink: "#4a6d8c" },
       };
 
       const PLACE_FALLBACK = [
