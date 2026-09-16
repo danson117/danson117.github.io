@@ -11,6 +11,8 @@ alwaysApply: true
 
 **GitHub = SSOT（單一真相來源）。** 本機檔只係鏡像，用嚟改完再 upload。遠端同本機有出入時，以 GitHub `main` 為準，唔好用本機覆蓋遠端（唔好 `--force`）。
 
+Downloads 入面嘅舊檔（用戶 download GitHub 之後留低）**唔好**自動 push 去蓋過 GitHub 較新版本。比較時間；只 push 較新嗰份。要用舊檔蓋過 GitHub，用戶要明確講 replace。詳情見 `downloads-intake.mdc`。
+
 同 `family-and-hx.mdc`「改完 commit + push `main`」一致。
 
 ## 每次改檔：固定 3 步

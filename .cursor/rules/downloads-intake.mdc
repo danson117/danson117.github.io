@@ -14,11 +14,23 @@ When the user names a file, look in this order:
 
 If that file is **already** in `C:\Cursor_Work` or the repo, use that copy. Do not pull a second copy from Downloads.
 
+## Newer file wins — never auto-replace GitHub with an older Downloads copy
+
+A file in Downloads is often an old download of the GitHub file. **GitHub / repo copy may be newer.**
+
+1. Pull latest GitHub first.
+2. Compare LastWriteTime (and size if needed) of Downloads vs repo / GitHub.
+3. **Downloads older or same** → leave it. Do **not** move, commit, or push it over GitHub.
+4. **Downloads newer** → move and push that newer file (if suitable for GitHub).
+5. **Replace GitHub with an older file only if the user clearly says to replace** the GitHub version.
+
 ## File is in Downloads — **move** (do not copy)
+
+Only after the newer-file check above:
 
 - **OK for GitHub** (under 50MB, not a secret / installer / huge video): **move** into `C:\Cursor_Work\danson117.github.io`. Work files → `HX/`. Family pages → repo root. Then follow `github-sync.mdc` (pull, commit, push).
 - **Too big or not suitable** (50MB or over, or GitHub-unsuitable): **move** to `C:\Cursor_Work` only. **Do not** commit or push.
 
-Example: `Authorization Process Flow.xlsx` in Downloads, 19KB → move to `HX\`, then push. A 200MB zip → move to `C:\Cursor_Work` only.
+Example: user downloaded `Authorization Process Flow.xlsx` to Downloads after we already updated GitHub → **do not** push the Downloads copy. A 200MB zip → move to `C:\Cursor_Work` only.
 
 Do not open File Explorer. After a move, show the new path in backticks.
