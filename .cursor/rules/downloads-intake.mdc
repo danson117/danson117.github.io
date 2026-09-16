@@ -5,12 +5,14 @@ alwaysApply: true
 
 # Downloads intake
 
+**Only the file / doc the user named.** Never move, copy, or sweep other files in Downloads. Never “clean” Downloads.
+
 When the user names a file, look in this order:
 
 1. `C:\Cursor_Work` and `C:\Cursor_Work\danson117.github.io` (STT `Cursor_wWork` = `Cursor_Work`)
-2. Always also check `C:\Users\Danson\Downloads`
+2. Always also check `C:\Users\Danson\Downloads` **for that named file only**
 
-If the file is **already** in `C:\Cursor_Work` or the repo, use that copy. Do not pull a second copy from Downloads.
+If that file is **already** in `C:\Cursor_Work` or the repo, use that copy. Do not pull a second copy from Downloads.
 
 ## File is in Downloads — **move** (do not copy)
 
