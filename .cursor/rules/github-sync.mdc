@@ -1,26 +1,26 @@
 ---
-description: This GitHub Pages repo only — pull latest before edits, then 自動 push
+description: GitHub is SSOT — pull latest, amend local mirror, then auto push
 alwaysApply: true
 ---
 
 # GitHub sync（只限呢個倉）
 
-只適用於 `danson117/danson117.github.io`，本機 `C:\Cursor\danson117.github.io`。
-**唔好**套去 `life-os` 或其他 `C:\Cursor` project。**唔好**寫成 User Rule。
+只適用於 `danson117/danson117.github.io`。
+本機鏡像：`C:\Cursor_Work\danson117.github.io`。
+**唔好**套去其他 project。**唔好**寫成 User Rule。
 
-同 `family-and-hx.mdc`「改完 commit + push `main`」一致；呢度寫步驟。
+**GitHub = SSOT（單一真相來源）。** 本機檔只係鏡像，用嚟改完再 upload。遠端同本機有出入時，以 GitHub `main` 為準，唔好用本機覆蓋遠端（唔好 `--force`）。
 
-## 改之前
+同 `family-and-hx.mdc`「改完 commit + push `main`」一致。
 
-Tracked 網站檔（HTML / HX / README / 規則）動手之前：喺 `main` 先 `git pull`（呢個倉若已用 rebase 就 `git pull --rebase`）。由最新開始改。
+## 每次改檔：固定 3 步
 
-## 改完（user-visible：HTML / HX / README）— **自動 push**
-
-改完即刻做晒，**一定要自動 push**（唔係 maybe、唔係等用戶再講 push）：
-
-1. Stage 相關檔（唔好連 leftover junk）
-2. Short commit message
-3. **自動** `git push origin HEAD`（或 `main`）
+1. **改之前：拉最新 GitHub。** Tracked 網站檔（HTML / HX / README / 規則）動手之前，喺 `main` 先 `git fetch origin` 再 `git pull`（呢個倉若已用 rebase 就 `git pull --rebase`）。由 GitHub 最新版開始改。
+2. **改本機鏡像。** 只改呢個 folder 入面嘅檔。
+3. **改完即刻自動 push。** 唔使等用戶再講 push：
+   - Stage 相關檔（唔好連 leftover junk）
+   - Short commit message
+   - **自動** `git push origin HEAD`（或 `main`）
 
 「自動咁 PUSH」（STT 有時變「唔知咁 push」）= 呢個倉改完一定 push。
 
