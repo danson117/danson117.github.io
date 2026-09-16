@@ -8,7 +8,6 @@
 
 - [HX file index / Master links](links.html)
 - [Authorization Process Flow](authorization-process-flow.html)
-- [Authorization Process Flow (PPT / 12-step)](authorization-process-flow-ppt.html)
 - [Authorization Training Management Process](authorization-training-process.html)
 - [EASA / HKAR / CX / HAECO Documentation Hierarchy](easa-cx-hk-document-hierarchy.html)
 - [LM audit / visitor schedule](lm-audit-schedule.html)
