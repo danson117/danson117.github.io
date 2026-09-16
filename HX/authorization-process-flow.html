@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Authorization Process Flow</title>
+<style>
+  :root {
+    --ink: #111;
+    --muted: #444;
+    --line: #222;
+    --lane: #f7f7f7;
+    --paper: #fff;
+    --box: #e2efd9;
+    --box-progress: #fff3c4;
+    --box-todo: #fff;
+    --head: #f3f3f3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: Calibri, "Segoe UI", Arial, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.3;
+  }
+  .wrap {
+    padding: 16px 18px 56px;
+    overflow-x: auto;
+  }
+  h1 {
+    margin: 0 0 4px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .sub {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    margin: 0 0 12px;
+    font-size: 12px;
+  }
+  .legend i {
+    display: inline-block;
+    width: 14px;
+    height: 10px;
+    border: 1px solid var(--line);
+    margin-right: 6px;
+    vertical-align: -1px;
+  }
+  .legend .done { background: var(--box); }
+  .legend .now { background: var(--box-progress); }
+  .legend .todo { background: var(--box-todo); }
+
+  .board {
+    position: relative;
+    min-width: 1680px;
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+  }
+  .titlebar {
+    border-bottom: 1.5px solid var(--line);
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 8px 10px;
+    background: var(--head);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 132px repeat(6, minmax(240px, 1fr));
+    grid-template-rows: 28px repeat(6, minmax(132px, auto));
+  }
+  .ph {
+    border-bottom: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+    background: var(--head);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 6px;
+  }
+  .ph.corner { border-left: 0; }
+  .lane-name {
+    border-top: 1px solid var(--line);
+    background: var(--lane);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px 6px;
+    writing-mode: horizontal-tb;
+  }
+  .cell {
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+    position: relative;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 132px;
+  }
+  .wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 2;
+  }
+  .node {
+    position: relative;
+    z-index: 3;
+    width: min(210px, 100%);
+    text-align: center;
+    padding: 7px 8px;
+    border: 1.25px solid var(--line);
+    background: var(--box);
+    border-radius: 3px;
+  }
+  .node.done { background: var(--box); }
+  .node.progress { background: var(--box-progress); }
+  .node.todo { background: var(--box-todo); }
+  .node.term {
+    border-radius: 28px;
+    background: #fff;
+    padding: 8px 16px;
+    width: auto;
+    min-width: 120px;
+  }
+  .node.decision {
+    width: 118px;
+    height: 118px;
+    padding: 0;
+    background: #fff;
+    transform: rotate(45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 16px 0;
+  }
+  .node.decision .inner {
+    transform: rotate(-45deg);
+    width: 92px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0 4px;
+  }
+  .node .step {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #333;
+    margin-bottom: 2px;
+  }
+  .node b {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .node small {
+    display: block;
+    margin-top: 3px;
+    color: #333;
+    font-size: 10.5px;
+  }
+  .edge-label {
+    position: absolute;
+    z-index: 4;
+    font-size: 11px;
+    font-weight: 700;
+    background: #fff;
+    padding: 0 3px;
+    pointer-events: none;
+  }
+  .note {
+    margin-top: 14px;
+    max-width: 1100px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .note ul { margin: 6px 0 0; padding-left: 18px; }
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #666;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+  @media print {
+    .wrap { padding: 8px; }
+    .page-version { position: static; margin-top: 12px; }
+    .board { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Authorization Process Flow</h1>
+    <p class="sub">KE A350 certifier authorization — swimlane format from the process-flow pictures. Source: <code>HX/Authorization Process Flow.xlsx</code>.</p>
+    <div class="legend">
+      <span><i class="done"></i>Complete</span>
+      <span><i class="now"></i>In progress</span>
+      <span><i class="todo"></i>Not started</span>
+      <span>Rounded = start / end &nbsp; Diamond = decision &nbsp; Green box = process</span>
+    </div>
+
+    <div class="board" id="board">
+      <svg class="wires" id="wires" aria-hidden="true"></svg>
+      <div class="titlebar">Authorization Process Flow — KE A350</div>
+      <div class="grid" id="grid">
+        <div class="ph corner"></div>
+        <div class="ph">1. Business requirement</div>
+        <div class="ph">2. Candidate qualification</div>
+        <div class="ph">3. Application package</div>
+        <div class="ph">4. KE training</div>
+        <div class="ph">5. CAR process</div>
+        <div class="ph">6. Authorization</div>
+      </div>
+    </div>
+
+    <div class="note">
+      General flow (12 steps) maps onto this chart:
+      Business requirement → Customer requirements → Candidate selection → Initial application →
+      Qualification verification (experience / AML / A350 type / HAECO auth) → Supporting documents →
+      Customer QA review → Customer training plan → Training record → Customer training verification →
+      Customer CS roster → Authorization effective.
+      <ul>
+        <li>Now: Step 13 training arrangement (HX LMOC / SH).</li>
+        <li>No path: return the package (after KE QA) or the CAR (after KE Training).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+<script>
+const LANES = [
+  ["customer", "Customer (KE)"],
+  ["account", "HX Account"],
+  ["lmoc", "HX LMOC"],
+  ["qa", "HX QA"],
+  ["training", "HX Training"],
+  ["cert", "HX LM / Certifiers"],
+];
+const PHASES = ["br", "qual", "pkg", "train", "car", "auth"];
+const NODES = [
+  { id: "start", lane: "customer", phase: "br", type: "term", cls: "done",
+    title: "Start", extra: "Provide operational request" },
+  { id: "s1", lane: "account", phase: "br", type: "proc", cls: "done", step: "1",
+    title: "Business requirement raised", extra: "Irene — confirm operational support" },
+  { id: "s2", lane: "lmoc", phase: "br", type: "proc", cls: "done", step: "2",
+    title: "KE qualification requirements", extra: "SH — criteria from KE QA / Training" },
+  { id: "s3", lane: "qa", phase: "qual", type: "proc", cls: "done", step: "3",
+    title: "LMS authorization profile", extra: "Josephine — KE profiles in LMS" },
+  { id: "s4", lane: "lmoc", phase: "qual", type: "proc", cls: "done", step: "4",
+    title: "Candidate selection", extra: "Christine — eligible A350 certifiers" },
+  { id: "s5", lane: "lmoc", phase: "qual", type: "proc", cls: "done", step: "5",
+    title: "Initial KE CS application", extra: "SH — CS Application Form" },
+  { id: "s6", lane: "cert", phase: "qual", type: "proc", cls: "done", step: "6",
+    title: "Experience verification", extra: "Christine — management certification letter" },
+  { id: "s7", lane: "lmoc", phase: "qual", type: "proc", cls: "done", step: "7",
+    title: "AML verification", extra: "SH — HKAML copies to KE QA" },
+  { id: "s8", lane: "training", phase: "qual", type: "proc", cls: "done", step: "8",
+    title: "A350 type training", extra: "Training Team — LMS / type records" },
+  { id: "s9", lane: "qa", phase: "qual", type: "proc", cls: "done", step: "9",
+    title: "HAECO authorization", extra: "Josephine — company authorization evidence" },
+  { id: "s10", lane: "lmoc", phase: "pkg", type: "proc", cls: "done", step: "10",
+    title: "Supporting document submission", extra: "SH — AML, training, auth, experience" },
+  { id: "d11", lane: "customer", phase: "pkg", type: "decision", cls: "done",
+    title: "KE QA review accepted?" },
+  { id: "s12", lane: "customer", phase: "train", type: "proc", cls: "done", step: "12",
+    title: "KE FTH training release", extra: "Jintae Kim — FTH / CAR requirements" },
+  { id: "s13", lane: "lmoc", phase: "train", type: "proc", cls: "progress", step: "13",
+    title: "Training arrangement", extra: "SH — schedule, DST, self-study" },
+  { id: "s14", lane: "cert", phase: "train", type: "proc", cls: "todo", step: "14",
+    title: "MOD1 procedure training", extra: "DST — LMM, EDTO, RVSM, CAT II/III" },
+  { id: "s15", lane: "cert", phase: "train", type: "proc", cls: "todo", step: "15",
+    title: "MOD2 A350 TR / PRPO", extra: "Certifiers — read & sign" },
+  { id: "s16", lane: "lmoc", phase: "train", type: "proc", cls: "todo", step: "16",
+    title: "Training evidence collection", extra: "SH — attendance / signatures" },
+  { id: "s17", lane: "lmoc", phase: "car", type: "proc", cls: "todo", step: "17",
+    title: "FTH CAR preparation", extra: "SH — CAR Form R10" },
+  { id: "s18", lane: "lmoc", phase: "car", type: "proc", cls: "todo", step: "18",
+    title: "FTH CAR submission", extra: "SH — package to KE Training" },
+  { id: "d19", lane: "customer", phase: "car", type: "decision", cls: "todo",
+    title: "KE training verified?" },
+  { id: "s20", lane: "customer", phase: "auth", type: "proc", cls: "todo", step: "20",
+    title: "Final KE QA approval", extra: "Kim Jaehyeok — close QA comments" },
+  { id: "s21", lane: "customer", phase: "auth", type: "proc", cls: "todo", step: "21",
+    title: "KE CS roster issuance", extra: "Kim Jaehyeok — revised CS roster" },
+  { id: "s22", lane: "qa", phase: "auth", type: "term", cls: "todo",
+    title: "Authorization effective", extra: "Josephine — update HAECO records" },
+];
+const EDGES = [
+  ["start", "s1"],
+  ["s1", "s2"],
+  ["s2", "s3"],
+  ["s3", "s4"],
+  ["s4", "s5"],
+  ["s5", "s6"],
+  ["s6", "s7"],
+  ["s7", "s8"],
+  ["s8", "s9"],
+  ["s9", "s10"],
+  ["s10", "d11"],
+  ["d11", "s12", "Yes"],
+  ["d11", "s10", "No"],
+  ["s12", "s13"],
+  ["s13", "s14"],
+  ["s14", "s15"],
+  ["s15", "s16"],
+  ["s16", "s17"],
+  ["s17", "s18"],
+  ["s18", "d19"],
+  ["d19", "s20", "Yes"],
+  ["d19", "s17", "No"],
+  ["s20", "s21"],
+  ["s21", "s22"],
+];
+
+const grid = document.getElementById("grid");
+const cells = {};
+LANES.forEach(([key, label]) => {
+  const name = document.createElement("div");
+  name.className = "lane-name";
+  name.textContent = label;
+  grid.appendChild(name);
+  PHASES.forEach((phase) => {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.dataset.lane = key;
+    cell.dataset.phase = phase;
+    grid.appendChild(cell);
+    cells[key + ":" + phase] = cell;
+  });
+});
+
+NODES.forEach((n) => {
+  const el = document.createElement("div");
+  el.className = "node " + n.type + " " + n.cls;
+  el.id = n.id;
+  if (n.type === "decision") {
+    el.innerHTML = '<div class="inner"></div>';
+    el.querySelector(".inner").textContent = n.title;
+  } else {
+    el.innerHTML =
+      (n.step ? '<span class="step">STEP ' + n.step + "</span>" : "") +
+      "<b></b>" +
+      (n.extra ? "<small></small>" : "");
+    el.querySelector("b").textContent = n.title;
+    if (n.extra) el.querySelector("small").textContent = n.extra;
+  }
+  cells[n.lane + ":" + n.phase].appendChild(el);
+});
+
+function center(el, board) {
+  const a = el.getBoundingClientRect();
+  const b = board.getBoundingClientRect();
+  return {
+    x: a.left - b.left + a.width / 2,
+    y: a.top - b.top + a.height / 2,
+    t: a.top - b.top,
+    r: a.right - b.left,
+    btm: a.bottom - b.top,
+    l: a.left - b.left,
+    w: a.width,
+    h: a.height,
+  };
+}
+function edgePoint(box, toward) {
+  const dx = toward.x - box.x;
+  const dy = toward.y - box.y;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return dx > 0 ? { x: box.r, y: box.y } : { x: box.l, y: box.y };
+  }
+  return dy > 0 ? { x: box.x, y: box.btm } : { x: box.x, y: box.t };
+}
+function draw() {
+  const board = document.getElementById("board");
+  const svg = document.getElementById("wires");
+  svg.setAttribute("width", board.scrollWidth);
+  svg.setAttribute("height", board.scrollHeight);
+  svg.setAttribute("viewBox", "0 0 " + board.scrollWidth + " " + board.scrollHeight);
+  svg.replaceChildren();
+  document.querySelectorAll(".edge-label").forEach((n) => n.remove());
+  EDGES.forEach(([fromId, toId, label]) => {
+    const a = document.getElementById(fromId);
+    const b = document.getElementById(toId);
+    if (!a || !b) return;
+    const A = center(a, board);
+    const B = center(b, board);
+    const p1 = edgePoint(A, B);
+    const p2 = edgePoint(B, A);
+    const mx = (p1.x + p2.x) / 2;
+    const my = (p1.y + p2.y) / 2;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const sameCol = Math.abs(A.x - B.x) < 40;
+    const d = sameCol
+      ? "M " + p1.x + " " + p1.y + " L " + p2.x + " " + p2.y
+      : "M " + p1.x + " " + p1.y + " L " + mx + " " + p1.y + " L " + mx + " " + p2.y + " L " + p2.x + " " + p2.y;
+    path.setAttribute("d", d);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#111");
+    path.setAttribute("stroke-width", "1.25");
+    path.setAttribute("marker-end", "url(#arrow)");
+    svg.appendChild(path);
+    if (label) {
+      const tag = document.createElement("div");
+      tag.className = "edge-label";
+      tag.textContent = label;
+      tag.style.left = mx + 6 + "px";
+      tag.style.top = my - 8 + "px";
+      board.appendChild(tag);
+    }
+  });
+  const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+  const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+  marker.setAttribute("id", "arrow");
+  marker.setAttribute("viewBox", "0 0 10 10");
+  marker.setAttribute("refX", "9");
+  marker.setAttribute("refY", "5");
+  marker.setAttribute("markerWidth", "8");
+  marker.setAttribute("markerHeight", "8");
+  marker.setAttribute("orient", "auto");
+  const tip = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  tip.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+  tip.setAttribute("fill", "#111");
+  marker.appendChild(tip);
+  defs.appendChild(marker);
+  svg.insertBefore(defs, svg.firstChild);
+}
+window.addEventListener("load", draw);
+window.addEventListener("resize", draw);
+</script>
+</body>
+</html>

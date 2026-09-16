@@ -6,6 +6,7 @@
 
 各頁仍可單獨打開：
 
+- [Authorization Process Flow](authorization-process-flow.html)
 - [Authorization Training Management Process](authorization-training-process.html)
 - [EASA / HKAR / CX / HAECO Documentation Hierarchy](easa-cx-hk-document-hierarchy.html)
 - [LM audit / visitor schedule](lm-audit-schedule.html)
