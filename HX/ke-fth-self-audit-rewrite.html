@@ -72,11 +72,27 @@
   .rewrite.mm-box { border-left: 5px solid #c4a35a; }
   .why { font-size: 13px; color: var(--muted); }
   .pages { font-family: Consolas, "Courier New", monospace; font-size: 13px; }
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
   @media print {
     body { background: #fff; }
     .page { max-width: none; padding: 0; }
     h2 { break-after: avoid; }
     .item { break-inside: avoid; }
+    .page-version { position: static; margin-top: 12px; }
   }
 </style>
 </head>
@@ -84,14 +100,15 @@
 <div class="page">
   <h1>SELF-AUDIT QUESTIONNAIRE (FTH)</h1>
   <p class="purpose">The purpose of this form is to assist the KOREAN AIR in performing a document audit evaluation of full technical handling line maintenance services. Failure to provide the requested information may result in further in-depth screening actions, such as video interviews and on-site audits.</p>
-  <p class="note">Source: HAECO 2026 draft vs KE blank. Black = original answer. <span class="must">Red = must change (correct rewrite)</span>. <span class="suggest">Purple = suggestion</span>. MM items are not rewritten. Copy the coloured paragraph into the Word file. Do not invent names or procedure numbers inside [brackets].</p>
+  <p class="note">Source: latest HAECO draft, re-checked against the previous red / purple comments. Black = current answer. <span class="must">Red = must change (correct rewrite)</span>. <span class="suggest">Purple = suggestion</span>. Copy the coloured paragraph into the Word file. Do not invent names or procedure numbers inside [brackets].</p>
 
   <div class="legend">
-    <p><span class="must">Red / 一定要改</span> — Company Name, 2-3, 2-4, 4-1, 6-1, 6-3, 7-2, 8-4</p>
-    <p><span class="suggest">Purple / 建議改</span> — 2-1, 2-5</p>
-    <p><span class="ok">Leave as drafted</span> — 1-1, 2-2, 3-1 to 3-5, 4-2, 5-1, 5-2 text, 6-2, 7-1, 7-3, 7-4</p>
-    <p><span class="mm">MM later</span> — 7-5, 8-1, 8-2, 8-3, 8-5; 5-2 photo; Section Two A-1 photos</p>
+    <p><span class="must">Red / 一定要改</span> — 2-3, 2-4, 4-1, 6-3, 7-2, 8-4</p>
+    <p><span class="suggest">Purple / 建議改</span> — 2-1, 2-5, 6-1, 7-4, 7-5, 8-1, 8-2, 8-3, 8-5</p>
+    <p><span class="ok">Leave as drafted</span> — Company Name, 1-1, 2-2, 3-1 to 3-5, 4-2, 5-1, 5-2 text, 6-2, 7-1, 7-3</p>
+    <p><span class="mm">MM / evidence later</span> — 5-2 photo; Section Two A-1 photos</p>
   </div>
+  <p class="note">Closed from last pass: Company Name spelling; 6-1 now describes the BCP method (moved from red to purple); 7-4, 7-5, 8-1, 8-2, 8-3, 8-5 no longer “Awaiting MM” only.</p>
 
   <p class="toc"><a href="#header">Header</a> · <a href="#s1">Section One</a> · <a href="#s2">Section Two</a></p>
 
@@ -104,11 +121,8 @@
     <tr>
       <th>Company Name</th>
       <td>
-        <div class="label">Original</div>
-        Hong Kong Aircraft Engineeing Company Limited
-        <div class="label" style="margin-top:8px">Correct</div>
-        <span class="must">Hong Kong Aircraft Engineering Company Limited</span>
-        <div class="why" style="margin:8px 0 0">Engineering is misspelled. First line KE reads.</div>
+        Hong Kong Aircraft Engineering Company Limited
+        <div class="why" style="margin:8px 0 0">Previous red item closed. Spelling is now correct.</div>
       </td>
     </tr>
     <tr>
@@ -149,13 +163,13 @@ If yes, provide any written documentation that would support your answer.</p></d
 If you have any other station personnel frequently deployed to replace the maintenance personnel within the last 3 months, please provide details and reasons.</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: Yes. HAECO has sufficient qualified and authorized personnel to perform the line maintenance work contracted by Korean Air (KE). There are approximately 60 B1 certifying engineers available to support line maintenance operations at Hong Kong Station.</p>
+      <p>Comments: Yes. HAECO has sufficient qualified and authorized personnel to perform the line maintenance work contracted by Korean Air (KE). There are approximately 60 B1 certifying engineers and 14 B2 certifying engineers available to support line maintenance operations at Hong Kong Station.</p>
     </div>
     <div class="rewrite suggest-box">
       <p class="label suggest">Suggestion</p>
-      <p class="suggest">Comments: Yes. HAECO has sufficient qualified and authorised personnel to perform the line maintenance work contracted by Korean Air (KE). Approximately 60 B1 certifying engineers are available at Hong Kong Station. No other-station personnel have been frequently deployed to replace Hong Kong line maintenance personnel within the last 3 months.</p>
+      <p class="suggest">Comments: Yes. HAECO has sufficient qualified and authorised personnel to perform the line maintenance work contracted by Korean Air (KE). Approximately 60 B1 and 14 B2 certifying engineers are available at Hong Kong Station. No other-station personnel have been frequently deployed to replace Hong Kong line maintenance personnel within the last 3 months.</p>
     </div>
-    <div class="why"><p>Headcount is good. The second half of KE’s question (other-station replacements in the last 3 months) is unanswered. Use the last sentence only if it is factually true. If staff were borrowed, name station, reason, and dates instead.</p></div>
+    <div class="why"><p>B1 / B2 headcount is good. The second half of KE’s question (other-station replacements in the last 3 months) is still unanswered. Use the last sentence only if it is factually true. If staff were borrowed, name station, reason, and dates instead.</p></div>
   </div>
 
   <div class="item" id="q2-2">
@@ -183,7 +197,7 @@ Authorized scope of work</p></div>
       <p class="label must">Correct</p>
       <p class="must">Comments: Yes. The current HAECO Hong Kong AMO / HKAR-145 approval certificate shows the authorisation date and validity period and the approved scope of work. The facility status is consistent with the AMOPM / associated manuals. A copy of the current AMO certificate is attached.</p>
     </div>
-    <div class="why"><p>Does not confirm the three bullets KE listed. If you have the CAD approval number and expiry date, put them in the first sentence.</p></div>
+    <div class="why"><p>Still the same gap as last pass. Does not confirm the three bullets KE listed. If you have the CAD approval number and expiry date, put them in the first sentence.</p></div>
   </div>
 
   <div class="item" id="q2-4">
@@ -197,7 +211,7 @@ Authorized scope of work</p></div>
       <p class="label must">Correct</p>
       <p class="must">Comments: The Accountable Manager of HAECO Hong Kong, [Name], [Title], is responsible for supervising and managing the CAD-approved maintenance organisation.</p>
     </div>
-    <div class="why"><p>Role only. 145 / KE expect the Accountable Manager by name and title. Copy name and title from AMOPM page 10. Do not guess.</p></div>
+    <div class="why"><p>Unchanged. Role only. 145 / KE expect the Accountable Manager by name and title. Copy name and title from AMOPM page 10. Do not guess. CEO may be the same person — still write the 145 title.</p></div>
   </div>
 
   <div class="item" id="q2-5">
@@ -211,7 +225,7 @@ Authorized scope of work</p></div>
       <p class="label suggest">Suggestion</p>
       <p class="suggest">Comments: The Quality Manager of HAECO Hong Kong, [Name], is responsible for ensuring compliance with the maintenance organisation’s approval / accreditation requirements, as defined in the AMOPM.</p>
     </div>
-    <div class="why"><p>Role is correct. Adding the name from AMOPM page 10 matches 2-4 and 3-1(iii).</p></div>
+    <div class="why"><p>Unchanged. Role is correct. Adding the name from AMOPM page 10 matches 2-4 and 3-1(iii).</p></div>
   </div>
 
   <h3>3. Quality Assurance</h3>
@@ -303,7 +317,7 @@ Authorized scope of work</p></div>
       <p class="label must">Correct</p>
       <p class="must">Comments: Yes. The certifying staff roster is maintained against current authorisation and personnel records. Any change is reflected in the roster within 5 days. The current roster is attached.</p>
     </div>
-    <div class="why"><p>KE already wrote the 5-day control. A one-word Yes does not show you have that control.</p></div>
+    <div class="why"><p>Unchanged. KE already wrote the 5-day control. A one-word Yes does not show you have that control.</p></div>
   </div>
 
   <div class="item" id="q4-2">
@@ -353,13 +367,14 @@ Boeing 787 family (B787-8/-9/-10)</p>
     <div class="q"><p>Please describe how to access the manual when TDMS is unavailable.</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: According to procedure highlighted in TPC26-0019 e-form</p>
+      <p>Comments: According to procedure highlighted in TPC26-0019 e-form
+The eform is the evidence of BCP requirement provided by KE. The BCP is expected that HAECO to contact KE Rep. If TDMS is unavailable, please contact HX TPC (hxtpc@haeco.com) or HAECO IT Services Desk (it.servicesdesk@haeco.com). TPC will contact Mr. Kim for guidance.</p>
     </div>
-    <div class="rewrite must-box">
-      <p class="label must">Correct</p>
-      <p class="must">Comments: If TDMS is unavailable, the required manuals are accessed through the HAECO ETMS technical-manual platform and the controlled alternative arrangements in TPC26-0019. If electronic access is also unavailable, Technical Publication Control provides the current applicable data by controlled means before maintenance continues.</p>
+    <div class="rewrite suggest-box">
+      <p class="label suggest">Suggestion</p>
+      <p class="suggest">Comments: If TDMS is unavailable, HAECO follows the KE business-continuity arrangement documented on TPC26-0019. Line staff contact HX Technical Publication Control (hxtpc@haeco.com) or the HAECO IT Services Desk (it.servicesdesk@haeco.com). TPC then contacts the KE representative (Mr. Kim) for guidance so that the applicable manuals can be obtained before maintenance continues. The completed TPC26-0019 e-form is retained as evidence of the KE BCP requirement.</p>
     </div>
-    <div class="why"><p>A form number is a pointer, not a method. KE asked how staff still get the manual.</p></div>
+    <div class="why"><p>Previous red item closed as a method gap — the new draft now says who to call and that TPC contacts Mr. Kim. Remaining work is English and sequence, not missing content. Keep Mr. Kim only if that is the current KE contact on the e-form.</p></div>
   </div>
 
   <div class="item" id="q6-2">
@@ -374,16 +389,16 @@ Boeing 787 family (B787-8/-9/-10)</p>
 
   <div class="item" id="q6-3">
     <p class="qid">6-3</p>
-    <div class="q"><p>Do you have and use a “Reference Only” stamp or something similar for making copies of technical documentation?  ( YES / NO )</p></div>
+    <div class="q"><p>Do you have and use a ‘Reference Only’ stamp or something similar for making copies of technical documentation?  ( YES / NO )</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: TPC do not use Reference Only Stamp.. it should be applicable to production staff who may print out from PC.  In general, staff should refer to GTI-P-188 (Technical/Maintenance Data) para. 13.2 and destroy after use.</p>
+      <p>Comments: TPC do not use Reference Only Stamp. It should be applicable to production staff who may print out from PC. In general, staff should refer to GTI-P-188 (Technical/Maintenance Data) para. 13.2 and destroy after use.</p>
     </div>
     <div class="rewrite must-box">
       <p class="label must">Correct</p>
       <p class="must">Comments: No. TPC does not use a ‘Reference Only’ stamp. Printed copies used by production are controlled in accordance with GTI-P-188 (Technical/Maintenance Data) paragraph 13.2 and are destroyed after use.</p>
     </div>
-    <div class="why"><p>Not a clean YES/NO. Informal English and double dots. The control itself is fine.</p></div>
+    <div class="why"><p>Same control as last pass, still not a clean YES/NO. Lead with No, then the GTI-P-188 destroy-after-use rule.</p></div>
   </div>
 
   <h3>7. Tool/Equipment</h3>
@@ -409,7 +424,7 @@ Boeing 787 family (B787-8/-9/-10)</p>
       <p class="label must">Correct</p>
       <p class="must">Comments: Manufacturer-recommended tools, equipment, and materials specified in the applicable AMM/CMM are used as the primary standard. Where an alternative tool, equipment, or material is used in place of the manufacturer’s recommendation, equivalency is demonstrated by comparing function, capacity or range, accuracy, and safety. The alternative is assessed and accepted by the responsible engineering/quality function before use, recorded on the equivalent tool/equipment register where applicable, and remains under inspection and calibration control.</p>
     </div>
-    <div class="why"><p>Original answered serviceability (is the tool fit to use?), not equivalency (is this alternate at least as good as the OEM-recommended item?). Add the actual HAECO equivalent-tool / tool-control procedure number if you have it.</p></div>
+    <div class="why"><p>Unchanged. Original answered serviceability (is the tool fit to use?), not equivalency (is this alternate at least as good as the OEM-recommended item?). Add the actual HAECO equivalent-tool / tool-control procedure number if you have it.</p></div>
   </div>
 
   <div class="item" id="q7-3">
@@ -427,9 +442,13 @@ Boeing 787 family (B787-8/-9/-10)</p>
     <div class="q"><p>Is there a manufacturer's manual for the equipment/tools used for maintenance work or is it available for viewing? (YES/NO)</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: Yes. Applicable manufacturer's maintenance manuals, equipment manuals, operating instructions, and technical data are available to maintenance personnel and can be accessed when performing maintenance activities.</p>
+      <p>Comments: Yes. All tools except general tool have the e-copy in AMOSour M&amp;E system and its physical copy attached to the tool in the toolbox.</p>
     </div>
-    <div class="rewrite ok-box"><p class="ok">Leave as drafted.</p></div>
+    <div class="rewrite suggest-box">
+      <p class="label suggest">Suggestion</p>
+      <p class="suggest">Comments: Yes. Manufacturer manuals for tools and equipment, other than general-purpose tools, are available as an electronic copy in the AMOS M&amp;E system, with a physical copy attached to the tool in the toolbox.</p>
+    </div>
+    <div class="why"><p>New draft is stronger than the old generic sentence. Polish only. Confirm the system name is AMOS (the draft writes “AMOSour”).</p></div>
   </div>
 
   <div class="item" id="q7-5">
@@ -437,9 +456,13 @@ Boeing 787 family (B787-8/-9/-10)</p>
     <div class="q"><p>If you have a list of assigned tools/equipment provided by KE, does it match the actual product and equipment name, serial number, and quantity? (YES/NO)</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: Awaiting MM feedback</p>
+      <p>Comments: Currently nil tool / equipment provided by KE is being held in Store</p>
     </div>
-    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+    <div class="rewrite suggest-box">
+      <p class="label suggest">Suggestion</p>
+      <p class="suggest">Comments: N/A. No KE-provided tools or equipment are currently held in Store. There is therefore no KE-assigned tool/equipment list to reconcile against name, serial number, or quantity.</p>
+    </div>
+    <div class="why"><p>No longer “Awaiting MM”. The fact is usable. Frame it as N/A rather than a bare “nil”, because KE asked whether a list matches the physical items.</p></div>
   </div>
 
   <h3>8. Material</h3>
@@ -449,9 +472,13 @@ Boeing 787 family (B787-8/-9/-10)</p>
     <div class="q"><p>Please check if the allocation parts stored in the station have not exceeded the preservation due date and let us know the results.</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: Awaiting MM feedback</p>
+      <p>Comments: Awaiting MM feedback No parts have exceeded their preservation due date.</p>
     </div>
-    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+    <div class="rewrite suggest-box">
+      <p class="label suggest">Suggestion</p>
+      <p class="suggest">Comments: No allocation parts stored at the station have exceeded their preservation due date.</p>
+    </div>
+    <div class="why"><p>The result sentence is now there. Delete “Awaiting MM feedback” before send. Confirm MM has signed off the check.</p></div>
   </div>
 
   <div class="item" id="q8-2">
@@ -459,9 +486,13 @@ Boeing 787 family (B787-8/-9/-10)</p>
     <div class="q"><p>Is there anything that has passed the expiration date on packing, O-ring, tape, RTV, battery, etc.?  (YES/NO)</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: Awaiting MM feedback</p>
+      <p>Comments: No</p>
     </div>
-    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+    <div class="rewrite suggest-box">
+      <p class="label suggest">Suggestion</p>
+      <p class="suggest">Comments: No. No packing, O-rings, tape, RTV, batteries, or similar shelf-life items were found past their expiration date.</p>
+    </div>
+    <div class="why"><p>No longer “Awaiting MM”. The form asks for a brief explanation, not only YES/NO.</p></div>
   </div>
 
   <div class="item" id="q8-3">
@@ -469,9 +500,13 @@ Boeing 787 family (B787-8/-9/-10)</p>
     <div class="q"><p>After checking the items with shortened expiration dates due to opening, are there any items whose expiration dates have passed? (YES/NO)</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: Awaiting MM feedback</p>
+      <p>Comments: No</p>
     </div>
-    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+    <div class="rewrite suggest-box">
+      <p class="label suggest">Suggestion</p>
+      <p class="suggest">Comments: No. Opened items with a reduced shelf life were checked. None were found past the shortened expiration date.</p>
+    </div>
+    <div class="why"><p>Same as 8-2. One-word No is factually usable; a short check-result sentence matches the form.</p></div>
   </div>
 
   <div class="item" id="q8-4">
@@ -479,13 +514,14 @@ Boeing 787 family (B787-8/-9/-10)</p>
     <div class="q"><p>How do mechanics manage ESDS materials according to relevant manuals and procedures and learn how to use Wrist Straps?</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: There is no ESDS materials used in Line Maintenance</p>
+      <p>Comments: There is no ESDS materials used in Line Maintenance
+Any verification or counting activities are performed only by R&amp;I personnel at a dedicated ESDS workstation in accordance with GTI-P-147 ELECTROSTATIC DISCHARGE SENSITIVE (ESDS) DEVICES.</p>
     </div>
     <div class="rewrite must-box">
       <p class="label must">Correct</p>
-      <p class="must">Comments: ESDS components encountered during line maintenance (for example avionics LRUs and other electronic units) are handled in accordance with the applicable AMM and HAECO ESD control procedures. Mechanics and certifying staff are trained in ESD precautions, including inspection and use of wrist straps, before handling ESDS items. ESDS components remain in ESD-protective packaging until installation, and wrist straps are connected to a verified ground point when required by the task or procedure.</p>
+      <p class="must">Comments: ESDS devices encountered during line maintenance (for example avionics LRUs and other electronic units) are handled in accordance with the applicable AMM and GTI-P-147 ELECTROSTATIC DISCHARGE SENSITIVE (ESDS) DEVICES. Mechanics and certifying staff are trained in ESD precautions, including inspection and use of wrist straps, before handling ESDS items. ESDS components remain in ESD-protective packaging until installation, and wrist straps are connected to a verified ground point when required by the task. Verification or counting of ESDS materials is performed only by R&amp;I personnel at a dedicated ESDS workstation.</p>
     </div>
-    <div class="why"><p>ESDS = Electrostatic Discharge Sensitive. Line maintenance handles avionics LRUs, computers, radios, probes. KE asked how they are handled and how wrist-strap use is learned — not whether stores keep ESD bags. Do not claim zero ESDS. If you have the local ESD / GTI procedure number, add it after “HAECO ESD control procedures”.</p></div>
+    <div class="why"><p>GTI-P-147 and the R&amp;I workstation are useful — keep them. Do not claim zero ESDS on the line. KE asked how mechanics handle ESDS and learn wrist-strap use. Line maintenance still handles avionics LRUs, computers, radios, and probes.</p></div>
   </div>
 
   <div class="item" id="q8-5">
@@ -493,9 +529,13 @@ Boeing 787 family (B787-8/-9/-10)</p>
     <div class="q"><p>Are flammable or toxic chemicals stored separately from general materials?  (YES/NO)</p></div>
     <div class="ans">
       <p class="label">Original</p>
-      <p>Comments: Awaiting MM feedback</p>
+      <p>Comments: YES. KE parts are currently held at the LM side. DG parts are stored in dedicated DG cabinets, separately from general materials.</p>
     </div>
-    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+    <div class="rewrite suggest-box">
+      <p class="label suggest">Suggestion</p>
+      <p class="suggest">Comments: Yes. KE parts are currently held at Line Maintenance. Flammable or toxic (dangerous goods) chemicals are stored in dedicated DG cabinets, separately from general materials.</p>
+    </div>
+    <div class="why"><p>No longer “Awaiting MM”. The DG-cabinet point answers KE. Polish “LM side” / “DG parts” into audit English.</p></div>
   </div>
 
   <h2 id="s2">II. Section Two</h2>
@@ -515,5 +555,6 @@ Should you have trouble sending this word file due to the large file size of ima
     <div class="rewrite mm-box"><p class="mm">Photos treated as MM / evidence pack. Not rewritten. Collect photos in a zip named A-1 if the Word file is too large.</p></div>
   </div>
 </div>
+<div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
 </body>
 </html>
