@@ -22,3 +22,4 @@
 ```
 
 3. 細改 version：`hx.html` 右下角 +0.1。
+4. xlsx / docx 連結一律用 Office 網上檢視，唔好貼 github.io 直接檔案（會 download）。格式：`Open online (view): [filename] — browser view, no download`，href 用 `https://view.officeapps.live.com/op/view.aspx?src=` + URL-encoded github.io 檔案位址。
