@@ -1,0 +1,22 @@
+---
+description: Find named files in Downloads; move to GitHub mirror or local-only
+alwaysApply: true
+---
+
+# Downloads intake
+
+When the user names a file, look in this order:
+
+1. `C:\Cursor_Work` and `C:\Cursor_Work\danson117.github.io` (STT `Cursor_wWork` = `Cursor_Work`)
+2. Always also check `C:\Users\Danson\Downloads`
+
+If the file is **already** in `C:\Cursor_Work` or the repo, use that copy. Do not pull a second copy from Downloads.
+
+## File is in Downloads — **move** (do not copy)
+
+- **OK for GitHub** (under 50MB, not a secret / installer / huge video): **move** into `C:\Cursor_Work\danson117.github.io`. Work files → `HX/`. Family pages → repo root. Then follow `github-sync.mdc` (pull, commit, push).
+- **Too big or not suitable** (50MB or over, or GitHub-unsuitable): **move** to `C:\Cursor_Work` only. **Do not** commit or push.
+
+Example: `Authorization Process Flow.xlsx` in Downloads, 19KB → move to `HX\`, then push. A 200MB zip → move to `C:\Cursor_Work` only.
+
+Do not open File Explorer. After a move, show the new path in backticks.
