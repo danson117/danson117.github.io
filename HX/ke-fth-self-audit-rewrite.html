@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KE FTH Self-Audit — full form + rewrite (HAECO 2026)</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #2a3340;
+    --paper: #f6f4ee;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+    --must: #c00000;
+    --suggest: #7030a0;
+    --ok: #1f4e3a;
+    --mm: #6b5a2e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Calibri", "Segoe UI", Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.45;
+    font-size: 14px;
+  }
+  .page { max-width: 980px; margin: 0 auto; padding: 24px 22px 64px; }
+  h1 { font-size: 22px; margin: 0 0 8px; color: var(--navy); }
+  .purpose, .note, .legend, .q, .ans, .rewrite, .why {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 10px 12px;
+    margin: 0 0 10px;
+  }
+  .purpose { font-size: 13.5px; }
+  .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+  .legend p { margin: 0; }
+  .must { color: var(--must); font-weight: 650; }
+  .suggest { color: var(--suggest); font-weight: 650; }
+  .ok { color: var(--ok); font-weight: 650; }
+  .mm { color: var(--mm); font-weight: 650; }
+  .toc a { color: var(--navy); }
+  h2 {
+    font-size: 15px;
+    margin: 26px 0 10px;
+    padding: 7px 10px;
+    background: var(--navy);
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  h3 {
+    font-size: 14px;
+    margin: 18px 0 8px;
+    padding: 5px 8px;
+    background: #e8eef5;
+    color: var(--navy);
+  }
+  table { width: 100%; border-collapse: collapse; background: var(--card); margin-bottom: 12px; }
+  th, td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+  th { width: 32%; background: #e8eef5; }
+  .qid { font-weight: 700; color: var(--navy); margin: 0 0 6px; }
+  .q p, .ans p, .rewrite p, .why p { margin: 0 0 8px; white-space: pre-wrap; }
+  .q p:last-child, .ans p:last-child, .rewrite p:last-child, .why p:last-child { margin: 0; }
+  .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 0 0 6px; font-weight: 700; }
+  .item { margin: 0 0 18px; }
+  .rewrite.must-box { border-left: 5px solid var(--must); }
+  .rewrite.suggest-box { border-left: 5px solid var(--suggest); }
+  .rewrite.ok-box { border-left: 5px solid var(--ok); }
+  .rewrite.mm-box { border-left: 5px solid #c4a35a; }
+  .why { font-size: 13px; color: var(--muted); }
+  .pages { font-family: Consolas, "Courier New", monospace; font-size: 13px; }
+  @media print {
+    body { background: #fff; }
+    .page { max-width: none; padding: 0; }
+    h2 { break-after: avoid; }
+    .item { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>SELF-AUDIT QUESTIONNAIRE (FTH)</h1>
+  <p class="purpose">The purpose of this form is to assist the KOREAN AIR in performing a document audit evaluation of full technical handling line maintenance services. Failure to provide the requested information may result in further in-depth screening actions, such as video interviews and on-site audits.</p>
+  <p class="note">Source: HAECO 2026 draft vs KE blank. Black = original answer. <span class="must">Red = must change (correct rewrite)</span>. <span class="suggest">Purple = suggestion</span>. MM items are not rewritten. Copy the coloured paragraph into the Word file. Do not invent names or procedure numbers inside [brackets].</p>
+
+  <div class="legend">
+    <p><span class="must">Red / 一定要改</span> — Company Name, 2-3, 2-4, 4-1, 6-1, 6-3, 7-2, 8-4</p>
+    <p><span class="suggest">Purple / 建議改</span> — 2-1, 2-5</p>
+    <p><span class="ok">Leave as drafted</span> — 1-1, 2-2, 3-1 to 3-5, 4-2, 5-1, 5-2 text, 6-2, 7-1, 7-3, 7-4</p>
+    <p><span class="mm">MM later</span> — 7-5, 8-1, 8-2, 8-3, 8-5; 5-2 photo; Section Two A-1 photos</p>
+  </div>
+
+  <p class="toc"><a href="#header">Header</a> · <a href="#s1">Section One</a> · <a href="#s2">Section Two</a></p>
+
+  <h2 id="header">Please fill in the information below</h2>
+  <table>
+    <tr>
+      <th>Line Station</th>
+      <td>HKG</td>
+    </tr>
+    <tr>
+      <th>Company Name</th>
+      <td>
+        <div class="label">Original</div>
+        Hong Kong Aircraft Engineeing Company Limited
+        <div class="label" style="margin-top:8px">Correct</div>
+        <span class="must">Hong Kong Aircraft Engineering Company Limited</span>
+        <div class="why" style="margin:8px 0 0">Engineering is misspelled. First line KE reads.</div>
+      </td>
+    </tr>
+    <tr>
+      <th>Audit Date (DD-MMM-YYYY)</th>
+      <td>25 Sep 2026</td>
+    </tr>
+    <tr>
+      <th>Auditee Name</th>
+      <td>Alan Choi</td>
+    </tr>
+    <tr>
+      <th>Auditee Title/Department</th>
+      <td>Assistant Manager, Line Maintenance Support</td>
+    </tr>
+  </table>
+
+  <h2 id="s1">I. Section One</h2>
+  <p class="purpose">Write an answer and give a brief explanation in the comments section. Please provide supporting evidence material if needed (save the file name to begin with the number corresponding to the relevant question. For example, “1-1 Facility Change” and “3-5 Quality Auditors Requirement/Qualification”).</p>
+
+  <h3>1. Facility</h3>
+
+  <div class="item" id="q1-1">
+    <p class="qid">1-1</p>
+    <div class="q"><p>Have there been any changes with the maintenance facilities, such as maintenance office/parts warehouse/tool room/hangar in the last 2 years? (YES/NO)
+If yes, provide any written documentation that would support your answer.</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: No. There have been no changes to the maintenance facilities, including maintenance offices, parts warehouse, tool room, or hangar facilities, within the last two years.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted.</p></div>
+  </div>
+
+  <h3>2. Management / Personnel</h3>
+
+  <div class="item" id="q2-1">
+    <p class="qid">2-1</p>
+    <div class="q"><p>Do you have sufficient personnel to perform the Line Maintenance work contracted by KE? (YES/NO)
+If you have any other station personnel frequently deployed to replace the maintenance personnel within the last 3 months, please provide details and reasons.</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes. HAECO has sufficient qualified and authorized personnel to perform the line maintenance work contracted by Korean Air (KE). There are approximately 60 B1 certifying engineers available to support line maintenance operations at Hong Kong Station.</p>
+    </div>
+    <div class="rewrite suggest-box">
+      <p class="label suggest">Suggestion</p>
+      <p class="suggest">Comments: Yes. HAECO has sufficient qualified and authorised personnel to perform the line maintenance work contracted by Korean Air (KE). Approximately 60 B1 certifying engineers are available at Hong Kong Station. No other-station personnel have been frequently deployed to replace Hong Kong line maintenance personnel within the last 3 months.</p>
+    </div>
+    <div class="why"><p>Headcount is good. The second half of KE’s question (other-station replacements in the last 3 months) is unanswered. Use the last sentence only if it is factually true. If staff were borrowed, name station, reason, and dates instead.</p></div>
+  </div>
+
+  <div class="item" id="q2-2">
+    <p class="qid">2-2</p>
+    <div class="q"><p>Are all facilities, equipment, tools, materials, technical data, and certified mechanics required to perform authorized maintenance work available? (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes. All required facilities, equipment, tools, materials, current technical data, and qualified certifying personnel necessary to perform authorized maintenance work are available and maintained in accordance with HAECO procedures and regulatory requirements.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted. Attach AMO / capability / tool-data evidence in the pack.</p></div>
+  </div>
+
+  <div class="item" id="q2-3">
+    <p class="qid">2-3</p>
+    <div class="q"><p>Does the AMO certificate include the following? (YES/NO)
+The actual status of the facility matches the maintenance regulations such as
+     AMOPM, RSQCM, MOM, etc.
+Authorization date and validity period
+Authorized scope of work</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes, AMO is as attached</p>
+    </div>
+    <div class="rewrite must-box">
+      <p class="label must">Correct</p>
+      <p class="must">Comments: Yes. The current HAECO Hong Kong AMO / HKAR-145 approval certificate shows the authorisation date and validity period and the approved scope of work. The facility status is consistent with the AMOPM / associated manuals. A copy of the current AMO certificate is attached.</p>
+    </div>
+    <div class="why"><p>Does not confirm the three bullets KE listed. If you have the CAD approval number and expiry date, put them in the first sentence.</p></div>
+  </div>
+
+  <div class="item" id="q2-4">
+    <p class="qid">2-4</p>
+    <div class="q"><p>Who is responsible for supervising and managing a maintenance organization approved by the aviation authority?</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: HAECO Hong Kong CEO</p>
+    </div>
+    <div class="rewrite must-box">
+      <p class="label must">Correct</p>
+      <p class="must">Comments: The Accountable Manager of HAECO Hong Kong, [Name], [Title], is responsible for supervising and managing the CAD-approved maintenance organisation.</p>
+    </div>
+    <div class="why"><p>Role only. 145 / KE expect the Accountable Manager by name and title. Copy name and title from AMOPM page 10. Do not guess.</p></div>
+  </div>
+
+  <div class="item" id="q2-5">
+    <p class="qid">2-5</p>
+    <div class="q"><p>Who is responsible for ensuring compliance with the maintenance organization's accreditation requirements?</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Quality Manager of HAECO Hong Kong</p>
+    </div>
+    <div class="rewrite suggest-box">
+      <p class="label suggest">Suggestion</p>
+      <p class="suggest">Comments: The Quality Manager of HAECO Hong Kong, [Name], is responsible for ensuring compliance with the maintenance organisation’s approval / accreditation requirements, as defined in the AMOPM.</p>
+    </div>
+    <div class="why"><p>Role is correct. Adding the name from AMOPM page 10 matches 2-4 and 3-1(iii).</p></div>
+  </div>
+
+  <h3>3. Quality Assurance</h3>
+
+  <div class="item" id="q3-1">
+    <p class="qid">3-1</p>
+    <div class="q"><p>Does the AMOPM include the following requirements? (Please provide the AMOPM and indicate the page numbers of that document where relevant information can be referenced for the items below)</p></div>
+    <div class="ans">
+      <p class="label">Original (page numbers already filled in the question)</p>
+      <p class="pages">(i) A brief description of the organization that includes:
+    (a) A general description of the scope of work authorized under the organization's
+         terms of approval; (PAGE :  11-14         )
+    (b) A general description of the organization's facilities. (PAGE :  13-14         )
+(ii) A description of the organization procedures and quality or inspection system;
+      (PAGE :  7, 9-10 and 17         )
+(iii) Names and duties of the responsible personnel; (PAGE :    10       )
+(iv) Names and duties of the person or persons whose responsibilities are to ensure that
+       maintenance is carried out in accordance with the AMOPM, RSQCM, MOM, etc.;
+       (PAGE :    18       )
+(v) A description of the procedures used to establish the competence of maintenance
+      personnel; (PAGE :     14 and 18      )
+(vi) A description of the methods used for the completion and retention of the Operator's
+       maintenance records, including procedures for retaining backup records; (PAGE :  20    )
+(vii) A description of the procedure for preparing the maintenance release and the
+       circumstances under which the release is to be signed; (PAGE :  18         )
+(viii) The process for authorizing personnel to sign the maintenance release and the scope
+         of their authorization; (PAGE :   18        )
+(ix) A description of any additional procedures for complying with the Operator's
+       maintenance procedures and requirements; (PAGE :    20       )
+(x) A description of the procedures for complying with the service information reporting
+      requirements; (PAGE :    19       )
+(xi) A description of the procedure for receiving, amending and distributing within
+       the maintenance organization, all necessary airworthiness data from the type certificate
+       holder or aircraft Type Design Organization (PAGE :   17        )</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave page numbers as drafted. Spot-check against the current AMOPM revision before send — several items share page 18.</p></div>
+  </div>
+
+  <div class="item" id="q3-2">
+    <p class="qid">3-2</p>
+    <div class="q"><p>Is AMOPM revised to reflect the latest situation, and is the revised content promptly provided to all organizations/personnel to which the manual was issued? (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes. The AMOPM is revised as necessary to reflect the latest organizational and regulatory requirements. Following approval, the updated version is distributed to relevant department heads through Coruson for reference and implementation.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted. Cite current AMOPM revision and date if you have them.</p></div>
+  </div>
+
+  <div class="item" id="q3-3">
+    <p class="qid">3-3</p>
+    <div class="q"><p>Are internal audits being accomplished as scheduled and discrepancies analyzed to determine the cause not just the symptom and corrected in a timely manner? (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes. Internal audits are conducted in accordance with the approved audit programme by HAECO Quality Assurance. Audit findings are reviewed, root causes are analyzed, and corrective actions are implemented and monitored to ensure timely closure.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted.</p></div>
+  </div>
+
+  <div class="item" id="q3-4">
+    <p class="qid">3-4</p>
+    <div class="q"><p>Do you periodically review the suitability of the quality assurance program applied within your organization? (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes. The suitability and effectiveness of the Quality Assurance Programme are reviewed on a regular basis through Safety Action Group meetings, management reviews, audit results, and quality performance monitoring.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted.</p></div>
+  </div>
+
+  <div class="item" id="q3-5">
+    <p class="qid">3-5</p>
+    <div class="q"><p>Is there a training and qualification management program for quality auditors?  (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes. HAECO maintains a training and competency management programme for quality auditors, including qualification requirements, competency assessments, and recurrent training where applicable.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted. Attach evidence named “3-5 Quality Auditors Requirement/Qualification” if KE asks.</p></div>
+  </div>
+
+  <h3>4. Training/Qualification</h3>
+
+  <div class="item" id="q4-1">
+    <p class="qid">4-1</p>
+    <div class="q"><p>Does the roster of certifying staffs match the personnel information within your organization? (Changes must be reflected in the list within 5 days) (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes</p>
+    </div>
+    <div class="rewrite must-box">
+      <p class="label must">Correct</p>
+      <p class="must">Comments: Yes. The certifying staff roster is maintained against current authorisation and personnel records. Any change is reflected in the roster within 5 days. The current roster is attached.</p>
+    </div>
+    <div class="why"><p>KE already wrote the 5-day control. A one-word Yes does not show you have that control.</p></div>
+  </div>
+
+  <div class="item" id="q4-2">
+    <p class="qid">4-2</p>
+    <div class="q"><p>Are recurring training requirements for Human Factors training being tracked, performed and documented?  ( YES / NO )</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes, Initial Human Factors training is provided under course T.F241, and recurrent Human Factors training is conducted under course T.F162 at a two-year interval.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted. Strong answer — course codes and interval.</p></div>
+  </div>
+
+  <h3>5. Maintenance Records</h3>
+
+  <div class="item" id="q5-1">
+    <p class="qid">5-1</p>
+    <div class="q"><p>In addition to the aircraft types that support KE, please also describe the aircraft types that support line maintenance work for other customers.</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: In addition to supporting Korean Air (KE) operations, HAECO is approved and authorized to provide line maintenance services for other customer airlines on the following aircraft types within the approved scope of work:
+Airbus A320/A321 family (V2500, LEAP-1A and PW1100 engines)
+Airbus A330-200/-300
+Airbus A350-900
+Airbus A380-800
+Boeing 737NG family (-600/-700/-800/-900)
+Boeing 747-400 and 747-8
+Boeing 777 family (B777-200/-300/-300ER)
+Boeing 787 family (B787-8/-9/-10)</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted. Confirm it matches the current AMO / capability list.</p></div>
+  </div>
+
+  <div class="item" id="q5-2">
+    <p class="qid">5-2</p>
+    <div class="q"><p>How long will maintenance records be kept and photo evidence of protection against damage/fire/theft?</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: A copy of maintenance record is retained by HAECO for a minimum of 2 years from the date of the release.</p>
+    </div>
+    <div class="rewrite mm-box"><p class="mm">Retention text left as drafted. Fire / theft / damage photo treated as MM — not rewritten.</p></div>
+  </div>
+
+  <h3>6. Technical Data</h3>
+
+  <div class="item" id="q6-1">
+    <p class="qid">6-1</p>
+    <div class="q"><p>Please describe how to access the manual when TDMS is unavailable.</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: According to procedure highlighted in TPC26-0019 e-form</p>
+    </div>
+    <div class="rewrite must-box">
+      <p class="label must">Correct</p>
+      <p class="must">Comments: If TDMS is unavailable, the required manuals are accessed through the HAECO ETMS technical-manual platform and the controlled alternative arrangements in TPC26-0019. If electronic access is also unavailable, Technical Publication Control provides the current applicable data by controlled means before maintenance continues.</p>
+    </div>
+    <div class="why"><p>A form number is a pointer, not a method. KE asked how staff still get the manual.</p></div>
+  </div>
+
+  <div class="item" id="q6-2">
+    <p class="qid">6-2</p>
+    <div class="q"><p>Please describe how your company properly manages and applies the Technical Information and Quality Information issued by KE.</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: When TPC (Technical publication control) received KE technical data, TPC will download and upload into our HAECO ETMS (Technical Manual platform for production) and acknowledge receipt if required.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted.</p></div>
+  </div>
+
+  <div class="item" id="q6-3">
+    <p class="qid">6-3</p>
+    <div class="q"><p>Do you have and use a “Reference Only” stamp or something similar for making copies of technical documentation?  ( YES / NO )</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: TPC do not use Reference Only Stamp.. it should be applicable to production staff who may print out from PC.  In general, staff should refer to GTI-P-188 (Technical/Maintenance Data) para. 13.2 and destroy after use.</p>
+    </div>
+    <div class="rewrite must-box">
+      <p class="label must">Correct</p>
+      <p class="must">Comments: No. TPC does not use a ‘Reference Only’ stamp. Printed copies used by production are controlled in accordance with GTI-P-188 (Technical/Maintenance Data) paragraph 13.2 and are destroyed after use.</p>
+    </div>
+    <div class="why"><p>Not a clean YES/NO. Informal English and double dots. The control itself is fine.</p></div>
+  </div>
+
+  <h3>7. Tool/Equipment</h3>
+
+  <div class="item" id="q7-1">
+    <p class="qid">7-1</p>
+    <div class="q"><p>Are the tools on the ramp car properly identified and marked with the correct information (without the risk of damage or loss)? (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes. All tools are uniquely identified and labelled with the appropriate tool identification information, including part number and serial number where applicable, to ensure traceability and prevent loss or misidentification.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted.</p></div>
+  </div>
+
+  <div class="item" id="q7-2">
+    <p class="qid">7-2</p>
+    <div class="q"><p>How do you demonstrate that the equipment, tools, or materials being replaced are at least as good as those recommended by the manufacturer?</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Maintenance personnel are required to perform a pre-use inspection of tools and equipment before use to ensure they are in good condition, serviceable, and suitable for the intended maintenance task. Any unserviceable tools or equipment are removed from service and reported in accordance with HAECO procedures.</p>
+    </div>
+    <div class="rewrite must-box">
+      <p class="label must">Correct</p>
+      <p class="must">Comments: Manufacturer-recommended tools, equipment, and materials specified in the applicable AMM/CMM are used as the primary standard. Where an alternative tool, equipment, or material is used in place of the manufacturer’s recommendation, equivalency is demonstrated by comparing function, capacity or range, accuracy, and safety. The alternative is assessed and accepted by the responsible engineering/quality function before use, recorded on the equivalent tool/equipment register where applicable, and remains under inspection and calibration control.</p>
+    </div>
+    <div class="why"><p>Original answered serviceability (is the tool fit to use?), not equivalency (is this alternate at least as good as the OEM-recommended item?). Add the actual HAECO equivalent-tool / tool-control procedure number if you have it.</p></div>
+  </div>
+
+  <div class="item" id="q7-3">
+    <p class="qid">7-3</p>
+    <div class="q"><p>Are procedures related to equipment/tools FOD prevention followed? (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes. Procedures for tool control and Foreign Object Debris (FOD) prevention are implemented and followed in accordance with HAECO procedure GTI-P-148 FOD Prevention.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted.</p></div>
+  </div>
+
+  <div class="item" id="q7-4">
+    <p class="qid">7-4</p>
+    <div class="q"><p>Is there a manufacturer's manual for the equipment/tools used for maintenance work or is it available for viewing? (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Yes. Applicable manufacturer's maintenance manuals, equipment manuals, operating instructions, and technical data are available to maintenance personnel and can be accessed when performing maintenance activities.</p>
+    </div>
+    <div class="rewrite ok-box"><p class="ok">Leave as drafted.</p></div>
+  </div>
+
+  <div class="item" id="q7-5">
+    <p class="qid">7-5</p>
+    <div class="q"><p>If you have a list of assigned tools/equipment provided by KE, does it match the actual product and equipment name, serial number, and quantity? (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Awaiting MM feedback</p>
+    </div>
+    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+  </div>
+
+  <h3>8. Material</h3>
+
+  <div class="item" id="q8-1">
+    <p class="qid">8-1</p>
+    <div class="q"><p>Please check if the allocation parts stored in the station have not exceeded the preservation due date and let us know the results.</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Awaiting MM feedback</p>
+    </div>
+    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+  </div>
+
+  <div class="item" id="q8-2">
+    <p class="qid">8-2</p>
+    <div class="q"><p>Is there anything that has passed the expiration date on packing, O-ring, tape, RTV, battery, etc.?  (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Awaiting MM feedback</p>
+    </div>
+    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+  </div>
+
+  <div class="item" id="q8-3">
+    <p class="qid">8-3</p>
+    <div class="q"><p>After checking the items with shortened expiration dates due to opening, are there any items whose expiration dates have passed? (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Awaiting MM feedback</p>
+    </div>
+    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+  </div>
+
+  <div class="item" id="q8-4">
+    <p class="qid">8-4</p>
+    <div class="q"><p>How do mechanics manage ESDS materials according to relevant manuals and procedures and learn how to use Wrist Straps?</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: There is no ESDS materials used in Line Maintenance</p>
+    </div>
+    <div class="rewrite must-box">
+      <p class="label must">Correct</p>
+      <p class="must">Comments: ESDS components encountered during line maintenance (for example avionics LRUs and other electronic units) are handled in accordance with the applicable AMM and HAECO ESD control procedures. Mechanics and certifying staff are trained in ESD precautions, including inspection and use of wrist straps, before handling ESDS items. ESDS components remain in ESD-protective packaging until installation, and wrist straps are connected to a verified ground point when required by the task or procedure.</p>
+    </div>
+    <div class="why"><p>ESDS = Electrostatic Discharge Sensitive. Line maintenance handles avionics LRUs, computers, radios, probes. KE asked how they are handled and how wrist-strap use is learned — not whether stores keep ESD bags. Do not claim zero ESDS. If you have the local ESD / GTI procedure number, add it after “HAECO ESD control procedures”.</p></div>
+  </div>
+
+  <div class="item" id="q8-5">
+    <p class="qid">8-5</p>
+    <div class="q"><p>Are flammable or toxic chemicals stored separately from general materials?  (YES/NO)</p></div>
+    <div class="ans">
+      <p class="label">Original</p>
+      <p>Comments: Awaiting MM feedback</p>
+    </div>
+    <div class="rewrite mm-box"><p class="mm">Left for MM. Not rewritten.</p></div>
+  </div>
+
+  <h2 id="s2">II. Section Two</h2>
+  <p class="purpose">Please collect documents and photos supporting the information below:
+For photos, replace the reference images with the relevant photo.
+For documents, prepare the file with an ID matching the question number added to the beginning of the file name.
+Should you have trouble sending this word file due to the large file size of images, please collect all data in a separate compressed file/folder with an ID matching the question number added to the beginning of the file name. For example, “B-3 AMO Certificates” and “B-4 MOPMs”.</p>
+
+  <div class="item" id="qA-1">
+    <p class="qid">A-1</p>
+    <div class="q"><p>[Picture] Photographic evidence to confirm the storage condition of items in the warehouse and the working environment of the line maintenance office.
+[Example]</p></div>
+    <div class="ans">
+      <p class="label">Original (HAECO 2026)</p>
+      <p>Section Two example block was removed. No warehouse or line-office photos inserted. No AMO, AMOPM, roster, or store photos are inside this Word file.</p>
+    </div>
+    <div class="rewrite mm-box"><p class="mm">Photos treated as MM / evidence pack. Not rewritten. Collect photos in a zip named A-1 if the Word file is too large.</p></div>
+  </div>
+</div>
+</body>
+</html>
