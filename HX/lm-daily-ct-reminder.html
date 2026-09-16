@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LM Daily CT Reminder (overdue)</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #2a3340;
+    --paper: #f6f4ee;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+    --navy-soft: #e8eef5;
+    --ops: #2f4a2f;
+    --ops-soft: #e8f0e6;
+    --qa: #6b2e24;
+    --qa-soft: #f6eae7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.45;
+    font-size: 13.5px;
+  }
+  .page { max-width: 1280px; margin: 0 auto; padding: 22px 18px 64px; }
+  h1 { font-size: 22px; margin: 0 0 6px; color: var(--navy); font-weight: 700; }
+  .subtitle { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  .why, .box, .stat {
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+  .why { padding: 12px 14px; margin: 0 0 14px; }
+  .why p { margin: 0 0 8px; }
+  .why p:last-child { margin: 0; }
+  h2 {
+    font-size: 15px;
+    margin: 22px 0 10px;
+    padding: 6px 10px;
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  code, .formula {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px;
+  }
+  .formula {
+    display: block;
+    background: var(--navy-soft);
+    border: 1px solid var(--line);
+    padding: 8px 10px;
+    margin: 8px 0;
+    overflow-x: auto;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .box { padding: 12px 14px; }
+  .box label { display: block; font-weight: 650; margin-bottom: 6px; }
+  .box input[type="file"] { width: 100%; }
+  .note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 12px; }
+  .stat { padding: 10px 12px; }
+  .stat b { display: block; font-size: 20px; color: var(--navy); }
+  .stat span { color: var(--muted); font-size: 12px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+  button, .btn {
+    font: inherit;
+    font-size: 13px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  button:hover, .btn:hover { background: var(--navy-soft); }
+  button.on { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 650; }
+  button.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
+  .toolbar input[type="search"] {
+    flex: 1;
+    min-width: 180px;
+    font: inherit;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+  }
+  .table-wrap { overflow: auto; max-height: 62vh; border: 1px solid var(--line); background: var(--card); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 1; font-weight: 650; white-space: nowrap; }
+  td.na { color: #8a3a32; }
+  td.ok { color: var(--ops); font-weight: 650; }
+  .pager { display: flex; gap: 8px; align-items: center; margin-top: 8px; color: var(--muted); }
+  .sheet1-edit input, .sheet1-edit select {
+    font: inherit;
+    width: 100%;
+    border: 1px solid var(--line);
+    padding: 4px 6px;
+  }
+  .hidden { display: none; }
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+  @media (max-width: 800px) {
+    .row2, .stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>LM Daily CT Reminder (overdue)</h1>
+    <p class="subtitle">CSV 原料 → 主表加 ocg → External（Sheet1 名單）→ Sheet3（只留 HX 簽發）。唔使喺 Excel 手寫 VLOOKUP。</p>
+
+    <div class="why">
+      <p><strong>呢頁做咩：</strong> 掉入 LMS 嘅 Daily CT Reminder CSV，用 Sheet1 員工名單自動對 <code>ocg</code>，即刻睇主表 / External / Sheet3，再 download。</p>
+      <p><strong>Excel 對照：</strong> 主 tab <code>L2</code> 等同下面呢條。L1 標題寫 <code>ocg</code>，再拉到最後一行。External = 篩走 <code>#N/A</code> 再 Paste Values。Sheet3 = External 再篩 <code>Issued By = HX</code>。</p>
+      <code class="formula">=VLOOKUP(D2,Sheet1!A:B,2,FALSE)</code>
+    </div>
+
+    <h2>1. 載入檔</h2>
+    <div class="row2">
+      <div class="box">
+        <label for="csv">CSV 原料（主表）</label>
+        <input id="csv" type="file" accept=".csv,text/csv">
+        <p class="note" id="csv-status">未載入。用 <code>LM - Daily CT Reminder (overdue).csv</code>。</p>
+      </div>
+      <div class="box">
+        <label for="roster-file">Sheet1 名單（可選，覆蓋預設）</label>
+        <input id="roster-file" type="file" accept=".csv,text/csv">
+        <p class="note">兩欄：staff id, Mechanic/Engineer。而家用緊 <span id="roster-count">0</span> 人。改完會記喺呢部機。</p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="n-main">0</b><span>主表行（CSV）</span></div>
+      <div class="stat"><b id="n-ext">0</b><span>External（名單上有過期）</span></div>
+      <div class="stat"><b id="n-s3">0</b><span>Sheet3（Issued By = HX）</span></div>
+      <div class="stat"><b id="n-miss">0</b><span>Sheet1 有人但無過期</span></div>
+    </div>
+
+    <h2>2. 結果</h2>
+    <div class="tabs">
+      <button type="button" class="on" data-tab="main">主表</button>
+      <button type="button" data-tab="external">External</button>
+      <button type="button" data-tab="sheet3">Sheet3</button>
+      <button type="button" data-tab="sheet1">Sheet1 名單</button>
+    </div>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="搜員工號 / 名 / 課程 / Award ID">
+      <button type="button" class="primary" id="dl">Download 呢個 tab CSV</button>
+      <button type="button" id="dl-all">Download 四個 tab</button>
+      <button type="button" id="roster-reset">還原預設 Sheet1</button>
+    </div>
+    <div id="view-data">
+      <div class="table-wrap">
+        <table>
+          <thead><tr id="head"></tr></thead>
+          <tbody id="body"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button type="button" id="prev">上一頁</button>
+        <span id="page-info">未有資料</span>
+        <button type="button" id="next">下一頁</button>
+      </div>
+    </div>
+    <div id="view-sheet1" class="hidden">
+      <div class="toolbar">
+        <button type="button" id="add-row">加一行</button>
+      </div>
+      <div class="table-wrap">
+        <table class="sheet1-edit">
+          <thead><tr><th>staff id</th><th>ocg</th><th></th></tr></thead>
+          <tbody id="roster-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+<script>
+const DEFAULT_ROSTER = [{"id":"169153","ocg":"Mechanic"},{"id":"354390","ocg":"Mechanic"},{"id":"354598","ocg":"Mechanic"},{"id":"372574","ocg":"Mechanic"},{"id":"373754","ocg":"Mechanic"},{"id":"380204","ocg":"Mechanic"},{"id":"115841","ocg":"Mechanic"},{"id":"298978","ocg":"Mechanic"},{"id":"233015","ocg":"Mechanic"},{"id":"373704","ocg":"Mechanic"},{"id":"368242","ocg":"Mechanic"},{"id":"122953","ocg":"Mechanic"},{"id":"328238","ocg":"Mechanic"},{"id":"349846","ocg":"Mechanic"},{"id":"357344","ocg":"Mechanic"},{"id":"375750","ocg":"Mechanic"},{"id":"103713","ocg":"Mechanic"},{"id":"204933","ocg":"Mechanic"},{"id":"187460","ocg":"Mechanic"},{"id":"355322","ocg":"Mechanic"},{"id":"374306","ocg":"Mechanic"},{"id":"191403","ocg":"Mechanic"},{"id":"193029","ocg":"Mechanic"},{"id":"276453","ocg":"Mechanic"},{"id":"374124","ocg":"Mechanic"},{"id":"373689","ocg":"Mechanic"},{"id":"249286","ocg":"Mechanic"},{"id":"363854","ocg":"Mechanic"},{"id":"360397","ocg":"Mechanic"},{"id":"373762","ocg":"Mechanic"},{"id":"377160","ocg":"Mechanic"},{"id":"158875","ocg":"Mechanic"},{"id":"219346","ocg":"Mechanic"},{"id":"346355","ocg":"Mechanic"},{"id":"354605","ocg":"Mechanic"},{"id":"376071","ocg":"Mechanic"},{"id":"199655","ocg":"Mechanic"},{"id":"324872","ocg":"Mechanic"},{"id":"229535","ocg":"Mechanic"},{"id":"366014","ocg":"Mechanic"},{"id":"353988","ocg":"Mechanic"},{"id":"170465","ocg":"Mechanic"},{"id":"322412","ocg":"Mechanic"},{"id":"359423","ocg":"Mechanic"},{"id":"358722","ocg":"Mechanic"},{"id":"375726","ocg":"Mechanic"},{"id":"117152","ocg":"Mechanic"},{"id":"347395","ocg":"Mechanic"},{"id":"191859","ocg":"Mechanic"},{"id":"382200","ocg":"Mechanic"},{"id":"377764","ocg":"Mechanic"},{"id":"191263","ocg":"Mechanic"},{"id":"250431","ocg":"Mechanic"},{"id":"302919","ocg":"Mechanic"},{"id":"230300","ocg":"Mechanic"},{"id":"380147","ocg":"Mechanic"},{"id":"191437","ocg":"Mechanic"},{"id":"279473","ocg":"Mechanic"},{"id":"290990","ocg":"Mechanic"},{"id":"359431","ocg":"Mechanic"},{"id":"376097","ocg":"Mechanic"},{"id":"303173","ocg":"Mechanic"},{"id":"313495","ocg":"Mechanic"},{"id":"314336","ocg":"Mechanic"},{"id":"334251","ocg":"Mechanic"},{"id":"330233","ocg":"Mechanic"},{"id":"338477","ocg":"Mechanic"},{"id":"133447","ocg":"Mechanic"},{"id":"294835","ocg":"Mechanic"},{"id":"113738","ocg":"Mechanic"},{"id":"305749","ocg":"Mechanic"},{"id":"154724","ocg":"Mechanic"},{"id":"251215","ocg":"Mechanic"},{"id":"359811","ocg":"Mechanic"},{"id":"147159","ocg":"Mechanic"},{"id":"358714","ocg":"Mechanic"},{"id":"149387","ocg":"Mechanic"},{"id":"124644","ocg":"Mechanic"},{"id":"205014","ocg":"Mechanic"},{"id":"120197","ocg":"Mechanic"},{"id":"122341","ocg":"Mechanic"},{"id":"381517","ocg":"Mechanic"},{"id":"133629","ocg":"Mechanic"},{"id":"143834","ocg":"Mechanic"},{"id":"158817","ocg":"Mechanic"},{"id":"179160","ocg":"Mechanic"},{"id":"349648","ocg":"Mechanic"},{"id":"156910","ocg":"Mechanic"},{"id":"301507","ocg":"Mechanic"},{"id":"361501","ocg":"Mechanic"},{"id":"179144","ocg":"Mechanic"},{"id":"346587","ocg":"Mechanic"},{"id":"356552","ocg":"Mechanic"},{"id":"115700","ocg":"Engineer"},{"id":"191239","ocg":"Engineer"},{"id":"236027","ocg":"Engineer"},{"id":"296344","ocg":"Engineer"},{"id":"312405","ocg":"Engineer"},{"id":"351156","ocg":"Engineer"},{"id":"373415","ocg":"Engineer"},{"id":"138041","ocg":"Engineer"},{"id":"300038","ocg":"Engineer"},{"id":"300286","ocg":"Engineer"},{"id":"336447","ocg":"Engineer"},{"id":"360933","ocg":"Engineer"},{"id":"373986","ocg":"Engineer"},{"id":"84096","ocg":"Engineer"},{"id":"118374","ocg":"Engineer"},{"id":"191495","ocg":"Engineer"},{"id":"208357","ocg":"Engineer"},{"id":"213728","ocg":"Engineer"},{"id":"246860","ocg":"Engineer"},{"id":"115362","ocg":"Engineer"},{"id":"144030","ocg":"Engineer"},{"id":"150441","ocg":"Engineer"},{"id":"206343","ocg":"Engineer"},{"id":"332099","ocg":"Engineer"},{"id":"334095","ocg":"Engineer"},{"id":"380981","ocg":"Engineer"}];
+
+const SHORT = [
+  ["auth", "Authorisation Holder"],
+  ["home", "Home Section"],
+  ["dept", "Department ID"],
+  ["uid", "User ID"],
+  ["name", "Other Name"],
+  ["code", "Certification Code"],
+  ["cname", "Certification Name"],
+  ["exp", "Expiration Date"],
+  ["aid", "Award ID"],
+  ["issued", "Issued By"],
+  ["desc", "Description"],
+  ["ocg", "ocg"]
+];
+const PAGE = 80;
+const STORE = "hx-ct-roster";
+
+let roster = loadRoster();
+let mainRows = [];
+let tab = "main";
+let page = 0;
+let q = "";
+
+function normId(v) {
+  const s = String(v ?? "").trim();
+  if (/^\d+(\.0+)?$/.test(s)) return String(parseInt(s, 10));
+  return s;
+}
+function loadRoster() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORE) || "null");
+    if (Array.isArray(raw) && raw.length) {
+      return raw.map((r) => ({ id: normId(r.id), ocg: String(r.ocg || "").trim() || "Mechanic" }));
+    }
+  } catch (e) {}
+  return DEFAULT_ROSTER.map((r) => ({ ...r }));
+}
+function saveRoster() {
+  try { localStorage.setItem(STORE, JSON.stringify(roster)); } catch (e) {}
+  document.getElementById("roster-count").textContent = String(roster.length);
+}
+function rosterMap() {
+  const m = new Map();
+  roster.forEach((r) => { if (r.id) m.set(r.id, r.ocg); });
+  return m;
+}
+function parseCsv(text) {
+  text = String(text || "").replace(/^\uFEFF/, "");
+  const rows = [];
+  let row = [], field = "", i = 0, inQ = false;
+  while (i < text.length) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+        inQ = false; i++; continue;
+      }
+      field += c; i++; continue;
+    }
+    if (c === '"') { inQ = true; i++; continue; }
+    if (c === ",") { row.push(field); field = ""; i++; continue; }
+    if (c === "\r") { i++; continue; }
+    if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+    field += c; i++;
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows.filter((r) => r.some((c) => String(c).trim() !== ""));
+}
+function findCol(headers, part) {
+  const p = part.toLowerCase();
+  const i = headers.findIndex((h) => String(h || "").toLowerCase().includes(p));
+  return i;
+}
+function toRow(headers, cells) {
+  const get = (part) => {
+    const i = findCol(headers, part);
+    return i >= 0 ? String(cells[i] ?? "").trim() : "";
+  };
+  const uid = normId(get("user id") || get("staff id"));
+  const ocg = rosterMap().get(uid) || "#N/A";
+  return {
+    auth: get("authorisation holder") || get("authorization holder"),
+    home: get("home section"),
+    dept: get("department id"),
+    uid,
+    name: get("other name"),
+    code: get("certification code"),
+    cname: get("certification name"),
+    exp: get("expiration date"),
+    aid: get("award id"),
+    issued: get("issued by"),
+    desc: get("description"),
+    ocg
+  };
+}
+function recompute() {
+  const map = rosterMap();
+  mainRows = mainRows.map((r) => ({ ...r, ocg: map.get(r.uid) || "#N/A" }));
+  paint();
+}
+function externalRows() { return mainRows.filter((r) => r.ocg !== "#N/A"); }
+function sheet3Rows() { return externalRows().filter((r) => r.issued === "HX"); }
+function missingStaff() {
+  const seen = new Set(mainRows.map((r) => r.uid));
+  return roster.filter((r) => r.id && !seen.has(r.id));
+}
+function currentRows() {
+  if (tab === "external") return externalRows();
+  if (tab === "sheet3") return sheet3Rows();
+  return mainRows;
+}
+function filtered() {
+  const s = q.trim().toLowerCase();
+  const rows = currentRows();
+  if (!s) return rows;
+  return rows.filter((r) => SHORT.some(([k]) => String(r[k] || "").toLowerCase().includes(s)));
+}
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+function paintStats() {
+  document.getElementById("n-main").textContent = String(mainRows.length);
+  document.getElementById("n-ext").textContent = String(externalRows().length);
+  document.getElementById("n-s3").textContent = String(sheet3Rows().length);
+  document.getElementById("n-miss").textContent = String(missingStaff().length);
+  document.getElementById("roster-count").textContent = String(roster.length);
+}
+function paintRoster() {
+  const tb = document.getElementById("roster-body");
+  tb.innerHTML = roster.map((r, i) =>
+    "<tr>" +
+    '<td><input data-i="' + i + '" data-k="id" value="' + esc(r.id) + '"></td>' +
+    '<td><select data-i="' + i + '" data-k="ocg">' +
+      '<option' + (r.ocg === "Mechanic" ? " selected" : "") + '>Mechanic</option>' +
+      '<option' + (r.ocg === "Engineer" ? " selected" : "") + '>Engineer</option>' +
+    "</select></td>" +
+    '<td><button type="button" data-del="' + i + '">刪</button></td>' +
+    "</tr>"
+  ).join("");
+}
+function paintTable() {
+  const rows = filtered();
+  const pages = Math.max(1, Math.ceil(rows.length / PAGE));
+  if (page >= pages) page = pages - 1;
+  if (page < 0) page = 0;
+  document.getElementById("head").innerHTML = SHORT.map(([, label]) => "<th>" + esc(label) + "</th>").join("");
+  const slice = rows.slice(page * PAGE, page * PAGE + PAGE);
+  document.getElementById("body").innerHTML = slice.map((r) =>
+    "<tr>" + SHORT.map(([k]) => {
+      const cls = k === "ocg" ? (r.ocg === "#N/A" ? " class=\"na\"" : " class=\"ok\"") : "";
+      return "<td" + cls + ">" + esc(r[k]) + "</td>";
+    }).join("") + "</tr>"
+  ).join("");
+  document.getElementById("page-info").textContent =
+    rows.length ? ("第 " + (page + 1) + " / " + pages + " 頁 · " + rows.length + " 行") : "未有資料";
+}
+function paint() {
+  paintStats();
+  const sheet1 = tab === "sheet1";
+  document.getElementById("view-sheet1").classList.toggle("hidden", !sheet1);
+  document.getElementById("view-data").classList.toggle("hidden", sheet1);
+  document.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  if (sheet1) paintRoster();
+  else paintTable();
+}
+function csvEscape(v) {
+  const s = String(v ?? "");
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function rowsToCsv(rows, headers) {
+  const lines = [headers.map(([, label]) => csvEscape(label)).join(",")];
+  rows.forEach((r) => lines.push(headers.map(([k]) => csvEscape(r[k])).join(",")));
+  return lines.join("\r\n");
+}
+function download(name, text) {
+  const blob = new Blob(["\uFEFF" + text], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function ingestCsv(text, fileName) {
+  const grid = parseCsv(text);
+  if (grid.length < 2) throw new Error("CSV 冇資料列");
+  const headers = grid[0];
+  if (findCol(headers, "user id") < 0 && findCol(headers, "staff id") < 0) {
+    throw new Error("搵唔到 User ID 欄");
+  }
+  mainRows = grid.slice(1).map((cells) => toRow(headers, cells));
+  page = 0;
+  document.getElementById("csv-status").textContent =
+    fileName + " · " + mainRows.length + " 行。L 欄 ocg 已用 Sheet1 對好。";
+  paint();
+}
+function ingestRosterCsv(text) {
+  const grid = parseCsv(text);
+  if (!grid.length) throw new Error("名單 CSV 空白");
+  const start = /staff|user|id/i.test(grid[0][0] || "") ? 1 : 0;
+  const next = [];
+  for (let i = start; i < grid.length; i++) {
+    const id = normId(grid[i][0]);
+    const ocg = /eng/i.test(grid[i][1] || "") ? "Engineer" : "Mechanic";
+    if (id) next.push({ id, ocg });
+  }
+  if (!next.length) throw new Error("名單入面冇 staff id");
+  roster = next;
+  saveRoster();
+  recompute();
+}
+
+document.getElementById("csv").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try { ingestCsv(String(reader.result), f.name); }
+    catch (err) { document.getElementById("csv-status").textContent = String(err.message || err); }
+  };
+  reader.readAsText(f);
+});
+document.getElementById("roster-file").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try { ingestRosterCsv(String(reader.result)); }
+    catch (err) { alert(String(err.message || err)); }
+  };
+  reader.readAsText(f);
+});
+document.querySelectorAll(".tabs button").forEach((b) => {
+  b.addEventListener("click", () => { tab = b.dataset.tab; page = 0; paint(); });
+});
+document.getElementById("q").addEventListener("input", (e) => { q = e.target.value; page = 0; paint(); });
+document.getElementById("prev").addEventListener("click", () => { page--; paint(); });
+document.getElementById("next").addEventListener("click", () => { page++; paint(); });
+document.getElementById("add-row").addEventListener("click", () => {
+  roster.push({ id: "", ocg: "Mechanic" });
+  saveRoster();
+  paintRoster();
+});
+document.getElementById("roster-body").addEventListener("input", (e) => {
+  const t = e.target;
+  if (!t.dataset.k) return;
+  const i = Number(t.dataset.i);
+  roster[i][t.dataset.k] = t.dataset.k === "id" ? normId(t.value) : t.value;
+  saveRoster();
+  recompute();
+});
+document.getElementById("roster-body").addEventListener("change", (e) => {
+  const t = e.target;
+  if (!t.dataset.k) return;
+  const i = Number(t.dataset.i);
+  roster[i][t.dataset.k] = t.dataset.k === "id" ? normId(t.value) : t.value;
+  saveRoster();
+  recompute();
+});
+document.getElementById("roster-body").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-del]");
+  if (!t) return;
+  roster.splice(Number(t.dataset.del), 1);
+  saveRoster();
+  recompute();
+});
+document.getElementById("roster-reset").addEventListener("click", () => {
+  roster = DEFAULT_ROSTER.map((r) => ({ ...r }));
+  saveRoster();
+  recompute();
+});
+document.getElementById("dl").addEventListener("click", () => {
+  if (tab === "sheet1") {
+    download("Sheet1.csv", rowsToCsv(roster, [["id", "staff id"], ["ocg", "ocg"]]));
+    return;
+  }
+  const name = tab === "external" ? "External.csv" : tab === "sheet3" ? "Sheet3.csv" : "LM - Daily CT Reminder (overdue).csv";
+  download(name, rowsToCsv(filtered(), SHORT));
+});
+document.getElementById("dl-all").addEventListener("click", () => {
+  download("LM - Daily CT Reminder (overdue).csv", rowsToCsv(mainRows, SHORT));
+  setTimeout(() => download("External.csv", rowsToCsv(externalRows(), SHORT)), 250);
+  setTimeout(() => download("Sheet3.csv", rowsToCsv(sheet3Rows(), SHORT)), 500);
+  setTimeout(() => download("Sheet1.csv", rowsToCsv(roster, [["id", "staff id"], ["ocg", "ocg"]])), 750);
+});
+
+saveRoster();
+paint();
+</script>
+</body>
+</html>
