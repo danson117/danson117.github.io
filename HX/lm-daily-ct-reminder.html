@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -126,47 +126,45 @@
 <body>
   <div class="page">
     <h1>LM Daily CT Reminder (overdue)</h1>
-    <p class="subtitle">CSV 原料 → 主表加 ocg → External（Sheet1 名單）→ Sheet3（只留 HX 簽發）。唔使喺 Excel 手寫 VLOOKUP。</p>
+    <p class="subtitle">CSV source → Main + ocg → External (OCG List) → Internal (HX-issued only).</p>
 
     <div class="why">
-      <p><strong>呢頁做咩：</strong> 掉入 LMS 嘅 Daily CT Reminder CSV，用 Sheet1 員工名單自動對 <code>ocg</code>，即刻睇主表 / External / Sheet3，再 download。</p>
-      <p><strong>Excel 對照：</strong> 主 tab <code>L2</code> 等同下面呢條。L1 標題寫 <code>ocg</code>，再拉到最後一行。External = 篩走 <code>#N/A</code> 再 Paste Values。Sheet3 = External 再篩 <code>Issued By = HX</code>。</p>
-      <code class="formula">=VLOOKUP(D2,Sheet1!A:B,2,FALSE)</code>
+      <p>Drop in the LMS Daily CT Reminder CSV. The page matches staff IDs against the OCG List, then shows Main, External, and Internal for download.</p>
     </div>
 
-    <h2>1. 載入檔</h2>
+    <h2>1. Load files</h2>
     <div class="row2">
       <div class="box">
-        <label for="csv">CSV 原料（主表）</label>
+        <label for="csv">CSV source (Main)</label>
         <input id="csv" type="file" accept=".csv,text/csv">
-        <p class="note" id="csv-status">未載入。用 <code>LM - Daily CT Reminder (overdue).csv</code>。</p>
+        <p class="note" id="csv-status">No file loaded. Use <code>LM - Daily CT Reminder (overdue).csv</code>.</p>
       </div>
       <div class="box">
-        <label for="roster-file">Sheet1 名單（可選，覆蓋預設）</label>
+        <label for="roster-file">OCG List (optional, replaces the default)</label>
         <input id="roster-file" type="file" accept=".csv,text/csv">
-        <p class="note">兩欄：staff id, Mechanic/Engineer。而家用緊 <span id="roster-count">0</span> 人。改完會記喺呢部機。</p>
+        <p class="note">Two columns: staff id, Mechanic/Engineer. Using <span id="roster-count">0</span> people. Edits stay on this computer.</p>
       </div>
     </div>
 
     <div class="stats">
-      <div class="stat"><b id="n-main">0</b><span>主表行（CSV）</span></div>
-      <div class="stat"><b id="n-ext">0</b><span>External（名單上有過期）</span></div>
-      <div class="stat"><b id="n-s3">0</b><span>Sheet3（Issued By = HX）</span></div>
-      <div class="stat"><b id="n-miss">0</b><span>Sheet1 有人但無過期</span></div>
+      <div class="stat"><b id="n-main">0</b><span>Main rows (CSV)</span></div>
+      <div class="stat"><b id="n-ext">0</b><span>External (on OCG List, overdue)</span></div>
+      <div class="stat"><b id="n-s3">0</b><span>Internal (Issued By = HX)</span></div>
+      <div class="stat"><b id="n-miss">0</b><span>On OCG List, no overdue</span></div>
     </div>
 
-    <h2>2. 結果</h2>
+    <h2>2. Results</h2>
     <div class="tabs">
-      <button type="button" class="on" data-tab="main">主表</button>
+      <button type="button" class="on" data-tab="main">Main</button>
       <button type="button" data-tab="external">External</button>
-      <button type="button" data-tab="sheet3">Sheet3</button>
-      <button type="button" data-tab="sheet1">Sheet1 名單</button>
+      <button type="button" data-tab="internal">Internal</button>
+      <button type="button" data-tab="ocg">OCG List</button>
     </div>
     <div class="toolbar">
-      <input id="q" type="search" placeholder="搜員工號 / 名 / 課程 / Award ID">
-      <button type="button" class="primary" id="dl">Download 呢個 tab CSV</button>
-      <button type="button" id="dl-all">Download 四個 tab</button>
-      <button type="button" id="roster-reset">還原預設 Sheet1</button>
+      <input id="q" type="search" placeholder="Search staff ID / name / course / Award ID">
+      <button type="button" class="primary" id="dl">Download this tab CSV</button>
+      <button type="button" id="dl-all">Download all four tabs</button>
+      <button type="button" id="roster-reset">Reset default OCG List</button>
     </div>
     <div id="view-data">
       <div class="table-wrap">
@@ -176,14 +174,14 @@
         </table>
       </div>
       <div class="pager">
-        <button type="button" id="prev">上一頁</button>
-        <span id="page-info">未有資料</span>
-        <button type="button" id="next">下一頁</button>
+        <button type="button" id="prev">Previous</button>
+        <span id="page-info">No data</span>
+        <button type="button" id="next">Next</button>
       </div>
     </div>
     <div id="view-sheet1" class="hidden">
       <div class="toolbar">
-        <button type="button" id="add-row">加一行</button>
+        <button type="button" id="add-row">Add row</button>
       </div>
       <div class="table-wrap">
         <table class="sheet1-edit">
@@ -193,7 +191,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+  <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
 <script>
 const DEFAULT_ROSTER = [{"id":"169153","ocg":"Mechanic"},{"id":"354390","ocg":"Mechanic"},{"id":"354598","ocg":"Mechanic"},{"id":"372574","ocg":"Mechanic"},{"id":"373754","ocg":"Mechanic"},{"id":"380204","ocg":"Mechanic"},{"id":"115841","ocg":"Mechanic"},{"id":"298978","ocg":"Mechanic"},{"id":"233015","ocg":"Mechanic"},{"id":"373704","ocg":"Mechanic"},{"id":"368242","ocg":"Mechanic"},{"id":"122953","ocg":"Mechanic"},{"id":"328238","ocg":"Mechanic"},{"id":"349846","ocg":"Mechanic"},{"id":"357344","ocg":"Mechanic"},{"id":"375750","ocg":"Mechanic"},{"id":"103713","ocg":"Mechanic"},{"id":"204933","ocg":"Mechanic"},{"id":"187460","ocg":"Mechanic"},{"id":"355322","ocg":"Mechanic"},{"id":"374306","ocg":"Mechanic"},{"id":"191403","ocg":"Mechanic"},{"id":"193029","ocg":"Mechanic"},{"id":"276453","ocg":"Mechanic"},{"id":"374124","ocg":"Mechanic"},{"id":"373689","ocg":"Mechanic"},{"id":"249286","ocg":"Mechanic"},{"id":"363854","ocg":"Mechanic"},{"id":"360397","ocg":"Mechanic"},{"id":"373762","ocg":"Mechanic"},{"id":"377160","ocg":"Mechanic"},{"id":"158875","ocg":"Mechanic"},{"id":"219346","ocg":"Mechanic"},{"id":"346355","ocg":"Mechanic"},{"id":"354605","ocg":"Mechanic"},{"id":"376071","ocg":"Mechanic"},{"id":"199655","ocg":"Mechanic"},{"id":"324872","ocg":"Mechanic"},{"id":"229535","ocg":"Mechanic"},{"id":"366014","ocg":"Mechanic"},{"id":"353988","ocg":"Mechanic"},{"id":"170465","ocg":"Mechanic"},{"id":"322412","ocg":"Mechanic"},{"id":"359423","ocg":"Mechanic"},{"id":"358722","ocg":"Mechanic"},{"id":"375726","ocg":"Mechanic"},{"id":"117152","ocg":"Mechanic"},{"id":"347395","ocg":"Mechanic"},{"id":"191859","ocg":"Mechanic"},{"id":"382200","ocg":"Mechanic"},{"id":"377764","ocg":"Mechanic"},{"id":"191263","ocg":"Mechanic"},{"id":"250431","ocg":"Mechanic"},{"id":"302919","ocg":"Mechanic"},{"id":"230300","ocg":"Mechanic"},{"id":"380147","ocg":"Mechanic"},{"id":"191437","ocg":"Mechanic"},{"id":"279473","ocg":"Mechanic"},{"id":"290990","ocg":"Mechanic"},{"id":"359431","ocg":"Mechanic"},{"id":"376097","ocg":"Mechanic"},{"id":"303173","ocg":"Mechanic"},{"id":"313495","ocg":"Mechanic"},{"id":"314336","ocg":"Mechanic"},{"id":"334251","ocg":"Mechanic"},{"id":"330233","ocg":"Mechanic"},{"id":"338477","ocg":"Mechanic"},{"id":"133447","ocg":"Mechanic"},{"id":"294835","ocg":"Mechanic"},{"id":"113738","ocg":"Mechanic"},{"id":"305749","ocg":"Mechanic"},{"id":"154724","ocg":"Mechanic"},{"id":"251215","ocg":"Mechanic"},{"id":"359811","ocg":"Mechanic"},{"id":"147159","ocg":"Mechanic"},{"id":"358714","ocg":"Mechanic"},{"id":"149387","ocg":"Mechanic"},{"id":"124644","ocg":"Mechanic"},{"id":"205014","ocg":"Mechanic"},{"id":"120197","ocg":"Mechanic"},{"id":"122341","ocg":"Mechanic"},{"id":"381517","ocg":"Mechanic"},{"id":"133629","ocg":"Mechanic"},{"id":"143834","ocg":"Mechanic"},{"id":"158817","ocg":"Mechanic"},{"id":"179160","ocg":"Mechanic"},{"id":"349648","ocg":"Mechanic"},{"id":"156910","ocg":"Mechanic"},{"id":"301507","ocg":"Mechanic"},{"id":"361501","ocg":"Mechanic"},{"id":"179144","ocg":"Mechanic"},{"id":"346587","ocg":"Mechanic"},{"id":"356552","ocg":"Mechanic"},{"id":"115700","ocg":"Engineer"},{"id":"191239","ocg":"Engineer"},{"id":"236027","ocg":"Engineer"},{"id":"296344","ocg":"Engineer"},{"id":"312405","ocg":"Engineer"},{"id":"351156","ocg":"Engineer"},{"id":"373415","ocg":"Engineer"},{"id":"138041","ocg":"Engineer"},{"id":"300038","ocg":"Engineer"},{"id":"300286","ocg":"Engineer"},{"id":"336447","ocg":"Engineer"},{"id":"360933","ocg":"Engineer"},{"id":"373986","ocg":"Engineer"},{"id":"84096","ocg":"Engineer"},{"id":"118374","ocg":"Engineer"},{"id":"191495","ocg":"Engineer"},{"id":"208357","ocg":"Engineer"},{"id":"213728","ocg":"Engineer"},{"id":"246860","ocg":"Engineer"},{"id":"115362","ocg":"Engineer"},{"id":"144030","ocg":"Engineer"},{"id":"150441","ocg":"Engineer"},{"id":"206343","ocg":"Engineer"},{"id":"332099","ocg":"Engineer"},{"id":"334095","ocg":"Engineer"},{"id":"380981","ocg":"Engineer"}];
 
@@ -298,14 +296,14 @@ function recompute() {
   paint();
 }
 function externalRows() { return mainRows.filter((r) => r.ocg !== "#N/A"); }
-function sheet3Rows() { return externalRows().filter((r) => r.issued === "HX"); }
+function internalRows() { return externalRows().filter((r) => r.issued === "HX"); }
 function missingStaff() {
   const seen = new Set(mainRows.map((r) => r.uid));
   return roster.filter((r) => r.id && !seen.has(r.id));
 }
 function currentRows() {
   if (tab === "external") return externalRows();
-  if (tab === "sheet3") return sheet3Rows();
+  if (tab === "internal") return internalRows();
   return mainRows;
 }
 function filtered() {
@@ -320,7 +318,7 @@ function esc(s) {
 function paintStats() {
   document.getElementById("n-main").textContent = String(mainRows.length);
   document.getElementById("n-ext").textContent = String(externalRows().length);
-  document.getElementById("n-s3").textContent = String(sheet3Rows().length);
+  document.getElementById("n-s3").textContent = String(internalRows().length);
   document.getElementById("n-miss").textContent = String(missingStaff().length);
   document.getElementById("roster-count").textContent = String(roster.length);
 }
@@ -333,7 +331,7 @@ function paintRoster() {
       '<option' + (r.ocg === "Mechanic" ? " selected" : "") + '>Mechanic</option>' +
       '<option' + (r.ocg === "Engineer" ? " selected" : "") + '>Engineer</option>' +
     "</select></td>" +
-    '<td><button type="button" data-del="' + i + '">刪</button></td>' +
+    '<td><button type="button" data-del="' + i + '">Delete</button></td>' +
     "</tr>"
   ).join("");
 }
@@ -351,15 +349,15 @@ function paintTable() {
     }).join("") + "</tr>"
   ).join("");
   document.getElementById("page-info").textContent =
-    rows.length ? ("第 " + (page + 1) + " / " + pages + " 頁 · " + rows.length + " 行") : "未有資料";
+    rows.length ? ("Page " + (page + 1) + " / " + pages + " · " + rows.length + " rows") : "No data";
 }
 function paint() {
   paintStats();
-  const sheet1 = tab === "sheet1";
-  document.getElementById("view-sheet1").classList.toggle("hidden", !sheet1);
-  document.getElementById("view-data").classList.toggle("hidden", sheet1);
+  const ocg = tab === "ocg";
+  document.getElementById("view-sheet1").classList.toggle("hidden", !ocg);
+  document.getElementById("view-data").classList.toggle("hidden", ocg);
   document.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
-  if (sheet1) paintRoster();
+  if (ocg) paintRoster();
   else paintTable();
 }
 function csvEscape(v) {
@@ -381,20 +379,20 @@ function download(name, text) {
 }
 function ingestCsv(text, fileName) {
   const grid = parseCsv(text);
-  if (grid.length < 2) throw new Error("CSV 冇資料列");
+  if (grid.length < 2)     throw new Error("CSV has no data rows");
   const headers = grid[0];
   if (findCol(headers, "user id") < 0 && findCol(headers, "staff id") < 0) {
-    throw new Error("搵唔到 User ID 欄");
+    throw new Error("User ID column not found");
   }
   mainRows = grid.slice(1).map((cells) => toRow(headers, cells));
   page = 0;
   document.getElementById("csv-status").textContent =
-    fileName + " · " + mainRows.length + " 行。L 欄 ocg 已用 Sheet1 對好。";
+    fileName + " · " + mainRows.length + " rows. ocg matched against the OCG List.";
   paint();
 }
 function ingestRosterCsv(text) {
   const grid = parseCsv(text);
-  if (!grid.length) throw new Error("名單 CSV 空白");
+  if (!grid.length) throw new Error("OCG List CSV is empty");
   const start = /staff|user|id/i.test(grid[0][0] || "") ? 1 : 0;
   const next = [];
   for (let i = start; i < grid.length; i++) {
@@ -402,7 +400,7 @@ function ingestRosterCsv(text) {
     const ocg = /eng/i.test(grid[i][1] || "") ? "Engineer" : "Mechanic";
     if (id) next.push({ id, ocg });
   }
-  if (!next.length) throw new Error("名單入面冇 staff id");
+  if (!next.length) throw new Error("No staff id in the OCG List");
   roster = next;
   saveRoster();
   recompute();
@@ -468,18 +466,18 @@ document.getElementById("roster-reset").addEventListener("click", () => {
   recompute();
 });
 document.getElementById("dl").addEventListener("click", () => {
-  if (tab === "sheet1") {
-    download("Sheet1.csv", rowsToCsv(roster, [["id", "staff id"], ["ocg", "ocg"]]));
+  if (tab === "ocg") {
+    download("OCG List.csv", rowsToCsv(roster, [["id", "staff id"], ["ocg", "ocg"]]));
     return;
   }
-  const name = tab === "external" ? "External.csv" : tab === "sheet3" ? "Sheet3.csv" : "LM - Daily CT Reminder (overdue).csv";
+  const name = tab === "external" ? "External.csv" : tab === "internal" ? "Internal.csv" : "LM - Daily CT Reminder (overdue).csv";
   download(name, rowsToCsv(filtered(), SHORT));
 });
 document.getElementById("dl-all").addEventListener("click", () => {
   download("LM - Daily CT Reminder (overdue).csv", rowsToCsv(mainRows, SHORT));
   setTimeout(() => download("External.csv", rowsToCsv(externalRows(), SHORT)), 250);
-  setTimeout(() => download("Sheet3.csv", rowsToCsv(sheet3Rows(), SHORT)), 500);
-  setTimeout(() => download("Sheet1.csv", rowsToCsv(roster, [["id", "staff id"], ["ocg", "ocg"]])), 750);
+  setTimeout(() => download("Internal.csv", rowsToCsv(internalRows(), SHORT)), 500);
+  setTimeout(() => download("OCG List.csv", rowsToCsv(roster, [["id", "staff id"], ["ocg", "ocg"]])), 750);
 });
 
 saveRoster();
