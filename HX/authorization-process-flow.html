@@ -33,9 +33,28 @@
     font-weight: 700;
   }
   .sub {
-    margin: 0 0 12px;
+    margin: 0 0 8px;
     color: var(--muted);
     font-size: 12px;
+  }
+  .xlsx-links {
+    margin: 0 0 12px;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    background: #fafafa;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .xlsx-links a {
+    color: #0645ad;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+  .xlsx-links .lbl {
+    display: inline-block;
+    min-width: 11.5em;
+    color: #222;
+    font-weight: 700;
   }
   .legend {
     display: flex;
@@ -219,7 +238,13 @@
 <body>
   <div class="wrap">
     <h1>Authorization Process Flow</h1>
-    <p class="sub">KE A350 certifier authorization — swimlane format from the process-flow pictures. Source: <a href="https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fdanson117.github.io%2FHX%2FAuthorization%2520Process%2520Flow.xlsx" target="_blank" rel="noopener">open the xlsx online</a> (browser view, no download).</p>
+    <p class="sub">KE A350 certifier authorization — swimlane format from the process-flow pictures.</p>
+    <p class="xlsx-links">
+      <span class="lbl">Open online (view):</span>
+      <a href="https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fdanson117.github.io%2FHX%2FAuthorization%2520Process%2520Flow.xlsx" target="_blank" rel="noopener">Authorization Process Flow.xlsx</a> — browser view, no download<br>
+      <span class="lbl">Direct file / Pages:</span>
+      <a href="https://danson117.github.io/HX/Authorization%20Process%20Flow.xlsx">HX/Authorization Process Flow.xlsx</a>
+    </p>
     <div class="legend">
       <span><i class="done"></i>Complete</span>
       <span><i class="now"></i>In progress</span>
@@ -253,7 +278,7 @@
       </ul>
     </div>
   </div>
-  <div class="page-version" data-version="1.3" aria-label="Page version 1.3">v1.3</div>
+  <div class="page-version" data-version="1.4" aria-label="Page version 1.4">v1.4</div>
 <script>
 const LANES = [
   ["customer", "Customer (KE)"],
