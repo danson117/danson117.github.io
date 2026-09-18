@@ -47,18 +47,22 @@
     letter-spacing: 0.03em;
     text-transform: uppercase;
   }
-  .box { padding: 12px 14px; margin: 0 0 12px; }
-  .box label { display: block; font-weight: 650; margin-bottom: 6px; }
+  h2.paste { margin: 10px 0 6px; padding: 4px 8px; font-size: 13px; }
+  .box { padding: 8px 10px; margin: 0 0 8px; }
+  .box label { display: block; font-weight: 650; margin-bottom: 4px; }
   textarea {
     width: 100%;
-    min-height: 220px;
+    min-height: 126px;
+    max-height: 160px;
+    overflow: auto;
     font: inherit;
     font-size: 12.5px;
     border: 1px solid var(--line);
-    padding: 8px;
+    padding: 6px 8px;
     resize: vertical;
   }
-  .note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+  .note { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }
+  td.col-section { white-space: nowrap; width: 1%; }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 12px; }
   .stat { padding: 10px 12px; }
   .stat b { display: block; font-size: 20px; color: var(--navy); }
@@ -124,11 +128,11 @@
       <p>Remaining ≤ 30 days = red. Remaining 31–90 days = yellow. Click any column header to sort.</p>
     </div>
 
-    <h2>1. Paste email</h2>
+    <h2 class="paste">1. Paste email</h2>
     <div class="box">
       <label for="src">Entire email contents</label>
-      <textarea id="src" placeholder="Paste UAL CBT training on DD-MMM-YYYY …"></textarea>
-      <div class="toolbar" style="margin-top:10px">
+      <textarea id="src" rows="7" placeholder="Paste UAL CBT training on DD-MMM-YYYY …"></textarea>
+      <div class="toolbar" style="margin-top:6px">
         <button type="button" class="primary" id="parse">Build LM OCG table</button>
         <button type="button" id="sample">Load 14-SEP-2026 sample</button>
         <button type="button" id="clear">Clear</button>
@@ -157,7 +161,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="1.6" aria-label="Page version 1.6">v1.6</div>
+  <div class="page-version" data-version="1.7" aria-label="Page version 1.7">v1.7</div>
 <script id="sample-mail" type="text/plain">
 UAL CBT training on 14-SEP-2026 (28 STAFF)
 Jack Choi
@@ -851,7 +855,7 @@ function paint() {
   document.getElementById("body").innerHTML = sortedList(people).map((p) =>
     "<tr class=\"" + remainClass(p.remain) + "\">" +
     "<td>" + esc(p.area) + "</td>" +
-    "<td>" + esc(p.section) + "</td>" +
+    "<td class=\"col-section\">" + esc(p.section) + "</td>" +
     "<td>" + esc(p.staff) + "</td>" +
     "<td>" + esc(p.name) + "</td>" +
     "<td>" + esc(p.emp) + "</td>" +
