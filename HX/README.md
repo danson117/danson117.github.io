@@ -12,6 +12,7 @@
 - [EASA / HKAR / CX / HAECO Documentation Hierarchy](easa-cx-hk-document-hierarchy.html)
 - [LM audit / visitor schedule](lm-audit-schedule.html)
 - [LM Daily CT Reminder (overdue)](lm-daily-ct-reminder.html)
+- [UAL CBT Training](ual-cbt-training.html)
 
 ## 加新 HX HTML
 

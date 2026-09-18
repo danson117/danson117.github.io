@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UAL CBT Training</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #2a3340;
+    --paper: #f6f4ee;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+    --navy-soft: #e8eef5;
+    --hot: #8a3a32;
+    --warn: #8a6a12;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.45;
+    font-size: 13.5px;
+  }
+  .page { max-width: 1280px; margin: 0 auto; padding: 22px 18px 64px; }
+  h1 { font-size: 22px; margin: 0 0 6px; color: var(--navy); font-weight: 700; }
+  .subtitle { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  .why, .box, .stat, .md {
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+  .why { padding: 12px 14px; margin: 0 0 14px; }
+  .why p { margin: 0 0 8px; }
+  .why p:last-child { margin: 0; }
+  h2 {
+    font-size: 15px;
+    margin: 22px 0 10px;
+    padding: 6px 10px;
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .box { padding: 12px 14px; margin: 0 0 12px; }
+  .box label { display: block; font-weight: 650; margin-bottom: 6px; }
+  textarea {
+    width: 100%;
+    min-height: 220px;
+    font: inherit;
+    font-size: 12.5px;
+    border: 1px solid var(--line);
+    padding: 8px;
+    resize: vertical;
+  }
+  .note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 12px; }
+  .stat { padding: 10px 12px; }
+  .stat b { display: block; font-size: 20px; color: var(--navy); }
+  .stat span { color: var(--muted); font-size: 12px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
+  .toolbar input[type="search"] {
+    flex: 1;
+    min-width: 180px;
+    font: inherit;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+  }
+  button {
+    font: inherit;
+    font-size: 13px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  button:hover { background: var(--navy-soft); }
+  button.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  button.on { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 650; }
+  label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .table-wrap { overflow: auto; max-height: 58vh; border: 1px solid var(--line); background: var(--card); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 1; font-weight: 650; white-space: nowrap; }
+  td.hot { color: var(--hot); font-weight: 650; }
+  td.warn { color: var(--warn); font-weight: 650; }
+  .md {
+    padding: 10px 12px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    overflow: auto;
+    max-height: 42vh;
+  }
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+  @media (max-width: 800px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>UAL CBT Training</h1>
+    <p class="subtitle">Paste the United CBT reminder email → LM OCG name list as a Markdown table.</p>
+    <div class="why">
+      <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Rows whose Functional Area contains <b>OCG</b> are kept: PAX AF, CGO AF, AV, Refueller, Management, 145 &amp; OCG Planning.</p>
+      <p>Red remaining due ≤ 14 days. Amber ≤ 30 days.</p>
+    </div>
+
+    <h2>1. Paste email</h2>
+    <div class="box">
+      <label for="src">Entire email contents</label>
+      <textarea id="src" placeholder="Paste UAL CBT training on DD-MMM-YYYY …"></textarea>
+      <div class="toolbar" style="margin-top:10px">
+        <button type="button" class="primary" id="parse">Build LM OCG table</button>
+        <button type="button" id="sample">Load 14-SEP-2026 sample</button>
+        <button type="button" id="clear">Clear</button>
+      </div>
+      <p class="note" id="status">Paste the email, then build the table.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="n-people">0</b><span>LM OCG people</span></div>
+      <div class="stat"><b id="n-rows">0</b><span>Course rows</span></div>
+      <div class="stat"><b id="n-hot">0</b><span>Due in 14 days</span></div>
+      <div class="stat"><b id="n-subj">—</b><span>Email subject / date</span></div>
+    </div>
+
+    <h2>2. LM OCG list</h2>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Search name / staff # / section / course">
+      <label class="chk"><input type="checkbox" id="ocg-only" checked> OCG areas only</label>
+      <button type="button" class="on" data-view="people">People</button>
+      <button type="button" data-view="courses">Courses</button>
+      <button type="button" class="primary" id="copy-md">Copy Markdown</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr id="head"></tr></thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+
+    <h2>3. Markdown</h2>
+    <pre class="md" id="md"></pre>
+  </div>
+  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+<script id="sample-mail" type="text/plain">
+UAL CBT training on 14-SEP-2026 (28 STAFF)
+Jack Choi
+
+Dear all,
+
+People highlighted with RED color require immediate action as per customer instruction. Thank you.
+
+Dear all,
+
+For the reference, staff in table below not yet completed UA required training (YELLOW COLOR), please arrange accordingly. Thank you.
+
+LM CXG DYN AV
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LMCXG DYN AV
+LVY1
+LVY1
+184119
+LEUNG YUEN HO
+v906871
+CATA
+05-Nov-2026
+52
+IPCT4
+12-Oct-2026
+28
+LVY4
+LVY4
+178857
+KWAN WING YIP
+v906867
+SRMAL
+12-Dec-2026
+89
+
+LM CXG DYN AF
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LMCXG DYN AF
+LNY2
+LNY2
+216136
+LAU YUEN KEUNG
+v925565
+IPCT4
+08-Dec-2026
+85
+LNY4
+LNY4
+191510
+WONG HO MAN
+v925644
+FGENR
+29-Sept-2026
+15
+RVSMA
+30-Sept-2026
+16
+
+LM CXG PML AF
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LMCXG PML AF
+LLY1
+LLY1
+245193
+WONG KWOK BO, BELLA
+v930160
+FTSA
+07-Dec-2026
+84
+SRMAL
+07-Dec-2026
+84
+
+LMCXG DYN Management
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LMCXG DYN Management
+LNXM
+LNXM
+182460
+CHAN WAI HUNG
+v906798
+IPCT4
+15-Oct-2026
+31
+183640
+TAM SAI HOU
+v906906
+ANSP
+07-Dec-2026
+84
+DRGA
+08-Dec-2026
+85
+
+LM OCG PAX AF
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LMOCG PAX AF
+LTA6
+LTA6
+301507
+WONG WAI HO
+v931667
+RIIA2
+12-Dec-2026
+89
+LTA2
+LTA2
+191403
+CHEUNG WING KEI
+v924243
+RIIA2
+12-Dec-2026
+89
+LTA1
+LTA1
+169153
+SHING YUNG
+v950903
+ANSP
+13-Nov-2026
+60
+DRGA
+18-Nov-2026
+65
+IPCT4
+29-Nov-2026
+76
+RIIA2
+11-Dec-2026
+88
+298978
+LEE KING FUNG ANSON
+v924815
+ANSP
+09-Oct-2026
+25
+CATA
+09-Oct-2026
+25
+DRGA
+09-Oct-2026
+25
+IPCT4
+09-Oct-2026
+25
+LTW1
+LTW1
+351156
+LIU YAU TING
+v908751
+RIIA2
+03-Dec-2026
+80
+LTW3
+LTW3
+191495
+WONG CHI KAN
+v915585
+ANSP
+19-Nov-2026
+66
+LTW2
+LTW2
+360933
+ZHU ZHENLONG
+v950487
+IPCT4
+25-Nov-2026
+72
+RIIA2
+26-Nov-2026
+73
+LTW4
+LTW4
+206343
+PHUMJUN SOMPORN
+v950471
+ANSP
+13-Nov-2026
+60
+CATA
+12-Nov-2026
+59
+DRGA
+13-Nov-2026
+60
+IPCT4
+13-Nov-2026
+60
+RIIA2
+13-Nov-2026
+60
+
+LM OCG AF
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LMOCG CGO AF
+LGA3
+LGA3
+281238
+IP CHIN HONG ERIK
+v907606
+ETOPSA
+14-Oct-2026
+30
+RIIA2
+14-Oct-2026
+30
+RVSMA
+14-Oct-2026
+30
+LGY1
+LGY1
+115255
+LAU SIU WA
+v908981
+CATA
+14-Oct-2026
+30
+IPCT4
+09-Dec-2026
+86
+LGY4
+LGY4
+102757
+WONG WAI KUEN
+v908978
+IPCT4
+07-Dec-2026
+84
+LGY3
+LGY3
+116170
+WONG WAI MING
+v925643
+CATA
+17-Nov-2026
+64
+DRGA
+17-Nov-2026
+64
+IPCT4
+18-Nov-2026
+65
+343301
+CHOY WAI YU
+v950467
+ANSP
+11-Nov-2026
+58
+ETOPSA
+05-Dec-2026
+82
+IPCT4
+11-Nov-2026
+58
+RIIA2
+11-Nov-2026
+58
+RVSMA
+05-Dec-2026
+82
+LTW2
+LTW2
+138041
+SHING CHI WAI
+v908661
+ANSP
+23-Nov-2026
+70
+CATA
+03-Dec-2026
+80
+DRGA
+23-Nov-2026
+70
+IPCT4
+23-Oct-2026
+39
+
+LM OCG REFUELLER
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LMOCG Refueller
+LGA2
+LGA2
+113738
+LEE KWOK KEUNG
+v908957
+ANSP
+16-Sept-2026
+2
+IPCT4
+05-Nov-2026
+52
+
+LM OCG Management
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LMOCG management
+LGDX
+LGDX
+350885
+CHEUNG SIK HUNG
+v908976
+DRGA
+15-Oct-2026
+31
+IPCT4
+15-Oct-2026
+31
+
+145 & OCG Planning
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+145 & OCG Planning
+8TCC
+8TCC
+288078
+KO LONG YIN
+v931018
+ANSP
+24-Nov-2026
+71
+CATA
+24-Nov-2026
+71
+DRGA
+24-Nov-2026
+71
+IPCT4
+24-Nov-2026
+71
+8TU2
+8TU2
+147266
+LO CHI KIN
+v925314
+ETOPSA
+09-Oct-2026
+25
+FGENR
+09-Oct-2026
+25
+RIIA2
+09-Oct-2026
+25
+RVSMA
+09-Oct-2026
+25
+
+LM CXG COE
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LMCXG COE
+LXXM
+LXXM
+122747
+CHAN WAI MING
+v906888
+CATA
+30-Oct-2026
+46
+IPCT4
+30-Oct-2026
+46
+
+LM Cabin (CMC)
+Functional Area
+Home Section
+Current Section
+HX staff number
+HX staff name
+Employee Number
+Training Code
+Due Date
+Remaining Due
+LM Cabin (CMC)
+0YBA
+0YBA
+246919
+HO WAI KWONG
+v907558
+CATA
+25-Nov-2026
+72
+DRGA
+25-Nov-2026
+72
+IPCT4
+25-Nov-2026
+72
+0YS4
+0YS4
+277526
+LIU YUNG WAI
+v907537
+RVSMA
+02-Dec-2026
+79
+SRMAL
+02-Dec-2026
+79
+
+Best Regards,
+Jack CHOI
+</script>
+<script>
+const STORE = "hx-ual-cbt-mail";
+const DATE_RE = /^(\d{1,2})-([A-Za-z]{3,9})-(\d{4})$/;
+const EMP_RE = /^v\d{5,}$/i;
+const STAFF_RE = /^\d{5,7}$/;
+const REMAIN_RE = /^\d{1,3}$/;
+const CODE_RE = /^(ANSP|CATA|DRGA|EISA|ETOPSA|ETPDSC|ETPT|GMMV|IPCT4|RIIA2|RVSMA|SCEPLOG|FGENR|FTSA|SRMAL)$/i;
+let allRows = [];
+let view = "people";
+let q = "";
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+function latestBody(text) {
+  const cut = String(text || "").search(/\nFrom:\s+/i);
+  return cut > 120 ? text.slice(0, cut) : text;
+}
+function subjectOf(text) {
+  const m = String(text || "").match(/UAL CBT training on\s+([0-9]{1,2}-[A-Za-z]{3,9}-[0-9]{4})[^\n]*/i);
+  return m ? m[0].replace(/\s+/g, " ").trim() : "—";
+}
+function isOcg(area) {
+  return /ocg/i.test(area || "");
+}
+function parseBlocks(text) {
+  const body = latestBody(text);
+  const re = /Functional Area\s*[\r\n]+\s*Home Section\s*[\r\n]+\s*Current Section[\s\S]*?Remaining Due/gi;
+  const matches = [...body.matchAll(re)];
+  const blocks = [];
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i].index + matches[i][0].length;
+    const end = i + 1 < matches.length ? matches[i + 1].index : body.length;
+    const before = body.slice(Math.max(0, matches[i].index - 240), matches[i].index);
+    const heading = before
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter((s) => s && s !== "\uE113")
+      .pop() || "";
+    blocks.push({ heading, chunk: body.slice(start, end) });
+  }
+  return blocks;
+}
+function linesOf(chunk) {
+  const raw = String(chunk || "").split(/\r?\n/).map((s) => s.trim()).filter((s) => s && s !== "");
+  const stop = raw.findIndex((x) =>
+    /^(Best Regards|From:|Dear all|If people|During customer|Reference to|According to|Subject:)/i.test(x)
+  );
+  return stop >= 0 ? raw.slice(0, stop) : raw;
+}
+function parseChunk(heading, chunk) {
+  const lines = linesOf(chunk);
+  let i = 0;
+  let fa = heading;
+  if (lines[0] && !STAFF_RE.test(lines[0]) && !DATE_RE.test(lines[0]) && !EMP_RE.test(lines[0]) && !CODE_RE.test(lines[0])) {
+    fa = lines[0];
+    i = 1;
+  }
+  const rows = [];
+  let cur = null;
+  while (i < lines.length) {
+    if (CODE_RE.test(lines[i]) && DATE_RE.test(lines[i + 1] || "") && REMAIN_RE.test(lines[i + 2] || "")) {
+      if (cur) rows.push({ ...cur, code: lines[i].toUpperCase(), due: lines[i + 1], remain: Number(lines[i + 2]), area: fa });
+      i += 3;
+      continue;
+    }
+    if (
+      i + 7 < lines.length &&
+      STAFF_RE.test(lines[i + 2]) &&
+      EMP_RE.test(lines[i + 4]) &&
+      CODE_RE.test(lines[i + 5]) &&
+      DATE_RE.test(lines[i + 6]) &&
+      REMAIN_RE.test(lines[i + 7])
+    ) {
+      cur = { home: lines[i], section: lines[i + 1], staff: lines[i + 2], name: lines[i + 3], emp: lines[i + 4] };
+      rows.push({ ...cur, code: lines[i + 5].toUpperCase(), due: lines[i + 6], remain: Number(lines[i + 7]), area: fa });
+      i += 8;
+      continue;
+    }
+    if (
+      i + 8 < lines.length &&
+      STAFF_RE.test(lines[i + 3]) &&
+      EMP_RE.test(lines[i + 5]) &&
+      CODE_RE.test(lines[i + 6]) &&
+      DATE_RE.test(lines[i + 7]) &&
+      REMAIN_RE.test(lines[i + 8])
+    ) {
+      fa = lines[i];
+      cur = { home: lines[i + 1], section: lines[i + 2], staff: lines[i + 3], name: lines[i + 4], emp: lines[i + 5] };
+      rows.push({ ...cur, code: lines[i + 6].toUpperCase(), due: lines[i + 7], remain: Number(lines[i + 8]), area: fa });
+      i += 9;
+      continue;
+    }
+    if (
+      cur &&
+      i + 5 < lines.length &&
+      STAFF_RE.test(lines[i]) &&
+      EMP_RE.test(lines[i + 2]) &&
+      CODE_RE.test(lines[i + 3]) &&
+      DATE_RE.test(lines[i + 4]) &&
+      REMAIN_RE.test(lines[i + 5])
+    ) {
+      cur = { home: cur.home, section: cur.section, staff: lines[i], name: lines[i + 1], emp: lines[i + 2] };
+      rows.push({ ...cur, code: lines[i + 3].toUpperCase(), due: lines[i + 4], remain: Number(lines[i + 5]), area: fa });
+      i += 6;
+      continue;
+    }
+    i++;
+  }
+  return rows;
+}
+function parseMail(text) {
+  return parseBlocks(text).flatMap((b) => parseChunk(b.heading, b.chunk));
+}
+function remainClass(n) {
+  if (n <= 14) return "hot";
+  if (n <= 30) return "warn";
+  return "";
+}
+function filteredRows() {
+  const ocgOnly = document.getElementById("ocg-only").checked;
+  const s = q.trim().toLowerCase();
+  return allRows.filter((r) => {
+    if (ocgOnly && !isOcg(r.area)) return false;
+    if (!s) return true;
+    return [r.area, r.home, r.section, r.staff, r.name, r.emp, r.code, r.due]
+      .some((v) => String(v || "").toLowerCase().includes(s));
+  });
+}
+function peopleOf(rows) {
+  const map = new Map();
+  rows.forEach((r) => {
+    const key = r.staff || r.emp || r.name;
+    const prev = map.get(key);
+    const item = prev || {
+      area: r.area,
+      section: r.section || r.home,
+      staff: r.staff,
+      name: r.name,
+      emp: r.emp,
+      courses: [],
+      due: r.due,
+      remain: r.remain
+    };
+    if (!item.courses.includes(r.code)) item.courses.push(r.code);
+    if (r.remain < item.remain) {
+      item.remain = r.remain;
+      item.due = r.due;
+    }
+    map.set(key, item);
+  });
+  return [...map.values()].sort((a, b) => a.remain - b.remain || a.name.localeCompare(b.name));
+}
+function mdEscape(s) {
+  return String(s ?? "").replace(/\|/g, "\\|");
+}
+function peopleMd(people) {
+  const lines = [
+    "| Area | Section | Staff # | Name | Employee # | Courses | Earliest due | Remaining |",
+    "|---|---|---|---|---|---|---|---|"
+  ];
+  people.forEach((p) => {
+    lines.push(
+      "| " +
+      [p.area, p.section, p.staff, p.name, p.emp, p.courses.join(", "), p.due, p.remain]
+        .map(mdEscape).join(" | ") +
+      " |"
+    );
+  });
+  return lines.join("\n");
+}
+function courseMd(rows) {
+  const lines = [
+    "| Area | Section | Staff # | Name | Employee # | Course | Due | Remaining |",
+    "|---|---|---|---|---|---|---|---|"
+  ];
+  rows.slice().sort((a, b) => a.remain - b.remain).forEach((r) => {
+    lines.push(
+      "| " +
+      [r.area, r.section || r.home, r.staff, r.name, r.emp, r.code, r.due, r.remain]
+        .map(mdEscape).join(" | ") +
+      " |"
+    );
+  });
+  return lines.join("\n");
+}
+function paint() {
+  const rows = filteredRows();
+  const people = peopleOf(rows);
+  document.getElementById("n-people").textContent = String(people.length);
+  document.getElementById("n-rows").textContent = String(rows.length);
+  document.getElementById("n-hot").textContent = String(people.filter((p) => p.remain <= 14).length);
+  document.querySelectorAll("[data-view]").forEach((b) => b.classList.toggle("on", b.dataset.view === view));
+  if (view === "people") {
+    document.getElementById("head").innerHTML =
+      "<th>Area</th><th>Section</th><th>Staff #</th><th>Name</th><th>Employee #</th><th>Courses</th><th>Earliest due</th><th>Remaining</th>";
+    document.getElementById("body").innerHTML = people.map((p) =>
+      "<tr>" +
+      "<td>" + esc(p.area) + "</td>" +
+      "<td>" + esc(p.section) + "</td>" +
+      "<td>" + esc(p.staff) + "</td>" +
+      "<td>" + esc(p.name) + "</td>" +
+      "<td>" + esc(p.emp) + "</td>" +
+      "<td>" + esc(p.courses.join(", ")) + "</td>" +
+      "<td>" + esc(p.due) + "</td>" +
+      "<td class=\"" + remainClass(p.remain) + "\">" + esc(p.remain) + "</td>" +
+      "</tr>"
+    ).join("");
+    document.getElementById("md").textContent = people.length ? peopleMd(people) : "No LM OCG rows.";
+  } else {
+    const sorted = rows.slice().sort((a, b) => a.remain - b.remain);
+    document.getElementById("head").innerHTML =
+      "<th>Area</th><th>Section</th><th>Staff #</th><th>Name</th><th>Employee #</th><th>Course</th><th>Due</th><th>Remaining</th>";
+    document.getElementById("body").innerHTML = sorted.map((r) =>
+      "<tr>" +
+      "<td>" + esc(r.area) + "</td>" +
+      "<td>" + esc(r.section || r.home) + "</td>" +
+      "<td>" + esc(r.staff) + "</td>" +
+      "<td>" + esc(r.name) + "</td>" +
+      "<td>" + esc(r.emp) + "</td>" +
+      "<td>" + esc(r.code) + "</td>" +
+      "<td>" + esc(r.due) + "</td>" +
+      "<td class=\"" + remainClass(r.remain) + "\">" + esc(r.remain) + "</td>" +
+      "</tr>"
+    ).join("");
+    document.getElementById("md").textContent = sorted.length ? courseMd(sorted) : "No LM OCG rows.";
+  }
+}
+function runParse(text, label) {
+  allRows = parseMail(text);
+  document.getElementById("n-subj").textContent = subjectOf(text);
+  const ocg = allRows.filter((r) => isOcg(r.area)).length;
+  document.getElementById("status").textContent =
+    (label || "Parsed") + " · " + allRows.length + " course rows · " + ocg + " in OCG areas.";
+  try { localStorage.setItem(STORE, text); } catch (e) {}
+  paint();
+}
+const src = document.getElementById("src");
+const sample = document.getElementById("sample-mail").textContent.replace(/^\n/, "");
+document.getElementById("parse").addEventListener("click", () => runParse(src.value, "Pasted email"));
+document.getElementById("sample").addEventListener("click", () => {
+  src.value = sample;
+  runParse(sample, "14-SEP-2026 sample");
+});
+document.getElementById("clear").addEventListener("click", () => {
+  src.value = "";
+  allRows = [];
+  try { localStorage.removeItem(STORE); } catch (e) {}
+  document.getElementById("status").textContent = "Cleared.";
+  document.getElementById("n-subj").textContent = "—";
+  paint();
+});
+document.getElementById("ocg-only").addEventListener("change", paint);
+document.getElementById("q").addEventListener("input", (e) => { q = e.target.value; paint(); });
+document.querySelectorAll("[data-view]").forEach((b) => {
+  b.addEventListener("click", () => { view = b.dataset.view; paint(); });
+});
+document.getElementById("copy-md").addEventListener("click", async () => {
+  const text = document.getElementById("md").textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    document.getElementById("status").textContent = "Markdown copied.";
+  } catch (e) {
+    document.getElementById("status").textContent = "Copy failed. Select the Markdown box and copy.";
+  }
+});
+
+try {
+  const saved = localStorage.getItem(STORE);
+  if (saved) {
+    src.value = saved;
+    runParse(saved, "Saved email");
+  } else {
+    src.value = sample;
+    runParse(sample, "14-SEP-2026 sample");
+  }
+} catch (e) {
+  src.value = sample;
+  runParse(sample, "14-SEP-2026 sample");
+}
+</script>
+</body>
+</html>
