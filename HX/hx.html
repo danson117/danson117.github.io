@@ -201,6 +201,9 @@
         border: 0;
         background: #fff;
       }
+      html:not(.hx-ready) body {
+        visibility: hidden;
+      }
       .page-version {
         position: fixed;
         left: 10px;
@@ -251,13 +254,9 @@
           >單獨打開呢頁</a
         >
       </div>
-      <iframe
-        id="frame"
-        title="HX topic"
-        src="authorization-training-process.html"
-      ></iframe>
+      <iframe id="frame" title="HX topic"></iframe>
     </main>
-    <div class="page-version" data-version="3.9">v3.9</div>
+    <div class="page-version" data-version="4.0">v4.0</div>
     <script>
       const TOPICS = [
         {
@@ -298,19 +297,19 @@
         },
         {
           id: "ct-reminder",
-          file: "lm-daily-ct-reminder.html",
+          file: "lm-daily-ct-reminder.html?v=1.2",
           title: "LM Daily CT Reminder",
           blurb: "Overdue CT: CSV → External / Internal",
         },
         {
           id: "ual-cbt",
-          file: "ual-cbt-training.html?v=1.7",
+          file: "ual-cbt-training.html?v=1.8",
           title: "UAL CBT Training",
           blurb: "Paste UA email → All / OC / PAX",
         },
         {
           id: "ocg-pax",
-          file: "ocg-pax-mechanics-list.html?v=1.5",
+          file: "ocg-pax-mechanics-list.html?v=1.6",
           title: "OCG Name List",
           blurb: "Crew List / Name List / Full List, drag columns",
         },
@@ -329,27 +328,45 @@
       const fold = document.getElementById("fold");
       const foldBar = document.getElementById("fold-bar");
 
+      function lsGet(key) {
+        try {
+          return localStorage.getItem(key);
+        } catch (e) {
+          return null;
+        }
+      }
+      function lsSet(key, value) {
+        try {
+          localStorage.setItem(key, value);
+        } catch (e) {}
+      }
+      function lsGetAny(keys, fallback) {
+        for (let i = 0; i < keys.length; i++) {
+          const v = lsGet(keys[i]);
+          if (v != null && v !== "") return v;
+        }
+        return fallback;
+      }
       function setNav(open) {
         document.body.classList.toggle("nav-off", !open);
         fold.setAttribute("aria-expanded", open ? "true" : "false");
         fold.textContent = open ? "收起" : "開";
         foldBar.hidden = open;
-        try {
-          localStorage.setItem("hx-nav", open ? "1" : "0");
-        } catch (e) {}
+        lsSet("hx:hub:nav", open ? "1" : "0");
+        lsSet("hx-nav", open ? "1" : "0");
       }
       fold.addEventListener("click", () =>
         setNav(document.body.classList.contains("nav-off")),
       );
       foldBar.addEventListener("click", () => setNav(true));
-      try {
-        if (localStorage.getItem("hx-nav") === "0") setNav(false);
-      } catch (e) {}
+      if (lsGetAny(["hx:hub:nav", "hx-nav"], "1") === "0") setNav(false);
 
       function loadOrder() {
         let ids = [];
         try {
-          ids = JSON.parse(localStorage.getItem("hx-order") || "[]");
+          ids = JSON.parse(
+            lsGetAny(["hx:hub:order", "hx-order"], "[]") || "[]",
+          );
         } catch (e) {}
         const known = new Set(TOPICS.map((t) => t.id));
         ids = ids.filter((id) => known.has(id));
@@ -359,26 +376,30 @@
         return ids;
       }
       function saveOrder(ids) {
-        try {
-          localStorage.setItem("hx-order", JSON.stringify(ids));
-        } catch (e) {}
+        const raw = JSON.stringify(ids);
+        lsSet("hx:hub:order", raw);
+        lsSet("hx-order", raw);
       }
       function loadPins() {
         let ids = [];
         try {
           ids = JSON.parse(
-            localStorage.getItem("hx-pins") ||
-              localStorage.getItem("hx-stars") ||
-              "[]",
+            lsGetAny(["hx:hub:pins", "hx-pins", "hx-stars"], "[]") || "[]",
           );
         } catch (e) {}
         const known = new Set(TOPICS.map((t) => t.id));
         return ids.filter((id) => known.has(id));
       }
       function savePins(ids) {
-        try {
-          localStorage.setItem("hx-pins", JSON.stringify(ids));
-        } catch (e) {}
+        const raw = JSON.stringify(ids);
+        lsSet("hx:hub:pins", raw);
+        lsSet("hx-pins", raw);
+      }
+      function loadTopic() {
+        return lsGet("hx:hub:topic") || "";
+      }
+      function saveTopic(id) {
+        lsSet("hx:hub:topic", id);
       }
       function isPinned(id) {
         return loadPins().includes(id);
@@ -404,11 +425,17 @@
       }
       function show(id) {
         const list = orderedTopics();
-        const t = list.find((x) => x.id === id) || list[0];
-        frame.src = t.file;
-        now.textContent = (isPinned(t.id) ? "PIN · " : "") + t.title;
-        solo.href = t.file;
-        location.hash = t.id;
+        const known = new Set(list.map((x) => x.id));
+        const saved = loadTopic();
+        const pick =
+          (id && known.has(id) && list.find((x) => x.id === id)) ||
+          (saved && known.has(saved) && list.find((x) => x.id === saved)) ||
+          list[0];
+        frame.src = pick.file;
+        now.textContent = (isPinned(pick.id) ? "PIN · " : "") + pick.title;
+        solo.href = pick.file;
+        location.hash = pick.id;
+        saveTopic(pick.id);
         paintOn();
       }
       function paintOn() {
@@ -470,11 +497,12 @@
       }
 
       renderTopics();
-      const start = location.hash.replace(/^#/, "");
+      const start = location.hash.replace(/^#/, "") || loadTopic();
       show(start);
       window.addEventListener("hashchange", () =>
         show(location.hash.replace(/^#/, "")),
       );
+      document.documentElement.classList.add("hx-ready");
     </script>
   </body>
 </html>

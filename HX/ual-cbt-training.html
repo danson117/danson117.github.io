@@ -99,6 +99,7 @@
   tr.hot td { background: var(--hot-bg); color: var(--hot); }
   tr.warn td { background: var(--warn-bg); color: var(--warn); }
   td.remain { font-weight: 650; }
+  html:not(.hx-ready) body { visibility: hidden; }
   .page-version {
     position: fixed;
     right: max(12px, env(safe-area-inset-right));
@@ -161,7 +162,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="1.7" aria-label="Page version 1.7">v1.7</div>
+  <div class="page-version" data-version="1.8" aria-label="Page version 1.8">v1.8</div>
 <script id="sample-mail" type="text/plain">
 UAL CBT training on 14-SEP-2026 (28 STAFF)
 Jack Choi
@@ -646,6 +647,12 @@ Jack CHOI
 </script>
 <script>
 const STORE = "hx-ual-cbt-mail";
+const K = {
+  group: "hx:ual-cbt:group",
+  q: "hx:ual-cbt:q",
+  sortKey: "hx:ual-cbt:sortKey",
+  sortDir: "hx:ual-cbt:sortDir"
+};
 const DATE_RE = /^(\d{1,2})-([A-Za-z]{3,9})-(\d{4})$/;
 const EMP_RE = /^v\d{5,}$/i;
 const STAFF_RE = /^\d{5,7}$/;
@@ -842,7 +849,31 @@ function peopleOf(rows) {
   });
   return [...map.values()];
 }
+function lsGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+function lsSet(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) {}
+}
+function persistUi() {
+  lsSet(K.group, group);
+  lsSet(K.q, q);
+  lsSet(K.sortKey, sortKey);
+  lsSet(K.sortDir, String(sortDir));
+}
+function restoreUi() {
+  const g = lsGet(K.group);
+  if (g === "all" || g === "oc" || g === "pax") group = g;
+  const savedQ = lsGet(K.q);
+  if (savedQ != null) q = savedQ;
+  const sk = lsGet(K.sortKey);
+  if (sk) sortKey = sk;
+  const sd = lsGet(K.sortDir);
+  if (sd === "1" || sd === "-1") sortDir = Number(sd);
+  document.getElementById("q").value = q;
+}
 function paint() {
+  persistUi();
   const rows = filteredRows();
   const people = peopleOf(rows);
   document.getElementById("n-people").textContent = String(people.length);
@@ -889,6 +920,9 @@ document.getElementById("clear").addEventListener("click", () => {
   document.getElementById("n-subj").textContent = "—";
   paint();
 });
+src.addEventListener("input", () => {
+  try { localStorage.setItem(STORE, src.value); } catch (e) {}
+});
 document.getElementById("q").addEventListener("input", (e) => { q = e.target.value; paint(); });
 document.querySelectorAll("[data-group]").forEach((b) => {
   b.addEventListener("click", () => { group = b.dataset.group; paint(); });
@@ -902,6 +936,7 @@ document.getElementById("head").addEventListener("click", (e) => {
   paint();
 });
 
+restoreUi();
 try {
   const saved = localStorage.getItem(STORE);
   if (saved) {
@@ -915,6 +950,7 @@ try {
   src.value = sample;
   runParse(sample, "14-SEP-2026 sample");
 }
+document.documentElement.classList.add("hx-ready");
 </script>
 </body>
 </html>

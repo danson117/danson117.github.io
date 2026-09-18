@@ -103,6 +103,7 @@
     padding: 4px 6px;
   }
   .hidden { display: none; }
+  html:not(.hx-ready) body { visibility: hidden; }
   .page-version {
     position: fixed;
     right: max(12px, env(safe-area-inset-right));
@@ -191,7 +192,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
+  <div class="page-version" data-version="1.2" aria-label="Page version 1.2">v1.2</div>
 <script>
 const DEFAULT_ROSTER = [{"id":"169153","ocg":"Mechanic"},{"id":"354390","ocg":"Mechanic"},{"id":"354598","ocg":"Mechanic"},{"id":"372574","ocg":"Mechanic"},{"id":"373754","ocg":"Mechanic"},{"id":"380204","ocg":"Mechanic"},{"id":"115841","ocg":"Mechanic"},{"id":"298978","ocg":"Mechanic"},{"id":"233015","ocg":"Mechanic"},{"id":"373704","ocg":"Mechanic"},{"id":"368242","ocg":"Mechanic"},{"id":"122953","ocg":"Mechanic"},{"id":"328238","ocg":"Mechanic"},{"id":"349846","ocg":"Mechanic"},{"id":"357344","ocg":"Mechanic"},{"id":"375750","ocg":"Mechanic"},{"id":"103713","ocg":"Mechanic"},{"id":"204933","ocg":"Mechanic"},{"id":"187460","ocg":"Mechanic"},{"id":"355322","ocg":"Mechanic"},{"id":"374306","ocg":"Mechanic"},{"id":"191403","ocg":"Mechanic"},{"id":"193029","ocg":"Mechanic"},{"id":"276453","ocg":"Mechanic"},{"id":"374124","ocg":"Mechanic"},{"id":"373689","ocg":"Mechanic"},{"id":"249286","ocg":"Mechanic"},{"id":"363854","ocg":"Mechanic"},{"id":"360397","ocg":"Mechanic"},{"id":"373762","ocg":"Mechanic"},{"id":"377160","ocg":"Mechanic"},{"id":"158875","ocg":"Mechanic"},{"id":"219346","ocg":"Mechanic"},{"id":"346355","ocg":"Mechanic"},{"id":"354605","ocg":"Mechanic"},{"id":"376071","ocg":"Mechanic"},{"id":"199655","ocg":"Mechanic"},{"id":"324872","ocg":"Mechanic"},{"id":"229535","ocg":"Mechanic"},{"id":"366014","ocg":"Mechanic"},{"id":"353988","ocg":"Mechanic"},{"id":"170465","ocg":"Mechanic"},{"id":"322412","ocg":"Mechanic"},{"id":"359423","ocg":"Mechanic"},{"id":"358722","ocg":"Mechanic"},{"id":"375726","ocg":"Mechanic"},{"id":"117152","ocg":"Mechanic"},{"id":"347395","ocg":"Mechanic"},{"id":"191859","ocg":"Mechanic"},{"id":"382200","ocg":"Mechanic"},{"id":"377764","ocg":"Mechanic"},{"id":"191263","ocg":"Mechanic"},{"id":"250431","ocg":"Mechanic"},{"id":"302919","ocg":"Mechanic"},{"id":"230300","ocg":"Mechanic"},{"id":"380147","ocg":"Mechanic"},{"id":"191437","ocg":"Mechanic"},{"id":"279473","ocg":"Mechanic"},{"id":"290990","ocg":"Mechanic"},{"id":"359431","ocg":"Mechanic"},{"id":"376097","ocg":"Mechanic"},{"id":"303173","ocg":"Mechanic"},{"id":"313495","ocg":"Mechanic"},{"id":"314336","ocg":"Mechanic"},{"id":"334251","ocg":"Mechanic"},{"id":"330233","ocg":"Mechanic"},{"id":"338477","ocg":"Mechanic"},{"id":"133447","ocg":"Mechanic"},{"id":"294835","ocg":"Mechanic"},{"id":"113738","ocg":"Mechanic"},{"id":"305749","ocg":"Mechanic"},{"id":"154724","ocg":"Mechanic"},{"id":"251215","ocg":"Mechanic"},{"id":"359811","ocg":"Mechanic"},{"id":"147159","ocg":"Mechanic"},{"id":"358714","ocg":"Mechanic"},{"id":"149387","ocg":"Mechanic"},{"id":"124644","ocg":"Mechanic"},{"id":"205014","ocg":"Mechanic"},{"id":"120197","ocg":"Mechanic"},{"id":"122341","ocg":"Mechanic"},{"id":"381517","ocg":"Mechanic"},{"id":"133629","ocg":"Mechanic"},{"id":"143834","ocg":"Mechanic"},{"id":"158817","ocg":"Mechanic"},{"id":"179160","ocg":"Mechanic"},{"id":"349648","ocg":"Mechanic"},{"id":"156910","ocg":"Mechanic"},{"id":"301507","ocg":"Mechanic"},{"id":"361501","ocg":"Mechanic"},{"id":"179144","ocg":"Mechanic"},{"id":"346587","ocg":"Mechanic"},{"id":"356552","ocg":"Mechanic"},{"id":"303713","ocg":"Mechanic"},{"id":"387151","ocg":"Mechanic"},{"id":"281460","ocg":"Mechanic"},{"id":"169195","ocg":"Mechanic"},{"id":"387408","ocg":"Mechanic"},{"id":"216417","ocg":"Mechanic"},{"id":"232942","ocg":"Mechanic"},{"id":"191312","ocg":"Mechanic"},{"id":"251728","ocg":"Mechanic"},{"id":"122359","ocg":"Mechanic"},{"id":"276544","ocg":"Mechanic"},{"id":"115700","ocg":"Engineer"},{"id":"191239","ocg":"Engineer"},{"id":"236027","ocg":"Engineer"},{"id":"296344","ocg":"Engineer"},{"id":"312405","ocg":"Engineer"},{"id":"351156","ocg":"Engineer"},{"id":"373415","ocg":"Engineer"},{"id":"138041","ocg":"Engineer"},{"id":"300038","ocg":"Engineer"},{"id":"300286","ocg":"Engineer"},{"id":"336447","ocg":"Engineer"},{"id":"360933","ocg":"Engineer"},{"id":"373986","ocg":"Engineer"},{"id":"84096","ocg":"Engineer"},{"id":"118374","ocg":"Engineer"},{"id":"191495","ocg":"Engineer"},{"id":"208357","ocg":"Engineer"},{"id":"213728","ocg":"Engineer"},{"id":"246860","ocg":"Engineer"},{"id":"115362","ocg":"Engineer"},{"id":"144030","ocg":"Engineer"},{"id":"150441","ocg":"Engineer"},{"id":"206343","ocg":"Engineer"},{"id":"332099","ocg":"Engineer"},{"id":"334095","ocg":"Engineer"},{"id":"380981","ocg":"Engineer"}];
 
@@ -211,12 +212,53 @@ const SHORT = [
 ];
 const PAGE = 80;
 const STORE = "hx-ct-roster";
+const UI = {
+  tab: "hx:ct-reminder:tab",
+  q: "hx:ct-reminder:q",
+  page: "hx:ct-reminder:page",
+  csv: "hx:ct-reminder:csv",
+  csvName: "hx:ct-reminder:csvName"
+};
 
 let roster = loadRoster();
 let mainRows = [];
 let tab = "main";
 let page = 0;
 let q = "";
+
+function lsGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+function lsSet(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) {}
+}
+function persistUi() {
+  lsSet(UI.tab, tab);
+  lsSet(UI.q, q);
+  lsSet(UI.page, String(page));
+}
+function persistCsv(fileName) {
+  try { lsSet(UI.csv, JSON.stringify(mainRows)); } catch (e) {}
+  if (fileName) lsSet(UI.csvName, fileName);
+}
+function restoreUi() {
+  const t = lsGet(UI.tab);
+  if (t === "main" || t === "external" || t === "internal" || t === "ocg") tab = t;
+  const savedQ = lsGet(UI.q);
+  if (savedQ != null) q = savedQ;
+  const p = Number(lsGet(UI.page));
+  if (Number.isFinite(p) && p >= 0) page = p;
+  document.getElementById("q").value = q;
+  try {
+    const raw = JSON.parse(lsGet(UI.csv) || "null");
+    if (Array.isArray(raw) && raw.length) {
+      mainRows = raw;
+      const name = lsGet(UI.csvName) || "Saved CSV";
+      document.getElementById("csv-status").textContent =
+        name + " · " + mainRows.length + " rows restored on this computer.";
+    }
+  } catch (e) {}
+}
 
 function normId(v) {
   const s = String(v ?? "").trim();
@@ -352,6 +394,7 @@ function paintTable() {
     rows.length ? ("Page " + (page + 1) + " / " + pages + " · " + rows.length + " rows") : "No data";
 }
 function paint() {
+  persistUi();
   paintStats();
   const ocg = tab === "ocg";
   document.getElementById("view-sheet1").classList.toggle("hidden", !ocg);
@@ -386,6 +429,7 @@ function ingestCsv(text, fileName) {
   }
   mainRows = grid.slice(1).map((cells) => toRow(headers, cells));
   page = 0;
+  persistCsv(fileName);
   document.getElementById("csv-status").textContent =
     fileName + " · " + mainRows.length + " rows. ocg matched against the OCG List.";
   paint();
@@ -480,8 +524,10 @@ document.getElementById("dl-all").addEventListener("click", () => {
   setTimeout(() => download("OCG List.csv", rowsToCsv(roster, [["id", "staff id"], ["ocg", "ocg"]])), 750);
 });
 
+restoreUi();
 saveRoster();
 paint();
+document.documentElement.classList.add("hx-ready");
 </script>
 </body>
 </html>
