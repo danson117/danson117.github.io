@@ -125,7 +125,7 @@
     <h1>UAL CBT Training</h1>
     <p class="subtitle">Paste the United CBT reminder email → LMOCG staff list only.</p>
     <div class="why">
-      <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Only LMOCG rows. Filters: <b>All</b> (default) shows OC and PAX. <b>PAX</b> = on the Master team roster. <b>OC</b> = other LMOCG.</p>
+      <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Only LMOCG rows. Filters: <b>All</b> (default) shows CG and PAX. <b>PAX</b> = on the Master team roster. <b>CG</b> = other LMOCG.</p>
       <p>Remaining ≤ 30 days = red. Remaining 31–90 days = yellow. Click any column header to sort.</p>
     </div>
 
@@ -151,7 +151,7 @@
     <h2>2. LMOCG list</h2>
     <div class="toolbar">
       <button type="button" class="on" data-group="all">All</button>
-      <button type="button" data-group="oc">OC</button>
+      <button type="button" data-group="cg">CG</button>
       <button type="button" data-group="pax">PAX</button>
       <input id="q" type="search" placeholder="Search name / staff # / section / course">
     </div>
@@ -162,7 +162,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.1" aria-label="Page version 2.1">v2.1</div>
+  <div class="page-version" data-version="2.2" aria-label="Page version 2.2">v2.2</div>
 <script id="sample-mail" type="text/plain">
 UAL CBT training on 14-SEP-2026 (28 STAFF)
 Jack Choi
@@ -790,7 +790,7 @@ function filteredRows() {
     if (!isLmocg(r.area)) return false;
     const pax = isPax(r);
     if (group === "pax" && !pax) return false;
-    if (group === "oc" && pax) return false;
+    if ((group === "cg" || group === "oc") && pax) return false;
     if (!s) return true;
     return [r.area, r.home, r.section, r.staff, padStaff(r.staff), r.name, r.emp, r.code, r.due]
       .some((v) => String(v || "").toLowerCase().includes(s));
@@ -869,7 +869,8 @@ function persistUi() {
 }
 function restoreUi() {
   const g = lsGet(K.group);
-  if (g === "all" || g === "oc" || g === "pax") group = g;
+  if (g === "all" || g === "cg" || g === "pax") group = g;
+  else if (g === "oc") group = "cg";
   const savedQ = lsGet(K.q);
   if (savedQ != null) q = savedQ;
   const sk = lsGet(K.sortKey);
