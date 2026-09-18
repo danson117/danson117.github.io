@@ -13,7 +13,7 @@
 - [LM audit / visitor schedule](lm-audit-schedule.html)
 - [LM Daily CT Reminder (overdue)](lm-daily-ct-reminder.html)
 - [UAL CBT Training](ual-cbt-training.html)
-- [OCG PAX Mechanics Name List](ocg-pax-mechanics-list.html)
+- [OCG Name List (Master + OCS)](ocg-pax-mechanics-list.html)
 
 ## 加新 HX HTML
 
