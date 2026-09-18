@@ -25,8 +25,8 @@
   .notes p:last-child { margin: 0; }
   html:not(.hx-ready) body { visibility: hidden; }
   h2 { font-size: 15px; margin: 22px 0 10px; padding: 6px 10px; background: var(--navy); color: #fff; text-transform: uppercase; }
-  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 0 0 8px; }
-  .stats-sub { grid-template-columns: repeat(3, 1fr); margin-bottom: 12px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 8px; }
+  .stats-sub { margin-bottom: 12px; }
   .stat { padding: 10px 12px; cursor: pointer; }
   .stat:hover { background: var(--navy-soft); }
   .stat.on { background: var(--navy); }
@@ -69,13 +69,14 @@
   <div class="page">
     <h1>OCG Name List</h1>
     <div class="stats">
+      <div class="stat" data-group-stat="all"><b id="n-all">0</b><span>All</span></div>
       <div class="stat" data-group-stat="OC"><b id="n-oc">0</b><span>OC</span></div>
       <div class="stat" data-group-stat="PAX"><b id="n-pax">0</b><span>PAX</span></div>
     </div>
     <div class="stats stats-sub">
       <div class="stat" data-role-stat="MECHANIC"><b id="n-mech">0</b><span>Mechanics</span></div>
-      <div class="stat" data-role-stat="CERTIFIER"><b id="n-cert">0</b><span>Certifiers · Licensed / Assistant Licensed Engineer, Supervisor</span></div>
-      <div class="stat" data-role-stat="OFFICE"><b id="n-office">0</b><span>Office · Manager / Controller / Duty in Charge / support</span></div>
+      <div class="stat" data-role-stat="CERTIFIER"><b id="n-cert">0</b><span>Certifiers</span></div>
+      <div class="stat" data-role-stat="OFFICE"><b id="n-office">0</b><span>Office</span></div>
     </div>
     <h2>List</h2>
     <div class="toolbar">
@@ -111,7 +112,7 @@
     <div class="notes">
       <p>Crew List (Pax Teams 1–4) joined to OCS staff extract. Updated 18 Sep 2026.</p>
       <p><b>Full List</b> shows every staff (All). <b>Name List</b> columns come first (CG/OCG, Staff No, Staff Name, Chinese Name, Home Section, Current Section, Staff Position, Position Title, Class, Status, Date join, Date Term, Revenue Code), then <b>Crew List</b> columns that are not duplicates (Team, Shift, Ω, UA, MM Refueller, JL, JJP).</p>
-      <p><b>OCG</b> = Home Section starts with LT (LTA / LTDX / LTH / LTW) or on Crew List. <b>CG</b> = other Home Sections (LG*). <b>PAX</b> = Crew List, including FLS and RF (refueller). <b>OC</b> = Name List only. <b>Certifiers</b> = Licensed / Assistant Licensed Engineer, Supervisor. <b>Office</b> = Manager / Controller / Duty in Charge / support. <b>Mechanics</b> = the rest (AMM, technician, refueller). Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
+      <p><b>OCG</b> = Home Section starts with LT (LTA / LTDX / LTH / LTW) or on Crew List. <b>CG</b> = other Home Sections (LG*). <b>PAX</b> = Crew List, including FLS and RF (refueller). <b>OC</b> = Name List only. <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer. <b>Office</b> = Manager / Controller / Duty in Charge / support. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
     </div>
   </div>
   <div class="page-version" data-version="2.3">v2.3</div>
@@ -268,7 +269,7 @@ function roleOf(r){
   const title = String(r.title || "");
   const pos = String(r.pos || "");
   if (/MANAGER|CONTROLLER|DUTY IN CHARGE|OPERATIONS OFFICER|PROJECT OFFICER|LIAISON/i.test(title) || /^(10|30|50|60)|80AEY|80AEZ|80PT5|80AFU/.test(pos)) return "OFFICE";
-  if (/LICENSED ENGINEER|ASSISTANT ENGINEER|SUPERVISOR/i.test(title) || pos === "80AEP") return "CERTIFIER";
+  if (/ASSISTANT LICENSED ENGINEER|LICENSED ENGINEER/i.test(title) || pos === "80AEP") return "CERTIFIER";
   return "MECHANIC";
 }
 function padStaff(v){
@@ -327,6 +328,7 @@ function cellClass(k, r){
 function paint(){
   persistUi();
   const rows = sorted(filtered());
+  document.getElementById("n-all").textContent = String(FULL.length);
   document.getElementById("n-oc").textContent = String(FULL.filter(r => r.group === "OC").length);
   document.getElementById("n-pax").textContent = String(FULL.filter(r => r.group === "PAX").length);
   const roleBase = FULL.filter(r => !fGroup || fGroup === "all" || r.group === fGroup);
