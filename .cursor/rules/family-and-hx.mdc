@@ -23,7 +23,7 @@ Must stay aligned:
 
 - `HX/hx.html` — titles, blurbs, cache-bust `?v=`
 - `HX/ocg-pax-mechanics-list.html` — Crew List / Name List / Full List (source of truth)
-- `HX/ual-cbt-training.html` — `PAX_STAFF` = Crew List staff #s; filters All / CG / PAX
+- `HX/ual-cbt-training.html` — `PAX_STAFF` = Crew List staff #s; filters OCG / CG / PAX
 - `HX/lm-daily-ct-reminder.html` — default roster includes every Crew List staff #
 - `HX/README.md` and `HX/links.html` — names and wording
 
@@ -31,8 +31,10 @@ Current rules:
 
 - Staff # always **6 digits** (`84096` → `084096`)
 - CHIU SHI HEI is **303173**
+- **OCG** = **CG + PAX** (the total / All). Not a person-level category. Counters and filters: **OCG | CG | PAX**
+- A person is **CG** or **PAX** only. Column label **CG/PAX**; never show OCG on a row
 - **PAX** = Crew List, including **FLS** and **RF**
 - **CG** (not OC) = Name List people not on Crew List
-- **Certifiers** = Licensed Engineer / Assistant Licensed Engineer only
+- **Certifiers** = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC)
 - **Mechanics** = AMM, technician, refueller, Supervisor
-- **Office** = Manager / Controller / Duty in Charge / support
+- **Office** = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge

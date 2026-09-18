@@ -125,7 +125,7 @@
     <h1>UAL CBT Training</h1>
     <p class="subtitle">Paste the United CBT reminder email → LMOCG staff list only.</p>
     <div class="why">
-      <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Only LMOCG rows. Filters: <b>All</b> (default) shows CG and PAX. <b>PAX</b> = Crew List (including FLS and RF). <b>CG</b> = other LMOCG, not on Crew List. Staff # is 6 digits.</p>
+      <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Only LMOCG rows. Filters: <b>OCG</b> (default) = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = Crew List (including FLS and RF). <b>CG</b> = other LMOCG, not on Crew List. Staff # is 6 digits.</p>
       <p>Remaining ≤ 30 days = red. Remaining 31–90 days = yellow. Click any column header to sort.</p>
     </div>
 
@@ -150,7 +150,7 @@
 
     <h2>2. LMOCG list</h2>
     <div class="toolbar">
-      <button type="button" class="on" data-group="all">All</button>
+      <button type="button" class="on" data-group="ocg">OCG</button>
       <button type="button" data-group="cg">CG</button>
       <button type="button" data-group="pax">PAX</button>
       <input id="q" type="search" placeholder="Search name / staff # / section / course">
@@ -162,7 +162,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.3" aria-label="Page version 2.3">v2.3</div>
+  <div class="page-version" data-version="2.4" aria-label="Page version 2.4">v2.4</div>
 <script id="sample-mail" type="text/plain">
 UAL CBT training on 14-SEP-2026 (28 STAFF)
 Jack Choi
@@ -658,10 +658,10 @@ const EMP_RE = /^v\d{5,}$/i;
 const STAFF_RE = /^\d{5,7}$/;
 const REMAIN_RE = /^\d{1,3}$/;
 const CODE_RE = /^(ANSP|CATA|DRGA|EISA|ETOPSA|ETPDSC|ETPT|GMMV|IPCT4|RIIA2|RVSMA|SCEPLOG|FGENR|FTSA|SRMAL)$/i;
-// Master team roster (94 PAX). CHIU SHI HEI is 303173.
+// Crew List (PAX). CHIU SHI HEI is 303173. OCG = CG + PAX.
 const PAX_STAFF = new Set("103713,115841,117152,120197,122341,122359,122953,124644,133629,143834,147159,149387,154724,156910,158817,158875,169153,169195,170465,179144,179160,187460,191263,191312,191403,191437,191859,193029,199655,204933,205014,216417,219346,229535,230300,232942,233015,249286,250431,251215,251728,276453,276544,279473,281460,290990,294835,298978,301507,302919,303173,322412,324872,328238,334251,338477,346355,346587,347395,349648,349846,353988,354390,354598,354605,355322,356552,357344,358714,358722,359423,359431,359811,360397,361501,363854,366014,368242,372574,373689,373704,373754,373762,374124,374306,375726,375750,376071,376097,377160,377764,380147,380204,381517,382200,387151,387408".split(","));
 let allRows = [];
-let group = "all";
+let group = "ocg";
 let q = "";
 let sortKey = "area";
 let sortDir = 1;
@@ -869,7 +869,8 @@ function persistUi() {
 }
 function restoreUi() {
   const g = lsGet(K.group);
-  if (g === "all" || g === "cg" || g === "pax") group = g;
+  if (g === "ocg" || g === "cg" || g === "pax") group = g;
+  else if (g === "all") group = "ocg";
   else if (g === "oc") group = "cg";
   const savedQ = lsGet(K.q);
   if (savedQ != null) q = savedQ;
