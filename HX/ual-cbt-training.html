@@ -120,7 +120,7 @@
     <p class="subtitle">Paste the United CBT reminder email → LMOCG staff list only.</p>
     <div class="why">
       <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Only <b>LMOCG</b> areas are shown: PAX AF, CGO AF, AV, Refueller, Management. 145 &amp; OCG Planning is excluded.</p>
-      <p>Remaining ≤ 30 days = red. Remaining 31–60 days = yellow. Click Area / Section / Staff # / Name to sort.</p>
+      <p>Remaining ≤ 30 days = red. Remaining 31–60 days = yellow. Click any column header to sort.</p>
     </div>
 
     <h2>1. Paste email</h2>
@@ -155,7 +155,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
+  <div class="page-version" data-version="1.2" aria-label="Page version 1.2">v1.2</div>
 <script id="sample-mail" type="text/plain">
 UAL CBT training on 14-SEP-2026 (28 STAFF)
 Jack Choi
@@ -769,8 +769,20 @@ function filteredRows() {
       .some((v) => String(v || "").toLowerCase().includes(s));
   });
 }
+const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, sept: 8, oct: 9, nov: 10, dec: 11 };
+function dueStamp(s) {
+  const m = String(s || "").match(/^(\d{1,2})-([A-Za-z]{3,9})-(\d{4})$/);
+  if (!m) return 0;
+  const mo = MONTHS[m[2].toLowerCase()] ?? MONTHS[m[2].slice(0, 3).toLowerCase()];
+  if (mo == null) return 0;
+  return Date.UTC(Number(m[3]), mo, Number(m[1]));
+}
 function sortVal(row, key) {
   if (key === "section") return String(row.section || row.home || "");
+  if (key === "emp") return String(row.emp || "");
+  if (key === "courses") return Array.isArray(row.courses) ? row.courses.join(", ") : String(row.code || "");
+  if (key === "due") return dueStamp(row.due);
+  if (key === "remain") return Number(row.remain) || 0;
   return String(row[key] ?? "");
 }
 function sortedList(list) {
@@ -778,9 +790,10 @@ function sortedList(list) {
     const va = sortVal(a, sortKey);
     const vb = sortVal(b, sortKey);
     let cmp;
-    if (sortKey === "staff") cmp = (Number(va) || 0) - (Number(vb) || 0) || va.localeCompare(vb, undefined, { numeric: true });
-    else cmp = va.localeCompare(vb, undefined, { sensitivity: "base", numeric: true });
-    return sortDir * cmp || a.remain - b.remain;
+    if (typeof va === "number" && typeof vb === "number") cmp = va - vb;
+    else if (sortKey === "staff") cmp = (Number(va) || 0) - (Number(vb) || 0) || String(va).localeCompare(String(vb), undefined, { numeric: true });
+    else cmp = String(va).localeCompare(String(vb), undefined, { sensitivity: "base", numeric: true });
+    return sortDir * cmp || a.remain - b.remain || String(a.name || "").localeCompare(String(b.name || ""));
   });
 }
 function th(label, key) {
@@ -825,7 +838,7 @@ function paint() {
   if (view === "people") {
     document.getElementById("head").innerHTML =
       th("Area", "area") + th("Section", "section") + th("Staff #", "staff") + th("Name", "name") +
-      "<th>Employee #</th><th>Courses</th><th>Earliest due</th><th>Remaining</th>";
+      th("Employee #", "emp") + th("Courses", "courses") + th("Earliest due", "due") + th("Remaining", "remain");
     document.getElementById("body").innerHTML = sortedList(people).map((p) =>
       "<tr class=\"" + remainClass(p.remain) + "\">" +
       "<td>" + esc(p.area) + "</td>" +
@@ -841,7 +854,7 @@ function paint() {
   } else {
     document.getElementById("head").innerHTML =
       th("Area", "area") + th("Section", "section") + th("Staff #", "staff") + th("Name", "name") +
-      "<th>Employee #</th><th>Course</th><th>Due</th><th>Remaining</th>";
+      th("Employee #", "emp") + th("Course", "courses") + th("Due", "due") + th("Remaining", "remain");
     document.getElementById("body").innerHTML = sortedList(rows).map((r) =>
       "<tr class=\"" + remainClass(r.remain) + "\">" +
       "<td>" + esc(r.area) + "</td>" +
