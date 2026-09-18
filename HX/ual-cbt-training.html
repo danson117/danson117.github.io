@@ -119,7 +119,7 @@
     <h1>UAL CBT Training</h1>
     <p class="subtitle">Paste the United CBT reminder email → LMOCG staff list only.</p>
     <div class="why">
-      <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Only <b>LMOCG</b> areas are shown: PAX AF, CGO AF, AV, Refueller, Management. 145 &amp; OCG Planning is excluded.</p>
+      <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Only LMOCG rows. <b>PAX</b> = LTA1–4 crew E/F/G, LTA6 crew A/B/C/D, and FLS. <b>OC</b> = other LMOCG (CG / AV / Refueller / Management).</p>
       <p>Remaining ≤ 30 days = red. Remaining 31–90 days = yellow. Click any column header to sort.</p>
     </div>
 
@@ -145,8 +145,8 @@
     <h2>2. LMOCG list</h2>
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search name / staff # / section / course">
-      <button type="button" class="on" data-view="people">People</button>
-      <button type="button" data-view="courses">Courses</button>
+      <button type="button" class="on" data-group="oc">OC</button>
+      <button type="button" data-group="pax">PAX</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -155,7 +155,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="1.3" aria-label="Page version 1.3">v1.3</div>
+  <div class="page-version" data-version="1.4" aria-label="Page version 1.4">v1.4</div>
 <script id="sample-mail" type="text/plain">
 UAL CBT training on 14-SEP-2026 (28 STAFF)
 Jack Choi
@@ -645,8 +645,9 @@ const EMP_RE = /^v\d{5,}$/i;
 const STAFF_RE = /^\d{5,7}$/;
 const REMAIN_RE = /^\d{1,3}$/;
 const CODE_RE = /^(ANSP|CATA|DRGA|EISA|ETOPSA|ETPDSC|ETPT|GMMV|IPCT4|RIIA2|RVSMA|SCEPLOG|FGENR|FTSA|SRMAL)$/i;
+const PAX_STAFF = new Set("103713,115841,117152,120197,122341,122359,122953,124644,133629,143834,147159,149387,154724,156910,158817,158875,169153,169195,170465,179144,179160,187460,191263,191312,191403,191437,191859,193029,199655,204933,205014,216417,219346,229535,230300,232942,233015,249286,250431,251215,251728,276453,276544,279473,281460,290990,298978,301507,302919,303713,303173,322412,324872,328238,346355,346587,347395,349648,349846,353988,354390,354598,354605,355322,356552,357344,358714,358722,359423,359431,359811,360397,361501,363854,366014,368242,372574,373689,373704,373754,373762,374124,374306,375726,375750,376071,376097,377160,377764,380147,380204,381517,382200,387151,387408".split(","));
 let allRows = [];
-let view = "people";
+let group = "oc";
 let q = "";
 let sortKey = "area";
 let sortDir = 1;
@@ -760,10 +761,18 @@ function remainClass(n) {
   if (n <= 90) return "warn";
   return "";
 }
+function isPax(row) {
+  if (PAX_STAFF.has(String(row.staff || ""))) return true;
+  const sec = String(row.section || row.home || "").toUpperCase();
+  return /^LTA[1-4]$/.test(sec) || sec === "LTA6";
+}
 function filteredRows() {
   const s = q.trim().toLowerCase();
   return allRows.filter((r) => {
     if (!isLmocg(r.area)) return false;
+    const pax = isPax(r);
+    if (group === "pax" && !pax) return false;
+    if (group === "oc" && pax) return false;
     if (!s) return true;
     return [r.area, r.home, r.section, r.staff, r.name, r.emp, r.code, r.due]
       .some((v) => String(v || "").toLowerCase().includes(s));
@@ -834,40 +843,22 @@ function paint() {
   document.getElementById("n-people").textContent = String(people.length);
   document.getElementById("n-rows").textContent = String(rows.length);
   document.getElementById("n-hot").textContent = String(people.filter((p) => p.remain <= 30).length);
-  document.querySelectorAll("[data-view]").forEach((b) => b.classList.toggle("on", b.dataset.view === view));
-  if (view === "people") {
-    document.getElementById("head").innerHTML =
-      th("Area", "area") + th("Section", "section") + th("Staff #", "staff") + th("Name", "name") +
-      th("Employee #", "emp") + th("Courses", "courses") + th("Earliest due", "due") + th("Remaining", "remain");
-    document.getElementById("body").innerHTML = sortedList(people).map((p) =>
-      "<tr class=\"" + remainClass(p.remain) + "\">" +
-      "<td>" + esc(p.area) + "</td>" +
-      "<td>" + esc(p.section) + "</td>" +
-      "<td>" + esc(p.staff) + "</td>" +
-      "<td>" + esc(p.name) + "</td>" +
-      "<td>" + esc(p.emp) + "</td>" +
-      "<td>" + esc(p.courses.join(", ")) + "</td>" +
-      "<td>" + esc(p.due) + "</td>" +
-      "<td class=\"remain\">" + esc(p.remain) + "</td>" +
-      "</tr>"
-    ).join("");
-  } else {
-    document.getElementById("head").innerHTML =
-      th("Area", "area") + th("Section", "section") + th("Staff #", "staff") + th("Name", "name") +
-      th("Employee #", "emp") + th("Course", "courses") + th("Due", "due") + th("Remaining", "remain");
-    document.getElementById("body").innerHTML = sortedList(rows).map((r) =>
-      "<tr class=\"" + remainClass(r.remain) + "\">" +
-      "<td>" + esc(r.area) + "</td>" +
-      "<td>" + esc(r.section || r.home) + "</td>" +
-      "<td>" + esc(r.staff) + "</td>" +
-      "<td>" + esc(r.name) + "</td>" +
-      "<td>" + esc(r.emp) + "</td>" +
-      "<td>" + esc(r.code) + "</td>" +
-      "<td>" + esc(r.due) + "</td>" +
-      "<td class=\"remain\">" + esc(r.remain) + "</td>" +
-      "</tr>"
-    ).join("");
-  }
+  document.querySelectorAll("[data-group]").forEach((b) => b.classList.toggle("on", b.dataset.group === group));
+  document.getElementById("head").innerHTML =
+    th("Area", "area") + th("Section", "section") + th("Staff #", "staff") + th("Name", "name") +
+    th("Employee #", "emp") + th("Courses", "courses") + th("Earliest due", "due") + th("Remaining", "remain");
+  document.getElementById("body").innerHTML = sortedList(people).map((p) =>
+    "<tr class=\"" + remainClass(p.remain) + "\">" +
+    "<td>" + esc(p.area) + "</td>" +
+    "<td>" + esc(p.section) + "</td>" +
+    "<td>" + esc(p.staff) + "</td>" +
+    "<td>" + esc(p.name) + "</td>" +
+    "<td>" + esc(p.emp) + "</td>" +
+    "<td>" + esc(p.courses.join(", ")) + "</td>" +
+    "<td>" + esc(p.due) + "</td>" +
+    "<td class=\"remain\">" + esc(p.remain) + "</td>" +
+    "</tr>"
+  ).join("");
 }
 function runParse(text, label) {
   allRows = parseMail(text);
@@ -894,8 +885,8 @@ document.getElementById("clear").addEventListener("click", () => {
   paint();
 });
 document.getElementById("q").addEventListener("input", (e) => { q = e.target.value; paint(); });
-document.querySelectorAll("[data-view]").forEach((b) => {
-  b.addEventListener("click", () => { view = b.dataset.view; paint(); });
+document.querySelectorAll("[data-group]").forEach((b) => {
+  b.addEventListener("click", () => { group = b.dataset.group; paint(); });
 });
 document.getElementById("head").addEventListener("click", (e) => {
   const thEl = e.target.closest("[data-sort]");
