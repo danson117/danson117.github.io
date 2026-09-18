@@ -120,7 +120,7 @@
     <p class="subtitle">Paste the United CBT reminder email → LMOCG staff list only.</p>
     <div class="why">
       <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Only <b>LMOCG</b> areas are shown: PAX AF, CGO AF, AV, Refueller, Management. 145 &amp; OCG Planning is excluded.</p>
-      <p>Remaining ≤ 30 days = red. Remaining 31–60 days = yellow. Click any column header to sort.</p>
+      <p>Remaining ≤ 30 days = red. Remaining 31–90 days = yellow. Click any column header to sort.</p>
     </div>
 
     <h2>1. Paste email</h2>
@@ -155,7 +155,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="1.2" aria-label="Page version 1.2">v1.2</div>
+  <div class="page-version" data-version="1.3" aria-label="Page version 1.3">v1.3</div>
 <script id="sample-mail" type="text/plain">
 UAL CBT training on 14-SEP-2026 (28 STAFF)
 Jack Choi
@@ -757,7 +757,7 @@ function parseMail(text) {
 }
 function remainClass(n) {
   if (n <= 30) return "hot";
-  if (n <= 60) return "warn";
+  if (n <= 90) return "warn";
   return "";
 }
 function filteredRows() {
