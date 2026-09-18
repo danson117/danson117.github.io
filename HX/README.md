@@ -13,7 +13,19 @@
 - [LM audit / visitor schedule](lm-audit-schedule.html)
 - [LM Daily CT Reminder (overdue)](lm-daily-ct-reminder.html)
 - [UAL CBT Training](ual-cbt-training.html)
-- [OCG Name List (Master + OCS)](ocg-pax-mechanics-list.html)
+- [OCG Name List (Crew List / Name List / Full List)](ocg-pax-mechanics-list.html)
+
+## 規則改咗要全 HX 跟
+
+Name list / PAX / CG / 角色 / staff # 有新規則，唔好只改一頁。要一齊對：
+
+- `hx.html` 側欄名、blurb、`?v=`
+- `ocg-pax-mechanics-list.html`（Crew List 係 PAX 來源）
+- `ual-cbt-training.html`（`PAX_STAFF` = Crew List）
+- `lm-daily-ct-reminder.html`（default roster 包晒 Crew List）
+- 呢份 README / `links.html` 用詞
+
+而家規則：staff # 6 位；CHIU = 303173；PAX = Crew List（包 FLS / RF）；CG ≠ OC；Certifiers = Licensed / Assistant Licensed Engineer；Mechanics 包 Supervisor；Office = Manager / Controller / DIC / support。
 
 ## 加新 HX HTML
 

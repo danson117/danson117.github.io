@@ -14,3 +14,25 @@ alwaysApply: true
 - 改完 commit + push `main`
 - HTML 右下角 version：細改 +0.1，大改 +1.0
 - Update 完唔好再開新 Chrome 視窗；refresh 原本開住嘅 tab
+
+# HX name-list rules stay in sync
+
+Whenever a **name-list / PAX / CG / role / staff #** rule changes, review **every** `HX/` page that uses staff data or those labels — not only the page you are editing.
+
+Must stay aligned:
+
+- `HX/hx.html` — titles, blurbs, cache-bust `?v=`
+- `HX/ocg-pax-mechanics-list.html` — Crew List / Name List / Full List (source of truth)
+- `HX/ual-cbt-training.html` — `PAX_STAFF` = Crew List staff #s; filters All / CG / PAX
+- `HX/lm-daily-ct-reminder.html` — default roster includes every Crew List staff #
+- `HX/README.md` and `HX/links.html` — names and wording
+
+Current rules:
+
+- Staff # always **6 digits** (`84096` → `084096`)
+- CHIU SHI HEI is **303173**
+- **PAX** = Crew List, including **FLS** and **RF**
+- **CG** (not OC) = Name List people not on Crew List
+- **Certifiers** = Licensed Engineer / Assistant Licensed Engineer only
+- **Mechanics** = AMM, technician, refueller, Supervisor
+- **Office** = Manager / Controller / Duty in Charge / support
