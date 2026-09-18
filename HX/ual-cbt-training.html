@@ -13,8 +13,10 @@
     --card: #ffffff;
     --navy: #1e3a5f;
     --navy-soft: #e8eef5;
-    --hot: #8a3a32;
-    --warn: #8a6a12;
+    --hot: #6b1f1a;
+    --hot-bg: #f4d4d0;
+    --warn: #6b5310;
+    --warn-bg: #fff3b0;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -28,7 +30,7 @@
   .page { max-width: 1280px; margin: 0 auto; padding: 22px 18px 64px; }
   h1 { font-size: 22px; margin: 0 0 6px; color: var(--navy); font-weight: 700; }
   .subtitle { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
-  .why, .box, .stat, .md {
+  .why, .box, .stat {
     border: 1px solid var(--line);
     background: var(--card);
   }
@@ -86,16 +88,12 @@
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
   th, td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
   th { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 1; font-weight: 650; white-space: nowrap; }
-  td.hot { color: var(--hot); font-weight: 650; }
-  td.warn { color: var(--warn); font-weight: 650; }
-  .md {
-    padding: 10px 12px;
-    font-family: Consolas, "Courier New", monospace;
-    font-size: 12px;
-    white-space: pre-wrap;
-    overflow: auto;
-    max-height: 42vh;
-  }
+  th.sort { cursor: pointer; }
+  th.sort:hover { background: #2a4d73; }
+  th.sort.on::after { content: attr(data-dir); margin-left: 6px; font-size: 11px; }
+  tr.hot td { background: var(--hot-bg); color: var(--hot); }
+  tr.warn td { background: var(--warn-bg); color: var(--warn); }
+  td.remain { font-weight: 650; }
   .page-version {
     position: fixed;
     right: max(12px, env(safe-area-inset-right));
@@ -119,10 +117,10 @@
 <body>
   <div class="page">
     <h1>UAL CBT Training</h1>
-    <p class="subtitle">Paste the United CBT reminder email → LM OCG name list as a Markdown table.</p>
+    <p class="subtitle">Paste the United CBT reminder email → LMOCG staff list only.</p>
     <div class="why">
-      <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Rows whose Functional Area contains <b>OCG</b> are kept: PAX AF, CGO AF, AV, Refueller, Management, 145 &amp; OCG Planning.</p>
-      <p>Red remaining due ≤ 14 days. Amber ≤ 30 days.</p>
+      <p>Uses the latest message only (stops at the quoted <code>From:</code> thread). Only <b>LMOCG</b> areas are shown: PAX AF, CGO AF, AV, Refueller, Management. 145 &amp; OCG Planning is excluded.</p>
+      <p>Remaining ≤ 30 days = red. Remaining 31–60 days = yellow. Click Area / Section / Staff # / Name to sort.</p>
     </div>
 
     <h2>1. Paste email</h2>
@@ -138,19 +136,17 @@
     </div>
 
     <div class="stats">
-      <div class="stat"><b id="n-people">0</b><span>LM OCG people</span></div>
+      <div class="stat"><b id="n-people">0</b><span>LMOCG people</span></div>
       <div class="stat"><b id="n-rows">0</b><span>Course rows</span></div>
-      <div class="stat"><b id="n-hot">0</b><span>Due in 14 days</span></div>
+      <div class="stat"><b id="n-hot">0</b><span>Remaining ≤ 30</span></div>
       <div class="stat"><b id="n-subj">—</b><span>Email subject / date</span></div>
     </div>
 
-    <h2>2. LM OCG list</h2>
+    <h2>2. LMOCG list</h2>
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search name / staff # / section / course">
-      <label class="chk"><input type="checkbox" id="ocg-only" checked> OCG areas only</label>
       <button type="button" class="on" data-view="people">People</button>
       <button type="button" data-view="courses">Courses</button>
-      <button type="button" class="primary" id="copy-md">Copy Markdown</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -158,11 +154,8 @@
         <tbody id="body"></tbody>
       </table>
     </div>
-
-    <h2>3. Markdown</h2>
-    <pre class="md" id="md"></pre>
   </div>
-  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+  <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
 <script id="sample-mail" type="text/plain">
 UAL CBT training on 14-SEP-2026 (28 STAFF)
 Jack Choi
@@ -655,6 +648,8 @@ const CODE_RE = /^(ANSP|CATA|DRGA|EISA|ETOPSA|ETPDSC|ETPT|GMMV|IPCT4|RIIA2|RVSMA
 let allRows = [];
 let view = "people";
 let q = "";
+let sortKey = "area";
+let sortDir = 1;
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -667,8 +662,9 @@ function subjectOf(text) {
   const m = String(text || "").match(/UAL CBT training on\s+([0-9]{1,2}-[A-Za-z]{3,9}-[0-9]{4})[^\n]*/i);
   return m ? m[0].replace(/\s+/g, " ").trim() : "—";
 }
-function isOcg(area) {
-  return /ocg/i.test(area || "");
+function isLmocg(area) {
+  const s = String(area || "");
+  return /lm\s*ocg/i.test(s) || /lmocg/i.test(s.replace(/\s+/g, ""));
 }
 function parseBlocks(text) {
   const body = latestBody(text);
@@ -760,19 +756,40 @@ function parseMail(text) {
   return parseBlocks(text).flatMap((b) => parseChunk(b.heading, b.chunk));
 }
 function remainClass(n) {
-  if (n <= 14) return "hot";
-  if (n <= 30) return "warn";
+  if (n <= 30) return "hot";
+  if (n <= 60) return "warn";
   return "";
 }
 function filteredRows() {
-  const ocgOnly = document.getElementById("ocg-only").checked;
   const s = q.trim().toLowerCase();
   return allRows.filter((r) => {
-    if (ocgOnly && !isOcg(r.area)) return false;
+    if (!isLmocg(r.area)) return false;
     if (!s) return true;
     return [r.area, r.home, r.section, r.staff, r.name, r.emp, r.code, r.due]
       .some((v) => String(v || "").toLowerCase().includes(s));
   });
+}
+function sortVal(row, key) {
+  if (key === "section") return String(row.section || row.home || "");
+  return String(row[key] ?? "");
+}
+function sortedList(list) {
+  return list.slice().sort((a, b) => {
+    const va = sortVal(a, sortKey);
+    const vb = sortVal(b, sortKey);
+    let cmp;
+    if (sortKey === "staff") cmp = (Number(va) || 0) - (Number(vb) || 0) || va.localeCompare(vb, undefined, { numeric: true });
+    else cmp = va.localeCompare(vb, undefined, { sensitivity: "base", numeric: true });
+    return sortDir * cmp || a.remain - b.remain;
+  });
+}
+function th(label, key) {
+  const on = sortKey === key;
+  return (
+    "<th class=\"sort" + (on ? " on" : "") + "\" data-sort=\"" + key + "\"" +
+    (on ? " data-dir=\"" + (sortDir > 0 ? "▲" : "▼") + "\"" : "") +
+    ">" + label + "</th>"
+  );
 }
 function peopleOf(rows) {
   const map = new Map();
@@ -796,53 +813,21 @@ function peopleOf(rows) {
     }
     map.set(key, item);
   });
-  return [...map.values()].sort((a, b) => a.remain - b.remain || a.name.localeCompare(b.name));
-}
-function mdEscape(s) {
-  return String(s ?? "").replace(/\|/g, "\\|");
-}
-function peopleMd(people) {
-  const lines = [
-    "| Area | Section | Staff # | Name | Employee # | Courses | Earliest due | Remaining |",
-    "|---|---|---|---|---|---|---|---|"
-  ];
-  people.forEach((p) => {
-    lines.push(
-      "| " +
-      [p.area, p.section, p.staff, p.name, p.emp, p.courses.join(", "), p.due, p.remain]
-        .map(mdEscape).join(" | ") +
-      " |"
-    );
-  });
-  return lines.join("\n");
-}
-function courseMd(rows) {
-  const lines = [
-    "| Area | Section | Staff # | Name | Employee # | Course | Due | Remaining |",
-    "|---|---|---|---|---|---|---|---|"
-  ];
-  rows.slice().sort((a, b) => a.remain - b.remain).forEach((r) => {
-    lines.push(
-      "| " +
-      [r.area, r.section || r.home, r.staff, r.name, r.emp, r.code, r.due, r.remain]
-        .map(mdEscape).join(" | ") +
-      " |"
-    );
-  });
-  return lines.join("\n");
+  return [...map.values()];
 }
 function paint() {
   const rows = filteredRows();
   const people = peopleOf(rows);
   document.getElementById("n-people").textContent = String(people.length);
   document.getElementById("n-rows").textContent = String(rows.length);
-  document.getElementById("n-hot").textContent = String(people.filter((p) => p.remain <= 14).length);
+  document.getElementById("n-hot").textContent = String(people.filter((p) => p.remain <= 30).length);
   document.querySelectorAll("[data-view]").forEach((b) => b.classList.toggle("on", b.dataset.view === view));
   if (view === "people") {
     document.getElementById("head").innerHTML =
-      "<th>Area</th><th>Section</th><th>Staff #</th><th>Name</th><th>Employee #</th><th>Courses</th><th>Earliest due</th><th>Remaining</th>";
-    document.getElementById("body").innerHTML = people.map((p) =>
-      "<tr>" +
+      th("Area", "area") + th("Section", "section") + th("Staff #", "staff") + th("Name", "name") +
+      "<th>Employee #</th><th>Courses</th><th>Earliest due</th><th>Remaining</th>";
+    document.getElementById("body").innerHTML = sortedList(people).map((p) =>
+      "<tr class=\"" + remainClass(p.remain) + "\">" +
       "<td>" + esc(p.area) + "</td>" +
       "<td>" + esc(p.section) + "</td>" +
       "<td>" + esc(p.staff) + "</td>" +
@@ -850,16 +835,15 @@ function paint() {
       "<td>" + esc(p.emp) + "</td>" +
       "<td>" + esc(p.courses.join(", ")) + "</td>" +
       "<td>" + esc(p.due) + "</td>" +
-      "<td class=\"" + remainClass(p.remain) + "\">" + esc(p.remain) + "</td>" +
+      "<td class=\"remain\">" + esc(p.remain) + "</td>" +
       "</tr>"
     ).join("");
-    document.getElementById("md").textContent = people.length ? peopleMd(people) : "No LM OCG rows.";
   } else {
-    const sorted = rows.slice().sort((a, b) => a.remain - b.remain);
     document.getElementById("head").innerHTML =
-      "<th>Area</th><th>Section</th><th>Staff #</th><th>Name</th><th>Employee #</th><th>Course</th><th>Due</th><th>Remaining</th>";
-    document.getElementById("body").innerHTML = sorted.map((r) =>
-      "<tr>" +
+      th("Area", "area") + th("Section", "section") + th("Staff #", "staff") + th("Name", "name") +
+      "<th>Employee #</th><th>Course</th><th>Due</th><th>Remaining</th>";
+    document.getElementById("body").innerHTML = sortedList(rows).map((r) =>
+      "<tr class=\"" + remainClass(r.remain) + "\">" +
       "<td>" + esc(r.area) + "</td>" +
       "<td>" + esc(r.section || r.home) + "</td>" +
       "<td>" + esc(r.staff) + "</td>" +
@@ -867,18 +851,17 @@ function paint() {
       "<td>" + esc(r.emp) + "</td>" +
       "<td>" + esc(r.code) + "</td>" +
       "<td>" + esc(r.due) + "</td>" +
-      "<td class=\"" + remainClass(r.remain) + "\">" + esc(r.remain) + "</td>" +
+      "<td class=\"remain\">" + esc(r.remain) + "</td>" +
       "</tr>"
     ).join("");
-    document.getElementById("md").textContent = sorted.length ? courseMd(sorted) : "No LM OCG rows.";
   }
 }
 function runParse(text, label) {
   allRows = parseMail(text);
   document.getElementById("n-subj").textContent = subjectOf(text);
-  const ocg = allRows.filter((r) => isOcg(r.area)).length;
+  const ocg = allRows.filter((r) => isLmocg(r.area)).length;
   document.getElementById("status").textContent =
-    (label || "Parsed") + " · " + allRows.length + " course rows · " + ocg + " in OCG areas.";
+    (label || "Parsed") + " · " + allRows.length + " course rows · " + ocg + " LMOCG rows.";
   try { localStorage.setItem(STORE, text); } catch (e) {}
   paint();
 }
@@ -897,19 +880,17 @@ document.getElementById("clear").addEventListener("click", () => {
   document.getElementById("n-subj").textContent = "—";
   paint();
 });
-document.getElementById("ocg-only").addEventListener("change", paint);
 document.getElementById("q").addEventListener("input", (e) => { q = e.target.value; paint(); });
 document.querySelectorAll("[data-view]").forEach((b) => {
   b.addEventListener("click", () => { view = b.dataset.view; paint(); });
 });
-document.getElementById("copy-md").addEventListener("click", async () => {
-  const text = document.getElementById("md").textContent;
-  try {
-    await navigator.clipboard.writeText(text);
-    document.getElementById("status").textContent = "Markdown copied.";
-  } catch (e) {
-    document.getElementById("status").textContent = "Copy failed. Select the Markdown box and copy.";
-  }
+document.getElementById("head").addEventListener("click", (e) => {
+  const thEl = e.target.closest("[data-sort]");
+  if (!thEl) return;
+  const key = thEl.dataset.sort;
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = 1; }
+  paint();
 });
 
 try {
