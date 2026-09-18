@@ -162,7 +162,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="1.8" aria-label="Page version 1.8">v1.8</div>
+  <div class="page-version" data-version="1.9" aria-label="Page version 1.9">v1.9</div>
 <script id="sample-mail" type="text/plain">
 UAL CBT training on 14-SEP-2026 (28 STAFF)
 Jack Choi
@@ -775,8 +775,14 @@ function remainClass(n) {
   if (n <= 90) return "warn";
   return "";
 }
+function padStaff(v) {
+  const s = String(v ?? "").trim();
+  if (!s || !/^\d+$/.test(s)) return s;
+  return s.padStart(6, "0");
+}
 function isPax(row) {
-  return PAX_STAFF.has(String(row.staff || ""));
+  const raw = String(row.staff || "").trim();
+  return PAX_STAFF.has(raw) || PAX_STAFF.has(padStaff(raw)) || PAX_STAFF.has(String(Number(raw)));
 }
 function filteredRows() {
   const s = q.trim().toLowerCase();
@@ -786,7 +792,7 @@ function filteredRows() {
     if (group === "pax" && !pax) return false;
     if (group === "oc" && pax) return false;
     if (!s) return true;
-    return [r.area, r.home, r.section, r.staff, r.name, r.emp, r.code, r.due]
+    return [r.area, r.home, r.section, r.staff, padStaff(r.staff), r.name, r.emp, r.code, r.due]
       .some((v) => String(v || "").toLowerCase().includes(s));
   });
 }
@@ -887,7 +893,7 @@ function paint() {
     "<tr class=\"" + remainClass(p.remain) + "\">" +
     "<td>" + esc(p.area) + "</td>" +
     "<td class=\"col-section\">" + esc(p.section) + "</td>" +
-    "<td>" + esc(p.staff) + "</td>" +
+    "<td>" + esc(padStaff(p.staff)) + "</td>" +
     "<td>" + esc(p.name) + "</td>" +
     "<td>" + esc(p.emp) + "</td>" +
     "<td>" + esc(p.courses.join(", ")) + "</td>" +
