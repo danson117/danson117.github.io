@@ -12,8 +12,9 @@ alwaysApply: true
 - 唔好再開 `家庭/` folder
 - 唔好把呢兩頁再複製去其他 branch
 - 改完 commit + push `main`
-- HTML 右下角 version：細改 +0.1，大改 +1.0
-- Update 完唔好再開新 Chrome 視窗；refresh 原本開住嘅 tab
+- HTML 右下角 version：細改 +0.1，大改 +1.0；改完**必改**右下角
+- Update 完唔好再開新 Chrome／browser；refresh 原本開住嘅 tab
+- 跨機額外規矩：`HX/hx-rules.html`（紅字＝新加，另一部機要對齊）
 
 # HX name-list rules stay in sync
 

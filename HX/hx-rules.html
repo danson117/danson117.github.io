@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HX 規矩 — 跨機對齊</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #d7dee6;
+    --paper: #eef1f4;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+    --hot: #9b1c1c;
+    --hot-bg: #fde8e8;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.45;
+    font-size: 13.5px;
+  }
+  .page { max-width: 880px; margin: 0 auto; padding: 22px 18px 64px; }
+  h1 { font-size: 22px; margin: 0 0 6px; color: var(--navy); }
+  .subtitle { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  .why, .card {
+    border: 1px solid var(--line);
+    background: var(--card);
+    padding: 12px 14px;
+    margin: 0 0 12px;
+  }
+  .why p, .card p { margin: 0 0 6px; }
+  .why p:last-child, .card p:last-child { margin: 0; }
+  h2 {
+    font-size: 15px;
+    margin: 22px 0 10px;
+    padding: 6px 10px;
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+  }
+  h2.new { background: var(--hot); }
+  ul { margin: 0; padding-left: 1.2em; }
+  li { margin: 0 0 6px; }
+  .new, .new a { color: var(--hot); font-weight: 650; }
+  .new-box {
+    border-color: #e2b6b6;
+    background: var(--hot-bg);
+  }
+  code { font-size: 12px; }
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #666;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>HX 規矩</h1>
+    <p class="subtitle">屋企／公司兩部機共用。呢頁係跨機 SoT。本地 <code>.cursor/rules</code> 都要寫，但另一部機未 pull 時以呢頁為準。</p>
+    <div class="why new-box">
+      <p class="new">紅字／紅底＝呢部機新加，另一部機對齊時要留意。對齊完可以轉返普通色。</p>
+    </div>
+
+    <h2 class="new">新加（要對齊）</h2>
+    <div class="card new-box">
+      <ul class="new">
+        <li>改完 HTML <strong>唔好再開新 browser</strong>。用返已開嘅 tab，你自己 refresh。</li>
+        <li>每次改 HTML，<strong>右下角 version 必改</strong>（細改 +0.1，大改 +1.0）。<code>hx.html</code> 側欄 <code>?v=</code> 跟住加。</li>
+        <li>零碎筆記畫面 <strong>唔顯示</strong>「記下」、日期時間、caption（邊個負責邊塊／口徑／Initial…）。時間只留 hidden <code>#scratch-ledger</code>，問先答。</li>
+        <li>呢個 project 額外新規則要寫入 <strong>呢頁 HTML</strong>，並標紅。本地 rule 同步寫，但唔可以只寫本地。</li>
+        <li>SharePoint 連結只可解 <code>%</code> 編碼；唔用第三方短網址（要留 MCAS／viewid）。</li>
+      </ul>
+    </div>
+
+    <h2>已有（兩邊應已跟）</h2>
+    <div class="card">
+      <ul>
+        <li>GitHub <code>main</code> 係 SSOT。改前 pull，改完自動 commit + push。唔好 force。</li>
+        <li>根目錄＝家庭頁。工作檔只放 <code>HX/</code>。</li>
+        <li>名冊規則改咗要全 HX 跟：<code>hx.html</code>、<code>ocg-pax-mechanics-list.html</code>、<code>ual-cbt-training.html</code>、<code>lm-daily-ct-reminder.html</code>、README、<code>links.html</code>。</li>
+        <li>OCG = CG + PAX。人只係 CG 或 PAX。PAX = Crew List（包 FLS／RF）。staff # 6 位。CHIU = 303173。</li>
+        <li>新資訊先對 HTML。預設只改背底（group／Remark／邏輯 PAX）。已出街 Team／Shift／姓名／section 唔好自己改。</li>
+        <li>xlsx／docx 用 Office 網上檢視，唔好 github.io 直接 download。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="page-version" data-version="1.0">v1.0</div>
+</body>
+</html>

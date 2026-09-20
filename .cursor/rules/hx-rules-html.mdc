@@ -1,0 +1,14 @@
+---
+description: HX 跨機規矩以 HTML 為準；新加規則要紅字；改完唔開新 browser
+alwaysApply: true
+---
+
+# HX 規矩頁（跨機）
+
+可見 SoT：`HX/hx-rules.html`（網上 `https://danson117.github.io/HX/hx-rules.html`）。
+
+- 呢個倉額外新規則：**先寫入該 HTML（紅字）**，再寫本地 `.mdc`。唔可以只寫本地。
+- 另一部機：開該 HTML。紅字＝未對齊／新加。對齊完先可轉普通色。
+- 改完任何 HX HTML：**唔好開新 browser**；user refresh 舊 tab。
+- 右下角 `page-version` **必 +0.1**（大改 +1.0）。`hx.html` 側欄 `?v=` 一齊加。
+- 零碎筆記：畫面唔顯示「記下」／時間／caption。時間只留 `#scratch-ledger`。
