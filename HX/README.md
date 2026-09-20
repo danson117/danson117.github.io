@@ -13,6 +13,7 @@
 - [LM audit / visitor schedule](lm-audit-schedule.html)
 - [LM Daily CT Reminder (overdue)](lm-daily-ct-reminder.html)
 - [UAL CBT Training](ual-cbt-training.html)
+- [Training Team Board (PIC-style trial)](training-team-board.html)
 - [OCG Name List (Crew List / Name List / Full List)](ocg-pax-mechanics-list.html)
 - [零碎筆記 / Scratch notes](scratch-notes.html)（畫面唔顯示 記下／日期時間／caption；時間喺頁內 hidden `#scratch-ledger`，問先答）
 - [HX 規矩（跨機）](hx-rules.html)（紅字＝呢部機新加；另一部機對齊用）
@@ -25,6 +26,7 @@ Name list / PAX / CG / 角色 / staff # 有新規則，唔好只改一頁。要�
 - `ocg-pax-mechanics-list.html`（Crew List 係 PAX 來源）
 - `ual-cbt-training.html`（`PAX_STAFF` = Crew List）
 - `lm-daily-ct-reminder.html`（default roster 包晒 Crew List）
+- `training-team-board.html`（Team 1–4 / Other 用 Name List）
 - 呢份 README / `links.html` 用詞
 
 而家規則：staff # 6 位；CHIU = 303173；**OCG = CG + PAX**（總數 / All，唔係第三類）；人只係 **CG** 或 **PAX**；PAX = Crew List（包 FLS / RF）；CG = Name List 唔喺 Crew List；Certifiers = Licensed / Assistant Licensed Engineer / Controller / Duty in Charge（包 Deputy DIC、OCG PAX/CARGO/UPS DIC）；Mechanics 包 Supervisor；Office = Manager / Assistant Manager / support / liaison / project officer / operations officer（唔包 Controller、唔包 DIC）。Counter / filter：**OCG | CG | PAX**。欄名 **CG/PAX**，值只係 CG 或 PAX。
