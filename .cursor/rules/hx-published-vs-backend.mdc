@@ -1,0 +1,37 @@
+---
+description: HX name-list — change backend logic only; do not rewrite published display; report discrepancies
+alwaysApply: true
+---
+
+# 出街顯示 vs 背底邏輯
+
+有新資訊（staff #、PAX/CG、Team、Shift／session、轉組）→ **先睇而家 HTML**，搵有冇對應人／欄。
+
+## 即刻可以改（背底）
+
+- `FULL.group` / `match` / `note`（Remark）
+- 邏輯用嘅 `PAX_STAFF`、roster 分類
+- staff # 補 6 位（`84096` → `084096`）
+
+唔好當呢啲係「出街 Crew List」。
+
+## 唔好自己改（出街顯示）
+
+已公開／可能已派出去嘅欄，**唔好貿然改**：
+
+- Crew List `TEAM`：Team、Shift、Name、Chinese、title、Ω、UA、Refuel、JL、JJP
+- Name List `STAFF`：OCS 原欄（section、pos、title、join/term…）
+
+呢啲只可以喺用戶明確講 **「而家出街／正式更新」** 嗰次，先用最新背底覆蓋。
+
+## 有出入一定要講
+
+對完 HTML 背底之後，下列任何一項不同都要列俾用戶，**先問再改顯示**：
+
+- Shift／session code 唔同（例如 HTML `1E`，feedback `FLS`）
+- Team／Crew 唔同（例如 HTML Team 2，feedback Team 3）
+- 人喺 feedback 係 PAX，但 HTML Crew List 冇／Team Shift 空
+- 人喺 HTML 有，feedback 冇（或相反）
+- Home／Current section、title 同 feedback 唔夾
+
+只改背底（group／Remark）去記新資訊；顯示等下一次出街。

@@ -27,6 +27,8 @@ Name list / PAX / CG / 角色 / staff # 有新規則，唔好只改一頁。要�
 
 而家規則：staff # 6 位；CHIU = 303173；**OCG = CG + PAX**（總數 / All，唔係第三類）；人只係 **CG** 或 **PAX**；PAX = Crew List（包 FLS / RF）；CG = Name List 唔喺 Crew List；Certifiers = Licensed / Assistant Licensed Engineer / Controller / Duty in Charge（包 Deputy DIC、OCG PAX/CARGO/UPS DIC）；Mechanics 包 Supervisor；Office = Manager / Assistant Manager / support / liaison / project officer / operations officer（唔包 Controller、唔包 DIC）。Counter / filter：**OCG | CG | PAX**。欄名 **CG/PAX**，值只係 CG 或 PAX。
 
+新資訊先對 HTML。預設只改背底（group／Remark／邏輯 PAX）；已出街嘅 Team／Shift／姓名唔好自己改，等下次正式更新。有 Team／Shift／session／名單出入要先講。
+
 ## 加新 HX HTML
 
 1. 把新 `.html` 放呢個 `HX/` folder（唔好放 repo 根目錄）。

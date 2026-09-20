@@ -26,6 +26,7 @@ Must stay aligned:
 - `HX/ual-cbt-training.html` — `PAX_STAFF` = Crew List staff #s; filters OCG / CG / PAX
 - `HX/lm-daily-ct-reminder.html` — default roster includes every Crew List staff #
 - `HX/README.md` and `HX/links.html` — names and wording
+- 出街顯示 vs 背底：見 `hx-published-vs-backend.mdc`（只改邏輯；有 Team／Shift／session 出入要先講）
 
 Current rules:
 
