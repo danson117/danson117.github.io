@@ -14,7 +14,7 @@
 - [LM Daily CT Reminder (overdue)](lm-daily-ct-reminder.html)
 - [UAL CBT Training](ual-cbt-training.html)
 - [OCG Name List (Crew List / Name List / Full List)](ocg-pax-mechanics-list.html)
-- [零碎筆記 / Scratch notes](scratch-notes.html)
+- [零碎筆記 / Scratch notes](scratch-notes.html)（畫面唔顯示 記下／日期時間／caption；時間喺頁內 hidden `#scratch-ledger`，問先答）
 
 ## 規則改咗要全 HX 跟
 
