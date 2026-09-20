@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>零碎筆記 — Scratch notes</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #d7dee6;
+    --paper: #eef1f4;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+    --navy-soft: #e8eef5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.45;
+    font-size: 13.5px;
+  }
+  .page { max-width: 980px; margin: 0 auto; padding: 22px 18px 64px; }
+  h1 { font-size: 22px; margin: 0 0 6px; color: var(--navy); }
+  .subtitle { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  .why, .card {
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+  .why { padding: 12px 14px; margin: 0 0 16px; }
+  .why p { margin: 0 0 6px; }
+  .why p:last-child { margin: 0; }
+  h2 {
+    font-size: 15px;
+    margin: 22px 0 10px;
+    padding: 6px 10px;
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .card { padding: 12px 14px; margin: 0 0 12px; }
+  .card h3 { margin: 0 0 8px; font-size: 15px; color: var(--navy); }
+  .meta { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    background: var(--card);
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 7px 9px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+  }
+  td.who { font-weight: 650; }
+  .nick { color: var(--muted); }
+  .empty {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0;
+  }
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #666;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+  @media print {
+    .page { padding: 8px; }
+    .page-version { position: static; margin-top: 12px; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>零碎筆記</h1>
+    <p class="subtitle">之後講到嘅碎料裝呢頁。第一條：CP Competence Program 邊個負責邊塊。</p>
+    <div class="why">
+      <p>只記你講過嘅分工。未對過正式 org chart／staff #。</p>
+      <p>OCG = CG + PAX。AV = Avionics。CXG 嘅 Jacky Chan 唔等於 OCG 嘅 Jacky Chung。</p>
+    </div>
+
+    <h2>CP Competence Program</h2>
+    <div class="card">
+      <h3>邊個負責邊塊</h3>
+      <p class="meta">記下：<time datetime="2026-09-20T10:29:46">2026-09-20 10:29:46</time></p>
+      <table>
+        <thead>
+          <tr>
+            <th>範圍</th>
+            <th>負責</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>OCG CG + PAX，全部 Engineers / Certifiers</td>
+            <td class="who">阿米（Jacky Chung）、骰仔（TW）</td>
+          </tr>
+          <tr>
+            <td>AV Engineers / Certifiers</td>
+            <td class="who">Eric Ko</td>
+          </tr>
+          <tr>
+            <td>OCG Mechanics</td>
+            <td class="who">GoGo</td>
+          </tr>
+          <tr>
+            <td>OCG PAX + CXG Mechanics</td>
+            <td class="who">CXG Jacky Chan（TK）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>之後再加</h2>
+    <div class="card">
+      <p class="empty">未有第二條。你再講就加喺呢度下面。</p>
+    </div>
+  </div>
+  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+</body>
+</html>
