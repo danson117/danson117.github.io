@@ -37,12 +37,26 @@
     font-size: 15px;
     margin: 22px 0 10px;
     padding: 6px 10px;
-    background: var(--navy);
     color: #fff;
     font-weight: 650;
     letter-spacing: 0.03em;
     text-transform: uppercase;
   }
+  .page > h2:nth-of-type(1) { background: #1e3a5f; }
+  .page > h2:nth-of-type(2) { background: #1a4a5c; }
+  .page > h2:nth-of-type(3) { background: #2c3e6b; }
+  .page > h2:nth-of-type(4) { background: #1f4f6d; }
+  .page > h2:nth-of-type(5) { background: #3a3f5c; }
+  .page > h2:nth-of-type(1) + .card { border-top: 3px solid #1e3a5f; }
+  .page > h2:nth-of-type(2) + .card { border-top: 3px solid #1a4a5c; }
+  .page > h2:nth-of-type(3) + .card { border-top: 3px solid #2c3e6b; }
+  .page > h2:nth-of-type(4) + .card { border-top: 3px solid #1f4f6d; }
+  .page > h2:nth-of-type(5) + .card { border-top: 3px solid #3a3f5c; }
+  .page > h2:nth-of-type(1) + .card table th { background: #1e3a5f; }
+  .page > h2:nth-of-type(2) + .card table th { background: #1a4a5c; }
+  .page > h2:nth-of-type(3) + .card table th { background: #2c3e6b; }
+  .page > h2:nth-of-type(4) + .card table th { background: #1f4f6d; }
+  .page > h2:nth-of-type(5) + .card table th { background: #3a3f5c; }
   .card { padding: 12px 14px; margin: 0 0 12px; }
   .card h3 { margin: 0 0 8px; font-size: 15px; color: var(--navy); }
   .meta { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
@@ -250,7 +264,7 @@
       <p class="empty">下一批碎料加喺呢度下面。</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.5" aria-label="Page version 1.5">v1.5</div>
+  <div class="page-version" data-version="1.6" aria-label="Page version 1.6">v1.6</div>
   <script type="application/json" id="scratch-ledger" hidden>
 {
   "display_rule": "唔顯示 記下、日期時間、caption h3、STT 開頭垃圾、TBD/旁註。問先答時間。",
@@ -260,7 +274,8 @@
     {"id": "ocg-236051", "recorded_at": "2026-09-20 10:33:16", "authorization_wording_at": "2026-09-20 10:50:43", "removed_caption": "陳小聰 · office + training"},
     {"id": "afh-rf-fls", "recorded_at": "2026-09-20 10:33:16", "afh_係_at": "2026-09-20 10:50:43", "removed_caption": "口徑"},
     {"id": "training-matrix", "recorded_at": "2026-09-20 10:40:14", "sharepoint_at": "2026-09-20 10:51:50", "removed_caption": "Initial／Method／Recurrent／Applicable To"},
-    {"id": "ke-fth-hf-note", "note": "T.F241＝Initial Human Factors；T.F162＝recurrent HF 兩年一次（KE FTH 改寫頁）。畫面唔顯示。"}
+    {"id": "ke-fth-hf-note", "note": "T.F241＝Initial Human Factors；T.F162＝recurrent HF 兩年一次（KE FTH 改寫頁）。畫面唔顯示。"},
+    {"id": "section-tone", "recorded_at": "2026-09-20 10:57:10", "note": "每段 h2／表頭用相近但唔同色，方便睇主題間隔。"}
   ]
 }
   </script>
