@@ -70,6 +70,34 @@
     font-size: 13px;
     margin: 0;
   }
+  .copy-box {
+    margin-top: 10px;
+    padding: 8px 9px;
+    border: 1px dashed var(--line);
+    background: var(--navy-soft);
+  }
+  .copy-box .meta { margin: 0 0 6px; }
+  .copy-url {
+    display: block;
+    width: 100%;
+    margin: 0 0 6px;
+    padding: 6px 7px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    font: 11px/1.35 Consolas, "Cascadia Mono", monospace;
+    word-break: break-all;
+    user-select: all;
+  }
+  .copy-box button {
+    font: inherit;
+    font-size: 12px;
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .copy-box button:hover { background: #fff; }
   .page-version {
     position: fixed;
     right: max(12px, env(safe-area-inset-right));
@@ -220,6 +248,11 @@
         </tbody>
       </table>
       <p class="empty" style="margin-top:10px">旁註：KE FTH 改寫頁寫過 T.F241＝Initial Human Factors，T.F162＝recurrent HF（兩年一次）。呢張表其餘欄位未補，唔當已定稿。</p>
+      <div class="copy-box">
+        <p class="meta">SharePoint：<code>`LMOC/Training</code>。只解咗 % 編碼，無第三方短網址；要 MCAS 先開到。</p>
+        <code class="copy-url" id="sp-train">https://haeco-my.sharepoint.com.mcas.ms/my?id=/personal/236051_haeco_com/Documents/`LMOC/Training&amp;viewid=28fb996c-0ff9-47f9-b396-ad94efe6edff</code>
+        <button type="button" id="sp-copy">複製</button>
+      </div>
     </div>
 
     <h2>之後再加</h2>
@@ -227,6 +260,25 @@
       <p class="empty">下一批碎料加喺呢度下面。</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.3" aria-label="Page version 1.3">v1.3</div>
+  <div class="page-version" data-version="1.4" aria-label="Page version 1.4">v1.4</div>
+  <script>
+    (function () {
+      var btn = document.getElementById("sp-copy");
+      var box = document.getElementById("sp-train");
+      if (!btn || !box) return;
+      btn.addEventListener("click", function () {
+        var text = box.textContent.trim();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            btn.textContent = "已複製";
+          }).catch(function () {
+            btn.textContent = "請手動反白複製";
+          });
+        } else {
+          btn.textContent = "請手動反白複製";
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
