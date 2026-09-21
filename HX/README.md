@@ -24,7 +24,7 @@
 - After an HX update, **do not open a new browser / Chrome**. Tell the user the **page version number(s)** in the chat. The user will **manually refresh** the tab they already have.
 - 改完 HX **唔好開新 browser / Chrome**。喺對話講 **version 號** 就得；用戶自己 refresh 已開嘅 tab。
 - **Ingest reject (no silent skip):** If the designed parser cannot recognize a row or cannot complete a required step, **popup and reject the entire file**. Do not skip unknown rows and still update. User must fix the source (or the parser / `CODE_RE`) first. Examples: unknown staff (UAL), unknown course code, missing usual columns, unreadable file.
-- 認唔到或做唔到必要步驟 → 彈窗、整份檔 REJECT、唔寫入。唔好跳過認唔到嘅行仲 UPDATE。UAL：無呢個 STAFF／唔識 course code → 整份 reject。CT／Mandatory 全 LM export：Transit／非 OCG 唔當 reject（板面之後 filter）；認唔到 staff # 或冇 course code 先 reject 整份。
+- 認唔到或做唔到必要步驟 → 彈窗、整份檔 REJECT、唔寫入。唔好跳過認唔到嘅行仲 UPDATE。UAL OCG Functional Area only：LM OCG AV / LM OCG PAX AF / LM OCG AF / LM OCG Management。**145 & OCG Planning = PLANNING**，唔係 OCG。真正 OCG 人唔喺 Name List → 彈窗；橙色 Override 確認後只入 Name List。唔識 course code／檔壞／0 個 OCG 行 → 硬 reject。CT／Mandatory 全 LM export：Transit／非 OCG 唔當 reject（板面之後 filter）；認唔到 staff # 或冇 course code 先 reject 整份。
 
 ## 規則改咗要全 HX 跟
 
