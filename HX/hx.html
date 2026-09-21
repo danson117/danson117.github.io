@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -259,10 +259,10 @@
       <div class="nav-head">
         <div>
           <h1>HX</h1>
-          <p>揀主題。右下角圖釘置頂。拖動改排序。</p>
+          <p>Pick a topic. Pin at the bottom-right. Drag to reorder.</p>
         </div>
         <button type="button" class="fold" id="fold" aria-expanded="true">
-          收起
+          Collapse
         </button>
       </div>
       <div id="topics"></div>
@@ -271,7 +271,7 @@
       <div class="bar">
         <span>
           <button type="button" class="fold" id="fold-bar" hidden>
-            展開主題
+            Topics
           </button>
           <span id="now">Authorization Training Process</span>
         </span>
@@ -280,31 +280,31 @@
           href="authorization-training-process.html"
           target="_blank"
           rel="noopener"
-          >單獨打開呢頁</a
+          >Open this page</a
         >
       </div>
       <iframe id="frame" title="HX topic"></iframe>
     </main>
-    <div class="page-version" data-version="7.42">v7.42</div>
+    <div class="page-version" data-version="7.43">v7.43</div>
     <script>
       const TOPICS = [
         {
           id: "links",
-          file: "links.html?v=2.0",
+          file: "links.html?v=2.1",
           title: "Master links",
-          blurb: "全部檔案網上開",
+          blurb: "Open all work files in the browser",
         },
         {
           id: "flow",
           file: "authorization-process-flow.html?v=1.9",
           title: "Authorization Process Flow",
-          blurb: "KE A350 泳道圖",
+          blurb: "KE A350 swimlane",
         },
         {
           id: "training",
           file: "authorization-training-process.html",
           title: "Authorization Training Process",
-          blurb: "訓練／紀錄／LMS",
+          blurb: "Training / records / LMS",
         },
         {
           id: "docs",
@@ -322,7 +322,7 @@
           id: "audit",
           file: "lm-audit-schedule.html?v=1.2",
           title: "LM audit schedule",
-          blurb: "訪客／審核（只 LM）",
+          blurb: "Visitors / audits (LM only)",
         },
         {
           id: "team-board",
@@ -356,7 +356,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=2.7",
+          file: "hx-rules.html?v=2.8",
           title: "HX 規矩",
           blurb: "跨機對齊 · 紅字＝新加",
         },
@@ -425,7 +425,7 @@
       function setNav(open) {
         document.body.classList.toggle("nav-off", !open);
         fold.setAttribute("aria-expanded", open ? "true" : "false");
-        fold.textContent = open ? "收起" : "開";
+        fold.textContent = open ? "Collapse" : "Open";
         foldBar.hidden = open;
         lsSet("hx:hub:nav", open ? "1" : "0");
         lsSet("hx-nav", open ? "1" : "0");
@@ -540,7 +540,7 @@
           const pin = document.createElement("button");
           pin.type = "button";
           pin.className = "pin" + (isPinned(t.id) ? " on" : "");
-          pin.title = isPinned(t.id) ? "取消置頂" : "置頂";
+          pin.title = isPinned(t.id) ? "Unpin" : "Pin";
           pin.setAttribute("aria-label", pin.title);
           pin.innerHTML =
             '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 1.5a3.3 3.3 0 0 0-3.3 3.3c0 2.55 3.3 7.4 3.3 7.4s3.3-4.85 3.3-7.4A3.3 3.3 0 0 0 8 1.5zm0 4.85a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7z"/></svg>';

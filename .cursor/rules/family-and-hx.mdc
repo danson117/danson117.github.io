@@ -15,6 +15,7 @@ alwaysApply: true
 - 每次本機更新（應上 GitHub 嘅 HX／倉資料）**即刻 commit + push `main`**，唔好只留喺呢部機。之前漏咗就 **push 而家最新**（一次 commit 夠）。
 - HTML 右下角 version：細改 +0.1，大改 +1.0；改完**必改**右下角
 - After an HX update, **do not open a new browser / Chrome**. Tell the user the **page version number(s)** in the chat. The user will **manually refresh** the tab they already have.
+- **English-only pages:** `hx.html#links` / `#flow` / `#training` / `#audit` / `#team-board` / `#courses` / `#ocg-pax` and those HTML files must be English UI. Staff Chinese names stay. Not this rule: `#docs` / `#tooling` / `#fth-rewrite` / `#scratch` / `#rules`.
 - 改完 HX **唔好開新 browser / Chrome**。喺對話講 **version 號** 就得；用戶自己 refresh 已開嘅 tab。
 - 跨機額外規矩：`HX/hx-rules.html`（紅字＝新加，另一部機要對齊）
 
