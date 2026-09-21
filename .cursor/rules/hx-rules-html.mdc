@@ -16,4 +16,5 @@ alwaysApply: true
 - 右下角 `page-version` **必 +0.1**（大改 +1.0）。`hx.html` 側欄 `?v=` 一齊加。
 - 零碎筆記：畫面唔顯示「記下」／時間／caption。時間只留 `#scratch-ledger`。
 - Training Team Board ingest：**no silent skip**。認唔到或做唔到必要步驟 → 彈窗、整份檔 REJECT、唔寫入。UAL：Planning / **145 & OCG Planning** 唔當 OCG。真正 OCG 人唔喺 Name List 先彈窗；橙色 Override 可以確認後繼續（只入 Name List）。**LTA* 唔喺 Name List＝CXG A/B/C/D，自動 filter**。CGO AF 當 AF，Name List 有就唔彈。UAL 回覆串最上封最新，要 `From:` 下一行 `Sent:` 先切開。人名彈窗 2–6 可 Override；7 硬 reject。Typo 要名一樣或調轉 + # 差少少；名唔同就當兩個人。板面中 Name List 先顯示。詳見 `HX/hx-rules.html` 紅字 **Ingest reject** / **UAL email trail** / **Ingest person popups**。
+- Training Team Board Status／action：即時留喺呢個 browser；**Keep Status on this PC** 綁定後寫 `HX/team-board-actions.json`。Version push 要一併 push 呢份 record。詳見 `HX/hx-rules.html` 紅字 **Team Board Status / actions stay**。
 - **English-only pages:** `hx.html#links` / `#flow` / `#training` / `#audit` / `#team-board` / `#courses` / `#ocg-pax` 要全英 UI。Name List 中文姓名保留。唔包括 `#docs` / `#tooling` / `#fth-rewrite` / `#scratch` / `#rules`。
