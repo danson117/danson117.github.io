@@ -13,7 +13,7 @@
 - [LM audit / visitor schedule](lm-audit-schedule.html)
 - [LM Daily CT Reminder (overdue)](lm-daily-ct-reminder.html)
 - [UAL CBT Training](ual-cbt-training.html)
-- [Training Team Board (PIC-style trial)](training-team-board.html)
+- [Training Team Board (PIC-style trial · UAL / CT / Mandatory)](training-team-board.html)
 - [OCG Name List (Crew List / Name List / Full List)](ocg-pax-mechanics-list.html)
 - [零碎筆記 / Scratch notes](scratch-notes.html)（畫面唔顯示 記下／日期時間／caption；時間喺頁內 hidden `#scratch-ledger`，問先答）
 - [HX 規矩（跨機）](hx-rules.html)（紅字＝呢部機新加；另一部機對齊用）
