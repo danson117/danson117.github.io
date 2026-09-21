@@ -15,5 +15,5 @@ alwaysApply: true
 - 改完 HX **唔好開新 browser / Chrome**。喺對話講 **version 號** 就得；用戶自己 refresh 已開嘅 tab。
 - 右下角 `page-version` **必 +0.1**（大改 +1.0）。`hx.html` 側欄 `?v=` 一齊加。
 - 零碎筆記：畫面唔顯示「記下」／時間／caption。時間只留 `#scratch-ledger`。
-- Training Team Board ingest：**no silent skip**。認唔到或做唔到必要步驟 → 彈窗、整份檔 REJECT、唔寫入。UAL：Planning / **145 & OCG Planning** 唔當 OCG。真正 OCG 人唔喺 Name List 先彈窗；橙色 Override 可以確認後繼續（只入 Name List）。UAL 回覆串最上封最新，要 `From:` 下一行 `Sent:` 先切開。詳見 `HX/hx-rules.html` 紅字 **Ingest reject** / **UAL email trail**。
+- Training Team Board ingest：**no silent skip**。認唔到或做唔到必要步驟 → 彈窗、整份檔 REJECT、唔寫入。UAL：Planning / **145 & OCG Planning** 唔當 OCG。真正 OCG 人唔喺 Name List 先彈窗；橙色 Override 可以確認後繼續（只入 Name List）。UAL 回覆串最上封最新，要 `From:` 下一行 `Sent:` 先切開。人名彈窗 2–6 可 Override；7 硬 reject。詳見 `HX/hx-rules.html` 紅字 **Ingest reject** / **UAL email trail** / **Ingest person popups**。
 - **English-only pages:** `hx.html#links` / `#flow` / `#training` / `#audit` / `#team-board` / `#courses` / `#ocg-pax` 要全英 UI。Name List 中文姓名保留。唔包括 `#docs` / `#tooling` / `#fth-rewrite` / `#scratch` / `#rules`。
