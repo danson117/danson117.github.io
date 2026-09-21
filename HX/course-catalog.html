@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course List</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #d5dbe3;
+    --paper: #f4f6f8;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+    --navy-soft: #e8eef5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.4;
+    font-size: 13.5px;
+  }
+  .page { max-width: 1380px; margin: 0 auto; padding: 18px 16px 72px; }
+  h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); font-weight: 700; }
+  .subtitle { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 10px; }
+  .stat, .why { border: 1px solid var(--line); background: var(--card); }
+  .stat { padding: 8px 10px; }
+  .stat b { display: block; font-size: 20px; color: var(--navy); }
+  .stat span { color: var(--muted); font-size: 12px; }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 0 0 10px;
+  }
+  .toolbar input[type="search"] {
+    flex: 1;
+    min-width: 220px;
+    font: inherit;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  button {
+    font: inherit;
+    font-size: 13px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  button:hover { background: var(--navy-soft); }
+  button.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+  .table-wrap { overflow: auto; max-height: 64vh; border: 1px solid var(--line); background: var(--card); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 980px; }
+  th, td { border: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: middle; }
+  th { background: #f8fafc; color: var(--navy); font-weight: 650; position: sticky; top: 0; z-index: 2; }
+  td.code { font-weight: 650; white-space: nowrap; }
+  input.cell, select.cell {
+    width: 100%;
+    font: inherit;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 4px 6px;
+    color: inherit;
+  }
+  input.cell:focus, select.cell:focus {
+    outline: 2px solid var(--navy);
+    background: #fff;
+  }
+  td.act { width: 72px; text-align: center; }
+  td.act button { padding: 2px 8px; font-size: 12px; }
+  .why { padding: 10px 12px; margin: 12px 0 0; }
+  .why p { margin: 0 0 6px; }
+  .why p:last-child { margin: 0; }
+  html:not(.hx-ready) body { visibility: hidden; }
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+  @media (max-width: 860px) {
+    .stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>Course List</h1>
+    <p class="subtitle">Course master data in this browser · Name / Code / Type (Online / Classroom) / Interval.</p>
+    <div class="stats">
+      <div class="stat"><b id="n-all">0</b><span>Courses</span></div>
+      <div class="stat"><b id="n-named">0</b><span>With a name</span></div>
+      <div class="stat"><b id="n-typed">0</b><span>Type set</span></div>
+    </div>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Search name / code / type / award / issued by / interval">
+      <button type="button" class="primary" id="add-row">Add row</button>
+    </div>
+    <p class="note" id="status">No courses yet. Codes from the Training Team Board seed this list.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Award</th>
+            <th>Issued By</th>
+            <th>Description</th>
+            <th>Interval</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <div class="why">
+      <p>This page stores course master data <b>in this browser</b> (same idea as OCG Name List). <b>Code</b> is the unique key. <b>Type</b> is Online or Classroom; leave blank until you set it. <b>Name</b> is the course / certification name.</p>
+      <p>Award, Issued By, and Description are course-level fields. <b>Interval</b> is how often the course is done (e.g. 12 months, 24 months, annual). Courses do not have an expiry date — staff due / expire dates stay on CT / UAL / Mandatory. The Training Team Board reads this list: a name typed here fills Mandatory rows that only have a Course Code.</p>
+    </div>
+  </div>
+  <datalist id="interval-hints">
+    <option value="12 months"></option>
+    <option value="24 months"></option>
+    <option value="36 months"></option>
+    <option value="annual"></option>
+    <option value="one-time"></option>
+  </datalist>
+  <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
+<script>
+const COURSE_STORE = "hx:course-catalog:rows";
+const UI_Q = "hx:course-catalog:q";
+const UAL_KEYS = ["hx-ual-cbt-mail", "hx:ual-cbt:mail", "hx:ual-cbt:text", "hx:team-board:ual", "hx:team-board:ual-mail", "hx-team-board-ual", "hx-team-board-mail"];
+const CT_FILE_KEYS = ["hx:team-board:ct-files", "hx-team-board-ct-files", "hx:ct-reminder:files", "hx-ct-files"];
+const OMT_FILE_KEYS = ["hx:team-board:omt-files", "hx-team-board-omt-files", "hx:team-board:omt", "hx-omt-files"];
+const UAL_CODE_RE = /\b(ANSP|CATA|DRGA|EISA|ETOPSA|ETPDSC|ETPT|GMMV|IPCT4|RIIA2|RVSMA|SCEPLOG|FGENR|FTSA|SRMAL)\b/gi;
+const COLS = ["code", "name", "type", "award", "issued", "desc", "interval"];
+
+let rows = [];
+let q = "";
+const parentCache = Object.create(null);
+const pendingStore = new Map();
+
+function parentStore() {
+  try {
+    if (window.parent && window.parent !== window) {
+      const s = window.parent.localStorage;
+      void s.length;
+      return s;
+    }
+  } catch (e) {}
+  return null;
+}
+function allStores() {
+  const out = [];
+  try { out.push(localStorage); } catch (e) {}
+  const p = parentStore();
+  if (p && out.indexOf(p) < 0) out.push(p);
+  return out;
+}
+function lsPeek(key) {
+  for (let i = 0; i < allStores().length; i++) {
+    try {
+      const v = allStores()[i].getItem(key);
+      if (v != null) return v;
+    } catch (e) {}
+  }
+  if (Object.prototype.hasOwnProperty.call(parentCache, key) && parentCache[key] != null) return parentCache[key];
+  return null;
+}
+function lsSet(key, value) {
+  if (value == null) return;
+  parentCache[key] = value;
+  const stores = allStores();
+  for (let i = 0; i < stores.length; i++) {
+    try { stores[i].setItem(key, value); } catch (e) {}
+  }
+  if (!parentStore() && window.parent && window.parent !== window) {
+    try { window.parent.postMessage({ type: "hx-store-set", key: key, value: value }, "*"); } catch (e) {}
+  }
+}
+function askParent(type, payload) {
+  return new Promise((resolve) => {
+    if (!window.parent || window.parent === window) { resolve(null); return; }
+    const id = String(Date.now()) + "-" + Math.random();
+    const t = setTimeout(() => { pendingStore.delete(id); resolve(null); }, 600);
+    pendingStore.set(id, (data) => { clearTimeout(t); resolve(data); });
+    try { window.parent.postMessage(Object.assign({ type: type, id: id }, payload || {}), "*"); }
+    catch (e) { clearTimeout(t); pendingStore.delete(id); resolve(null); }
+  });
+}
+window.addEventListener("message", (e) => {
+  const msg = e.data || {};
+  const fn = pendingStore.get(msg.id);
+  if (!fn) return;
+  pendingStore.delete(msg.id);
+  fn(msg);
+});
+async function prefetchParentStore() {
+  if (!window.parent || window.parent === window) return;
+  const p = parentStore();
+  if (p) {
+    try {
+      for (let i = 0; i < p.length; i++) {
+        const k = p.key(i);
+        if (k && parentCache[k] == null) parentCache[k] = p.getItem(k);
+      }
+    } catch (e) {}
+    return;
+  }
+  const known = [COURSE_STORE, UI_Q].concat(UAL_KEYS, CT_FILE_KEYS, OMT_FILE_KEYS);
+  const keysMsg = await askParent("hx-store-keys", {});
+  const extra = ((keysMsg && keysMsg.keys) || []).filter((k) => /^(hx:course-catalog|hx:team-board|hx-team-board|hx:ct-reminder|hx-ct-|hx:ual-cbt|hx-ual)/.test(k));
+  const keys = Array.from(new Set(known.concat(extra)));
+  const got = await askParent("hx-store-get", { keys: keys });
+  if (got && got.values) {
+    Object.keys(got.values).forEach((k) => {
+      if (got.values[k] != null) parentCache[k] = got.values[k];
+    });
+  }
+}
+function peekJson(key) {
+  const raw = lsPeek(key);
+  if (raw == null) return { found: false, value: null };
+  try { return { found: true, value: JSON.parse(raw) }; }
+  catch (e) { return { found: true, value: null }; }
+}
+function firstFilled(keys) {
+  for (let i = 0; i < keys.length; i++) {
+    const v = lsPeek(keys[i]);
+    if (v != null && v !== "" && v !== "[]" && v !== "null") return v;
+  }
+  return null;
+}
+function firstJson(keys) {
+  for (let i = 0; i < keys.length; i++) {
+    const got = peekJson(keys[i]);
+    if (!got.found) continue;
+    if (Array.isArray(got.value) && got.value.length) return got;
+  }
+  return { found: false, value: null };
+}
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+function normCode(s) {
+  return String(s || "").trim().toLowerCase();
+}
+function blankRow(code) {
+  return { code: String(code || "").trim(), name: "", type: "", award: "", issued: "", desc: "", interval: "" };
+}
+function normRow(r) {
+  const o = blankRow(r && r.code);
+  COLS.forEach((k) => {
+    if (k === "code") return;
+    o[k] = r && r[k] != null ? String(r[k]) : "";
+  });
+  if (o.type !== "Online" && o.type !== "Classroom") o.type = "";
+  return o;
+}
+function persist() {
+  try { lsSet(COURSE_STORE, JSON.stringify(rows.map(normRow))); } catch (e) {}
+}
+function loadSaved() {
+  const got = peekJson(COURSE_STORE);
+  if (Array.isArray(got.value)) rows = got.value.map(normRow);
+  else rows = [];
+  if (Array.isArray(got.value) && got.value.some((r) => r && Object.prototype.hasOwnProperty.call(r, "expiry"))) persist();
+}
+function remember(map, code, extra) {
+  const raw = String(code || "").trim();
+  const k = normCode(raw);
+  if (!k) return;
+  const src = extra || {};
+  if (!map.has(k)) map.set(k, Object.assign(blankRow(raw), src));
+  else {
+    const cur = map.get(k);
+    ["name", "award", "issued", "desc", "interval"].forEach((f) => {
+      if (!String(cur[f] || "").trim() && src[f]) cur[f] = src[f];
+    });
+  }
+}
+function seedFromBoard() {
+  const seen = new Map();
+  const ualText = firstFilled(UAL_KEYS) || "";
+  String(ualText).replace(UAL_CODE_RE, (m) => { remember(seen, m.toUpperCase(), {}); return m; });
+  const ct = firstJson(CT_FILE_KEYS);
+  ((ct.value) || []).forEach((f) => {
+    const list = (f && f.rows) ? f.rows : (f && f.code ? [f] : []);
+    list.forEach((r) => {
+      if (!r || !r.code) return;
+      remember(seen, r.code, {
+        name: r.cname || r.award || r.desc || "",
+        award: r.award || "",
+        issued: r.issued || "",
+        desc: r.desc || ""
+      });
+    });
+  });
+  const omt = firstJson(OMT_FILE_KEYS);
+  ((omt.value) || []).forEach((f) => {
+    const list = (f && f.rows) ? f.rows : (f && f.code ? [f] : []);
+    list.forEach((r) => {
+      if (!r || !r.code) return;
+      const own = String(r.cname || "").trim();
+      remember(seen, r.code, {
+        name: (own && normCode(own) !== normCode(r.code)) ? own : ""
+      });
+    });
+  });
+  if (!seen.size) return 0;
+  const by = new Map();
+  rows.forEach((r) => {
+    const k = normCode(r.code);
+    if (k && !by.has(k)) by.set(k, r);
+  });
+  let added = 0;
+  seen.forEach((row, k) => {
+    if (!by.has(k)) {
+      rows.push(normRow(row));
+      by.set(k, row);
+      added++;
+    } else {
+      const cur = by.get(k);
+      ["name", "award", "issued", "desc", "interval"].forEach((f) => {
+        if (!String(cur[f] || "").trim() && row[f]) cur[f] = row[f];
+      });
+    }
+  });
+  if (added || seen.size) persist();
+  return added;
+}
+function filtered() {
+  const s = q.trim().toLowerCase();
+  const list = rows.slice().sort((a, b) => String(a.code).localeCompare(String(b.code), undefined, { numeric: true, sensitivity: "base" }));
+  if (!s) return list;
+  return list.filter((r) => COLS.some((k) => String(r[k] || "").toLowerCase().includes(s)));
+}
+function paintStatus(extra) {
+  const n = rows.length;
+  const named = rows.filter((r) => String(r.name || "").trim()).length;
+  const typed = rows.filter((r) => r.type === "Online" || r.type === "Classroom").length;
+  document.getElementById("n-all").textContent = String(n);
+  document.getElementById("n-named").textContent = String(named);
+  document.getElementById("n-typed").textContent = String(typed);
+  document.getElementById("status").textContent = extra || (n
+    ? n + " course" + (n === 1 ? "" : "s") + " in this browser. Code is unique."
+    : "No courses yet. Codes from the Training Team Board seed this list.");
+}
+function typeOptions(cur) {
+  return [["", "—"], ["Online", "Online"], ["Classroom", "Classroom"]].map(([v, l]) =>
+    "<option value=\"" + v + "\"" + (cur === v ? " selected" : "") + ">" + l + "</option>"
+  ).join("");
+}
+function paint() {
+  lsSet(UI_Q, q);
+  const list = filtered();
+  document.getElementById("body").innerHTML = list.map((r) => {
+    const i = rows.indexOf(r);
+    return "<tr data-i=\"" + i + "\">" +
+      "<td class=\"code\"><input class=\"cell\" data-k=\"code\" value=\"" + esc(r.code) + "\"></td>" +
+      "<td><input class=\"cell\" data-k=\"name\" value=\"" + esc(r.name) + "\"></td>" +
+      "<td><select class=\"cell\" data-k=\"type\">" + typeOptions(r.type) + "</select></td>" +
+      "<td><input class=\"cell\" data-k=\"award\" value=\"" + esc(r.award) + "\"></td>" +
+      "<td><input class=\"cell\" data-k=\"issued\" value=\"" + esc(r.issued) + "\"></td>" +
+      "<td><input class=\"cell\" data-k=\"desc\" value=\"" + esc(r.desc) + "\"></td>" +
+      "<td><input class=\"cell\" data-k=\"interval\" list=\"interval-hints\" placeholder=\"e.g. 12 months\" value=\"" + esc(r.interval) + "\"></td>" +
+      "<td class=\"act\"><button type=\"button\" data-del=\"" + i + "\">Remove</button></td>" +
+      "</tr>";
+  }).join("") || "<tr><td colspan=\"8\">No rows. Add a course, or load UAL / CT / Mandatory on the Training Team Board.</td></tr>";
+  paintStatus();
+}
+function otherHasCode(i, code) {
+  const k = normCode(code);
+  if (!k) return false;
+  return rows.some((r, j) => j !== i && normCode(r.code) === k);
+}
+document.getElementById("q").addEventListener("input", (e) => {
+  q = e.target.value;
+  paint();
+});
+document.getElementById("add-row").addEventListener("click", () => {
+  rows.push(blankRow(""));
+  paint();
+  const last = document.querySelector("#body tr:last-child input[data-k=\"code\"]");
+  if (last) last.focus();
+});
+document.getElementById("body").addEventListener("change", (e) => {
+  const cell = e.target.closest("[data-k]");
+  const tr = e.target.closest("tr[data-i]");
+  if (!cell || !tr) return;
+  const i = Number(tr.dataset.i);
+  if (!rows[i]) return;
+  const k = cell.dataset.k;
+  let v = cell.value;
+  if (k === "type" && v !== "Online" && v !== "Classroom") v = "";
+  if (k === "code") {
+    v = String(v || "").trim();
+    if (otherHasCode(i, v)) {
+      cell.value = rows[i].code;
+      paintStatus("Code already exists. Each course uses one Code.");
+      return;
+    }
+  }
+  rows[i][k] = v;
+  persist();
+  paintStatus();
+});
+document.getElementById("body").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-del]");
+  if (!b) return;
+  const i = Number(b.dataset.del);
+  if (!rows[i]) return;
+  rows.splice(i, 1);
+  persist();
+  paint();
+});
+window.addEventListener("storage", (e) => {
+  if (e.key !== COURSE_STORE) return;
+  loadSaved();
+  paint();
+});
+(async function init() {
+  await prefetchParentStore();
+  loadSaved();
+  const added = seedFromBoard();
+  const savedQ = lsPeek(UI_Q);
+  if (savedQ != null) {
+    q = savedQ;
+    document.getElementById("q").value = q;
+  }
+  paint();
+  if (added) paintStatus("Seeded " + added + " code" + (added === 1 ? "" : "s") + " from board files already in this browser.");
+  document.documentElement.classList.add("hx-ready");
+})();
+</script>
+</body>
+</html>

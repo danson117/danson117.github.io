@@ -11,12 +11,20 @@
 - [Authorization Training Management Process](authorization-training-process.html)
 - [EASA / HKAR / CX / HAECO Documentation Hierarchy](easa-cx-hk-document-hierarchy.html)
 - [LM audit / visitor schedule](lm-audit-schedule.html)
-- [LM Daily CT Reminder (overdue)](lm-daily-ct-reminder.html)
-- [UAL CBT Training](ual-cbt-training.html)
-- [Training Team Board (PIC-style trial · UAL / CT / Mandatory)](training-team-board.html)
+- [Training Team Board (UAL / CT / Mandatory)](hx.html#team-board) — [standalone page](training-team-board.html)
+- [Course List (Name / Code / Type / Interval)](hx.html#courses) — [standalone page](course-catalog.html)
 - [OCG Name List (Crew List / Name List / Full List)](ocg-pax-mechanics-list.html)
 - [零碎筆記 / Scratch notes](scratch-notes.html)（畫面唔顯示 記下／日期時間／caption；時間喺頁內 hidden `#scratch-ledger`，問先答）
 - [HX 規矩（跨機）](hx-rules.html)（紅字＝呢部機新加；另一部機對齊用）
+
+## Working rules
+
+- After every local HX / repo update that should live on GitHub, **commit and `git push` immediately** (same turn). Do not leave work only on this PC. If several versions were never pushed, **push the latest** (one commit of current state is enough — do not invent one commit per missed version). Do not push secrets (`.env`, passwords, credentials). Do not force-push. Do not skip hooks unless the user asked.
+- 每次本機更新（應上 GitHub 嘅 HX／倉資料）**即刻 commit + push**，唔好只留喺呢部機。之前漏咗就 **push 而家最新**（一次 commit 夠）。唔 push 秘密；唔 force；唔 skip hooks（除非用戶叫）。
+- After an HX update, **do not open a new browser / Chrome**. Tell the user the **page version number(s)** in the chat. The user will **manually refresh** the tab they already have.
+- 改完 HX **唔好開新 browser / Chrome**。喺對話講 **version 號** 就得；用戶自己 refresh 已開嘅 tab。
+- **Ingest reject (no silent skip):** If the designed parser cannot recognize a row or cannot complete a required step, **popup and reject the entire file**. Do not skip unknown rows and still update. User must fix the source (or the parser / `CODE_RE`) first. Examples: unknown staff (UAL), unknown course code, missing usual columns, unreadable file.
+- 認唔到或做唔到必要步驟 → 彈窗、整份檔 REJECT、唔寫入。唔好跳過認唔到嘅行仲 UPDATE。UAL：無呢個 STAFF／唔識 course code → 整份 reject。CT／Mandatory 全 LM export：Transit／非 OCG 唔當 reject（板面之後 filter）；認唔到 staff # 或冇 course code 先 reject 整份。
 
 ## 規則改咗要全 HX 跟
 
@@ -24,12 +32,11 @@ Name list / PAX / CG / 角色 / staff # 有新規則，唔好只改一頁。要�
 
 - `hx.html` 側欄名、blurb、`?v=`
 - `ocg-pax-mechanics-list.html`（Crew List 係 PAX 來源）
-- `ual-cbt-training.html`（`PAX_STAFF` = Crew List）
-- `lm-daily-ct-reminder.html`（default roster 包晒 Crew List）
-- `training-team-board.html`（Team 1–4 / Other 用 Name List）
+- `training-team-board.html`（UAL CBT + CT Reminder + Mandatory；`PAX` 跟 Crew List；Team 1–4 / Other 用 Name List）
+- `course-catalog.html`（Course List：Name / Code / Type / Interval；course 冇 Expiry；board Mandatory 空白 Course Name 跟 Code 對呢頁）
 - 呢份 README / `links.html` 用詞
 
-而家規則：staff # 6 位；CHIU = 303173；**OCG = CG + PAX**（總數 / All，唔係第三類）；人只係 **CG** 或 **PAX**；PAX = Crew List（包 FLS / RF）；CG = Name List 唔喺 Crew List；Certifiers = Licensed / Assistant Licensed Engineer / Controller / Duty in Charge（包 Deputy DIC、OCG PAX/CARGO/UPS DIC）；Mechanics 包 Supervisor；Office = Manager / Assistant Manager / support / liaison / project officer / operations officer（唔包 Controller、唔包 DIC）。Counter / filter：**OCG | CG | PAX**。欄名 **CG/PAX**，值只係 CG 或 PAX。
+而家規則：staff # 6 位；CHIU = 303173；**OCG = CG + PAX**（總數 / All，唔係第三類）；人只係 **CG** 或 **PAX**；PAX = Crew List（包 FLS / RF）；CG = Name List 唔喺 Crew List；例外 **236051 CHAN SIU CHUNG** 係 PAX 但唔喺 Crew List（唔好自己加去出街 Crew List）；Certifiers = Licensed / Assistant Licensed Engineer / Controller / Duty in Charge（包 Deputy DIC、OCG PAX/CARGO/UPS DIC）；Mechanics 包 Supervisor；Office = Manager / Assistant Manager / support / liaison / project officer / operations officer（唔包 Controller、唔包 DIC）。Counter / filter：**OCG | CG | PAX**。欄名 **CG/PAX**，值只係 CG 或 PAX。改 version **唔清**已載入嘅 UAL / CT / Mandatory / Course List。
 
 新資訊先對 HTML。預設只改背底（group／Remark／邏輯 PAX）；已出街嘅 Team／Shift／姓名唔好自己改，等下次正式更新。有 Team／Shift／session／名單出入要先講。
 

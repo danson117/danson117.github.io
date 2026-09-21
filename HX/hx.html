@@ -33,9 +33,11 @@
       nav {
         width: 260px;
         flex-shrink: 0;
+        height: 100%;
+        min-height: 0;
         background: var(--side);
         color: var(--side-ink);
-        padding: 18px 14px 56px;
+        padding: 18px 14px 40px;
         display: flex;
         flex-direction: column;
         gap: 6px;
@@ -49,6 +51,29 @@
         align-items: flex-start;
         justify-content: space-between;
         gap: 8px;
+        flex-shrink: 0;
+      }
+      #topics {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-right: 2px;
+        scrollbar-width: thin;
+        scrollbar-color: #9eb0c4 rgba(0, 0, 0, 0.28);
+      }
+      #topics::-webkit-scrollbar {
+        width: 8px;
+      }
+      #topics::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.22);
+      }
+      #topics::-webkit-scrollbar-thumb {
+        background: #9eb0c4;
+        border-radius: 4px;
+      }
+      #topics::-webkit-scrollbar-thumb:hover {
+        background: #c5d2e0;
       }
       button.fold {
         flex-shrink: 0;
@@ -217,7 +242,11 @@
         }
         nav {
           width: 100%;
+          height: auto;
           padding-bottom: 12px;
+        }
+        #topics {
+          max-height: 40vh;
         }
         iframe {
           min-height: 70vh;
@@ -256,18 +285,18 @@
       </div>
       <iframe id="frame" title="HX topic"></iframe>
     </main>
-    <div class="page-version" data-version="6.86">v6.86</div>
+    <div class="page-version" data-version="7.39">v7.39</div>
     <script>
       const TOPICS = [
         {
           id: "links",
-          file: "links.html",
+          file: "links.html?v=2.0",
           title: "Master links",
           blurb: "全部檔案網上開",
         },
         {
           id: "flow",
-          file: "authorization-process-flow.html",
+          file: "authorization-process-flow.html?v=1.9",
           title: "Authorization Process Flow",
           blurb: "KE A350 泳道圖",
         },
@@ -291,31 +320,25 @@
         },
         {
           id: "audit",
-          file: "lm-audit-schedule.html",
+          file: "lm-audit-schedule.html?v=1.2",
           title: "LM audit schedule",
           blurb: "訪客／審核（只 LM）",
         },
         {
-          id: "ct-reminder",
-          file: "lm-daily-ct-reminder.html?v=1.7",
-          title: "LM Daily CT Reminder",
-          blurb: "Overdue CT: CSV → External / Internal",
-        },
-        {
-          id: "ual-cbt",
-          file: "ual-cbt-training.html?v=2.6",
-          title: "UAL CBT Training",
-          blurb: "Paste UA email → OCG / CG / PAX",
-        },
-        {
           id: "team-board",
-          file: "training-team-board.html?v=3.6",
+          file: "training-team-board.html?v=5.8",
           title: "Training Team Board",
-          blurb: "UAL / CT / Mandatory · OCG / CG / PAX · Team 1–4 / Other",
+          blurb: "UAL / CT / Mandatory / Manual · OCG / CG / PAX · Table / Details",
+        },
+        {
+          id: "courses",
+          file: "course-catalog.html?v=1.1",
+          title: "Course List",
+          blurb: "Name / Code / Type / Interval",
         },
         {
           id: "ocg-pax",
-          file: "ocg-pax-mechanics-list.html?v=3.1",
+          file: "ocg-pax-mechanics-list.html?v=3.2",
           title: "OCG Name List",
           blurb: "OCG = CG + PAX · Controller / DIC = Certifiers",
         },
@@ -333,7 +356,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=1.6",
+          file: "hx-rules.html?v=2.5",
           title: "HX 規矩",
           blurb: "跨機對齊 · 紅字＝新加",
         },
@@ -365,6 +388,40 @@
         }
         return fallback;
       }
+      window.addEventListener("message", (e) => {
+        if (e.source !== frame.contentWindow) return;
+        const msg = e.data || {};
+        if (!msg || typeof msg !== "object") return;
+        if (msg.type === "hx-store-get") {
+          const values = {};
+          (msg.keys || []).forEach((k) => {
+            try {
+              values[k] = localStorage.getItem(k);
+            } catch (err) {
+              values[k] = null;
+            }
+          });
+          try {
+            e.source.postMessage({ type: "hx-store-got", id: msg.id, values: values }, "*");
+          } catch (err) {}
+        } else if (msg.type === "hx-store-set") {
+          try {
+            if (msg.clear) localStorage.removeItem(msg.key);
+            else if (msg.key && msg.value != null) localStorage.setItem(msg.key, msg.value);
+          } catch (err) {}
+        } else if (msg.type === "hx-store-keys") {
+          const keys = [];
+          try {
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (k) keys.push(k);
+            }
+          } catch (err) {}
+          try {
+            e.source.postMessage({ type: "hx-store-keys-got", id: msg.id, keys: keys }, "*");
+          } catch (err) {}
+        }
+      });
       function setNav(open) {
         document.body.classList.toggle("nav-off", !open);
         fold.setAttribute("aria-expanded", open ? "true" : "false");
@@ -441,10 +498,12 @@
             .filter(Boolean);
         return pick((id) => pins.has(id)).concat(pick((id) => !pins.has(id)));
       }
+      const TOPIC_ALIAS = { "ct-reminder": "team-board", "ual-cbt": "team-board" };
       function show(id) {
+        id = TOPIC_ALIAS[id] || id;
         const list = orderedTopics();
         const known = new Set(list.map((x) => x.id));
-        const saved = loadTopic();
+        const saved = TOPIC_ALIAS[loadTopic()] || loadTopic();
         const pick =
           (id && known.has(id) && list.find((x) => x.id === id)) ||
           (saved && known.has(saved) && list.find((x) => x.id === saved)) ||

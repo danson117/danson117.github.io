@@ -19,6 +19,8 @@
     --hot-bg: #fee4e2;
     --warn: #8a5a00;
     --warn-bg: #fff3b0;
+    --ok-row: #e8f5e9;
+    --progress-cell: #dbeafe;
     --blank: #d9dee6;
   }
   * { box-sizing: border-box; }
@@ -37,10 +39,67 @@
     border: 1px solid var(--line);
     background: var(--card);
   }
-  .why { padding: 10px 12px; margin: 0 0 12px; }
+  .why { padding: 10px 12px; margin: 12px 0 0; }
   .why p { margin: 0 0 6px; }
   .why p:last-child { margin: 0; }
   .tabs, .toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 10px; }
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px 16px;
+    margin: 0 0 10px;
+  }
+  .filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-label { font-weight: 650; color: var(--navy); white-space: nowrap; }
+  .filter-bar .tabs, .filter-bar .toolbar { margin: 0; }
+  .filter-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 16px;
+    margin-left: auto;
+  }
+  #access-toggle { min-width: 5.6em; }
+  html.board-locked .write-zone { opacity: 0.78; }
+  html.board-locked .drop {
+    pointer-events: none;
+    cursor: not-allowed;
+    background: #f0f2f4;
+  }
+  html.board-locked .write-zone input:disabled,
+  html.board-locked .write-zone textarea:disabled,
+  html.board-locked .write-zone select:disabled,
+  html.board-locked .write-zone button:disabled,
+  html.board-locked select.course-status:disabled,
+  html.board-locked input.course-done:disabled,
+  html.board-locked input.course-done-cal:disabled,
+  html.board-locked button.manual-del:disabled,
+  html.board-locked [data-ct-del]:disabled,
+  html.board-locked [data-omt-del]:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .access-card { width: min(420px, 100%); max-height: none; }
+  .access-card.ingest-card { width: min(560px, 100%); }
+  .access-card.ingest-card ul { margin: 8px 0 0; padding-left: 1.2em; }
+  .access-card.ingest-card li { margin: 0 0 8px; }
+  .access-card h4 { margin: 0 0 8px; color: var(--navy); }
+  .access-card label { display: block; font-weight: 650; margin: 8px 0 4px; }
+  .access-card input[type="password"] {
+    width: 100%;
+    font: inherit;
+    padding: 7px 8px;
+    border: 1px solid var(--line);
+  }
+  .access-err { color: var(--hot); }
   button {
     font: inherit;
     font-size: 13px;
@@ -70,6 +129,66 @@
     padding: 7px 10px;
     border: 1px solid var(--line);
   }
+  .add-course {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+  .add-course h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--navy);
+  }
+  .add-course-grid {
+    display: grid;
+    grid-template-columns: 7.2em minmax(10em, 1.2fr) 8em minmax(10em, 1.4fr) 10em auto;
+    gap: 8px;
+    align-items: end;
+    overflow: visible;
+  }
+  .add-course label { display: block; font-weight: 650; margin-bottom: 4px; }
+  .add-course input {
+    width: 100%;
+    font: inherit;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+  }
+  .add-course #manual-exp { color-scheme: light; min-height: 32px; }
+  .add-course .note { margin-top: 6px; }
+  .code-suggest-wrap { position: relative; overflow: visible; }
+  .code-suggest {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 80;
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+    min-width: 100%;
+    width: max-content;
+    max-width: min(max-content, calc(100vw - 24px));
+    max-height: 220px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(20, 30, 45, 0.12);
+  }
+  .code-suggest[hidden] { display: none; }
+  .code-suggest li {
+    padding: 6px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .code-suggest li.on,
+  .code-suggest li:hover { background: var(--navy-soft); }
+  .code-suggest .sep { color: var(--muted); }
+  button.manual-del {
+    margin-left: 6px;
+    padding: 1px 6px;
+    font-size: 11px;
+  }
   .board th.sort { cursor: pointer; user-select: none; }
   .board th.sort:hover { background: var(--navy-soft); }
   .board th.sort.on::after { content: attr(data-dir); margin-left: 6px; font-size: 11px; }
@@ -89,15 +208,25 @@
   .kind-overdue { color: var(--hot); font-weight: 650; }
   .kind-duesoon { color: #8a5a00; font-weight: 650; }
   .drop {
+    position: relative;
     border: 1px dashed var(--line);
     background: #fafbfc;
     padding: 14px 12px;
     text-align: center;
     margin: 6px 0 0;
+    min-height: 56px;
   }
   .drop.on { border-color: var(--navy); background: var(--navy-soft); }
   .drop p { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
-  .drop input[type="file"] { max-width: 100%; }
+  .drop input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    font-size: 0;
+  }
   .board th.team { cursor: pointer; }
   .board th.team.on { background: var(--navy); color: #fff; }
   .load { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 12px; }
@@ -119,9 +248,22 @@
   .stat b { display: block; font-size: 20px; color: var(--navy); }
   .stat span { color: var(--muted); font-size: 12px; }
   .legend { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 0 0 10px; font-size: 12px; color: var(--muted); }
-  .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 4px; vertical-align: -1px; }
+  .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 4px; vertical-align: -1px; box-sizing: border-box; }
   .swatch.done { background: var(--done); }
   .swatch.out { background: var(--out); }
+  .swatch.hot { background: var(--hot-bg); border: 1px solid var(--hot); }
+  .swatch.warn { background: var(--warn-bg); border: 1px solid var(--warn); }
+  .swatch.ok { background: var(--ok-row); border: 1px solid #7cb87c; }
+  .swatch.progress { background: var(--progress-cell); border: 1px solid #60a5fa; }
+  .row-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .row-legend span { white-space: nowrap; }
   .board-wrap { overflow: auto; max-height: 62vh; border: 1px solid var(--line); background: var(--card); }
   table.board { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 860px; }
   .board th, .board td { border: 1px solid var(--line); padding: 6px 8px; vertical-align: middle; }
@@ -145,14 +287,14 @@
   .bar i { display: block; height: 100%; }
   .bar .done { background: var(--done); }
   .bar .out { background: var(--out); }
-  .pct {
+  .pct-line {
     text-align: center;
     font-weight: 700;
     color: var(--navy);
-    font-size: 12px;
+    font-size: 11px;
     margin-top: 2px;
+    white-space: nowrap;
   }
-  .leftn { text-align: center; font-size: 11px; color: var(--muted); }
   .empty { text-align: center; color: #9aa3ad; }
   .detail { padding: 10px 12px; margin-top: 10px; }
   .detail-head {
@@ -193,8 +335,152 @@
   .detail tr.hot td.ual, .detail tr.warn td.ual { background: #fff8dc; color: var(--ink); }
   .detail td.hot-ual { background: var(--hot-bg); color: var(--hot); }
   .detail tr.hot td.hot-ual, .detail tr.warn td.hot-ual { background: var(--hot-bg); color: var(--hot); }
-  .detail tbody tr { cursor: pointer; }
-  .detail tbody tr:hover td { box-shadow: inset 0 0 0 999px rgba(37, 99, 168, 0.14); }
+  .detail-table tbody tr { cursor: pointer; }
+  .detail-table tbody tr:hover td { box-shadow: inset 0 0 0 999px rgba(37, 99, 168, 0.14); }
+  .view-toggle {
+    display: inline-flex;
+    gap: 6px;
+    padding-right: 8px;
+    margin-right: 2px;
+    border-right: 1px solid var(--line);
+  }
+  .person-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+  .person-card {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 10px 12px 12px;
+    break-inside: avoid;
+  }
+  .person-card-head {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 8px;
+  }
+  .person-card-title {
+    margin: 0;
+    font-size: 15px;
+    color: var(--navy);
+    text-align: left;
+    font-weight: 700;
+    min-width: 0;
+  }
+  .staff-no { white-space: nowrap; }
+  .person-card-count {
+    flex: 0 0 auto;
+    margin: 0;
+    font-size: 15px;
+    color: var(--navy);
+    font-weight: 700;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .person-course-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+  .person-course-table col.col-course { width: 11%; }
+  .person-course-table col.col-cname { width: 34%; }
+  .person-course-table col.col-due { width: 12%; }
+  .person-course-table col.col-remain { width: 11%; }
+  .person-course-table col.col-src { width: 12%; }
+  .person-course-table col.col-status { width: 20%; }
+  .person-course-table th,
+  .person-course-table td {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .course-status-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .course-done-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .course-done-wrap[hidden] { display: none !important; }
+  .person-course-table select.course-status,
+  .person-course-table input.course-done {
+    font: inherit;
+    font-size: 12px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border: 1px solid var(--line);
+    padding: 3px 4px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .person-course-table input.course-done { color-scheme: light; flex: 1; min-width: 6.4em; }
+  .person-course-table input.course-done-cal {
+    position: relative;
+    width: 28px;
+    min-width: 28px;
+    max-width: 28px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: #fff;
+    color-scheme: light;
+    cursor: pointer;
+  }
+  .person-course-table input.course-done-cal::-webkit-datetime-edit,
+  .person-course-table input.course-done-cal::-webkit-datetime-edit-fields-wrapper,
+  .person-course-table input.course-done-cal::-webkit-datetime-edit-text,
+  .person-course-table input.course-done-cal::-webkit-datetime-edit-month-field,
+  .person-course-table input.course-done-cal::-webkit-datetime-edit-day-field,
+  .person-course-table input.course-done-cal::-webkit-datetime-edit-year-field {
+    display: none;
+  }
+  .person-course-table input.course-done-cal::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    opacity: 1;
+  }
+  .person-card tbody tr { cursor: default; }
+  .person-course-table tbody tr.completed td,
+  .detail .person-course-table tbody tr.completed td,
+  .detail .person-course-table tbody tr.hot.completed td,
+  .detail .person-course-table tbody tr.warn.completed td,
+  .detail .person-course-table tbody tr.completed td.blank,
+  .detail .person-course-table tbody tr.hot.completed td.blank,
+  .detail .person-course-table tbody tr.warn.completed td.blank,
+  .pop-card .person-course-table tbody tr.completed td,
+  .pop-card .person-course-table tbody tr.hot.completed td,
+  .pop-card .person-course-table tbody tr.warn.completed td,
+  .pop-card .person-course-table tbody tr.completed td.blank,
+  .pop-card .person-course-table tbody tr.hot.completed td.blank,
+  .pop-card .person-course-table tbody tr.warn.completed td.blank {
+    background: var(--ok-row);
+    color: var(--navy);
+  }
+  .person-course-table tbody tr.in-progress td.col-status,
+  .detail .person-course-table tbody tr.in-progress td.col-status,
+  .detail .person-course-table tbody tr.hot.in-progress td.col-status,
+  .detail .person-course-table tbody tr.warn.in-progress td.col-status,
+  .pop-card .person-course-table tbody tr.in-progress td.col-status,
+  .pop-card .person-course-table tbody tr.hot.in-progress td.col-status,
+  .pop-card .person-course-table tbody tr.warn.in-progress td.col-status {
+    background: var(--progress-cell);
+    color: var(--navy);
+  }
   .pop {
     position: fixed;
     inset: 0;
@@ -237,10 +523,11 @@
   .pop-icon svg { width: 18px; height: 18px; display: block; }
   .pop-icon.ok { background: #dcfce7; border-color: #16a34a; color: #166534; }
   .pop-icon.bad { background: #fee4e2; border-color: #b42318; color: #b42318; }
-  #course-pop-title { margin: 0 96px 10px 0; font-size: 15px; color: var(--navy); }
+  #course-pop-head { margin: 0 96px 10px 0; }
+  #course-pop-title { margin: 0; font-size: 15px; color: var(--navy); }
   .pop-card.capturing { max-height: none; overflow: visible; }
   .pop-card.capturing .pop-actions { display: none; }
-  .pop-card.capturing #course-pop-title { margin-right: 0; }
+  .pop-card.capturing #course-pop-head { margin-right: 0; }
   .pop-card table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .pop-card th, .pop-card td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; }
   .pop-card th { background: var(--navy); color: #fff; }
@@ -275,6 +562,7 @@
   @media (max-width: 860px) {
     .load, .stats { grid-template-columns: 1fr; }
     .board th.item, .board td.item { min-width: 180px; }
+    .add-course-grid { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -282,30 +570,37 @@
   <div class="page">
     <h1>Training Team Board</h1>
     <p class="subtitle">Trial · PIC-style matrix · UAL CBT + CT Reminder + Mandatory · teams from OCG Name List.</p>
-    <div class="why">
-      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board. Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits.</p>
-      <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. <b>Overdue or will expire</b> (red) combines CT overdue, CT coming due, and UAL ≤30 days. <b>Coming due</b> (yellow) is UAL &gt;30 days only. Click a row for course details (this browser only). Click a PIC cell for one course.</p>
+
+    <div class="filter-bar">
+      <div class="filter-group">
+        <span class="filter-label">Sources:</span>
+        <div class="toolbar">
+          <button type="button" class="on" data-src="all">All</button>
+          <button type="button" data-src="ual">UAL CBT</button>
+          <button type="button" data-src="ct">CT Reminder</button>
+          <button type="button" data-src="omt">Mandatory</button>
+          <button type="button" data-src="manual">Manual</button>
+        </div>
+      </div>
+      <div class="filter-right">
+        <div class="filter-group">
+          <span class="filter-label">Section:</span>
+          <div class="tabs" id="org-tabs">
+            <button type="button" class="on" data-org="ocg">OCG</button>
+            <button type="button" data-org="cg">CG</button>
+            <button type="button" data-org="pax">PAX</button>
+          </div>
+        </div>
+        <button type="button" id="access-toggle" aria-pressed="false" title="Unlock write access">Unlock</button>
+      </div>
     </div>
 
-    <div class="tabs" id="org-tabs">
-      <button type="button" class="on" data-org="ocg">OCG</button>
-      <button type="button" data-org="cg">CG</button>
-      <button type="button" data-org="pax">PAX</button>
-    </div>
-    <div class="toolbar">
-      <button type="button" class="on" data-src="all">All</button>
-      <button type="button" data-src="ual">UAL CBT</button>
-      <button type="button" data-src="ct">CT Reminder</button>
-      <button type="button" data-src="omt">Mandatory</button>
-    </div>
-
-    <div class="load">
+    <div class="load write-zone">
       <div class="box">
         <label>UAL CBT email</label>
-        <textarea id="ual-src" placeholder="Paste the UAL CBT reminder email, or load the sample."></textarea>
+        <textarea id="ual-src" placeholder="Paste the UAL CBT reminder email."></textarea>
         <div class="toolbar" style="margin-top:6px">
           <button type="button" class="primary" id="ual-parse">Use this email</button>
-          <button type="button" id="ual-sample">Load 14-SEP-2026 sample</button>
         </div>
         <p class="note" id="ual-status">No UAL email yet.</p>
       </div>
@@ -313,7 +608,7 @@
         <label for="ct-csv">CT Reminder CSV — more than one file is OK</label>
         <p class="note">Overdue: <code>LM - Daily CT Reminder (overdue)</code>. Coming due: <code>LM - Weekly CT Reminder (due in 2 weeks)</code>. You can add both; they do not overwrite each other.</p>
         <div class="drop" id="ct-drop">
-          <input id="ct-csv" type="file" accept=".csv,text/csv" multiple>
+          <input id="ct-csv" type="file" lang="en" accept=".csv,text/csv" multiple title="Choose files" aria-label="Choose CT Reminder CSV files">
           <p>Drop CSV here, or choose files. More than one at a time is OK.</p>
         </div>
         <p class="note" id="ct-status">No CT CSV yet.</p>
@@ -323,7 +618,7 @@
         <label for="omt-file">Outstanding Mandatory Training</label>
         <p class="note">File like <code>Outstanding mandatory training_LM_*.xlsx</code> or CSV. The board keeps OCG staff only.</p>
         <div class="drop" id="omt-drop">
-          <input id="omt-file" type="file" accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple>
+          <input id="omt-file" type="file" lang="en" accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple title="Choose files" aria-label="Choose Mandatory files">
           <p>Drop CSV / xlsx here, or choose files.</p>
         </div>
         <p class="note" id="omt-status">No Mandatory file yet.</p>
@@ -340,7 +635,7 @@
     <div class="legend">
       <span><i class="swatch done"></i>Clear of this list</span>
       <span><i class="swatch out"></i>Outstanding / overdue</span>
-      <span class="fire">!</span> row has someone ≤30 days (UAL) or overdue (CT)
+      <span class="fire">!</span> row has someone overdue or due within 30 days
       <span>Click Other / Team 1–4 for that team’s outstanding names</span>
     </div>
     <div class="search-bar">
@@ -356,7 +651,43 @@
         <tbody id="board-body"></tbody>
       </table>
     </div>
+    <div class="add-course write-zone" id="add-course">
+      <h3>Add course</h3>
+      <form id="manual-form" lang="en" autocomplete="off">
+        <div class="add-course-grid">
+          <div>
+            <label for="manual-staff">Staff #</label>
+            <input id="manual-staff" type="text" inputmode="numeric" maxlength="7" placeholder="084096" required>
+          </div>
+          <div>
+            <label for="manual-name">Name</label>
+            <input id="manual-name" type="text" placeholder="Auto-fill from Name List">
+          </div>
+          <div class="code-suggest-wrap">
+            <label for="manual-code">Course code</label>
+            <input id="manual-code" type="text" placeholder="ANSP" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="code-suggest" aria-expanded="false">
+            <ul id="code-suggest" class="code-suggest" hidden role="listbox" aria-label="Course code suggestions"></ul>
+          </div>
+          <div>
+            <label for="manual-cname">Course name</label>
+            <input id="manual-cname" type="text" placeholder="Course name">
+          </div>
+          <div>
+            <label for="manual-exp">Expire date</label>
+            <input id="manual-exp" type="text" lang="en" inputmode="numeric" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" maxlength="10" title="YYYY-MM-DD" required>
+          </div>
+          <div>
+            <button type="submit" class="primary">Add</button>
+          </div>
+        </div>
+      </form>
+      <p class="note" id="manual-hint">Type a staff # to fill name / section / team from the Name List. Course code suggests close matches from Course List and the board. This browser only. Source: Manual.</p>
+    </div>
     <div id="detail" class="detail hidden"></div>
+    <div class="why">
+      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
+      <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Each PIC cell shows <b>98% (xx/yy) 6 left</b> — xx = clear of this item, yy = roster for that tab + team, left = still outstanding. PIC item rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. Table and Details people follow <b>Team 1–4</b> top to bottom, then <b>section + crew</b> (Team n: LTA<i>n</i> then other LTA, then crew). Other / TBD (office sections such as LGC1) sit after Team 4. Click a people-list column to override. Course rows inside one person stay remaining / due order. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. Row colors use remaining days for UAL / CT / Mandatory / Manual: <b>Overdue or will expire</b> (pink) = remaining ≤30 days; <b>Coming due</b> (yellow) = remaining &gt;30 and ≤90 days; remaining &gt;90 has no due-color. <b>Completed</b> wins (whole course row light green). <b>In Progress</b> blues the Status cell only. <b>Table</b> is the people list — click a row for that person’s course card (this browser only). <b>Details</b> stacks the same course card for every visible person (Section + Crew · Staff # · Name, with course count on the right) for capture / print. Click a PIC cell for one course.</p>
+    </div>
   </div>
   <div id="course-pop" class="pop hidden" hidden>
     <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="course-pop-title">
@@ -371,12 +702,52 @@
         <button type="button" id="course-pop-close">Close</button>
       </div>
       <div id="course-pop-shot">
-        <h4 id="course-pop-title">Course details</h4>
+        <div class="person-card-head" id="course-pop-head">
+          <h4 id="course-pop-title">Course details</h4>
+          <span id="course-pop-count" class="person-card-count"></span>
+        </div>
         <div id="course-pop-body"></div>
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="3.6" aria-label="Page version 3.6">v3.6</div>
+  <div id="access-pop" class="pop hidden" hidden>
+    <div class="pop-card access-card" role="dialog" aria-modal="true" aria-labelledby="access-title">
+      <h4 id="access-title">Unlock</h4>
+      <p class="note" id="access-hint"></p>
+      <label for="access-pw">Password</label>
+      <input id="access-pw" type="password" autocomplete="current-password">
+      <div id="access-pw2-wrap" hidden>
+        <label for="access-pw2">Confirm password</label>
+        <input id="access-pw2" type="password" autocomplete="new-password">
+      </div>
+      <p class="note access-err" id="access-err" hidden></p>
+      <div class="toolbar">
+        <button type="button" class="primary" id="access-ok">OK</button>
+        <button type="button" id="access-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div id="ingest-pop" class="pop hidden" hidden>
+    <div class="pop-card access-card ingest-card" role="dialog" aria-modal="true" aria-labelledby="ingest-title">
+      <h4 id="ingest-title">Ingest rejected</h4>
+      <p class="note" id="ingest-lead"></p>
+      <ul id="ingest-list"></ul>
+      <div class="toolbar">
+        <button type="button" class="primary" id="ingest-ok">OK</button>
+      </div>
+    </div>
+  </div>
+  <div id="copy-fail-pop" class="pop hidden" hidden>
+    <div class="pop-card access-card ingest-card" role="dialog" aria-modal="true" aria-labelledby="copy-fail-title">
+      <h4 id="copy-fail-title">Copy layout failed</h4>
+      <p class="note" id="copy-fail-lead"></p>
+      <ul id="copy-fail-list"></ul>
+      <div class="toolbar">
+        <button type="button" class="primary" id="copy-fail-ok">OK</button>
+      </div>
+    </div>
+  </div>
+  <div class="page-version" data-version="5.8" aria-label="Page version 5.8">v5.8</div>
 <script>
 const PEOPLE = [{"staff":"388331","name":"HONG NINGCAI","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"213356","name":"WONG CHI KONG","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"344672","name":"SATURNINO ERIC RAMOS","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"298134","name":"WONG HO KAM","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"188492","name":"LEE CHI HONG","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"178237","name":"CHU CHUN MAN","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"129660","name":"CHEUNG CHUN MING","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"371386","name":"RAMOS KARL VINSON GRUESO","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"371427","name":"MORALES JAIMELLE MARC SANTIAGO","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"367294","name":"DELA CRUZ JERRY LOUIE GASPAR","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"364571","name":"GUBAN REY PHILIP BAGSIC","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"349391","name":"DESPOSADO ARMANDO QUINOSA","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"350562","name":"UY ANTHONY BUEZA","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"366022","name":"RAHMATIKA IRFAN BAGUS","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"366981","name":"BONGANCISO REYMUND SOTABENTO","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"368044","name":"SURYANA RUKMAN","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"337742","name":"MESTIDIO FREDERICK CAYAO","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"340480","name":"CHAN KING KWONG, LEO","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"181727","name":"MAK KWOK KWAN","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"257924","name":"YUEN CHIN KIU","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"236796","name":"KAN KA YAN","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"387565","name":"SHI ZHENKUN","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"314336","name":"LAI YUEN KI","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"386559","name":"CIASICO ERVIN COLLEEN CARCILLAR","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"389389","name":"SAENUDDIN MUHAMMAD HIDAYAT","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"211673","name":"CHENG CHI LING","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"390683","name":"SITINJAK ALVIN YOSHUA","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"389967","name":"ROFIIF ACHMAD","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"387838","name":"KAMAL FAUZAN","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"387846","name":"ASMIN MUHAMMAD ALI","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"387820","name":"NUGROHO BUDI","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"389404","name":"ADITYA TAUFIQ HIDAYAT","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"390021","name":"IQWAN REZA","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"389933","name":"SYACHPUTRA RIZKY","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"351809","name":"NAVARRO RON BAUTISTA","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"311580","name":"UNGAB VIVINCIO","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"308967","name":"LUCHAVEZ WALTER BONDAD","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"321589","name":"OBIA FAUSTO III DOLORES","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"320531","name":"KO SUM YEE SAMMIE","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"345662","name":"ZAMORA JOSE JR MACABINLAR","team":"","group":"CG","home":"LGA1","shift":""},{"staff":"263707","name":"LEUNG KA HO","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"198920","name":"YEE CHI MAN","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"388422","name":"CHEN JIAXIN","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"221127","name":"YIU WAI MENG","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"299273","name":"LI CHUN WING","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"201830","name":"CHEUNG KWOK PING","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"122763","name":"CHEUNG CHIU KIT","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"288531","name":"YAM YIM CHIU","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"230219","name":"KOT SUI","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"365397","name":"BADILLO RHEN ANTHONY GELERA","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"349127","name":"EMALADA SHIROEL BELTRAN","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"349359","name":"DE LEON FREDERICK CULLA","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"350033","name":"SANTIAGO CHARLES DE ROXAS","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"365975","name":"ZAENUR RAHMAN","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"366775","name":"DELA CUESTA CHRISTIAN TUAZON","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"366999","name":"CONCEPCION SOGIEL BALATONG","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"367004","name":"GUILLANO MA. AN-AN METODA","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"367674","name":"HIDAYAT ALDI","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"370560","name":"WAHYUDI ALGIAN NUR","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"349698","name":"REYES JOEL ERMAC","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"333899","name":"CALOPEZ BRYAN ROY ROGA","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"329103","name":"CHOY YIN TING","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"344979","name":"CHAN KAM WAH","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"297029","name":"HO WAI CHOI","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"386567","name":"BUNO VAN LAWRENCE UBONGEN","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"113738","name":"LEE KWOK KEUNG","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"308371","name":"SIU WING HUNG","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"390633","name":"MANURUNG SANDRO SOBASTIAN","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"387937","name":"BADI MUHAMMAD AWWALU WAHYU","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"388563","name":"HANDOKO YULI","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"386583","name":"ALVAREZ JIM PAULO ABREGANA","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"387482","name":"ANIS JULIUS FERNAN RIVERA","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"388513","name":"SUTADJI RAKA ADITYA","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"389371","name":"KRESNAYOGA I PUTU ROGAN","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"389941","name":"SANJAYA OKY NOERMA","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"390716","name":"ASMORO NUGROHO HERU","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"390857","name":"PRABOWO WISNU","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"360462","name":"QUIJANO EDSEL LAGO","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"310201","name":"CHEUNG CHUN PANG","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"321935","name":"AGBONIS DARWIN HIBIONADA","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"321943","name":"BARTOLOME WILBERT TOLENTINO","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"321977","name":"PATRICIO NATHANIEL PANCHO","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"302729","name":"OLLADO RONALDO MANAGO","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"301995","name":"DUMPIT RAFAEL ABUAN","team":"","group":"CG","home":"LGA2","shift":""},{"staff":"133447","name":"WONG KWOK YAN","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"344713","name":"CHAN SAI LIM PHILLIPS","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"388456","name":"XU JIAN","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"314930","name":"MAN KWOK LOONG","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"218471","name":"YEUNG CHI KWAN","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"221135","name":"YU WAI PING","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"292780","name":"SO CHI WAI","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"281238","name":"IP CHIN HONG ERIK","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"299976","name":"LEUNG CHI SUM","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"199499","name":"CHOW SHING HONG","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"205494","name":"SO YIK LOK","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"120642","name":"KWAN CHI KIN","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"337122","name":"WONG CHI KAN","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"360280","name":"DE LEON RICHARD JOSHUA VIANA","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"364612","name":"ABONG JAMES ROBERT DEL ROSARIO","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"365529","name":"AWAIS MUHAMMAD","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"349094","name":"MORILLA JOHMER BAESA","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"349367","name":"FERRER ERROL MOLINA","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"365769","name":"RAHMADHAN ADITYA NOER","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"366741","name":"ALDY RENALDY","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"366759","name":"MAULANA SEPTIYADI","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"322579","name":"CONSIGNADO ABNER BACANI","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"349044","name":"KWOK CHAN WING, KIENE","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"347254","name":"YEUNG YAT LUN","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"347303","name":"WAN KA KUI","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"299330","name":"LEUNG KA WING","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"299009","name":"HO CHI MAN","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"387474","name":"CRUZ CRIZ JOHN RAPHAEL MENDOZA","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"386608","name":"LURA ERWIN SORROSA","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"390055","name":"ASSARIY MUHAMMAD IHSAN","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"390063","name":"SULTANG ANDI","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"268806","name":"TAN YONGJIE","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"389470","name":"SIPAYUNG FERNANDUS ADITYA","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"389305","name":"SUGANA ROBBY","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"387896","name":"SIHOMBING RIO","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"389420","name":"SAPUTRO GALIH BAGOES","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"390013","name":"ANDRIAN FANNY","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"390071","name":"YANTO SOFINO","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"357451","name":"ELID REYNATO JR. LIMOKON","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"357758","name":"LOMIBAO PAOLO ISIDORE EDUARTE","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"379900","name":"PENUECO MARK LLOYD CORTERO","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"345258","name":"ARRIOLA JEMIL YAMBAO","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"337221","name":"DUMLAO EDGARDO NAMUCA","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"269961","name":"LEE LING KONG","team":"","group":"CG","home":"LGA3","shift":""},{"staff":"199887","name":"TAM CHUNG KWAN","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"311275","name":"LAU CHEUK HANG","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"263624","name":"CHAN CHEUK FUNG","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"279192","name":"TSUI HIU TUNG","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"282351","name":"LAM KA NIN","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"302357","name":"LEUNG CHI FUNG","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"179178","name":"CHOW KWONG CHIU","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"116930","name":"LEUNG PUI WING, ELLIS","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"146648","name":"WOO KA WAH","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"338659","name":"CHAN KWOK WING","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"364761","name":"SALEH AGUS RAHMAN","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"338790","name":"LOPEZ MANFRED GEORGE EMANO","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"349151","name":"DE LOS SANTOS RAMON TUMAGAN","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"349416","name":"CONCEPCION JOHN RAY BALASABAS","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"350067","name":"MAGALONA JONATHAN GERVACIO","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"350596","name":"TAMAYO LORRIE CEL RIZARDO","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"349797","name":"VENERACION REYNALDO VALIENTE","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"349804","name":"VELASQUEZ EUSTACIO JR. MENDOZA","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"260670","name":"YEUNG KA CHI","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"253576","name":"CHI MAN HO","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"281824","name":"TO HO LUN","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"271677","name":"CHAN KAI YIN","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"299950","name":"HO PING KIT","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"299843","name":"NG CHI HO","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"302539","name":"BUYA JOEL MENOR","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"389462","name":"SYAHRUL AHMAD IRGI","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"390089","name":"HERNANDEZ JOSHUA IGNACIO","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"387862","name":"SETIAWAN JEVRI","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"305749","name":"LAM KAM KWAN","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"386591","name":"GARCIA FRANCIS ROBERT TALAY","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"386939","name":"SIMANJUNTAK GERRY CHRISTOPPER","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"390039","name":"SUDARSONO FADYAN RACHMADANY","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"387929","name":"ALHADI MUHAMAT NUR","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"388555","name":"MUHAMMAD RISKI","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"389321","name":"HARMOKO DWI","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"389454","name":"LEKSONO SATRIO BANGUN","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"390691","name":"SETIAWAN IRWAN SANDY","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"390740","name":"PRASETYO WAHYU ANOM","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"308959","name":"DIMAKILING MICHAEL DAVE MENDOZA","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"317900","name":"HEUNG WING HONG","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"344391","name":"VARRON RUEL YNGAYO","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"344284","name":"DELA CRUZ JOEL ESPINO","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"269482","name":"MOK KAI YIN","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"302935","name":"PEDRALBA JONATHAN GASPAR","team":"","group":"CG","home":"LGA4","shift":""},{"staff":"238362","name":"LAI KWOK PAN","team":"","group":"CG","home":"LGA5","shift":""},{"staff":"230631","name":"FUNG YIU WING","team":"","group":"CG","home":"LGC1","shift":""},{"staff":"349143","name":"ORCEO ALEJANDRO PETEZA","team":"","group":"CG","home":"LGC1","shift":""},{"staff":"350538","name":"OMANIO JASPER OREIRO","team":"","group":"CG","home":"LGC1","shift":""},{"staff":"366030","name":"DIDIK SLAMET","team":"","group":"CG","home":"LGC1","shift":""},{"staff":"378978","name":"KAZI HASIN ISHRAQ SHAD","team":"","group":"CG","home":"LGC1","shift":""},{"staff":"318255","name":"CHOW WING KEUNG","team":"","group":"CG","home":"LGC1","shift":""},{"staff":"344276","name":"DIMAANO JOEL HATOC","team":"","group":"CG","home":"LGC1","shift":""},{"staff":"278821","name":"CHAU KA CHEONG","team":"","group":"CG","home":"LGC2","shift":""},{"staff":"337247","name":"VICTORIA DENNIS CRUZ","team":"","group":"CG","home":"LGC2","shift":""},{"staff":"363127","name":"GALLARDO CHRISTOPHER AGUINDA","team":"","group":"CG","home":"LGC2","shift":""},{"staff":"370172","name":"BATICBATIC JANILE DENAJEBA","team":"","group":"CG","home":"LGC2","shift":""},{"staff":"345646","name":"DELFIN ALEXANDER LUCAS","team":"","group":"CG","home":"LGC2","shift":""},{"staff":"387549","name":"HIDAYATULLAH HERNAWAN BAYU","team":"","group":"CG","home":"LGC2","shift":""},{"staff":"337487","name":"POLOYAPOY JOHN RICHARD SUMUGAT","team":"","group":"CG","home":"LGC3","shift":""},{"staff":"385189","name":"KHAN GULRAZE ALI","team":"","group":"CG","home":"LGC3","shift":""},{"staff":"255465","name":"WU CHUN WING, CARLOS","team":"","group":"CG","home":"LGC3","shift":""},{"staff":"322321","name":"CUNADO JOHN RYAN PABELONIA","team":"","group":"CG","home":"LGC3","shift":""},{"staff":"217142","name":"NG PING HIM","team":"","group":"CG","home":"LGC3","shift":""},{"staff":"145236","name":"TANG CHAN FAT","team":"","group":"CG","home":"LGC4","shift":""},{"staff":"350398","name":"CABAUATAN LD DAVE VALIDO","team":"","group":"CG","home":"LGC4","shift":""},{"staff":"365503","name":"VELASCO ALBERNARDO FORTALEZA","team":"","group":"CG","home":"LGC4","shift":""},{"staff":"345480","name":"ALCANTARA RAMIL SALVANA","team":"","group":"CG","home":"LGC4","shift":""},{"staff":"301888","name":"DELA CRUZ JOSELITO DASALLA","team":"","group":"CG","home":"LGC4","shift":""},{"staff":"383216","name":"MUHAMMAD ANDI NOVRIZAL","team":"","group":"CG","home":"LGC4","shift":""},{"staff":"302232","name":"AMABA OMAR VILLADORES","team":"","group":"CG","home":"LGC4","shift":""},{"staff":"370693","name":"TANTRA RAWIARGI JIWA","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"349135","name":"TAN GLENARD GLORIA","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"213306","name":"HUI KWAN LAP","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"252552","name":"CHAN KIM HO, VINCENT","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"257833","name":"LAW YUN HANG","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"270372","name":"LAW KWAN SHING","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"370312","name":"TONACAO CHRISTIAN LADOING","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"372508","name":"MABAN JOHN MICHAEL PEREZ","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"350059","name":"MAYOR VICTOR POLO","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"362137","name":"PABALINAS IVANRAY PAUL CORBITA","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"364737","name":"ACOT NOEL JR. GONZALEZ","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"369349","name":"RISMAYANDI AGUNG","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"369365","name":"ABDILLAH ADI SURYA","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"374273","name":"CRISTOBAL MURPHY ROSETE","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"370669","name":"BERLIANTO SETIAWAN DWI","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"370677","name":"ANGGARA WAHYU HIDAYAT","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"371469","name":"PANTI JAYRON DA","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"349341","name":"GOMEZ ANDRIAN ALFARO","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"355596","name":"AGUIPO CARLO ABUCAY","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"356081","name":"POTENCIANA VINCENT SOLIS","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"383472","name":"PUTRA ADHITYA FEBRINALDY RIZKY","team":"","group":"CG","home":"LGC5","shift":""},{"staff":"322834","name":"LONGHURST PAUL ASHLEY","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"169179","name":"WONG FU SANG","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"274184","name":"YUNG HAY YIN CHRISTINE","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"264549","name":"VISSER LIONEL STUART","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"161860","name":"CHOY KIM FAI","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"165200","name":"LEUNG CHUN YIN","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"355637","name":"FONG KUN PONG","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"236051","name":"CHAN SIU CHUNG","team":"","group":"PAX","home":"LGDX","shift":""},{"staff":"199150","name":"CHENG CHUNG MO","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"152281","name":"LAW YU CHEUNG","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"106254","name":"LAM CHI LEUNG","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"125949","name":"MA KWEI HIM","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"136516","name":"NGAN CHI YIN","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"191883","name":"KWAN WAI SHUN","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"239906","name":"GELDERBLOM REON JACQUES","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"337669","name":"LI MAN HO SIMON","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"352336","name":"CHOI CHEUK LUN","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"350885","name":"CHEUNG SIK HUNG","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"122705","name":"WAN KWOK CHUEN","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"204793","name":"CHUNG WAI LEUNG, JACKY","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"211897","name":"ABBOTT GRANT ANDREW","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"271255","name":"SUEN KWOK SING","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"208901","name":"TSANG KA FAI","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"191239","name":"CHAN KA CHUN","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"329731","name":"YEE EMMANUEL PARRILLA","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"293217","name":"KWOK TSZ YAN","team":"","group":"CG","home":"LGDX","shift":""},{"staff":"356528","name":"CHAN TAT SING","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"215998","name":"LEI PENG CHI","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"281460","name":"NG KA HIN","team":"1","group":"PAX","home":"LGEX","shift":"FLS"},{"staff":"299877","name":"WONG MAN HIN TOMMY","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"121822","name":"YEUNG LIN SHAN","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"177544","name":"LEUNG WING LAM","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"156118","name":"WONG KAM FAI","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"137712","name":"FUNG TAK WAI","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"137811","name":"SO SZE YAU","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"140822","name":"HO KWOK WING","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"216417","name":"YUE ALAN","team":"2","group":"PAX","home":"LGEX","shift":"FLS"},{"staff":"122359","name":"LAW CHI WAN","team":"4","group":"PAX","home":"LGEX","shift":"FLS"},{"staff":"182808","name":"FAN SIU WAI","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"184854","name":"KO WING TAI","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"191312","name":"SIU WING YEUNG","team":"3","group":"PAX","home":"LGEX","shift":"FLS"},{"staff":"353508","name":"SHUM KWOK HUNG","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"299299","name":"WONG HONG WING","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"311994","name":"WONG WAI LEONG","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"310855","name":"YIU CHEUK HEI TIMOTHY","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"202028","name":"TANG KAI MING","team":"","group":"CG","home":"LGEX","shift":""},{"staff":"257651","name":"TO WAI LEUNG","team":"","group":"CG","home":"LGK1","shift":""},{"staff":"202838","name":"MOK KWOK CHING","team":"","group":"CG","home":"LGK1","shift":""},{"staff":"201351","name":"CHAN KA FAI","team":"","group":"CG","home":"LGK1","shift":""},{"staff":"316499","name":"TONG TSZ NGONG","team":"","group":"CG","home":"LGK1","shift":""},{"staff":"346917","name":"AU YIU SHING EDWARD","team":"","group":"CG","home":"LGK1","shift":""},{"staff":"266959","name":"LEE CHEUK LAP","team":"","group":"CG","home":"LGK1","shift":""},{"staff":"353079","name":"PASQUIL JOSHUA MARIE FLORES","team":"","group":"CG","home":"LGK2","shift":""},{"staff":"256520","name":"LAM CHUN YING","team":"","group":"CG","home":"LGK2","shift":""},{"staff":"177081","name":"NG SIU NAM, GARY","team":"","group":"CG","home":"LGK2","shift":""},{"staff":"328436","name":"NG KA HO","team":"","group":"CG","home":"LGK2","shift":""},{"staff":"354374","name":"MARQUEZ KAY WILLYS DIRIGE","team":"","group":"CG","home":"LGK2","shift":""},{"staff":"315699","name":"PANG LOK HIN","team":"","group":"CG","home":"LGK2","shift":""},{"staff":"212936","name":"YEUNG KWOK WAN","team":"","group":"CG","home":"LGK3","shift":""},{"staff":"169103","name":"LEE WAN SUM","team":"","group":"CG","home":"LGK3","shift":""},{"staff":"355455","name":"CHENG YUK CHUEN","team":"","group":"CG","home":"LGK3","shift":""},{"staff":"280298","name":"LAI CHUN KIT","team":"","group":"CG","home":"LGK3","shift":""},{"staff":"300385","name":"YEUNG CHI HANG","team":"","group":"CG","home":"LGK3","shift":""},{"staff":"337198","name":"IEONG YIU KEUNG","team":"","group":"CG","home":"LGK4","shift":""},{"staff":"179300","name":"LEUNG CHI YIN","team":"","group":"CG","home":"LGK4","shift":""},{"staff":"352782","name":"STA. ANA JOVEN ROCELLON","team":"","group":"CG","home":"LGK4","shift":""},{"staff":"308636","name":"LIU HO YIN","team":"","group":"CG","home":"LGK4","shift":""},{"staff":"387557","name":"GUO JUNQIANG","team":"","group":"CG","home":"LGK4","shift":""},{"staff":"338740","name":"AREVALO EDGAR PANIEL","team":"","group":"CG","home":"LGK4","shift":""},{"staff":"359168","name":"HENG WAH CHUNG","team":"","group":"CG","home":"LGW1","shift":""},{"staff":"362278","name":"CEN CHE","team":"","group":"CG","home":"LGW1","shift":""},{"staff":"208802","name":"KO CHUN YIN","team":"","group":"CG","home":"LGW1","shift":""},{"staff":"302828","name":"SO YIU BUN","team":"","group":"CG","home":"LGW2","shift":""},{"staff":"338782","name":"CHEUNG TIN HO","team":"","group":"CG","home":"LGW2","shift":""},{"staff":"347965","name":"LAM CHUNG MAN","team":"","group":"CG","home":"LGW2","shift":""},{"staff":"201385","name":"SHEK PUN","team":"","group":"CG","home":"LGW2","shift":""},{"staff":"161753","name":"CHUNG CHI","team":"","group":"CG","home":"LGW3","shift":""},{"staff":"179425","name":"NG MAN CHI, HUBERT","team":"","group":"CG","home":"LGW3","shift":""},{"staff":"325531","name":"NG CHI LUN","team":"","group":"CG","home":"LGW3","shift":""},{"staff":"198558","name":"CHENG KA YAN","team":"","group":"CG","home":"LGW3","shift":""},{"staff":"207200","name":"HO PAK KI","team":"","group":"CG","home":"LGW4","shift":""},{"staff":"374801","name":"CHEN HANGYI","team":"","group":"CG","home":"LGW4","shift":""},{"staff":"328519","name":"TSANG WAI CHING","team":"","group":"CG","home":"LGW4","shift":""},{"staff":"199366","name":"CHUNG MAN FAI","team":"","group":"CG","home":"LGW4","shift":""},{"staff":"115255","name":"LAU SIU WA","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"151473","name":"SIU CHUN KIT","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"170176","name":"TSANG CHUN MING","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"170241","name":"KWOK WAI MAN","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"205048","name":"YU YIU SHAN","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"185224","name":"LI MAN WAH","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"191429","name":"TANG CHEONG FU","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"278532","name":"TAM KWOK HEI","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"357302","name":"CHEN XUESHAN","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"373556","name":"KE RENTI","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"338310","name":"LEUNG KWOK KEUNG","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"322149","name":"FUNG KA HO","team":"","group":"CG","home":"LGY1","shift":""},{"staff":"122797","name":"NG CHI CHIU","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"115370","name":"TAM WING KIT","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"137126","name":"CHEUNG MICHAEL","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"297615","name":"PALAGAWONG NA AYUTTAYA KITIPONG","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"338295","name":"MA SZE CHIN","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"340018","name":"ZHANG ZHONGPING","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"344375","name":"CHAN TING HIN","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"323808","name":"JANPHONG PAISAN","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"316697","name":"LEE K. C. BRIAN","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"209397","name":"CHEUNG CHI YIN","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"336447","name":"LEUNG TIN WAI","team":"","group":"CG","home":"LGY2","shift":""},{"staff":"116170","name":"WONG WAI MING","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"136582","name":"MUN SAU WING, RAYMOND","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"178203","name":"CHE LOK MAN","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"191289","name":"WONG WAI HUNG","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"191411","name":"CHU KA LUN","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"236118","name":"WAN KWOK FAI","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"299736","name":"LIN QINGDIAN","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"362939","name":"WANG XIAOLING","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"379611","name":"WU XULIANG","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"343301","name":"CHOY WAI YU","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"382028","name":"ZHAN ZHENGFEN","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"212746","name":"NG NAI MAN","team":"","group":"CG","home":"LGY3","shift":""},{"staff":"102757","name":"WONG WAI KUEN","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"129686","name":"CHOW KAI WING","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"137366","name":"LAU SAI WAH","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"208860","name":"UPFOLD PIERRE ULRICH","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"250019","name":"PANG CHUNG FAI","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"368599","name":"LUO YAONAN","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"374786","name":"CHEN YAJIANG","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"343666","name":"HUI CHUNG FOON, FELIX","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"343757","name":"NG WUN KIT","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"322404","name":"WU ZHANGSHU","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"332099","name":"YEUNG SIU FAI","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"321307","name":"YANG SHAOPENG","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"383381","name":"ZHANG WEI","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"334095","name":"LAM CHUN WING","team":"","group":"CG","home":"LGY4","shift":""},{"staff":"240672","name":"CHEN DE WEI","team":"","group":"CG","home":"LGY5","shift":""},{"staff":"338641","name":"KEUNG WAI CHOI","team":"","group":"CG","home":"LGY5","shift":""},{"staff":"318742","name":"SHEK CHI HON","team":"","group":"CG","home":"LGY5","shift":""},{"staff":"115841","name":"KWOK CHI FAI","team":"1","group":"PAX","home":"LTA1","shift":"1F"},{"staff":"122953","name":"CHONG TUNG","team":"1","group":"PAX","home":"LTA1","shift":"1G"},{"staff":"169153","name":"SHING YUNG","team":"1","group":"PAX","home":"LTA1","shift":"1E"},{"staff":"169195","name":"CHAN BIK WO","team":"1","group":"PAX","home":"LTA1","shift":"FLS"},{"staff":"233015","name":"LEUNG PING KIN","team":"1","group":"PAX","home":"LTA1","shift":"1F"},{"staff":"298978","name":"LEE KING FUNG ANSON","team":"1","group":"PAX","home":"LTA1","shift":"1F"},{"staff":"303173","name":"CHIU SHI HEI","team":"1","group":"PAX","home":"LTA1","shift":"1E"},{"staff":"328238","name":"CHANG PUI KI","team":"1","group":"PAX","home":"LTA1","shift":"1G"},{"staff":"334251","name":"LAM TING KAM FRANKI","team":"1","group":"PAX","home":"LTA1","shift":"RF"},{"staff":"349846","name":"GELLIDO REUEL SAMSON","team":"1","group":"PAX","home":"LTA1","shift":"1G"},{"staff":"354390","name":"BAYARCAL JUMAR GUMAPAC","team":"1","group":"PAX","home":"LTA1","shift":"1E"},{"staff":"354598","name":"BICALDO MARK ANTHONY VOLANTE","team":"1","group":"PAX","home":"LTA1","shift":"1E"},{"staff":"357344","name":"CHEQUITO EGOR CUYNO","team":"1","group":"PAX","home":"LTA1","shift":"1G"},{"staff":"368242","name":"LOPEZ HANDZEL JAME VILLANUEVA","team":"1","group":"PAX","home":"LTA1","shift":"1F"},{"staff":"372574","name":"YIP KA SHING","team":"1","group":"PAX","home":"LTA1","shift":"1E"},{"staff":"373704","name":"SILOTERIO ALDRIN DEJADA","team":"1","group":"PAX","home":"LTA1","shift":"1F"},{"staff":"373754","name":"NUGROHO IKHSAN","team":"1","group":"PAX","home":"LTA1","shift":"1E"},{"staff":"375750","name":"RENDRA CHAIRUL NUR PUTRA","team":"1","group":"PAX","home":"LTA1","shift":"1G"},{"staff":"380204","name":"SIGIT PRAMUDI","team":"1","group":"PAX","home":"LTA1","shift":"1E"},{"staff":"387151","name":"PHANCHAROEN PURAPIN","team":"1","group":"PAX","home":"LTA1","shift":"1F"},{"staff":"103713","name":"CHAN CHUNG MAN","team":"2","group":"PAX","home":"LTA2","shift":"2E"},{"staff":"187460","name":"TAM WAI HANG","team":"2","group":"PAX","home":"LTA2","shift":"2E"},{"staff":"191403","name":"CHEUNG WING KEI","team":"2","group":"PAX","home":"LTA2","shift":"2F"},{"staff":"193029","name":"TSE KA HANG","team":"2","group":"PAX","home":"LTA2","shift":"2F"},{"staff":"204933","name":"LAU WAI","team":"2","group":"PAX","home":"LTA2","shift":"2E"},{"staff":"249286","name":"CHAN KAI CHEUNG","team":"2","group":"PAX","home":"LTA2","shift":"2G"},{"staff":"276453","name":"CHAN CHUN YAT","team":"2","group":"PAX","home":"LTA2","shift":"2F"},{"staff":"355322","name":"VELARDE MARK BENEDICT ENCOMIENDA","team":"2","group":"PAX","home":"LTA2","shift":"2E"},{"staff":"360397","name":"PERFAS MARK EDUARD III RAMOS","team":"2","group":"PAX","home":"LTA2","shift":"2G"},{"staff":"363854","name":"MATUGAS FROILAN MIRAS","team":"2","group":"PAX","home":"LTA2","shift":"2G"},{"staff":"373689","name":"RATCHAKUN EAKKARAT","team":"2","group":"PAX","home":"LTA2","shift":"2F"},{"staff":"373762","name":"KURNIAWAN MUHAMMAD HADI","team":"2","group":"PAX","home":"LTA2","shift":"2G"},{"staff":"374124","name":"JAVIER JAY AMIDO","team":"2","group":"PAX","home":"LTA2","shift":"2F"},{"staff":"374306","name":"HARIS IMAM","team":"2","group":"PAX","home":"LTA2","shift":"2E"},{"staff":"377160","name":"CRUZ HOMER LAYUG","team":"2","group":"PAX","home":"LTA2","shift":"2G"},{"staff":"387408","name":"BUNARAM SANTISUCHA","team":"2","group":"PAX","home":"LTA2","shift":"2F"},{"staff":"158875","name":"YEUNG YIU SHING","team":"3","group":"PAX","home":"LTA3","shift":"3E"},{"staff":"170465","name":"CHEUNG SHUN CHI","team":"3","group":"PAX","home":"LTA3","shift":"3G"},{"staff":"199655","name":"HO YIU LUN","team":"3","group":"PAX","home":"LTA3","shift":"3F"},{"staff":"219346","name":"FUNG PIK HING","team":"3","group":"PAX","home":"LTA3","shift":"3E"},{"staff":"229535","name":"LONG YAT FUNG","team":"3","group":"PAX","home":"LTA3","shift":"3F"},{"staff":"294835","name":"LEE KA TAI","team":"3","group":"PAX","home":"LTA3","shift":"RF"},{"staff":"322412","name":"LORENZO ALEXANDER EISMA","team":"3","group":"PAX","home":"LTA3","shift":"3G"},{"staff":"324872","name":"GARCIA BRADLEY NAZAIRE","team":"3","group":"PAX","home":"LTA3","shift":"3F"},{"staff":"346355","name":"PANGAN ROBERT PACHECO","team":"3","group":"PAX","home":"LTA3","shift":"3E"},{"staff":"353988","name":"CAMPUSPOS MICHAEL ANDREW GONZALES","team":"3","group":"PAX","home":"LTA3","shift":"3F"},{"staff":"354605","name":"BERMEJO JENNY CUSINO","team":"3","group":"PAX","home":"LTA3","shift":"3E"},{"staff":"358722","name":"GUINTO ERICSON ALFORTE","team":"3","group":"PAX","home":"LTA3","shift":"3G"},{"staff":"359423","name":"CARGANILLA DARWIN REYES","team":"3","group":"PAX","home":"LTA3","shift":"3G"},{"staff":"366014","name":"GALO RENATO COSTILLAS","team":"3","group":"PAX","home":"LTA3","shift":"3F"},{"staff":"375726","name":"MEHMOOD TAHIR","team":"3","group":"PAX","home":"LTA3","shift":"3G"},{"staff":"376071","name":"AHMED MUHAMMAD FAIZAN","team":"3","group":"PAX","home":"LTA3","shift":"3E"},{"staff":"117152","name":"LIU KIN SHUN","team":"4","group":"PAX","home":"LTA4","shift":"4E"},{"staff":"191263","name":"LO YIU CHEONG","team":"4","group":"PAX","home":"LTA4","shift":"4F"},{"staff":"191437","name":"LUI KIN YAN","team":"4","group":"PAX","home":"LTA4","shift":"4G"},{"staff":"191859","name":"CHUM KA MAN","team":"4","group":"PAX","home":"LTA4","shift":"4E"},{"staff":"230300","name":"TAM YUI FAN","team":"4","group":"PAX","home":"LTA4","shift":"4F"},{"staff":"250431","name":"FUNG CHEUK CHING","team":"4","group":"PAX","home":"LTA4","shift":"4F"},{"staff":"279473","name":"MA LEE FUNG","team":"4","group":"PAX","home":"LTA4","shift":"4G"},{"staff":"290990","name":"THAPA BABEENA","team":"4","group":"PAX","home":"LTA4","shift":"4G"},{"staff":"302919","name":"RASCA ELMER AMBROCIO","team":"4","group":"PAX","home":"LTA4","shift":"4F"},{"staff":"338477","name":"NG MAN LOK","team":"4","group":"PAX","home":"LTA4","shift":"RF"},{"staff":"347395","name":"LI KWOK FAI","team":"4","group":"PAX","home":"LTA4","shift":"4E"},{"staff":"359431","name":"TABLE WILJAN TUGADO","team":"4","group":"PAX","home":"LTA4","shift":"4G"},{"staff":"376097","name":"QURESHI MUHAMMAD MOMIN ISLAM","team":"4","group":"PAX","home":"LTA4","shift":"4G"},{"staff":"377764","name":"ANDREY BINSAR PRABAWA","team":"4","group":"PAX","home":"LTA4","shift":"4E"},{"staff":"380147","name":"KHAN ALI ARSALAN","team":"4","group":"PAX","home":"LTA4","shift":"4F"},{"staff":"382200","name":"BALIGNASA JERRY SERASPI","team":"4","group":"PAX","home":"LTA4","shift":"4E"},{"staff":"120197","name":"SHE CHI LONG","team":"2","group":"PAX","home":"LTA6","shift":"6B"},{"staff":"122341","name":"CHAN KAI SHING, ALRICE","team":"2","group":"PAX","home":"LTA6","shift":"6B"},{"staff":"124644","name":"KWOK KIM LUN","team":"2","group":"PAX","home":"LTA6","shift":"6B"},{"staff":"133629","name":"LEUNG KA YIP","team":"3","group":"PAX","home":"LTA6","shift":"6C"},{"staff":"143834","name":"CHEUNG KWOK KUEN","team":"3","group":"PAX","home":"LTA6","shift":"6C"},{"staff":"147159","name":"CHUI SHAN CHUEN","team":"1","group":"PAX","home":"LTA6","shift":"6A"},{"staff":"149387","name":"CHENG YUK PUN","team":"2","group":"PAX","home":"LTA6","shift":"6B"},{"staff":"154724","name":"MOK HON YIN","team":"1","group":"PAX","home":"LTA6","shift":"6A"},{"staff":"156910","name":"CHOY KI CHEUNG","team":"4","group":"PAX","home":"LTA6","shift":"6D"},{"staff":"158817","name":"CHEUNG YING SUN","team":"3","group":"PAX","home":"LTA6","shift":"6C"},{"staff":"179144","name":"WONG KWAI HONG","team":"4","group":"PAX","home":"LTA6","shift":"6D"},{"staff":"179160","name":"CHAN SIU KI","team":"3","group":"PAX","home":"LTA6","shift":"6C"},{"staff":"205014","name":"LEE TO SANG","team":"2","group":"PAX","home":"LTA6","shift":"6B"},{"staff":"251215","name":"TSANG FAN YUI","team":"1","group":"PAX","home":"LTA6","shift":"6A"},{"staff":"301507","name":"WONG WAI HO","team":"4","group":"PAX","home":"LTA6","shift":"6D"},{"staff":"346587","name":"DASIG CHRISTIAN CAMBA","team":"4","group":"PAX","home":"LTA6","shift":"6D"},{"staff":"349648","name":"DITONA ARIEL MOSQUEDA","team":"3","group":"PAX","home":"LTA6","shift":"6C"},{"staff":"356552","name":"VITUALLA SHERWIN KING","team":"4","group":"PAX","home":"LTA6","shift":"6D"},{"staff":"358714","name":"MANANGU JOHN YLEZAR CRUZ","team":"1","group":"PAX","home":"LTA6","shift":"6A"},{"staff":"359811","name":"ROJAS STEVEN ABELLA","team":"1","group":"PAX","home":"LTA6","shift":"6A"},{"staff":"361501","name":"SALADO REM JOSEPH PERALES","team":"4","group":"PAX","home":"LTA6","shift":"6D"},{"staff":"381517","name":"CHU KING WAN","team":"2","group":"PAX","home":"LTA6","shift":"6B"},{"staff":"232942","name":"CHUNG MAN HO","team":"2","group":"PAX","home":"LTDX","shift":"FLS"},{"staff":"251728","name":"LAM HEUNG WING","team":"3","group":"PAX","home":"LTDX","shift":"FLS"},{"staff":"276544","name":"NGAI KA KEI","team":"4","group":"PAX","home":"LTDX","shift":"FLS"},{"staff":"313495","name":"MOHAMMAD TANZEEL","team":"","group":"PAX","home":"LTH3","shift":""},{"staff":"115700","name":"LAM HO HONG, SAMUEL","team":"","group":"PAX","home":"LTW1","shift":""},{"staff":"207276","name":"PHANKAEW SONTHIRAT","team":"","group":"PAX","home":"LTW1","shift":""},{"staff":"236027","name":"HUI KWOK KEUNG","team":"","group":"PAX","home":"LTW1","shift":""},{"staff":"296344","name":"HO TAI HONG","team":"","group":"PAX","home":"LTW1","shift":""},{"staff":"312405","name":"KWAN KA KI TEDDY","team":"","group":"PAX","home":"LTW1","shift":""},{"staff":"351156","name":"LIU YAU TING","team":"","group":"PAX","home":"LTW1","shift":""},{"staff":"373415","name":"WANG JIA","team":"","group":"PAX","home":"LTW1","shift":""},{"staff":"138041","name":"SHING CHI WAI","team":"","group":"PAX","home":"LTW2","shift":""},{"staff":"208167","name":"KAWEEPATI SUNATE","team":"","group":"PAX","home":"LTW2","shift":""},{"staff":"300038","name":"CHU TAT FU","team":"","group":"PAX","home":"LTW2","shift":""},{"staff":"300286","name":"CHEN GUANGWU","team":"","group":"PAX","home":"LTW2","shift":""},{"staff":"360933","name":"ZHU ZHENLONG","team":"","group":"PAX","home":"LTW2","shift":""},{"staff":"373986","name":"YIU HUNG FAI","team":"","group":"PAX","home":"LTW2","shift":""},{"staff":"084096","name":"LAI WING KAI","team":"","group":"PAX","home":"LTW3","shift":""},{"staff":"191495","name":"WONG CHI KAN","team":"","group":"PAX","home":"LTW3","shift":""},{"staff":"208357","name":"TECHAKULWIROTE AKKAPONG","team":"","group":"PAX","home":"LTW3","shift":""},{"staff":"213728","name":"CHU SHIU HANG, SIMON","team":"","group":"PAX","home":"LTW3","shift":""},{"staff":"246860","name":"TONG PO KIN","team":"","group":"PAX","home":"LTW3","shift":""},{"staff":"115362","name":"KWOK KIM FUNG","team":"","group":"PAX","home":"LTW4","shift":""},{"staff":"144030","name":"POON YIU CHUNG, WILLIAM","team":"","group":"PAX","home":"LTW4","shift":""},{"staff":"150441","name":"LEE KWOK KEI","team":"","group":"PAX","home":"LTW4","shift":""},{"staff":"206343","name":"PHUMJUN SOMPORN","team":"","group":"PAX","home":"LTW4","shift":""},{"staff":"380981","name":"CHEN YANG","team":"","group":"PAX","home":"LTW4","shift":""}];
 const TEAM_KEYS = ["other", "1", "2", "3", "4"];
@@ -386,7 +757,32 @@ const CT_STORE = "hx:ct-reminder:csv";
 const CT_NAME = "hx:ct-reminder:csvName";
 const CT_FILES = "hx:team-board:ct-files";
 const OMT_FILES = "hx:team-board:omt-files";
-const UI = { org: "hx:team-board:org", src: "hx:team-board:src", role: "hx:team-board:role", q: "hx:team-board:q", sortKey: "hx:team-board:sortKey", sortDir: "hx:team-board:sortDir" };
+const CT_CLEARED = "hx:team-board:ct-cleared";
+const OMT_CLEARED = "hx:team-board:omt-cleared";
+const UI = { org: "hx:team-board:org", src: "hx:team-board:src", role: "hx:team-board:role", team: "hx:team-board:team", q: "hx:team-board:q", sortKey: "hx:team-board:sortKey", sortDir: "hx:team-board:sortDir", listView: "hx:team-board:listView" };
+const COURSE_STORE = "hx:course-catalog:rows";
+const COURSE_STATUS = "hx:team-board:course-status";
+const ACCESS_HASH = "hx:team-board:access-hash";
+const ACCESS_UNLOCK = "hx:team-board:unlocked";
+const MANUAL_STORE = "hx:team-board:manual-courses";
+const COURSE_STATUS_OPTS = ["Not Started", "In Progress", "Completed"];
+const SRC_ALL = ["ual", "ct", "omt", "manual"];
+const UAL_KEYS = ["hx-ual-cbt-mail", "hx:ual-cbt:mail", "hx:ual-cbt:text", "hx:team-board:ual", "hx:team-board:ual-mail", "hx-team-board-ual", "hx-team-board-mail"];
+const UAL_ROW_KEYS = ["hx:team-board:ual-rows", "hx:ual-cbt:rows", "hx-ual-cbt-rows"];
+const CT_FILE_KEYS = ["hx:team-board:ct-files", "hx-team-board-ct-files", "hx:ct-reminder:files", "hx-ct-files"];
+const CT_CSV_KEYS = ["hx:ct-reminder:csv", "hx:ct-reminder:overdue", "hx:ct-reminder:dueSoon", "hx:ct-reminder:weekly", "hx:ct-reminder:due-soon", "hx-ct-csv"];
+const CT_NAME_KEYS = ["hx:ct-reminder:csvName", "hx:ct-reminder:name", "hx-ct-csvName"];
+const OMT_FILE_KEYS = ["hx:team-board:omt-files", "hx-team-board-omt-files", "hx:team-board:omt", "hx-omt-files"];
+const UI_KEYS = {
+  org: ["hx:team-board:org", "hx-team-board-org", "hx:ual-cbt:group"],
+  src: ["hx:team-board:src", "hx-team-board-src"],
+  role: ["hx:team-board:role", "hx-team-board-role"],
+  team: ["hx:team-board:team", "hx-team-board-team"],
+  q: ["hx:team-board:q", "hx-team-board-q", "hx:ct-reminder:q", "hx:ual-cbt:q"],
+  sortKey: ["hx:team-board:sortKey", "hx-team-board-sortKey", "hx:ual-cbt:sortKey"],
+  sortDir: ["hx:team-board:sortDir", "hx-team-board-sortDir", "hx:ual-cbt:sortDir"],
+  listView: ["hx:team-board:listView"]
+};
 const DATE_RE = /^(\d{1,2})-([A-Za-z]{3,9})-(\d{4})$/;
 const EMP_RE = /^v\d{5,}$/i;
 const STAFF_RE = /^\d{5,7}$/;
@@ -399,19 +795,507 @@ let ctFiles = [];
 let ctRows = [];
 let omtFiles = [];
 let omtRows = [];
+let manualRows = [];
 let org = "ocg";
-let src = "all";
+let srcOn = SRC_ALL.slice();
 let role = "all";
+let teamFilter = "";
 let q = "";
 let pick = null;
 let sortKey = "out";
 let sortDir = -1;
-let dSort = "name";
+let dSort = "";
 let dDir = 1;
 let detailPeople = [];
+let listView = "table";
+let courseStatus = {};
 
-function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
-function lsSet(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+let persistArmed = false;
+const parentCache = Object.create(null);
+const pendingStore = new Map();
+
+function parentStore() {
+  try {
+    if (window.parent && window.parent !== window) {
+      const s = window.parent.localStorage;
+      void s.length;
+      return s;
+    }
+  } catch (e) {}
+  return null;
+}
+function allStores() {
+  const out = [];
+  try { out.push(localStorage); } catch (e) {}
+  const p = parentStore();
+  if (p && out.indexOf(p) < 0) out.push(p);
+  return out;
+}
+function lsPeek(key) {
+  for (let i = 0; i < allStores().length; i++) {
+    try {
+      const v = allStores()[i].getItem(key);
+      if (v != null) return v;
+    } catch (e) {}
+  }
+  if (Object.prototype.hasOwnProperty.call(parentCache, key) && parentCache[key] != null) return parentCache[key];
+  return null;
+}
+function lsGet(key) {
+  const v = lsPeek(key);
+  return v == null || v === "" ? null : v;
+}
+function lsSet(key, value) {
+  if (value == null) return;
+  parentCache[key] = value;
+  const stores = allStores();
+  for (let i = 0; i < stores.length; i++) {
+    try { stores[i].setItem(key, value); } catch (e) {}
+  }
+  if (!parentStore() && window.parent && window.parent !== window) {
+    try { window.parent.postMessage({ type: "hx-store-set", key: key, value: value }, "*"); } catch (e) {}
+  }
+}
+function askParent(type, payload) {
+  return new Promise((resolve) => {
+    if (!window.parent || window.parent === window) { resolve(null); return; }
+    const id = String(Date.now()) + "-" + Math.random();
+    const t = setTimeout(() => { pendingStore.delete(id); resolve(null); }, 600);
+    pendingStore.set(id, (data) => { clearTimeout(t); resolve(data); });
+    try { window.parent.postMessage(Object.assign({ type: type, id: id }, payload || {}), "*"); }
+    catch (e) { clearTimeout(t); pendingStore.delete(id); resolve(null); }
+  });
+}
+window.addEventListener("message", (e) => {
+  const msg = e.data || {};
+  const fn = pendingStore.get(msg.id);
+  if (!fn) return;
+  pendingStore.delete(msg.id);
+  fn(msg);
+});
+function isBoardUnlocked() {
+  try { return sessionStorage.getItem(ACCESS_UNLOCK) === "1"; } catch (e) { return false; }
+}
+function setBoardUnlocked(on) {
+  try {
+    if (on) sessionStorage.setItem(ACCESS_UNLOCK, "1");
+    else sessionStorage.removeItem(ACCESS_UNLOCK);
+  } catch (e) {}
+}
+function readAccessRec() {
+  const raw = lsPeek(ACCESS_HASH);
+  if (!raw) return null;
+  try {
+    const rec = JSON.parse(raw);
+    if (rec && rec.salt && rec.hash) return rec;
+  } catch (e) {}
+  return null;
+}
+function hexBytes(buf) {
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+function randomSalt() {
+  const b = new Uint8Array(16);
+  crypto.getRandomValues(b);
+  return hexBytes(b);
+}
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return hexBytes(buf);
+}
+async function hashPassword(pw, salt) {
+  return sha256Hex(String(salt || "") + "\n" + String(pw || ""));
+}
+function applyWriteAccess() {
+  const on = isBoardUnlocked();
+  document.documentElement.classList.toggle("board-locked", !on);
+  const btn = document.getElementById("access-toggle");
+  if (btn) {
+    btn.textContent = on ? "Lock" : "Unlock";
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.title = on ? "Lock write access" : "Unlock write access";
+    btn.classList.toggle("on", on);
+  }
+  [
+    "ual-src", "ual-parse", "ct-csv", "omt-file",
+    "manual-staff", "manual-name", "manual-code", "manual-cname", "manual-exp"
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !on;
+  });
+  const addBtn = document.querySelector("#manual-form button[type=submit]");
+  if (addBtn) addBtn.disabled = !on;
+  document.querySelectorAll("[data-ct-del], [data-omt-del], .manual-del, select.course-status, input.course-done, input.course-done-cal").forEach((el) => {
+    el.disabled = !on;
+  });
+}
+function requireWrite() {
+  return isBoardUnlocked();
+}
+function ingestReject(source, issues) {
+  const err = new Error("Ingest rejected");
+  err.name = "IngestReject";
+  err.source = source;
+  err.issues = Array.isArray(issues) ? issues : [{ title: "Error", detail: String(issues || "Rejected") }];
+  return err;
+}
+function asIngestReject(source, err) {
+  if (err && err.name === "IngestReject") return err;
+  return ingestReject(source, [{ title: "Unreadable file", detail: String(err && err.message || err || "Could not read this file.") }]);
+}
+function closeIngestPop() {
+  const pop = document.getElementById("ingest-pop");
+  if (!pop) return;
+  pop.classList.add("hidden");
+  pop.hidden = true;
+}
+function showIngestReject(err) {
+  const pop = document.getElementById("ingest-pop");
+  const title = document.getElementById("ingest-title");
+  const lead = document.getElementById("ingest-lead");
+  const list = document.getElementById("ingest-list");
+  if (!pop || !title || !lead || !list) return;
+  const names = {
+    ual: "UAL email rejected",
+    ct: "CT CSV rejected",
+    omt: "Mandatory file rejected",
+    manual: "Add course rejected"
+  };
+  const src = err && err.source;
+  title.textContent = names[src] || "Ingest rejected";
+  lead.textContent = "No update. Previous good data stays. Fix the source (or the parser / CODE_RE / Name List) first. 認唔到就整份 REJECT，唔好跳過仲 UPDATE。";
+  const issues = (err && err.issues && err.issues.length) ? err.issues : [{ title: "Error", detail: String(err && err.message || err) }];
+  list.innerHTML = issues.map((it) =>
+    "<li><strong>" + esc(it.title || "Problem") + "</strong>" + (it.detail ? "<br>" + esc(it.detail) : "") + "</li>"
+  ).join("");
+  pop.hidden = false;
+  pop.classList.remove("hidden");
+}
+function uniqTexts(arr) {
+  return [...new Set((arr || []).map((x) => String(x || "").trim()).filter(Boolean))];
+}
+function isValidStaffId(v) {
+  const s = String(v ?? "").trim();
+  if (!s) return false;
+  return /^\d{5,7}$/.test(padStaff(s));
+}
+function rosterHas(staff) {
+  return byStaff.has(padStaff(staff));
+}
+function isSectionToken(s) {
+  return /^L[A-Z]{2}\d$/i.test(String(s || "").trim());
+}
+function isCodeToken(s) {
+  const t = String(s || "").trim();
+  return /^[A-Za-z]{3,12}\d{0,3}$/.test(t) && !isSectionToken(t) && !EMP_RE.test(t) && !STAFF_RE.test(t);
+}
+function ualLineIsGroupish(s) {
+  const t = String(s || "").trim();
+  if (!t) return false;
+  if (STAFF_RE.test(t) || EMP_RE.test(t) || DATE_RE.test(t) || CODE_RE.test(t) || isCodeToken(t)) return true;
+  return REMAIN_RE.test(t) && !STAFF_RE.test(t);
+}
+function accessPop() {
+  return document.getElementById("access-pop");
+}
+function showAccessErr(msg) {
+  const err = document.getElementById("access-err");
+  if (!err) return;
+  err.hidden = !msg;
+  err.textContent = msg || "";
+}
+function closeAccessPop() {
+  const pop = accessPop();
+  if (!pop) return;
+  pop.classList.add("hidden");
+  pop.hidden = true;
+  document.getElementById("access-pw").value = "";
+  document.getElementById("access-pw2").value = "";
+  showAccessErr("");
+}
+function openAccessPop() {
+  const rec = readAccessRec();
+  const setting = !rec;
+  document.getElementById("access-title").textContent = setting ? "Set write password" : "Unlock";
+  document.getElementById("access-hint").textContent = setting
+    ? "First time on this browser: choose a password. It is stored as a hash, not the password itself."
+    : "Enter the write password for this browser.";
+  document.getElementById("access-pw2-wrap").hidden = !setting;
+  document.getElementById("access-pw").autocomplete = setting ? "new-password" : "current-password";
+  document.getElementById("access-pw").value = "";
+  document.getElementById("access-pw2").value = "";
+  showAccessErr("");
+  const pop = accessPop();
+  pop.hidden = false;
+  pop.classList.remove("hidden");
+  setTimeout(() => document.getElementById("access-pw").focus(), 0);
+}
+async function submitAccessPop() {
+  const rec = readAccessRec();
+  const pw = document.getElementById("access-pw").value;
+  const pw2 = document.getElementById("access-pw2").value;
+  if (!rec) {
+    if (!pw) { showAccessErr("Enter a password."); return; }
+    if (pw.length < 4) { showAccessErr("Use at least 4 characters."); return; }
+    if (pw !== pw2) { showAccessErr("The two passwords do not match."); return; }
+    const salt = randomSalt();
+    const hash = await hashPassword(pw, salt);
+    lsSet(ACCESS_HASH, JSON.stringify({ v: 1, salt: salt, hash: hash }));
+    setBoardUnlocked(true);
+    applyWriteAccess();
+    closeAccessPop();
+    return;
+  }
+  if (!pw) { showAccessErr("Enter the password."); return; }
+  const got = await hashPassword(pw, rec.salt);
+  if (got !== rec.hash) { showAccessErr("Wrong password."); return; }
+  setBoardUnlocked(true);
+  applyWriteAccess();
+  closeAccessPop();
+}
+function toggleBoardAccess() {
+  if (isBoardUnlocked()) {
+    setBoardUnlocked(false);
+    applyWriteAccess();
+    return;
+  }
+  openAccessPop();
+}
+function listStoreKeys() {
+  const keys = new Set(Object.keys(parentCache));
+  const stores = allStores();
+  for (let i = 0; i < stores.length; i++) {
+    try {
+      for (let j = 0; j < stores[i].length; j++) {
+        const k = stores[i].key(j);
+        if (k) keys.add(k);
+      }
+    } catch (e) {}
+  }
+  return Array.from(keys);
+}
+async function prefetchParentStore() {
+  if (!window.parent || window.parent === window) return;
+  const p = parentStore();
+  if (p) {
+    try {
+      for (let i = 0; i < p.length; i++) {
+        const k = p.key(i);
+        if (k && parentCache[k] == null) parentCache[k] = p.getItem(k);
+      }
+    } catch (e) {}
+    return;
+  }
+  const known = UAL_KEYS.concat(UAL_ROW_KEYS, CT_FILE_KEYS, CT_CSV_KEYS, CT_NAME_KEYS, OMT_FILE_KEYS, UI_KEYS.org, UI_KEYS.src, UI_KEYS.role, UI_KEYS.q, UI_KEYS.sortKey, UI_KEYS.sortDir, [CT_CLEARED, OMT_CLEARED, COURSE_STORE, COURSE_STATUS, MANUAL_STORE]);
+  const keysMsg = await askParent("hx-store-keys", {});
+  const extra = ((keysMsg && keysMsg.keys) || []).filter((k) => /^(hx:team-board|hx-team-board|hx:ct-reminder|hx-ct-|hx:ual-cbt|hx-ual|hx:course-catalog)/.test(k));
+  const keys = Array.from(new Set(known.concat(extra)));
+  const got = await askParent("hx-store-get", { keys: keys });
+  if (got && got.values) {
+    Object.keys(got.values).forEach((k) => {
+      if (got.values[k] != null) parentCache[k] = got.values[k];
+    });
+  }
+}
+function firstFilled(keys) {
+  for (let i = 0; i < keys.length; i++) {
+    const v = lsPeek(keys[i]);
+    if (v != null && v !== "" && v !== "[]" && v !== "null") return v;
+  }
+  return null;
+}
+function peekJson(key) {
+  const raw = lsPeek(key);
+  if (raw == null) return { found: false, value: null };
+  try { return { found: true, value: JSON.parse(raw) }; }
+  catch (e) { return { found: true, value: null }; }
+}
+function firstJson(keys) {
+  for (let i = 0; i < keys.length; i++) {
+    const got = peekJson(keys[i]);
+    if (!got.found) continue;
+    if (Array.isArray(got.value) && got.value.length) return got;
+    if (got.value && typeof got.value === "object" && !Array.isArray(got.value)) return got;
+  }
+  return { found: false, value: null };
+}
+function looksLikeCtRow(r) {
+  if (!r || typeof r !== "object") return false;
+  return !!(r.uid || r.staff || r["user id"] || r.code || r.cname || r.exp || r["certification code"]);
+}
+function srcHas(k) { return srcOn.indexOf(k) >= 0; }
+function srcIsAll() { return SRC_ALL.every(srcHas); }
+function srcSave() {
+  const on = SRC_ALL.filter(srcHas);
+  if (on.length === SRC_ALL.length) return "all";
+  if (on.length === 1) return on[0];
+  return on.join(",");
+}
+function srcLoad(saved) {
+  const raw = String(saved == null ? "" : saved).trim();
+  if (!raw) return SRC_ALL.slice();
+  if (raw === "all") return SRC_ALL.slice();
+  if (raw === "ual" || raw === "ct" || raw === "omt" || raw === "manual") return [raw];
+  let parts = [];
+  if (raw.charAt(0) === "[") {
+    try { parts = JSON.parse(raw); } catch (e) { parts = []; }
+  } else {
+    parts = raw.split(/[,|]/);
+  }
+  const want = parts.map((x) => String(x).trim());
+  return SRC_ALL.filter((k) => want.indexOf(k) >= 0);
+}
+function normCode(s) {
+  return String(s || "").trim().toLowerCase();
+}
+function escapeRe(s) {
+  return String(s || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function displayCourseName(code, name) {
+  const nm = String(name || "").trim();
+  const codeNorm = String(code || "").trim().replace(/^T\./i, "");
+  if (!nm || !codeNorm) return nm;
+  const re = new RegExp("^(?:T\\.)?" + escapeRe(codeNorm) + "(?:\\s*[\\s\\-–—:·.]+\\s*|\\s+)", "i");
+  const stripped = nm.replace(re, "").trim();
+  return stripped || nm;
+}
+function itemDisplayTitle(code, name) {
+  const key = String(code || "").trim();
+  const shown = displayCourseName(key, name);
+  if (shown && key && shown !== key) return key + " · " + shown;
+  return key || shown || "";
+}
+function loadCatalogRows() {
+  const got = peekJson(COURSE_STORE);
+  return Array.isArray(got.value) ? got.value.filter((r) => r && typeof r === "object") : [];
+}
+function saveCatalogRows(rows) {
+  const clean = (rows || []).map((r) => {
+    const o = Object.assign({}, r);
+    delete o.expiry;
+    if (o.interval == null) o.interval = "";
+    return o;
+  });
+  try { lsSet(COURSE_STORE, JSON.stringify(clean)); } catch (e) {}
+}
+function blankCourse(code) {
+  return { code: String(code || "").trim(), name: "", type: "", award: "", issued: "", desc: "", interval: "" };
+}
+function pickCommonName(names) {
+  const counts = new Map();
+  let first = "";
+  names.forEach((n) => {
+    const t = String(n || "").trim();
+    if (!t) return;
+    if (!first) first = t;
+    counts.set(t, (counts.get(t) || 0) + 1);
+  });
+  let best = "", n = 0;
+  counts.forEach((c, name) => {
+    if (c > n) { best = name; n = c; }
+  });
+  return best || first;
+}
+function courseNameFor(code) {
+  const k = normCode(code);
+  if (!k) return "";
+  const cat = loadCatalogRows();
+  for (let i = 0; i < cat.length; i++) {
+    if (normCode(cat[i].code) === k) {
+      const n = String(cat[i].name || "").trim();
+      if (n) return n;
+      break;
+    }
+  }
+  const names = [];
+  function take(n) {
+    const t = String(n || "").trim();
+    if (t && normCode(t) !== k) names.push(t);
+  }
+  ctRows.forEach((r) => {
+    if (normCode(r.code) !== k) return;
+    take(r.cname);
+    take(r.award);
+    take(r.desc);
+  });
+  ualRows.forEach((r) => {
+    if (normCode(r.code) !== k) return;
+    take(r.cname);
+  });
+  omtRows.forEach((r) => {
+    if (normCode(r.code) !== k) return;
+    take(r.cname);
+  });
+  return pickCommonName(names);
+}
+function omtCourseName(r) {
+  const own = String((r && r.cname) || "").trim();
+  if (own && normCode(own) !== normCode(r.code)) return own;
+  return courseNameFor(r && r.code);
+}
+function rememberSeen(map, code, extra) {
+  const raw = String(code || "").trim();
+  const k = normCode(raw);
+  if (!k) return;
+  const src = extra || {};
+  if (!map.has(k)) map.set(k, Object.assign(blankCourse(raw), src));
+  else {
+    const cur = map.get(k);
+    ["name", "award", "issued", "desc", "interval"].forEach((f) => {
+      if (!String(cur[f] || "").trim() && src[f]) cur[f] = src[f];
+    });
+  }
+}
+function mergeCatalogFromBoard() {
+  const seen = new Map();
+  ualRows.forEach((r) => rememberSeen(seen, r.code, {
+    name: (r.cname && normCode(r.cname) !== normCode(r.code)) ? r.cname : ""
+  }));
+  ctRows.forEach((r) => rememberSeen(seen, r.code, {
+    name: r.cname || r.award || r.desc || "",
+    award: r.award || "",
+    issued: r.issued || "",
+    desc: r.desc || ""
+  }));
+  omtRows.forEach((r) => rememberSeen(seen, r.code, {
+    name: (r.cname && normCode(r.cname) !== normCode(r.code)) ? r.cname : ""
+  }));
+  manualRows.forEach((r) => rememberSeen(seen, r.code, {
+    name: (r.cname && normCode(r.cname) !== normCode(r.code)) ? r.cname : ""
+  }));
+  if (!seen.size) return;
+  const rows = loadCatalogRows();
+  const by = new Map();
+  rows.forEach((r) => {
+    const k = normCode(r.code);
+    if (k && !by.has(k)) by.set(k, r);
+  });
+  let changed = false;
+  rows.forEach((r) => {
+    if (r && Object.prototype.hasOwnProperty.call(r, "expiry")) {
+      delete r.expiry;
+      if (r.interval == null) r.interval = "";
+      changed = true;
+    }
+  });
+  seen.forEach((row, k) => {
+    if (!by.has(k)) {
+      rows.push(row);
+      by.set(k, row);
+      changed = true;
+    } else {
+      const cur = by.get(k);
+      ["name", "award", "issued", "desc", "interval"].forEach((f) => {
+        if (!String(cur[f] || "").trim() && row[f]) { cur[f] = row[f]; changed = true; }
+      });
+      if (Object.prototype.hasOwnProperty.call(cur, "expiry")) {
+        delete cur.expiry;
+        changed = true;
+      }
+    }
+  });
+  if (changed) saveCatalogRows(rows);
+}
 function esc(s) {
   return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
@@ -419,6 +1303,10 @@ function padStaff(v) {
   const s = String(v ?? "").trim();
   if (!s || !/^\d+(\.0+)?$/.test(s)) return s;
   return String(parseInt(s, 10)).padStart(6, "0");
+}
+function staffNoHtml(staff) {
+  const id = padStaff(staff);
+  return id ? "<span class=\"staff-no\">" + esc(id) + "</span>" : "";
 }
 function teamKey(team, home) {
   const t = String(team || "").trim();
@@ -441,6 +1329,49 @@ function crewOf(p) {
   const sh = String((p && p.shift) || "").trim();
   if (sec && sh) return sec + " " + sh;
   return sec || sh;
+}
+function teamSortRank(team, home) {
+  const k = teamKey(team, home);
+  return (k === "1" || k === "2" || k === "3" || k === "4") ? Number(k) : 5;
+}
+function sectionSortKey(p) {
+  const k = teamKey(p.team, p.home);
+  const n = (k === "1" || k === "2" || k === "3" || k === "4") ? Number(k) : 0;
+  const sec = String((p && p.home) || "").trim().toUpperCase();
+  const m = sec.match(/^LTA(\d+)$/);
+  if (m) {
+    const lta = Number(m[1]);
+    return [n && lta === n ? 0 : 1, lta, sec];
+  }
+  return [2, 999, sec];
+}
+function crewSortKey(p) {
+  const s = String((p && p.shift) || "").trim().toUpperCase();
+  if (!s) return [2, 99, 999, ""];
+  const m = s.match(/^(\d+)([A-Z])$/);
+  if (m) {
+    const letterRank = { E: 1, F: 2, G: 3, A: 4, B: 5, C: 6, D: 7 };
+    return [0, letterRank[m[2]] || 50, Number(m[1]), s];
+  }
+  const special = { FLS: 0, RF: 1 };
+  return [1, special[s] != null ? special[s] : 50, 999, s];
+}
+function cmpKey(a, b) {
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] < b[i]) return -1;
+    if (a[i] > b[i]) return 1;
+  }
+  return 0;
+}
+function cmpRoster(a, b) {
+  const teamCmp = teamSortRank(a.team, a.home) - teamSortRank(b.team, b.home);
+  if (teamCmp) return teamCmp;
+  const secCmp = cmpKey(sectionSortKey(a), sectionSortKey(b));
+  if (secCmp) return secCmp;
+  const crewCmp = cmpKey(crewSortKey(a), crewSortKey(b));
+  if (crewCmp) return crewCmp;
+  return String(a.name || "").localeCompare(String(b.name || ""), undefined, { numeric: true, sensitivity: "base" })
+    || String(a.staff || "").localeCompare(String(b.staff || ""));
 }
 function orgOk(group) {
   if (org === "cg") return group === "CG";
@@ -539,6 +1470,152 @@ function parseChunk(heading, chunk) {
 function parseUal(text) {
   return parseBlocks(text).flatMap((b) => parseChunk(b.heading, b.chunk)).filter((r) => isLmocg(r.area));
 }
+function ualMatchAt(lines, i, cur) {
+  if ((CODE_RE.test(lines[i]) || isCodeToken(lines[i])) && DATE_RE.test(lines[i + 1] || "") && REMAIN_RE.test(lines[i + 2] || "")) return 3;
+  if (i + 7 < lines.length && STAFF_RE.test(lines[i + 2]) && EMP_RE.test(lines[i + 4]) && (CODE_RE.test(lines[i + 5]) || isCodeToken(lines[i + 5])) && DATE_RE.test(lines[i + 6]) && REMAIN_RE.test(lines[i + 7])) return 8;
+  if (i + 8 < lines.length && STAFF_RE.test(lines[i + 3]) && EMP_RE.test(lines[i + 5]) && (CODE_RE.test(lines[i + 6]) || isCodeToken(lines[i + 6])) && DATE_RE.test(lines[i + 7]) && REMAIN_RE.test(lines[i + 8])) return 9;
+  if (cur && i + 5 < lines.length && STAFF_RE.test(lines[i]) && EMP_RE.test(lines[i + 2]) && (CODE_RE.test(lines[i + 3]) || isCodeToken(lines[i + 3])) && DATE_RE.test(lines[i + 4]) && REMAIN_RE.test(lines[i + 5])) return 6;
+  return 0;
+}
+function parseChunkStrict(heading, chunk, bag) {
+  const lines = linesOf(chunk);
+  let i = 0;
+  let fa = heading;
+  if (lines[0] && !STAFF_RE.test(lines[0]) && !DATE_RE.test(lines[0]) && !EMP_RE.test(lines[0]) && !isCodeToken(lines[0])) {
+    fa = lines[0];
+    i = 1;
+  }
+  const rows = [];
+  let cur = null;
+  const takePerson = (home, section, staff, name, emp) => {
+    const p = { home: String(home || "").trim(), section: String(section || "").trim(), staff: String(staff || "").trim(), name: String(name || "").trim(), emp: String(emp || "").trim() };
+    const missing = [];
+    if (!p.home) missing.push("home section");
+    if (!p.section) missing.push("current section");
+    if (!p.name) missing.push("name");
+    if (missing.length) bag.missing.push((p.staff || "(no staff)") + " · " + missing.join(", "));
+    if (!STAFF_RE.test(p.staff)) bag.badStaff.push(p.staff || "(empty)");
+    else if (!rosterHas(p.staff)) bag.unknownStaff.push(padStaff(p.staff));
+    if (!EMP_RE.test(p.emp)) bag.badEmp.push((p.staff || "(no staff)") + " · " + (p.emp || "(empty)"));
+    return p;
+  };
+  const takeCourse = (p, code, due, remain, area) => {
+    const c = String(code || "").trim();
+    const d = String(due || "").trim();
+    const rem = String(remain ?? "").trim();
+    if (!CODE_RE.test(c)) bag.unknownCodes.push(c.toUpperCase() || "(empty)");
+    if (!DATE_RE.test(d)) bag.broken.push("date failed" + (p && p.staff ? " · staff " + p.staff : "") + " · " + (d || "(empty)"));
+    if (!REMAIN_RE.test(rem)) bag.broken.push("remaining failed" + (p && p.staff ? " · staff " + p.staff : "") + " · " + (rem || "(empty)"));
+    if (p && CODE_RE.test(c) && DATE_RE.test(d) && REMAIN_RE.test(rem)) {
+      rows.push({ ...p, code: c.toUpperCase(), due: d, remain: Number(rem), area: area });
+    }
+  };
+  while (i < lines.length) {
+    const kind = ualMatchAt(lines, i, cur);
+    if (kind === 3) {
+      if (!cur) bag.broken.push("course " + lines[i] + " without person (staff / home / name missing)");
+      else takeCourse(cur, lines[i], lines[i + 1], lines[i + 2], fa);
+      i += 3;
+      continue;
+    }
+    if (kind === 8) {
+      cur = takePerson(lines[i], lines[i + 1], lines[i + 2], lines[i + 3], lines[i + 4]);
+      takeCourse(cur, lines[i + 5], lines[i + 6], lines[i + 7], fa);
+      i += 8;
+      continue;
+    }
+    if (kind === 9) {
+      fa = lines[i];
+      cur = takePerson(lines[i + 1], lines[i + 2], lines[i + 3], lines[i + 4], lines[i + 5]);
+      takeCourse(cur, lines[i + 6], lines[i + 7], lines[i + 8], fa);
+      i += 9;
+      continue;
+    }
+    if (kind === 6) {
+      cur = takePerson(cur.home, cur.section, lines[i], lines[i + 1], lines[i + 2]);
+      takeCourse(cur, lines[i + 3], lines[i + 4], lines[i + 5], fa);
+      i += 6;
+      continue;
+    }
+    if (ualLineIsGroupish(lines[i])) {
+      const w = lines.slice(i, Math.min(lines.length, i + 9));
+      bag.broken.push("looks like a person/course but staff # / employee v##### / date / remaining / code failed · " + w.slice(0, 6).join(" / "));
+      let j = i + 1;
+      while (j < lines.length && j < i + 9 && ualLineIsGroupish(lines[j])) j++;
+      i = Math.max(j, i + 1);
+      continue;
+    }
+    i++;
+  }
+  return rows;
+}
+function parseUalStrict(text) {
+  const blocks = parseBlocks(text);
+  if (!blocks.length) {
+    throw ingestReject("ual", [{
+      title: "No Functional Area … Remaining Due block",
+      detail: "The pasted email has no Functional Area / Home Section / Current Section … Remaining Due table. Whole UAL paste rejected."
+    }]);
+  }
+  const bag = { unknownCodes: [], unknownStaff: [], badStaff: [], badEmp: [], missing: [], broken: [] };
+  const all = [];
+  blocks.forEach((b) => {
+    all.push(...parseChunkStrict(b.heading, b.chunk, bag));
+  });
+  const issues = [];
+  const codes = uniqTexts(bag.unknownCodes);
+  if (codes.length) {
+    issues.push({
+      title: "Unknown course code (" + codes.length + ")",
+      detail: "Not in CODE_RE. Examples: " + codes.slice(0, 8).join(", ") + ". Add the code to CODE_RE if it is real, or fix the email."
+    });
+  }
+  const unknownStaff = uniqTexts(bag.unknownStaff);
+  if (unknownStaff.length) {
+    issues.push({
+      title: "Unknown staff # (" + unknownStaff.length + ")",
+      detail: "Not on the Name List. UAL is LMOCG-only. Examples: " + unknownStaff.slice(0, 8).join(", ")
+    });
+  }
+  const badStaff = uniqTexts(bag.badStaff);
+  if (badStaff.length) {
+    issues.push({
+      title: "Invalid staff # (" + badStaff.length + ")",
+      detail: "Staff # / employee v##### / date / remaining group failed. Examples: " + badStaff.slice(0, 8).join(", ")
+    });
+  }
+  const badEmp = uniqTexts(bag.badEmp);
+  if (badEmp.length) {
+    issues.push({
+      title: "Invalid employee number (" + badEmp.length + ")",
+      detail: "Expected v##### . Examples: " + badEmp.slice(0, 8).join(", ")
+    });
+  }
+  const missing = uniqTexts(bag.missing);
+  if (missing.length) {
+    issues.push({
+      title: "Missing usual fields (" + missing.length + ")",
+      detail: "Home section / current section / name empty. Examples: " + missing.slice(0, 8).join("; ")
+    });
+  }
+  const broken = uniqTexts(bag.broken);
+  if (broken.length) {
+    issues.push({
+      title: "Unrecognized person/course group (" + broken.length + ")",
+      detail: "A line group looks like a person/course but failed staff # / employee v##### / date / remaining / code. Examples: " + broken.slice(0, 5).join(" · ")
+    });
+  }
+  const lmocg = all.filter((r) => isLmocg(r.area));
+  if (!issues.length && !lmocg.length) {
+    const areas = uniqTexts(all.map((r) => r.area));
+    issues.push({
+      title: "0 LMOCG rows",
+      detail: "Email has a table but no LM OCG rows (wrong Functional Area or parse miss)." + (areas.length ? " Areas seen: " + areas.join(", ") : "")
+    });
+  }
+  if (issues.length) throw ingestReject("ual", issues);
+  return lmocg;
+}
 
 function parseCsv(text) {
   text = String(text || "").replace(/^\uFEFF/, "");
@@ -566,22 +1643,87 @@ function findCol(headers, part) {
   return headers.findIndex((h) => String(h || "").toLowerCase().includes(part.toLowerCase()));
 }
 function ingestCtGrid(grid) {
-  if (grid.length < 2) throw new Error("CSV has no data rows");
+  if (!grid || grid.length < 2) {
+    throw ingestReject("ct", [{ title: "Unreadable / no data rows", detail: "CT CSV has no data rows. Whole file rejected." }]);
+  }
   const headers = grid[0];
-  if (findCol(headers, "user id") < 0 && findCol(headers, "staff id") < 0) throw new Error("User ID column not found");
+  const hasUid = findCol(headers, "user id") >= 0 || findCol(headers, "staff id") >= 0 || findStaffCol(headers) >= 0;
+  const hasCode = findCol(headers, "certification code") >= 0 || findCol(headers, "course code") >= 0;
+  const hasExp = findCol(headers, "expiration date") >= 0 || findCol(headers, "expiration") >= 0 || findCol(headers, "expiry") >= 0;
+  const missingCols = [];
+  if (!hasUid) missingCols.push("User ID / Staff ID");
+  if (!hasCode) missingCols.push("Certification Code / Course Code");
+  if (!hasExp) missingCols.push("Expiration Date");
+  if (missingCols.length) {
+    throw ingestReject("ct", [{
+      title: "Required column missing (" + missingCols.length + ")",
+      detail: missingCols.join(", ") + ". CT Reminder CSV must have the usual columns. Whole file rejected."
+    }]);
+  }
   const get = (cells, part) => {
     const i = findCol(headers, part);
     return i >= 0 ? String(cells[i] ?? "").trim() : "";
   };
-  return grid.slice(1).map((cells) => ({
-    uid: padStaff(get(cells, "user id") || get(cells, "staff id")),
-    name: get(cells, "other name") || get(cells, "name"),
-    code: get(cells, "certification code"),
-    cname: get(cells, "certification name"),
-    exp: get(cells, "expiration date"),
-    issued: get(cells, "issued by"),
-    home: get(cells, "home section")
-  })).filter((r) => r.uid);
+  const rows = [];
+  const badStaff = [];
+  const noCode = [];
+  const missingUsual = [];
+  grid.slice(1).forEach((cells) => {
+    if (!cells.some((c) => String(c || "").trim() !== "")) return;
+    const rawId = get(cells, "user id") || get(cells, "staff id") || (findStaffCol(headers) >= 0 ? String(cells[findStaffCol(headers)] ?? "").trim() : "");
+    const code = get(cells, "certification code") || get(cells, "course code");
+    const exp = get(cells, "expiration date") || get(cells, "expiration") || get(cells, "expiry");
+    if (!isValidStaffId(rawId)) {
+      badStaff.push(rawId || "(empty)");
+      return;
+    }
+    if (!code) {
+      noCode.push(padStaff(rawId));
+      return;
+    }
+    if (!exp) {
+      missingUsual.push(padStaff(rawId) + " · no expiration date");
+      return;
+    }
+    rows.push({
+      uid: padStaff(rawId),
+      name: get(cells, "other name") || get(cells, "name"),
+      code,
+      cname: get(cells, "certification name"),
+      award: get(cells, "award"),
+      desc: get(cells, "description"),
+      exp,
+      issued: get(cells, "issued by"),
+      home: get(cells, "home section")
+    });
+  });
+  const issues = [];
+  const bad = uniqTexts(badStaff);
+  if (bad.length) {
+    issues.push({
+      title: "Cannot identify staff # (" + bad.length + ")",
+      detail: "Empty or invalid staff / user id on a data row. Transit / non-OCG staff with a valid # are kept (board filters later). Examples: " + bad.slice(0, 8).join(", ")
+    });
+  }
+  const codes = uniqTexts(noCode);
+  if (codes.length) {
+    issues.push({
+      title: "Unknown course with no code (" + codes.length + ")",
+      detail: "Row has a staff # but no course / certification code. Examples: " + codes.slice(0, 8).join(", ")
+    });
+  }
+  const usual = uniqTexts(missingUsual);
+  if (usual.length) {
+    issues.push({
+      title: "Missing usual fields (" + usual.length + ")",
+      detail: "Examples: " + usual.slice(0, 8).join("; ")
+    });
+  }
+  if (issues.length) throw ingestReject("ct", issues);
+  if (!rows.length) {
+    throw ingestReject("ct", [{ title: "Unreadable / no data rows", detail: "CT CSV parsed 0 usable rows. Whole file rejected." }]);
+  }
+  return rows;
 }
 function findStaffCol(headers) {
   const i = headers.findIndex((h) => /staff\s*#|staff\s*no\.?|user\s*id|staff\s*number/i.test(String(h || "")));
@@ -600,29 +1742,89 @@ function omtDate(v) {
   return s.replace(/\s+\d{1,2}:\d{2}(:\d{2})?(\s*[AP]M)?/i, "").trim();
 }
 function ingestOmtGrid(grid) {
-  if (grid.length < 2) throw new Error("File has no data rows");
+  if (!grid || grid.length < 2) {
+    throw ingestReject("omt", [{ title: "Unreadable / no data rows", detail: "Mandatory file has no data rows. Whole file rejected." }]);
+  }
   const headers = grid[0].map((h) => String(h ?? "").trim());
   const sid = findStaffCol(headers);
-  if (sid < 0) throw new Error("Staff# column not found");
+  const codeI = headers.findIndex((h) => /course\s*code|certification code/i.test(h));
+  const hasExp = headers.some((h) => /expiry|expiration|completion/i.test(h));
+  const missingCols = [];
+  if (sid < 0) missingCols.push("Staff # / User ID");
+  if (codeI < 0) missingCols.push("Course Code / Certification Code");
+  if (!hasExp) missingCols.push("Expiry / Expiration / Completion");
+  if (missingCols.length) {
+    throw ingestReject("omt", [{
+      title: "Required column missing (" + missingCols.length + ")",
+      detail: missingCols.join(", ") + ". Whole Mandatory file rejected."
+    }]);
+  }
   const get = (cells, part, from) => {
     const i = headers.findIndex((h, idx) => idx >= (from || 0) && String(h || "").toLowerCase().includes(part.toLowerCase()));
     return i >= 0 ? String(cells[i] ?? "").trim() : "";
   };
   const nameI = headers.findIndex((h) => /staff\s*name|other name/i.test(h));
-  const codeI = headers.findIndex((h) => /course\s*code|certification code/i.test(h));
-  return grid.slice(1).map((cells) => {
-    const uid = padStaff(cells[sid]);
-    const code = codeI >= 0 ? String(cells[codeI] ?? "").trim() : get(cells, "course");
-    return {
-      uid,
+  const cnameI = headers.findIndex((h) => /course\s*name|certification name/i.test(h));
+  const rows = [];
+  const badStaff = [];
+  const noCode = [];
+  const missingUsual = [];
+  grid.slice(1).forEach((cells) => {
+    if (!cells.some((c) => String(c || "").trim() !== "")) return;
+    const rawId = String(cells[sid] ?? "").trim();
+    const code = String(cells[codeI] ?? "").trim();
+    const exp = omtDate(get(cells, "expiry") || get(cells, "expiration"));
+    const done = omtDate(get(cells, "completion"));
+    if (!isValidStaffId(rawId)) {
+      badStaff.push(rawId || "(empty)");
+      return;
+    }
+    if (!code) {
+      noCode.push(padStaff(rawId));
+      return;
+    }
+    if (!exp && !done) {
+      missingUsual.push(padStaff(rawId) + " · no expiry/completion");
+      return;
+    }
+    rows.push({
+      uid: padStaff(rawId),
       name: nameI >= 0 ? String(cells[nameI] ?? "").trim() : get(cells, "name"),
       code,
-      exp: omtDate(get(cells, "expiry") || get(cells, "expiration")),
-      done: omtDate(get(cells, "completion")),
+      cname: cnameI >= 0 ? String(cells[cnameI] ?? "").trim() : "",
+      exp,
+      done,
       home: get(cells, "currentsec") || get(cells, "current section") || get(cells, "home section"),
       section: get(cells, "department")
-    };
-  }).filter((r) => r.uid && r.code);
+    });
+  });
+  const issues = [];
+  const bad = uniqTexts(badStaff);
+  if (bad.length) {
+    issues.push({
+      title: "Cannot identify staff # (" + bad.length + ")",
+      detail: "Empty or invalid staff # on a data row. Transit / non-OCG staff with a valid # are kept (board filters later; not a reject). Examples: " + bad.slice(0, 8).join(", ")
+    });
+  }
+  const codes = uniqTexts(noCode);
+  if (codes.length) {
+    issues.push({
+      title: "Unknown course with no code (" + codes.length + ")",
+      detail: "Row has a staff # but no course code. Examples: " + codes.slice(0, 8).join(", ")
+    });
+  }
+  const usual = uniqTexts(missingUsual);
+  if (usual.length) {
+    issues.push({
+      title: "Missing usual fields (" + usual.length + ")",
+      detail: "Examples: " + usual.slice(0, 8).join("; ")
+    });
+  }
+  if (issues.length) throw ingestReject("omt", issues);
+  if (!rows.length) {
+    throw ingestReject("omt", [{ title: "Unreadable / no data rows", detail: "Mandatory file parsed 0 usable rows. Whole file rejected." }]);
+  }
+  return rows;
 }
 const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, sept: 8, oct: 9, nov: 10, dec: 11 };
 function dueStamp(s) {
@@ -649,6 +1851,18 @@ function remainFromDue(s) {
   const t = dueStamp(s);
   if (!t) return "";
   return Math.round((t - Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())) / 86400000);
+}
+function remainNum(remain) {
+  if (remain === "" || remain == null) return NaN;
+  const n = Number(remain);
+  return Number.isFinite(n) ? n : NaN;
+}
+function remainBand(remain) {
+  const n = remainNum(remain);
+  if (!Number.isFinite(n)) return "";
+  if (n <= 30) return "hot";
+  if (n <= 90) return "warn";
+  return "";
 }
 function fmtDue(s) {
   const raw = String(s || "").replace(/\s+0?0:00(:00)?\s*(AM|PM)?/i, "").trim();
@@ -685,20 +1899,31 @@ function flattenOmt() {
     (f.rows || []).forEach((r) => omtRows.push({ ...r, kind: "omt", file: f.name }));
   });
 }
-function persistCtFiles() {
+function persistCtFiles(opts) {
+  const clear = opts && opts.clear;
+  if (!ctFiles.length) {
+    if (clear && persistArmed) {
+      lsSet(CT_FILES, "[]");
+      lsSet(CT_CLEARED, "1");
+    }
+    return;
+  }
   try { lsSet(CT_FILES, JSON.stringify(ctFiles.map((f) => ({ name: f.name, kind: f.kind, rows: f.rows })))); } catch (e) {}
+  lsSet(CT_CLEARED, "0");
 }
 function paintCtFiles() {
   const n = ctRows.length;
   const bits = ctFiles.map((f) => f.name + " (" + ctKindLabel(f.kind) + ", " + (f.rows || []).length + ")");
+  const non = ctRows.filter((r) => !personOf(r.uid, r.name).group).length;
   document.getElementById("ct-status").textContent = n
-    ? ctFiles.length + " file" + (ctFiles.length > 1 ? "s" : "") + " · " + n + " rows."
+    ? ctFiles.length + " file" + (ctFiles.length > 1 ? "s" : "") + " · " + n + " rows" + (non ? " · " + non + " non-OCG stored (board filters later; not a reject)" : "") + "."
     : "No CT CSV yet.";
   document.getElementById("ct-files").innerHTML = ctFiles.map((f, i) =>
     "<li><span class=\"kind-" + (f.kind === "overdue" ? "overdue" : "duesoon") + "\">" + esc(ctKindLabel(f.kind)) + "</span>" +
     "<span>" + esc(f.name) + " · " + (f.rows || []).length + " rows</span>" +
     "<button type=\"button\" data-ct-del=\"" + i + "\">Remove</button></li>"
   ).join("");
+  applyWriteAccess();
 }
 
 function ualItems() {
@@ -725,7 +1950,7 @@ function ualItems() {
       extra: (r.due || "") + (r.remain != null ? " · " + r.remain + "d" : ""),
       cname: r.code || key,
       kind: "ual",
-      hot: Number(r.remain) <= 30
+      hot: remainBand(r.remain) === "hot"
     });
   });
   return [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
@@ -736,7 +1961,8 @@ function ctItems() {
     const who = personOf(r.uid || r.staff, r.name);
     if (!orgOk(who.group) || !roleOk(who.home)) return;
     const key = r.code || r.cname || "CT";
-    if (!map.has(key)) map.set(key, { src: "ct", key, title: r.cname && r.cname !== key ? (key + " · " + r.cname) : key, people: [] });
+    if (!map.has(key)) map.set(key, { src: "ct", key, title: itemDisplayTitle(key, r.cname), people: [] });
+    const remain = remainFromDue(r.exp);
     map.get(key).people.push({
       staff: who.staff,
       name: who.name,
@@ -748,11 +1974,11 @@ function ctItems() {
       crew: crewOf({ home: who.home || r.home || "", shift: who.shift || "" }),
       code: r.code || key,
       due: r.exp || "",
-      remain: remainFromDue(r.exp),
+      remain,
       cname: r.cname || "",
       kind: r.kind || "other",
       extra: (r.kind === "dueSoon" ? "due soon · " : r.kind === "overdue" ? "overdue · " : "") + (r.exp || ""),
-      hot: r.kind === "overdue"
+      hot: remainBand(remain) === "hot"
     });
   });
   return [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
@@ -763,7 +1989,8 @@ function omtItems() {
     const who = personOf(r.uid || r.staff, r.name);
     if (!who.group || !orgOk(who.group) || !roleOk(who.home)) return;
     const key = r.code || "Mandatory";
-    if (!map.has(key)) map.set(key, { src: "omt", key, title: key, people: [] });
+    const looked = omtCourseName(r);
+    if (!map.has(key)) map.set(key, { src: "omt", key, title: itemDisplayTitle(key, looked), people: [] });
     const remain = remainFromDue(r.exp);
     map.get(key).people.push({
       staff: who.staff,
@@ -778,24 +2005,55 @@ function omtItems() {
       code: r.code || key,
       due: r.exp || "",
       remain,
-      cname: r.code || key,
+      cname: looked || r.code || key,
       kind: "omt",
       extra: (r.exp || ""),
-      hot: remain !== "" && Number(remain) <= 0
+      hot: remainBand(remain) === "hot"
+    });
+  });
+  return [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
+}
+function manualItems() {
+  const map = new Map();
+  manualRows.forEach((r) => {
+    const who = personOf(r.staff, r.name);
+    if (!orgOk(who.group) || !roleOk(who.home)) return;
+    const key = r.code || r.cname || "Manual";
+    const looked = (r.cname && normCode(r.cname) !== normCode(r.code)) ? r.cname : (courseNameFor(r.code) || r.cname || key);
+    if (!map.has(key)) map.set(key, { src: "manual", key, title: itemDisplayTitle(key, looked), people: [] });
+    const remain = remainFromDue(r.exp);
+    map.get(key).people.push({
+      staff: who.staff,
+      name: who.name || r.name,
+      team: who.team,
+      group: who.group,
+      emp: "",
+      home: who.home || "",
+      shift: who.shift || "",
+      crew: crewOf(who),
+      code: r.code || key,
+      due: r.exp || "",
+      remain,
+      cname: looked,
+      kind: "manual",
+      mid: r.id,
+      extra: r.exp || "",
+      hot: remainBand(remain) === "hot"
     });
   });
   return [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
 }
 function itemsAll() {
   const list = [];
-  if (src === "all" || src === "ual") list.push(...ualItems());
-  if (src === "all" || src === "ct") list.push(...ctItems());
-  if (src === "all" || src === "omt") list.push(...omtItems());
+  if (srcHas("ual")) list.push(...ualItems());
+  if (srcHas("ct")) list.push(...ctItems());
+  if (srcHas("omt")) list.push(...omtItems());
+  if (srcHas("manual")) list.push(...manualItems());
   const s = q.trim().toLowerCase();
   if (!s) return list;
   return list.filter((it) => {
     if (it.key.toLowerCase().includes(s) || it.title.toLowerCase().includes(s) || it.src.includes(s)) return true;
-    return it.people.some((p) => [p.staff, p.name, p.home, p.shift, p.crew, p.emp, p.area, p.section].some((v) => String(v || "").toLowerCase().includes(s)));
+    return it.people.some((p) => [p.staff, p.name, p.home, p.shift, p.crew, p.emp, p.area, p.section, p.code, p.cname].some((v) => String(v || "").toLowerCase().includes(s)));
   });
 }
 function cellPeople(item, team) {
@@ -834,8 +2092,8 @@ function paintHead() {
     "<th class=\"item sort" + (onItem ? " on" : "") + "\" data-sort=\"item\"" +
       (onItem ? " data-dir=\"" + (sortDir > 0 ? "▲" : "▼") + "\"" : "") + ">Training item</th>" +
     TEAM_KEYS.map((t) =>
-      "<th class=\"team" + (pick && !pick.id && pick.team === t ? " on" : "") + "\" data-team=\"" + t + "\">" +
-      esc(TEAM_LABEL[t]) + "<br><small>Details</small></th>"
+      "<th class=\"team" + (teamFilter === t ? " on" : "") + "\" data-team=\"" + t + "\">" +
+      esc(TEAM_LABEL[t]) + "<br><small data-team-details=\"" + t + "\">Details</small></th>"
     ).join("");
 }
 
@@ -854,7 +2112,10 @@ function paintBoard() {
   document.getElementById("n-out").textContent = String(outPeople.size);
   document.getElementById("n-hot").textContent = String(hotPeople.size);
   document.querySelectorAll("[data-org]").forEach((b) => b.classList.toggle("on", b.dataset.org === org));
-  document.querySelectorAll("[data-src]").forEach((b) => b.classList.toggle("on", b.dataset.src === src));
+  document.querySelectorAll("[data-src]").forEach((b) => {
+    const on = b.dataset.src === "all" ? srcIsAll() : srcHas(b.dataset.src);
+    b.classList.toggle("on", on);
+  });
   paintHead();
 
   document.getElementById("board-body").innerHTML = items.map((it) => {
@@ -866,18 +2127,18 @@ function paintBoard() {
       if (!st.den && !st.left) return "<td class=\"cell empty" + on + "\" data-id=\"" + esc(id) + "\" data-team=\"" + t + "\">—</td>";
       const outW = st.den ? Math.min(100, Math.round(100 * st.left / st.den)) : 100;
       const doneW = 100 - outW;
+      const ok = Math.max(0, st.den - st.left);
       return "<td class=\"cell" + on + "\" data-id=\"" + esc(id) + "\" data-team=\"" + t + "\">" +
         "<div class=\"bar\"><i class=\"done\" style=\"width:" + doneW + "%\"></i><i class=\"out\" style=\"width:" + outW + "%\"></i></div>" +
-        "<div class=\"pct\">" + st.pct + "%</div>" +
-        (st.left ? "<div class=\"leftn\">" + st.left + " left</div>" : "") +
+        "<div class=\"pct-line\">" + st.pct + "% (" + ok + "/" + st.den + ") " + st.left + " left</div>" +
         "</td>";
     }).join("");
     return "<tr>" +
-      "<td class=\"item\"><span class=\"item-k\">" + esc(it.src === "ual" ? "UAL CBT" : it.src === "omt" ? "Mandatory" : "CT Reminder") + "</span>" +
+      "<td class=\"item\"><span class=\"item-k\">" + esc(it.src === "ual" ? "UAL CBT" : it.src === "omt" ? "Mandatory" : it.src === "manual" ? "Manual" : "CT Reminder") + "</span>" +
       "<span class=\"item-t\">" + esc(it.title) + "</span>" +
       (rowHot ? "<span class=\"fire\" title=\"Hot / overdue\">!</span>" : "") +
       "</td>" + cells + "</tr>";
-  }).join("") || "<tr><td class=\"item\" colspan=\"6\">No items for this tab. Load UAL email, CT CSV, and / or Mandatory file.</td></tr>";
+  }).join("") || "<tr><td class=\"item\" colspan=\"6\">No items for this tab. Load UAL email, CT CSV, and / or Mandatory file, or add a Manual course.</td></tr>";
 }
 
 function statusOf(x) {
@@ -910,34 +2171,37 @@ function peopleBundle(pairs) {
     const prev = map.get(key) || {
       staff: p.staff, name: p.name, team: p.team || "", emp: "", home: p.home || "", shift: p.shift || "", crew: p.crew || crewOf(p),
       area: "", section: "",
-      courses: [], overdueCourses: [], soonCourses: [], overdueRows: [], soonRows: [],
+      courses: [], courseRows: [], overdueCourses: [], soonCourses: [], overdueRows: [], soonRows: [],
       due: "", soonDue: "", remain: "", soonRemain: "", hot: false, warn: false, ualHot: false, ualWarn: false, srcs: []
     };
     const course = p.code || item.title;
+    const rawName = p.cname && p.cname !== course ? p.cname : "";
     const row = {
       code: course,
-      name: p.cname && p.cname !== course ? p.cname : (item.title || course),
+      name: displayCourseName(course, rawName) || rawName || course,
       due: p.due || "",
       remain: p.remain,
       src: item.src || "",
-      kind: p.kind || ""
+      kind: p.kind || "",
+      mid: p.mid || ""
     };
     const addRow = (arr) => {
       if (arr.some((d) => d.code === row.code && d.due === row.due)) return;
       arr.push(row);
     };
     if (course && !prev.courses.includes(course)) prev.courses.push(course);
+    addRow(prev.courseRows);
     const ual = p.kind === "ual" || item.src === "ual";
-    const omtSoon = (p.kind === "omt" || item.src === "omt") && p.remain !== "" && Number(p.remain) > 0;
-    if ((ual && Number(p.remain) > 30) || omtSoon) {
+    const band = remainBand(p.remain);
+    if (band === "warn") {
       if (course && !prev.soonCourses.includes(course)) prev.soonCourses.push(course);
       addRow(prev.soonRows);
       const next = takeSooner(prev.soonDue, prev.soonRemain, p.due, p.remain);
       prev.soonDue = next.due;
       prev.soonRemain = next.remain;
       prev.warn = true;
-      prev.ualWarn = true;
-    } else {
+      if (ual) prev.ualWarn = true;
+    } else if (band === "hot") {
       if (course && !prev.overdueCourses.includes(course)) prev.overdueCourses.push(course);
       addRow(prev.overdueRows);
       const next = takeSooner(prev.due, prev.remain, p.due, p.remain);
@@ -963,7 +2227,7 @@ function paintDetail() {
   const box = document.getElementById("detail");
   const roster = rosterByTeam();
   const items = sortItems(itemsAll());
-  const team = pick && pick.team;
+  const team = teamFilter;
   const allTeams = !team;
   const pairs = [];
   items.forEach((it) => {
@@ -989,11 +2253,13 @@ function paintDetail() {
     return "";
   };
   list.sort((a, b) => {
+    const roster = cmpRoster(a, b);
+    if (!dSort) return roster;
     const va = val(a, dSort), vb = val(b, dSort);
     let cmp;
     if (dSort === "staff" || dSort === "remain" || dSort === "soonRemain") cmp = (Number(va) || 0) - (Number(vb) || 0) || String(va).localeCompare(String(vb));
     else cmp = String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: "base" });
-    return dDir * cmp || (a.hot === b.hot ? 0 : a.hot ? -1 : 1) || (a.warn === b.warn ? 0 : a.warn ? -1 : 1) || a.name.localeCompare(b.name);
+    return dDir * cmp || roster;
   });
   const picked = pick && pick.id ? items.find((it) => itemId(it) === pick.id) : null;
   const rosterN = allTeams ? TEAM_KEYS.reduce((n, t) => n + roster[t].length, 0) : roster[team].length;
@@ -1004,48 +2270,518 @@ function paintDetail() {
     const on = dSort === key;
     return "<th class=\"sort" + (on ? " on" : "") + (extra ? " " + extra : "") + "\" data-dsort=\"" + key + "\"" + (on ? " data-dir=\"" + (dDir > 0 ? "▲" : "▼") + "\"" : "") + ">" + label + "</th>";
   };
-  box.className = "detail";
+  box.className = "detail " + (listView === "cards" ? "detail-cards" : "detail-table");
+  const viewBtns = [["table", "Table"], ["cards", "Details"]].map(([k, l]) =>
+    "<button type=\"button\" data-list-view=\"" + k + "\"" + (listView === k ? " class=\"on\"" : "") + ">" + esc(l) + "</button>"
+  ).join("");
   const roleBtns = [["all", "All"], ["cert", "Certifiers (LTWX)"], ["mech", "Mechanics (other sections)"]].map(([k, l]) =>
     "<button type=\"button\" data-role=\"" + k + "\"" + (role === k ? " class=\"on\"" : "") + ">" + esc(l) + "</button>"
   ).join("");
+  const colorLegend = "<div class=\"row-legend\" aria-label=\"Row colors\">" +
+    "<span><i class=\"swatch hot\"></i>Overdue or will expire (≤30 days)</span>" +
+    "<span><i class=\"swatch warn\"></i>Coming due (&gt;30 and ≤90 days)</span>" +
+    "<span><i class=\"swatch ok\"></i>Completed</span>" +
+    "<span><i class=\"swatch progress\"></i>In Progress (Status cell)</span>" +
+    "</div>";
   const tdCell = (text, extra) => {
     const t = text == null ? "" : String(text);
     const cls = [extra || "", t.trim() ? "" : "blank"].filter(Boolean).join(" ");
     return "<td" + (cls ? " class=\"" + cls + "\"" : "") + ">" + esc(t) + "</td>";
   };
+  const tableShot = "<div id=\"detail-shot\"><table><thead><tr>" + dth("Staff #", "staff") + dth("Name", "name") + dth("Team", "team", "col-team") + dth("Section + Crew", "crew") +
+    dth("Overdue or will expire courses", "overdue") + dth("Overdue or will expire due day", "due") + dth("Overdue or will expire remaining", "remain") +
+    dth("UA Employee #", "emp") +
+    dth("Coming due courses", "soon") + dth("Coming due day", "soonDue") + dth("Coming due remaining", "soonRemain") + "</tr></thead><tbody>" +
+    list.map((x) => {
+      const soonOn = x.soonCourses.length ? "soon" : "";
+      const empOn = x.emp && String(x.emp).trim() ? (x.ualHot ? "hot-ual" : x.ualWarn ? "soon" : "") : "";
+      const sid = esc(x.staff);
+      const staffCls = String(x.staff || "").trim() ? "" : "blank";
+      return "<tr class=\"" + (x.hot ? "hot" : x.warn ? "warn" : "") + "\" data-staff=\"" + sid + "\">" +
+        "<td" + (staffCls ? " class=\"" + staffCls + "\"" : "") + ">" + staffNoHtml(x.staff) + "</td>" + tdCell(x.name) +
+        tdCell(teamLabel(x.team, x.home), "col-team") +
+        tdCell(x.crew || crewOf(x) || x.section || "") +
+        tdCell(x.overdueCourses.join(", ")) +
+        tdCell(fmtDueDate(x.due)) +
+        tdCell(remainText(x.remain, Number(x.remain) > 0), "remain") +
+        tdCell(x.emp, empOn) +
+        tdCell(x.soonCourses.join(", "), soonOn) +
+        tdCell(fmtDueDate(x.soonDue), soonOn) +
+        tdCell(remainText(x.soonRemain, true), ("remain" + (soonOn ? " " + soonOn : "")).trim()) + "</tr>";
+    }).join("") +
+    "</tbody></table></div>";
+  const cardsShot = "<div id=\"detail-shot\" class=\"person-cards\">" + list.map((x) =>
+    "<section class=\"person-card\">" + personCardHeadHtml(x) + personCourseTableHtml(x) + "</section>"
+  ).join("") + "</div>";
   box.innerHTML = "<div class=\"detail-head\"><h3>" + esc(label) + " · " + list.length + " people · roster " + rosterN + "</h3>" +
-    "<div class=\"toolbar\">" + roleBtns + copyIconBtn("detail-copy") + "</div></div>" +
-    (list.length
-      ? "<div id=\"detail-shot\"><table><thead><tr>" + dth("Staff #", "staff") + dth("Name", "name") + dth("Team", "team", "col-team") + dth("Section + Crew", "crew") +
-        dth("Overdue or will expire courses", "overdue") + dth("Overdue or will expire due day", "due") + dth("Overdue or will expire remaining", "remain") +
-        dth("UA Employee #", "emp") +
-        dth("Coming due courses", "soon") + dth("Coming due day", "soonDue") + dth("Coming due remaining", "soonRemain") + "</tr></thead><tbody>" +
-        list.map((x) => {
-          const soonOn = x.soonCourses.length ? "soon" : "";
-          const empOn = x.emp && String(x.emp).trim() ? (x.ualHot ? "hot-ual" : x.ualWarn ? "soon" : "") : "";
-          const sid = esc(x.staff);
-          return "<tr class=\"" + (x.hot ? "hot" : x.warn ? "warn" : "") + "\" data-staff=\"" + sid + "\">" +
-            tdCell(x.staff) + tdCell(x.name) +
-            tdCell(teamLabel(x.team, x.home), "col-team") +
-            tdCell(x.crew || crewOf(x) || x.section || "") +
-            tdCell(x.overdueCourses.join(", ")) +
-            tdCell(fmtDueDate(x.due)) +
-            tdCell(remainText(x.remain, Number(x.remain) > 0), "remain") +
-            tdCell(x.emp, empOn) +
-            tdCell(x.soonCourses.join(", "), soonOn) +
-            tdCell(fmtDueDate(x.soonDue), soonOn) +
-            tdCell(remainText(x.soonRemain, true), ("remain" + (soonOn ? " " + soonOn : "")).trim()) + "</tr>";
-        }).join("") +
-        "</tbody></table></div>"
-      : "<p class=\"note\">No outstanding names.</p>");
+    "<div class=\"toolbar\"><div class=\"view-toggle\">" + viewBtns + "</div>" + roleBtns + copyIconBtn("detail-copy") + "</div>" +
+    colorLegend + "</div>" +
+    (list.length ? (listView === "cards" ? cardsShot : tableShot) : "<p class=\"note\">No outstanding names.</p>");
+  applyWriteAccess();
 }
 
 function srcLabel(row) {
   if (row.src === "ual" || row.kind === "ual") return "UAL CBT";
   if (row.src === "omt" || row.kind === "omt") return "Mandatory";
+  if (row.src === "manual" || row.kind === "manual") return "Manual";
   if (row.kind === "dueSoon") return "CT · weekly";
   if (row.kind === "overdue") return "CT · daily overdue";
   return row.src === "ct" ? "CT Reminder" : (row.src || "");
+}
+function personCrewLabel(who) {
+  return String((who && (who.crew || crewOf(who) || who.section)) || "").trim();
+}
+function personCourseRows(who) {
+  if (who.courseRows && who.courseRows.length) return who.courseRows;
+  return (who.overdueRows || []).concat(who.soonRows || []);
+}
+function personCourseCountLabel(who) {
+  const n = personCourseRows(who).length;
+  return n + " course" + (n === 1 ? "" : "s");
+}
+function personDetailTitle(who) {
+  const crew = personCrewLabel(who);
+  const parts = [];
+  if (crew) parts.push(crew);
+  if (who.staff) parts.push(who.staff);
+  if (who.name) parts.push(who.name);
+  return parts.join(" · ");
+}
+function personDetailTitleHtml(who) {
+  const crew = personCrewLabel(who);
+  const parts = [];
+  if (crew) parts.push(esc(crew));
+  if (who.staff) parts.push(staffNoHtml(who.staff));
+  if (who.name) parts.push(esc(who.name));
+  return parts.join(" · ");
+}
+function personCardHeadHtml(who) {
+  return "<div class=\"person-card-head\">" +
+    "<h4 class=\"person-card-title\">" + personDetailTitleHtml(who) + "</h4>" +
+    "<span class=\"person-card-count\">" + esc(personCourseCountLabel(who)) + "</span>" +
+    "</div>";
+}
+function courseSrcKey(row) {
+  if (!row) return "ct";
+  if (row.src === "ual" || row.kind === "ual") return "ual";
+  if (row.src === "omt" || row.kind === "omt") return "omt";
+  if (row.src === "manual" || row.kind === "manual") return "manual";
+  return "ct";
+}
+function courseCodeKey(row) {
+  return String((row && (row.code || row.name)) || "").trim().toUpperCase();
+}
+function courseStatusStoreKey(staff, code, src) {
+  return [padStaff(staff), String(code || "").toUpperCase(), String(src || "ct")].join("|");
+}
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+function validYmd(y, m, d) {
+  if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1970 || y > 2100) return false;
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+function parseDoneDate(raw) {
+  const s = String(raw || "").trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) {
+    const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+    return validYmd(y, mo, d) ? y + "-" + pad2(mo) + "-" + pad2(d) : "";
+  }
+  m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{2})$/);
+  if (m) {
+    const d = Number(m[1]), mo = Number(m[2]), yy = Number(m[3]);
+    const y = yy <= 69 ? 2000 + yy : 1900 + yy;
+    return validYmd(y, mo, d) ? y + "-" + pad2(mo) + "-" + pad2(d) : "";
+  }
+  return "";
+}
+function fmtDoneDisplay(iso) {
+  const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? m[3] + "-" + m[2] + "-" + m[1].slice(2) : "";
+}
+function readCourseStatus(staff, row) {
+  const rec = courseStatus[courseStatusStoreKey(staff, courseCodeKey(row), courseSrcKey(row))] || {};
+  const status = COURSE_STATUS_OPTS.indexOf(rec.status) >= 0 ? rec.status : "Not Started";
+  const done = status === "Completed" ? parseDoneDate(rec.done) : "";
+  return { status: status, done: done };
+}
+function persistCourseStatus() {
+  if (!persistArmed) return;
+  try { lsSet(COURSE_STATUS, JSON.stringify(courseStatus)); } catch (e) {}
+}
+function writeCourseStatus(staff, code, src, rec) {
+  const k = courseStatusStoreKey(staff, code, src);
+  const status = COURSE_STATUS_OPTS.indexOf(rec && rec.status) >= 0 ? rec.status : "Not Started";
+  const done = status === "Completed" ? parseDoneDate((rec && rec.done) || "") : "";
+  if (status === "Not Started") delete courseStatus[k];
+  else courseStatus[k] = { status: status, done: done };
+  persistCourseStatus();
+}
+function restoreCourseStatus() {
+  const got = peekJson(COURSE_STATUS);
+  if (got.found && got.value && typeof got.value === "object" && !Array.isArray(got.value)) {
+    courseStatus = got.value;
+  }
+}
+function newManualId() {
+  return "m-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+}
+function normManualRow(r) {
+  if (!r || typeof r !== "object") return { id: "", staff: "", name: "", code: "", cname: "", exp: "" };
+  const exp = String(r.exp || r.expire || r.due || "").trim();
+  return {
+    id: String(r.id || "").trim() || newManualId(),
+    staff: padStaff(r.staff || r.uid),
+    name: String(r.name || "").trim(),
+    code: String(r.code || "").trim(),
+    cname: String(r.cname || "").trim(),
+    exp: exp
+  };
+}
+function persistManualCourses() {
+  if (!persistArmed) return;
+  try { lsSet(MANUAL_STORE, JSON.stringify(manualRows)); } catch (e) {}
+}
+function restoreManualCourses() {
+  const got = peekJson(MANUAL_STORE);
+  if (!got.found || !Array.isArray(got.value)) return;
+  manualRows = got.value.map(normManualRow).filter((r) => r.staff && (r.code || r.cname) && r.exp);
+}
+function setManualHint(msg) {
+  const el = document.getElementById("manual-hint");
+  if (el) el.textContent = msg;
+}
+function fillManualFromRoster() {
+  const staffEl = document.getElementById("manual-staff");
+  const nameEl = document.getElementById("manual-name");
+  if (!staffEl || !nameEl) return;
+  const raw = String(staffEl.value || "").trim();
+  if (!raw) return;
+  const who = personOf(raw, "");
+  if (who && who.group && who.name) {
+    if (!nameEl.value.trim() || nameEl.dataset.autofill === "1") {
+      nameEl.value = who.name;
+      nameEl.dataset.autofill = "1";
+    }
+    const bits = [who.name];
+    if (who.home) bits.push(who.home);
+    if (who.shift) bits.push(who.shift);
+    if (who.team && who.team !== "other") bits.push(TEAM_LABEL[who.team] || who.team);
+    setManualHint("Name List: " + bits.join(" · "));
+  } else if (/^\d{5,7}$/.test(raw.replace(/\s/g, ""))) {
+    setManualHint("Not on the Name List — Add course will reject.");
+  }
+}
+function looseCode(s) {
+  let t = String(s || "").toLowerCase().replace(/\s+/g, "");
+  while (t.indexOf("t.") === 0) t = t.slice(2);
+  return t.replace(/\./g, "");
+}
+function collectCourseHints() {
+  const map = new Map();
+  function add(code, name) {
+    const raw = String(code || "").trim();
+    if (!raw) return;
+    const k = normCode(raw);
+    const nm = String(name || "").trim();
+    const clean = (nm && normCode(nm) !== k) ? nm : "";
+    if (!map.has(k)) map.set(k, { code: raw, name: clean });
+    else if (clean && !map.get(k).name) map.get(k).name = clean;
+  }
+  loadCatalogRows().forEach((r) => add(r.code, r.name));
+  ualRows.forEach((r) => add(r.code, r.cname));
+  ctRows.forEach((r) => add(r.code, r.cname || r.award || r.desc));
+  omtRows.forEach((r) => add(r.code, r.cname));
+  manualRows.forEach((r) => add(r.code, r.cname));
+  return Array.from(map.values());
+}
+function courseHintScore(item, q) {
+  const rawQ = String(q || "").trim().toLowerCase();
+  const nq = looseCode(q);
+  if (!rawQ && !nq) return -1;
+  const rawC = String((item && item.code) || "").toLowerCase();
+  const ncode = looseCode(item && item.code);
+  const nname = String((item && item.name) || "").toLowerCase().replace(/\s+/g, "");
+  if ((nq && ncode === nq) || (rawQ && rawC === rawQ)) return 0;
+  if ((nq && ncode.endsWith(nq)) || (rawQ && rawC.endsWith(rawQ))) return 1;
+  if ((nq && ncode.indexOf(nq) === 0) || (rawQ && rawC.indexOf(rawQ) === 0)) return 2;
+  if ((nq && ncode.indexOf(nq) >= 0) || (rawQ && rawC.indexOf(rawQ) >= 0)) return 3;
+  if ((nq && nname.indexOf(nq) >= 0) || (rawQ && nname.indexOf(rawQ) >= 0)) return 4;
+  return -1;
+}
+function matchCourseHints(q) {
+  const raw = String(q || "").trim();
+  if (raw.length < 2) return [];
+  return collectCourseHints().map((item) => {
+    return { item: item, score: courseHintScore(item, raw) };
+  }).filter((x) => x.score >= 0).sort((a, b) =>
+    a.score - b.score ||
+    String(a.item.code).length - String(b.item.code).length ||
+    String(a.item.code).localeCompare(String(b.item.code), undefined, { numeric: true, sensitivity: "base" })
+  ).slice(0, 12).map((x) => x.item);
+}
+function uniqueFullCourse(q) {
+  const raw = String(q || "").trim();
+  const nq = looseCode(raw);
+  if (!raw || !nq) return null;
+  const hits = collectCourseHints().filter((item) =>
+    looseCode(item.code) === nq || normCode(item.code) === normCode(raw)
+  );
+  return hits.length === 1 ? hits[0] : null;
+}
+let suggestItems = [];
+let suggestIdx = -1;
+let suggestBlurTimer = 0;
+function hideCodeSuggest() {
+  const list = document.getElementById("code-suggest");
+  const inp = document.getElementById("manual-code");
+  if (list) {
+    list.hidden = true;
+    list.innerHTML = "";
+  }
+  if (inp) {
+    inp.setAttribute("aria-expanded", "false");
+    inp.removeAttribute("aria-activedescendant");
+  }
+  suggestItems = [];
+  suggestIdx = -1;
+}
+function paintSuggestHighlight() {
+  const list = document.getElementById("code-suggest");
+  const inp = document.getElementById("manual-code");
+  if (!list) return;
+  const lis = list.querySelectorAll("li");
+  lis.forEach((li, i) => {
+    const on = i === suggestIdx;
+    li.classList.toggle("on", on);
+    li.setAttribute("aria-selected", on ? "true" : "false");
+    if (on) li.scrollIntoView({ block: "nearest" });
+  });
+  if (inp) {
+    if (suggestIdx >= 0) inp.setAttribute("aria-activedescendant", "code-suggest-" + suggestIdx);
+    else inp.removeAttribute("aria-activedescendant");
+  }
+}
+function setManualCourseName(name, force) {
+  const nameEl = document.getElementById("manual-cname");
+  const codeEl = document.getElementById("manual-code");
+  const nm = displayCourseName(codeEl && codeEl.value, name);
+  if (!nameEl || !nm) return;
+  if (!force && nameEl.value.trim() && nameEl.dataset.autofill !== "1") return;
+  nameEl.value = nm;
+  nameEl.dataset.autofill = "1";
+}
+function pickCodeSuggest(item) {
+  const codeEl = document.getElementById("manual-code");
+  if (!item || !codeEl) return;
+  codeEl.value = item.code;
+  setManualCourseName(item.name || courseNameFor(item.code), false);
+  hideCodeSuggest();
+}
+function fillUniqueCourseName(rewriteCode) {
+  const codeEl = document.getElementById("manual-code");
+  if (!codeEl) return null;
+  const hit = uniqueFullCourse(codeEl.value);
+  if (!hit) return null;
+  if (rewriteCode && hit.code) codeEl.value = hit.code;
+  setManualCourseName(hit.name || courseNameFor(hit.code), false);
+  return hit;
+}
+function showCodeSuggest() {
+  const codeEl = document.getElementById("manual-code");
+  const list = document.getElementById("code-suggest");
+  if (!codeEl || !list) return;
+  const q = codeEl.value;
+  fillUniqueCourseName(false);
+  suggestItems = matchCourseHints(q);
+  suggestIdx = -1;
+  if (!suggestItems.length) {
+    hideCodeSuggest();
+    return;
+  }
+  list.innerHTML = suggestItems.map((it, i) => {
+    const label = it.name
+      ? esc(it.code) + " <span class=\"sep\">—</span> " + esc(displayCourseName(it.code, it.name))
+      : esc(it.code);
+    return "<li role=\"option\" id=\"code-suggest-" + i + "\" data-i=\"" + i + "\">" + label + "</li>";
+  }).join("");
+  list.hidden = false;
+  codeEl.setAttribute("aria-expanded", "true");
+}
+function fillManualCourseName() {
+  const codeEl = document.getElementById("manual-code");
+  const nameEl = document.getElementById("manual-cname");
+  if (!codeEl || !nameEl) return;
+  if (fillUniqueCourseName(true)) return;
+  if (nameEl.value.trim() && nameEl.dataset.autofill !== "1") return;
+  const looked = displayCourseName(codeEl.value, courseNameFor(codeEl.value));
+  if (looked) {
+    nameEl.value = looked;
+    nameEl.dataset.autofill = "1";
+  }
+}
+function addManualCourse() {
+  if (!requireWrite()) return;
+  const rawStaff = String(document.getElementById("manual-staff").value || "").trim();
+  if (!/^\d{5,6}$/.test(rawStaff)) {
+    setManualHint("Staff # must be 5–6 digits.");
+    return;
+  }
+  const staff = padStaff(rawStaff);
+  if (!rosterHas(staff)) {
+    showIngestReject(ingestReject("manual", [{
+      title: "Unknown staff #",
+      detail: staff + " is not on the Name List. Add course rejected. No row added."
+    }]));
+    setManualHint("Rejected — " + staff + " is not on the Name List.");
+    return;
+  }
+  const who = personOf(staff, document.getElementById("manual-name").value);
+  const name = String(document.getElementById("manual-name").value || who.name || "").trim();
+  if (!name) {
+    setManualHint("Name is required.");
+    return;
+  }
+  let code = String(document.getElementById("manual-code").value || "").trim();
+  let cname = String(document.getElementById("manual-cname").value || "").trim();
+  if (!code && !cname) {
+    setManualHint("Enter a course code and / or course name.");
+    return;
+  }
+  if (code && !cname) cname = courseNameFor(code);
+  if (!code) code = cname;
+  const exp = String(document.getElementById("manual-exp").value || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(exp)) {
+    setManualHint("Expire date is required (date only).");
+    return;
+  }
+  const same = manualRows.some((r) =>
+    r.staff === staff &&
+    String(r.code || "").toUpperCase() === code.toUpperCase() &&
+    r.exp === exp
+  );
+  if (same) {
+    setManualHint("That course is already on this person with the same expire date.");
+    return;
+  }
+  manualRows.push({ id: newManualId(), staff: staff, name: name, code: code, cname: cname, exp: exp });
+  if (!srcHas("manual")) srcOn = srcOn.concat(["manual"]);
+  persistManualCourses();
+  document.getElementById("manual-staff").value = "";
+  document.getElementById("manual-name").value = "";
+  document.getElementById("manual-name").dataset.autofill = "";
+  document.getElementById("manual-code").value = "";
+  document.getElementById("manual-cname").value = "";
+  document.getElementById("manual-cname").dataset.autofill = "";
+  document.getElementById("manual-exp").value = "";
+  hideCodeSuggest();
+  setManualHint("Added " + name + " · " + code + " · expires " + exp + ".");
+  mergeCatalogFromBoard();
+  paint();
+}
+function removeManualCourse(id) {
+  if (!requireWrite()) return;
+  const i = manualRows.findIndex((r) => r.id === id);
+  if (i < 0) return;
+  manualRows.splice(i, 1);
+  persistManualCourses();
+  setManualHint("Removed the Manual course.");
+  closeCoursePop();
+  paint();
+}
+function courseStatusCellHtml(who, row) {
+  const rec = readCourseStatus(who.staff, row);
+  const staff = esc(padStaff(who.staff));
+  const code = esc(courseCodeKey(row));
+  const src = esc(courseSrcKey(row));
+  const opts = COURSE_STATUS_OPTS.map((opt) =>
+    "<option value=\"" + esc(opt) + "\"" + (rec.status === opt ? " selected" : "") + ">" + esc(opt) + "</option>"
+  ).join("");
+  const display = rec.status === "Completed" && rec.done ? fmtDoneDisplay(rec.done) : "";
+  const doneVal = display ? " value=\"" + esc(display) + "\"" : "";
+  const calVal = rec.status === "Completed" && rec.done ? " value=\"" + esc(rec.done) + "\"" : "";
+  const doneHidden = rec.status === "Completed" ? "" : " hidden";
+  return "<td class=\"col-status\">" +
+    "<div class=\"course-status-cell\">" +
+    "<select class=\"course-status\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Status\">" + opts + "</select>" +
+    "<div class=\"course-done-wrap\"" + doneHidden + ">" +
+    "<input type=\"text\" class=\"course-done\" lang=\"en\" inputmode=\"numeric\" placeholder=\"DD-MM-YY\" pattern=\"\\d{2}-\\d{2}-\\d{2}\" maxlength=\"10\" title=\"DD-MM-YY\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Completed date\"" + doneVal + ">" +
+    "<input type=\"date\" class=\"course-done-cal\" lang=\"en\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Pick completed date\" title=\"Pick date\"" + calVal + ">" +
+    "</div></div></td>";
+}
+function applyCourseStatusEvent(e) {
+  if (!requireWrite()) return;
+  const sel = e.target.closest("select.course-status");
+  const date = e.target.closest("input.course-done");
+  const cal = e.target.closest("input.course-done-cal");
+  if (!sel && !date && !cal) return;
+  const el = sel || date || cal;
+  const staff = el.dataset.staff;
+  const code = el.dataset.code;
+  const src = el.dataset.src;
+  const cell = el.closest(".course-status-cell");
+  const doneEl = cell && cell.querySelector("input.course-done");
+  const calEl = cell && cell.querySelector("input.course-done-cal");
+  const wrap = cell && cell.querySelector(".course-done-wrap");
+  if (sel) {
+    const status = sel.value;
+    if (wrap) {
+      if (status === "Completed") wrap.hidden = false;
+      else {
+        wrap.hidden = true;
+        if (doneEl) doneEl.value = "";
+        if (calEl) calEl.value = "";
+      }
+    }
+    writeCourseStatus(staff, code, src, { status: status, done: status === "Completed" && doneEl ? doneEl.value : "" });
+    setCourseRowCompleted(el, status);
+    return;
+  }
+  const iso = parseDoneDate(cal ? cal.value : date.value);
+  if (doneEl) doneEl.value = fmtDoneDisplay(iso);
+  if (calEl) calEl.value = iso;
+  writeCourseStatus(staff, code, src, { status: "Completed", done: iso });
+  setCourseRowCompleted(el, "Completed");
+}
+function setCourseRowCompleted(el, status) {
+  const tr = el && el.closest("tr");
+  if (tr) {
+    tr.classList.toggle("completed", status === "Completed");
+    tr.classList.toggle("in-progress", status === "In Progress");
+  }
+}
+function isCourseStatusControl(el) {
+  return !!(el && el.closest && el.closest("select.course-status, input.course-done, input.course-done-cal, .course-done-wrap, .course-status-cell, td.col-status"));
+}
+function personCourseTableHtml(who) {
+  const rows = personCourseRows(who);
+  const sorted = rows.slice().sort((a, b) => (Number(a.remain) || 0) - (Number(b.remain) || 0) || String(a.code).localeCompare(String(b.code)));
+  if (!sorted.length) return "<p class=\"note\">No courses.</p>";
+  return "<table class=\"person-course-table\"><colgroup>" +
+    "<col class=\"col-course\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\">" +
+    "</colgroup><thead><tr><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th></tr></thead><tbody>" +
+    sorted.map((r) => {
+      const n = remainNum(r.remain);
+      const rec = readCourseStatus(who.staff, r);
+      const cls = [
+        remainBand(r.remain),
+        rec.status === "Completed" ? "completed" : "",
+        rec.status === "In Progress" ? "in-progress" : ""
+      ].filter(Boolean).join(" ");
+      const td = (text, extra) => {
+        const t = text == null ? "" : String(text);
+        const klass = [extra || "", t.trim() ? "" : "blank"].filter(Boolean).join(" ");
+        return "<td" + (klass ? " class=\"" + klass + "\"" : "") + ">" + esc(t) + "</td>";
+      };
+      const srcTd = "<td>" + esc(srcLabel(r)) +
+        ((r.src === "manual" || r.kind === "manual") && r.mid
+          ? " <button type=\"button\" class=\"manual-del\" data-manual-del=\"" + esc(r.mid) + "\">Remove</button>"
+          : "") +
+        "</td>";
+      return "<tr class=\"" + cls + "\">" + td(r.code) + td(displayCourseName(r.code, r.name)) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") + srcTd + courseStatusCellHtml(who, r) + "</tr>";
+    }).join("") + "</tbody></table>";
 }
 function closeCoursePop() {
   const pop = document.getElementById("course-pop");
@@ -1105,14 +2841,118 @@ function fillWrappedText(ctx, text, x, y, maxW, boxH, lineH) {
     ty += lineH;
   });
 }
-function drawNodeToCanvas(root) {
-  const scale = Math.max(2, Math.round(window.devicePixelRatio || 1));
+const CANVAS_MAX_EDGE = 16384;
+const CANVAS_MAX_AREA = 16384 * 16384;
+function captureScale() {
+  return Math.max(2, Math.round(window.devicePixelRatio || 1));
+}
+function nodeCaptureSize(root) {
+  const scale = captureScale();
   const w = Math.max(1, Math.ceil(root.scrollWidth));
   const h = Math.max(1, Math.ceil(root.scrollHeight));
+  return { w, h, scale, cw: w * scale, ch: h * scale };
+}
+function copyLayoutFail(kind, title, detail) {
+  const err = new Error(detail || title);
+  err.name = "CopyLayoutFail";
+  err.kind = kind;
+  err.title = title;
+  err.detail = detail;
+  return err;
+}
+function tallCopyFail(size, extra) {
+  const bits = [];
+  if (size && size.h) bits.push("this view is about " + size.h + "px tall");
+  if (size && size.scale && size.ch) bits.push("copied at ×" + size.scale + " = " + size.ch + "px");
+  return copyLayoutFail(
+    "tall",
+    "Capture too tall",
+    "Too many Details rows for one image. Browsers usually fail around 16384–32767px canvas height. Filter to one team or one source, then try Copy layout again." +
+    (bits.length ? " (" + bits.join("; ") + ".)" : "") +
+    (extra ? " " + extra : "")
+  );
+}
+function clipboardCopyFail(extra) {
+  const fileUrl = location.protocol === "file:";
+  return copyLayoutFail(
+    "clipboard",
+    "Clipboard blocked",
+    (fileUrl ? "This page is opened as a local file (file://). " : "") +
+    "The browser blocked writing the image to the clipboard. Allow clipboard permission, or open this page over https, or copy a smaller view." +
+    (extra ? " (" + extra + ")" : "")
+  );
+}
+function classifyCopyError(e, size) {
+  if (e && e.name === "CopyLayoutFail") return e;
+  const msg = String(e && e.message || e || "Unknown error");
+  const name = (e && e.name) || "";
+  const low = msg.toLowerCase();
+  const clipboardish =
+    msg === "clipboard" ||
+    name === "NotAllowedError" ||
+    name === "SecurityError" ||
+    name === "NotFoundError" ||
+    /clipboard|not allowed|document is not focused|permission|secure context/i.test(low);
+  const nearLimit = size && (size.ch >= CANVAS_MAX_EDGE * 0.7 || size.cw * size.ch >= CANVAS_MAX_AREA * 0.7);
+  const tallish =
+    name === "IndexSizeError" ||
+    name === "InvalidStateError" ||
+    /maximum|too (large|big)|canvas|out of memory|allocation|ns_error_out_of_memory|width or height/i.test(low) ||
+    (low === "blob" && nearLimit);
+  if (clipboardish) return clipboardCopyFail(msg);
+  if (tallish || nearLimit) return tallCopyFail(size, msg);
+  return copyLayoutFail("unknown", "Copy layout failed", msg);
+}
+function closeCopyFailPop() {
+  const pop = document.getElementById("copy-fail-pop");
+  if (!pop) return;
+  pop.classList.add("hidden");
+  pop.hidden = true;
+}
+function showCopyFail(err, size) {
+  const classified = classifyCopyError(err, size);
+  const pop = document.getElementById("copy-fail-pop");
+  const title = document.getElementById("copy-fail-title");
+  const lead = document.getElementById("copy-fail-lead");
+  const list = document.getElementById("copy-fail-list");
+  if (!pop || !title || !lead || !list) return;
+  const titles = {
+    tall: "Copy layout failed — too many rows",
+    clipboard: "Copy layout failed — clipboard blocked",
+    unknown: "Copy layout failed"
+  };
+  const leads = {
+    tall: "The Details (or course card) capture is too tall for this browser to copy as one image.",
+    clipboard: "The browser blocked writing the image to the clipboard.",
+    unknown: "Copy layout could not finish."
+  };
+  title.textContent = titles[classified.kind] || titles.unknown;
+  lead.textContent = leads[classified.kind] || leads.unknown;
+  const itemTitle = classified.title || "Problem";
+  const detail = classified.detail || classified.message;
+  list.innerHTML = "<li><strong>" + esc(itemTitle) + "</strong>" + (detail ? "<br>" + esc(detail) : "") + "</li>";
+  pop.hidden = false;
+  pop.classList.remove("hidden");
+}
+function assertCanvasFits(size) {
+  if (size.cw > CANVAS_MAX_EDGE || size.ch > CANVAS_MAX_EDGE || size.cw * size.ch > CANVAS_MAX_AREA) {
+    throw tallCopyFail(size);
+  }
+}
+function drawNodeToCanvas(root) {
+  const size = nodeCaptureSize(root);
+  assertCanvasFits(size);
+  const { w, h, scale, cw, ch } = size;
   const canvas = document.createElement("canvas");
-  canvas.width = w * scale;
-  canvas.height = h * scale;
+  try {
+    canvas.width = cw;
+    canvas.height = ch;
+  } catch (e) {
+    throw tallCopyFail(size, String(e && e.message || e));
+  }
+  if (!canvas.width || !canvas.height) throw tallCopyFail(size, "Canvas was reset to 0.");
   const ctx = canvas.getContext("2d");
+  if (!ctx) throw tallCopyFail(size, "getContext(\"2d\") returned null.");
   ctx.scale(scale, scale);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, w, h);
@@ -1157,33 +2997,44 @@ function drawNodeToCanvas(root) {
     }
     [...el.children].forEach(paint);
   };
-  paint(root);
+  try {
+    paint(root);
+  } catch (e) {
+    throw classifyCopyError(e, size);
+  }
   return canvas;
 }
 async function writeImageBlob(blob) {
-  if (!blob) throw new Error("no image");
-  if (!navigator.clipboard || !window.ClipboardItem) throw new Error("clipboard");
+  if (!blob) throw copyLayoutFail("unknown", "No image", "The browser did not produce a PNG image.");
+  if (!navigator.clipboard || !window.ClipboardItem) throw clipboardCopyFail("Clipboard API not available");
   try {
     await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
   } catch (e) {
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": Promise.resolve(blob) })]);
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": Promise.resolve(blob) })]);
+    } catch (e2) {
+      throw classifyCopyError(e2 || e);
+    }
   }
 }
 async function copyNodeAsImage(shot, frame, btn) {
   if (!shot) return;
   const prev = frame ? frame.scrollTop : 0;
+  let size;
   if (frame) {
     frame.classList.add("capturing");
     frame.scrollTop = 0;
   }
   try {
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    size = nodeCaptureSize(shot);
     const canvas = drawNodeToCanvas(shot);
     const blob = await new Promise((res, rej) => canvas.toBlob((b) => b ? res(b) : rej(new Error("blob")), "image/png"));
     await writeImageBlob(blob);
     markCopyBtn(true, btn);
   } catch (e) {
     markCopyBtn(false, btn);
+    showCopyFail(e, size);
   } finally {
     if (frame) {
       frame.classList.remove("capturing");
@@ -1209,46 +3060,66 @@ function openCoursePop(staff) {
   const who = detailPeople.find((x) => x.staff === staff);
   const pop = document.getElementById("course-pop");
   const title = document.getElementById("course-pop-title");
+  const count = document.getElementById("course-pop-count");
   const body = document.getElementById("course-pop-body");
   if (!who) return;
-  const rows = (who.overdueRows || []).concat(who.soonRows || []);
-  title.textContent = who.name + " · " + who.staff + " · " + rows.length + " course" + (rows.length === 1 ? "" : "s");
-  const sorted = rows.slice().sort((a, b) => (Number(a.remain) || 0) - (Number(b.remain) || 0) || String(a.code).localeCompare(String(b.code)));
-  body.innerHTML = sorted.length
-    ? "<table><thead><tr><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th></tr></thead><tbody>" +
-      sorted.map((r) => {
-        const n = Number(r.remain);
-        const ualYellow = (r.kind === "ual" || r.src === "ual") && n > 30;
-        const cls = ualYellow ? "warn" : "hot";
-        const td = (text, extra) => {
-          const t = text == null ? "" : String(text);
-          const klass = [extra || "", t.trim() ? "" : "blank"].filter(Boolean).join(" ");
-          return "<td" + (klass ? " class=\"" + klass + "\"" : "") + ">" + esc(t) + "</td>";
-        };
-        return "<tr class=\"" + cls + "\">" + td(r.code) + td(r.name) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") + td(srcLabel(r)) + "</tr>";
-      }).join("") + "</tbody></table>"
-    : "<p class=\"note\">No courses.</p>";
+  title.innerHTML = personDetailTitleHtml(who);
+  if (count) count.textContent = personCourseCountLabel(who);
+  body.innerHTML = personCourseTableHtml(who);
   resetCopyBtn("course-pop-copy");
   pop.hidden = false;
   pop.classList.remove("hidden");
+  applyWriteAccess();
 }
 function paint() {
   lsSet(UI.org, org);
-  lsSet(UI.src, src);
+  lsSet(UI.src, srcSave());
   lsSet(UI.role, role);
+  lsSet(UI.team, teamFilter || "all");
   lsSet(UI.q, q);
   lsSet(UI.sortKey, sortKey);
   lsSet(UI.sortDir, String(sortDir));
+  lsSet(UI.listView, listView);
   paintBoard();
   paintDetail();
 }
 
-function setUal(text, label) {
-  ualRows = text ? parseUal(text) : [];
+function paintUalStatus(text, label) {
+  document.getElementById("ual-src").value = text;
   document.getElementById("ual-status").textContent =
     (label || "UAL") + " · " + ualRows.length + " LMOCG course rows" + (subjectOf(text) ? " · " + subjectOf(text) : "") + ".";
-  try { if (text) lsSet(UAL_STORE, text); } catch (e) {}
-  paint();
+}
+function applyUal(text, label, doPersist) {
+  text = String(text || "");
+  if (!text.trim()) {
+    document.getElementById("ual-status").textContent = ualRows.length
+      ? "Saved UAL still in this browser · " + ualRows.length + " LMOCG course rows."
+      : "No UAL email yet. Paste the reminder email.";
+    return false;
+  }
+  ualRows = parseUal(text);
+  paintUalStatus(text, label);
+  if (doPersist) lsSet(UAL_STORE, text);
+  return true;
+}
+function setUal(text, label) {
+  if (!requireWrite()) return;
+  text = String(text || "");
+  if (!text.trim()) {
+    applyUal(text, label, false);
+    return;
+  }
+  try {
+    ualRows = parseUalStrict(text);
+    paintUalStatus(text, label);
+    lsSet(UAL_STORE, text);
+    mergeCatalogFromBoard();
+    paint();
+  } catch (err) {
+    showIngestReject(asIngestReject("ual", err));
+    document.getElementById("ual-status").textContent =
+      "Rejected — previous UAL kept" + (ualRows.length ? " · " + ualRows.length + " LMOCG course rows." : ".");
+  }
 }
 function normCtRow(r, kind, file) {
   return {
@@ -1256,6 +3127,8 @@ function normCtRow(r, kind, file) {
     name: r.name || "",
     code: r.code || "",
     cname: r.cname || "",
+    award: r.award || "",
+    desc: r.desc || "",
     exp: r.exp || "",
     issued: r.issued || "",
     home: r.home || "",
@@ -1264,6 +3137,7 @@ function normCtRow(r, kind, file) {
   };
 }
 function addCtFile(name, rows, kind) {
+  if (!requireWrite()) return;
   kind = kind || ctKindOf(name);
   const rec = { name, kind, rows: (rows || []).map((r) => normCtRow(r, kind, name)).filter((r) => r.uid) };
   const i = ctFiles.findIndex((f) => f.name === name);
@@ -1272,12 +3146,14 @@ function addCtFile(name, rows, kind) {
   flattenCt();
   persistCtFiles();
   paintCtFiles();
+  mergeCatalogFromBoard();
   paint();
 }
 function removeCtFile(i) {
+  if (!requireWrite()) return;
   ctFiles.splice(i, 1);
   flattenCt();
-  persistCtFiles();
+  persistCtFiles({ clear: true });
   paintCtFiles();
   paint();
 }
@@ -1290,10 +3166,27 @@ document.getElementById("org-tabs").addEventListener("click", (e) => {
   paint();
 });
 document.querySelectorAll("[data-src]").forEach((b) => {
-  b.addEventListener("click", () => { src = b.dataset.src; pick = null; paint(); });
+  b.addEventListener("click", () => {
+    const k = b.dataset.src;
+    if (k === "all") {
+      srcOn = SRC_ALL.slice();
+    } else if (SRC_ALL.indexOf(k) >= 0) {
+      if (srcIsAll()) srcOn = [k];
+      else if (srcHas(k)) srcOn = srcOn.filter((x) => x !== k);
+      else srcOn = srcOn.concat([k]);
+    }
+    pick = null;
+    paint();
+  });
 });
 document.getElementById("detail").addEventListener("click", (e) => {
   if (e.target.closest("[data-copy-shot]")) return;
+  const view = e.target.closest("[data-list-view]");
+  if (view) {
+    listView = view.dataset.listView === "cards" ? "cards" : "table";
+    paint();
+    return;
+  }
   const b = e.target.closest("[data-role]");
   if (!b) return;
   role = b.dataset.role;
@@ -1301,10 +3194,20 @@ document.getElementById("detail").addEventListener("click", (e) => {
 });
 document.getElementById("q").addEventListener("input", (e) => { q = e.target.value; pick = null; paint(); });
 document.getElementById("board-head").addEventListener("click", (e) => {
+  const details = e.target.closest("[data-team-details]");
+  if (details) {
+    const team = details.getAttribute("data-team-details");
+    teamFilter = team;
+    listView = "cards";
+    if (pick && pick.team !== team) pick = null;
+    paint();
+    return;
+  }
   const teamTh = e.target.closest("th.team[data-team]");
   if (teamTh) {
     const team = teamTh.dataset.team;
-    pick = pick && !pick.id && pick.team === team ? null : { id: null, team };
+    teamFilter = teamFilter === team ? "" : team;
+    if (pick && pick.team !== teamFilter) pick = null;
     paint();
     return;
   }
@@ -1319,6 +3222,7 @@ document.getElementById("board-body").addEventListener("click", (e) => {
   if (!td) return;
   const id = td.dataset.id;
   const team = td.dataset.team;
+  teamFilter = team;
   pick = pick && pick.id === id && pick.team === team ? null : { id, team };
   paint();
 });
@@ -1329,7 +3233,15 @@ document.getElementById("detail").addEventListener("click", (e) => {
     copyDetailImage(copy);
     return;
   }
-  if (e.target.closest("[data-role]")) return;
+  if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]")) return;
+  const del = e.target.closest("[data-manual-del]");
+  if (del) {
+    e.preventDefault();
+    e.stopPropagation();
+    removeManualCourse(del.dataset.manualDel);
+    return;
+  }
+  if (isCourseStatusControl(e.target)) return;
   const th = e.target.closest("[data-dsort]");
   if (th) {
     const key = th.dataset.dsort;
@@ -1338,6 +3250,7 @@ document.getElementById("detail").addEventListener("click", (e) => {
     paintDetail();
     return;
   }
+  if (listView !== "table") return;
   const tr = e.target.closest("tbody tr[data-staff]");
   if (tr) openCoursePop(tr.dataset.staff);
 });
@@ -1347,25 +3260,129 @@ document.getElementById("course-pop-copy").addEventListener("click", (e) => {
 });
 document.getElementById("course-pop-close").addEventListener("click", closeCoursePop);
 document.getElementById("course-pop").addEventListener("click", (e) => {
+  const del = e.target.closest("[data-manual-del]");
+  if (del) {
+    e.preventDefault();
+    e.stopPropagation();
+    removeManualCourse(del.dataset.manualDel);
+    return;
+  }
   if (e.target.id === "course-pop") closeCoursePop();
 });
+document.getElementById("manual-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  addManualCourse();
+});
+document.getElementById("manual-staff").addEventListener("input", fillManualFromRoster);
+document.getElementById("manual-staff").addEventListener("blur", fillManualFromRoster);
+document.getElementById("manual-name").addEventListener("input", () => {
+  document.getElementById("manual-name").dataset.autofill = "";
+});
+document.getElementById("manual-code").addEventListener("input", showCodeSuggest);
+document.getElementById("manual-code").addEventListener("focus", showCodeSuggest);
+document.getElementById("manual-code").addEventListener("keydown", (e) => {
+  const open = suggestItems.length > 0 && document.getElementById("code-suggest") && !document.getElementById("code-suggest").hidden;
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    if (!open) showCodeSuggest();
+    if (suggestItems.length) {
+      suggestIdx = (suggestIdx + 1) % suggestItems.length;
+      paintSuggestHighlight();
+    }
+  } else if (e.key === "ArrowUp") {
+    if (!open) return;
+    e.preventDefault();
+    suggestIdx = suggestIdx <= 0 ? suggestItems.length - 1 : suggestIdx - 1;
+    paintSuggestHighlight();
+  } else if (e.key === "Enter") {
+    if (open && suggestIdx >= 0 && suggestItems[suggestIdx]) {
+      e.preventDefault();
+      pickCodeSuggest(suggestItems[suggestIdx]);
+    } else if (open && suggestItems.length === 1) {
+      e.preventDefault();
+      pickCodeSuggest(suggestItems[0]);
+    }
+  } else if (e.key === "Escape" && open) {
+    e.preventDefault();
+    e.stopPropagation();
+    hideCodeSuggest();
+  }
+});
+document.getElementById("manual-code").addEventListener("blur", () => {
+  suggestBlurTimer = window.setTimeout(() => {
+    fillManualCourseName();
+    hideCodeSuggest();
+  }, 160);
+});
+document.getElementById("code-suggest").addEventListener("mousedown", (e) => {
+  const li = e.target.closest("li[data-i]");
+  if (!li) return;
+  e.preventDefault();
+  window.clearTimeout(suggestBlurTimer);
+  pickCodeSuggest(suggestItems[Number(li.dataset.i)]);
+});
+document.addEventListener("mousedown", (e) => {
+  const wrap = document.querySelector(".code-suggest-wrap");
+  if (wrap && !wrap.contains(e.target)) hideCodeSuggest();
+});
+document.getElementById("manual-cname").addEventListener("input", () => {
+  document.getElementById("manual-cname").dataset.autofill = "";
+});
+document.getElementById("detail").addEventListener("change", applyCourseStatusEvent);
+document.getElementById("course-pop").addEventListener("change", applyCourseStatusEvent);
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeCoursePop();
+  if (e.key === "Escape") {
+    const list = document.getElementById("code-suggest");
+    if (list && !list.hidden) {
+      hideCodeSuggest();
+      return;
+    }
+    const copyFail = document.getElementById("copy-fail-pop");
+    if (copyFail && !copyFail.hidden) {
+      closeCopyFailPop();
+      return;
+    }
+    const ingest = document.getElementById("ingest-pop");
+    if (ingest && !ingest.hidden) {
+      closeIngestPop();
+      return;
+    }
+    const access = document.getElementById("access-pop");
+    if (access && !access.hidden) {
+      closeAccessPop();
+      return;
+    }
+    closeCoursePop();
+  }
+});
+document.getElementById("access-toggle").addEventListener("click", toggleBoardAccess);
+document.getElementById("access-ok").addEventListener("click", () => { submitAccessPop(); });
+document.getElementById("access-cancel").addEventListener("click", closeAccessPop);
+document.getElementById("access-pop").addEventListener("click", (e) => {
+  if (e.target.id === "access-pop") closeAccessPop();
+});
+document.getElementById("access-pw").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); submitAccessPop(); }
+});
+document.getElementById("access-pw2").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); submitAccessPop(); }
 });
 document.getElementById("ual-parse").addEventListener("click", () => {
   setUal(document.getElementById("ual-src").value, "Pasted email");
 });
-document.getElementById("ual-sample").addEventListener("click", async () => {
-  try {
-    const html = await fetch("ual-cbt-training.html").then((r) => r.text());
-    const m = html.match(/<script id="sample-mail"[^>]*>([\s\S]*?)<\/script>/);
-    if (!m) throw new Error("sample not found");
-    const text = m[1].replace(/^\n/, "");
-    document.getElementById("ual-src").value = text;
-    setUal(text, "14-SEP-2026 sample");
-  } catch (err) {
-    document.getElementById("ual-status").textContent = "Could not load sample here. Open UAL CBT once, or paste the email.";
-  }
+document.getElementById("ingest-ok").addEventListener("click", closeIngestPop);
+document.getElementById("ingest-pop").addEventListener("click", (e) => {
+  if (e.target.id === "ingest-pop") closeIngestPop();
+});
+document.getElementById("copy-fail-ok").addEventListener("click", closeCopyFailPop);
+document.getElementById("copy-fail-pop").addEventListener("click", (e) => {
+  if (e.target.id === "copy-fail-pop") closeCopyFailPop();
+});
+document.getElementById("ual-src").addEventListener("paste", () => {
+  setTimeout(() => {
+    const text = document.getElementById("ual-src").value;
+    if (text && text.trim()) setUal(text, "Pasted email");
+  }, 0);
 });
 document.getElementById("ct-files").addEventListener("click", (e) => {
   const b = e.target.closest("[data-ct-del]");
@@ -1378,9 +3395,16 @@ function isCsvFile(f) {
   return name.endsWith(".csv") || type === "text/csv" || type === "application/vnd.ms-excel" || type === "text/plain";
 }
 function ingestCtFiles(fileList) {
-  const files = [...(fileList || [])].filter(isCsvFile);
+  if (!requireWrite()) return;
+  const picked = [...(fileList || [])];
+  const files = picked.filter(isCsvFile);
   if (!files.length) {
-    document.getElementById("ct-status").textContent = "Drop CSV files only.";
+    showIngestReject(ingestReject("ct", [{
+      title: "Unreadable file",
+      detail: picked.length ? "Not a CT Reminder CSV. Whole drop rejected. Previous CT data stays." : "No file. Previous CT data stays."
+    }]));
+    document.getElementById("ct-status").textContent =
+      "Rejected — previous CT kept" + (ctRows.length ? " · " + ctRows.length + " rows." : ".");
     return;
   }
   let left = files.length;
@@ -1388,7 +3412,16 @@ function ingestCtFiles(fileList) {
     const reader = new FileReader();
     reader.onload = () => {
       try { addCtFile(f.name, ingestCtGrid(parseCsv(String(reader.result)))); }
-      catch (err) { document.getElementById("ct-status").textContent = f.name + " · " + String(err.message || err); }
+      catch (err) {
+        showIngestReject(asIngestReject("ct", err));
+        document.getElementById("ct-status").textContent =
+          f.name + " rejected — previous CT kept" + (ctRows.length ? " · " + ctRows.length + " rows." : ".");
+      }
+      left--;
+      if (!left) document.getElementById("ct-csv").value = "";
+    };
+    reader.onerror = () => {
+      showIngestReject(ingestReject("ct", [{ title: "Unreadable file", detail: f.name + " could not be read. Whole file rejected." }]));
       left--;
       if (!left) document.getElementById("ct-csv").value = "";
     };
@@ -1411,6 +3444,7 @@ document.getElementById("ct-csv").addEventListener("change", (e) => {
     e.preventDefault();
     e.stopPropagation();
     drop.classList.remove("on");
+    if (!requireWrite()) return;
     ingestCtFiles(e.dataTransfer && e.dataTransfer.files);
   });
   document.addEventListener("dragover", (e) => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
@@ -1502,11 +3536,20 @@ async function ingestOmtXlsx(buf) {
   const strings = files["xl/sharedStrings.xml"] ? parseSharedStrings(decodeBytes(files["xl/sharedStrings.xml"])) : [];
   const path = xlsxSheetPath(files);
   const sheet = files[path] || files["xl/worksheets/sheet1.xml"];
-  if (!sheet) throw new Error("Export sheet not found");
+  if (!sheet) throw ingestReject("omt", [{ title: "Unreadable file", detail: "Export sheet not found. Whole Mandatory file rejected." }]);
   return ingestOmtGrid(parseSheetGrid(decodeBytes(sheet), strings));
 }
-function persistOmtFiles() {
+function persistOmtFiles(opts) {
+  const clear = opts && opts.clear;
+  if (!omtFiles.length) {
+    if (clear && persistArmed) {
+      lsSet(OMT_FILES, "[]");
+      lsSet(OMT_CLEARED, "1");
+    }
+    return;
+  }
   try { lsSet(OMT_FILES, JSON.stringify(omtFiles.map((f) => ({ name: f.name, rows: f.rows })))); } catch (e) {}
+  lsSet(OMT_CLEARED, "0");
 }
 function paintOmtFiles() {
   const n = omtRows.length;
@@ -1521,8 +3564,10 @@ function paintOmtFiles() {
     "<li><span>" + esc(f.name) + " · " + (f.rows || []).length + " rows</span>" +
     "<button type=\"button\" data-omt-del=\"" + i + "\">Remove</button></li>"
   ).join("");
+  applyWriteAccess();
 }
 function addOmtFile(name, rows) {
+  if (!requireWrite()) return;
   const rec = { name, rows: (rows || []).filter((r) => r.uid && r.code) };
   const i = omtFiles.findIndex((f) => f.name === name);
   if (i >= 0) omtFiles[i] = rec;
@@ -1530,12 +3575,14 @@ function addOmtFile(name, rows) {
   flattenOmt();
   persistOmtFiles();
   paintOmtFiles();
+  mergeCatalogFromBoard();
   paint();
 }
 function removeOmtFile(i) {
+  if (!requireWrite()) return;
   omtFiles.splice(i, 1);
   flattenOmt();
-  persistOmtFiles();
+  persistOmtFiles({ clear: true });
   paintOmtFiles();
   paint();
 }
@@ -1544,9 +3591,16 @@ function isOmtFile(f) {
   return name.endsWith(".csv") || name.endsWith(".xlsx");
 }
 function ingestOmtFiles(fileList) {
-  const files = [...(fileList || [])].filter(isOmtFile);
+  if (!requireWrite()) return;
+  const picked = [...(fileList || [])];
+  const files = picked.filter(isOmtFile);
   if (!files.length) {
-    document.getElementById("omt-status").textContent = "Drop CSV or xlsx only.";
+    showIngestReject(ingestReject("omt", [{
+      title: "Unreadable file",
+      detail: picked.length ? "Not a Mandatory CSV / xlsx. Whole drop rejected. Previous Mandatory data stays." : "No file. Previous Mandatory data stays."
+    }]));
+    document.getElementById("omt-status").textContent =
+      "Rejected — previous Mandatory kept" + (omtRows.length ? " · " + omtRows.length + " rows." : ".");
     return;
   }
   let left = files.length;
@@ -1560,8 +3614,15 @@ function ingestOmtFiles(fileList) {
           : ingestOmtGrid(parseCsv(String(reader.result)));
         addOmtFile(f.name, rows);
       } catch (err) {
-        document.getElementById("omt-status").textContent = f.name + " · " + String(err.message || err);
+        showIngestReject(asIngestReject("omt", err));
+        document.getElementById("omt-status").textContent =
+          f.name + " rejected — previous Mandatory kept" + (omtRows.length ? " · " + omtRows.length + " rows." : ".");
       }
+      left--;
+      if (!left) document.getElementById("omt-file").value = "";
+    };
+    reader.onerror = () => {
+      showIngestReject(ingestReject("omt", [{ title: "Unreadable file", detail: f.name + " could not be read. Whole file rejected." }]));
       left--;
       if (!left) document.getElementById("omt-file").value = "";
     };
@@ -1590,65 +3651,165 @@ document.getElementById("omt-files").addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     drop.classList.remove("on");
+    if (!requireWrite()) return;
     ingestOmtFiles(e.dataTransfer && e.dataTransfer.files);
   });
 })();
 
-(function init() {
-  PEOPLE.forEach((p) => byStaff.set(padStaff(p.staff), p));
-  const savedOrg = lsGet(UI.org);
+function mapCtFile(f) {
+  const name = (f && f.name) || "CT.csv";
+  const kind = (f && f.kind) || ctKindOf(name);
+  return {
+    name: name,
+    kind: kind,
+    rows: ((f && f.rows) || []).map((r) => normCtRow(r, kind, name)).filter((r) => r.uid)
+  };
+}
+function addCtFromRows(name, rows, kind) {
+  if (!Array.isArray(rows) || !rows.length) return;
+  const rec = mapCtFile({ name: name || "Saved CSV", kind: kind || ctKindOf(name), rows: rows });
+  if (!rec.rows.length) return;
+  const i = ctFiles.findIndex((f) => f.name === rec.name && f.kind === rec.kind);
+  if (i >= 0) ctFiles[i] = rec;
+  else ctFiles.push(rec);
+}
+function restoreUi() {
+  const savedOrg = firstFilled(UI_KEYS.org);
   if (savedOrg === "ocg" || savedOrg === "cg" || savedOrg === "pax") org = savedOrg;
-  const savedSrc = lsGet(UI.src);
-  if (savedSrc === "all" || savedSrc === "ual" || savedSrc === "ct" || savedSrc === "omt") src = savedSrc;
-  const savedRole = lsGet(UI.role);
+  const savedSrc = firstFilled(UI_KEYS.src);
+  if (savedSrc != null) srcOn = srcLoad(savedSrc);
+  const savedRole = firstFilled(UI_KEYS.role);
   if (savedRole === "all" || savedRole === "cert" || savedRole === "mech") role = savedRole;
-  const savedQ = lsGet(UI.q);
+  const savedTeam = firstFilled(UI_KEYS.team);
+  if (TEAM_KEYS.indexOf(savedTeam) >= 0) teamFilter = savedTeam;
+  else teamFilter = "";
+  const savedQ = firstFilled(UI_KEYS.q);
   if (savedQ != null) { q = savedQ; document.getElementById("q").value = q; }
-  const sk = lsGet(UI.sortKey);
+  const sk = firstFilled(UI_KEYS.sortKey);
   if (sk === "item" || sk === "out") sortKey = sk;
   else sortKey = "out";
-  const sd = lsGet(UI.sortDir);
+  const sd = firstFilled(UI_KEYS.sortDir);
   if (sd === "1" || sd === "-1") sortDir = Number(sd);
   if (sortKey === "out") sortDir = -1;
-  const savedUal = lsGet(UAL_STORE);
+  const savedView = firstFilled(UI_KEYS.listView);
+  if (savedView === "cards" || savedView === "table") listView = savedView;
+}
+function restoreUal() {
+  const savedUal = firstFilled(UAL_KEYS);
   if (savedUal) {
-    document.getElementById("ual-src").value = savedUal;
-    setUal(savedUal, "Saved email");
-  } else {
-    document.getElementById("ual-status").textContent = "No saved UAL email. Load the sample or paste.";
+    applyUal(savedUal, "Saved email", false);
+    return;
   }
-  try {
-    const savedFiles = JSON.parse(lsGet(CT_FILES) || "null");
-    if (Array.isArray(savedFiles) && savedFiles.length) {
-      ctFiles = savedFiles.map((f) => ({
-        name: f.name || "CT.csv",
-        kind: f.kind || ctKindOf(f.name),
-        rows: (f.rows || []).map((r) => normCtRow(r, f.kind || ctKindOf(f.name), f.name)).filter((r) => r.uid)
-      }));
-    } else {
-      const raw = JSON.parse(lsGet(CT_STORE) || "null");
-      const name = lsGet(CT_NAME) || "Saved CSV";
-      if (Array.isArray(raw) && raw.length) {
-        ctFiles = [{ name, kind: ctKindOf(name), rows: raw.map((r) => normCtRow(r, ctKindOf(name), name)).filter((r) => r.uid) }];
-      }
-    }
+  const rowsGot = firstJson(UAL_ROW_KEYS);
+  if (Array.isArray(rowsGot.value) && rowsGot.value.length) {
+    ualRows = rowsGot.value.filter((r) => r && (r.staff || r.code));
+    document.getElementById("ual-status").textContent = "Saved UAL · " + ualRows.length + " LMOCG course rows.";
+  } else {
+    document.getElementById("ual-status").textContent = "No UAL email yet. Paste the reminder email.";
+  }
+}
+function restoreCt() {
+  if (lsPeek(CT_CLEARED) === "1") {
     flattenCt();
     paintCtFiles();
-  } catch (e) {}
-  try {
-    const savedOmt = JSON.parse(lsGet(OMT_FILES) || "null");
-    if (Array.isArray(savedOmt) && savedOmt.length) {
-      omtFiles = savedOmt.map((f) => ({
+    return;
+  }
+  const primary = peekJson(CT_FILES);
+  if (primary.found && Array.isArray(primary.value) && primary.value.length) {
+    ctFiles = primary.value.map(mapCtFile).filter((f) => f.rows.length);
+    flattenCt();
+    paintCtFiles();
+    return;
+  }
+  const alias = firstJson(CT_FILE_KEYS);
+  if (Array.isArray(alias.value) && alias.value.length) {
+    if (alias.value[0] && alias.value[0].rows) ctFiles = alias.value.map(mapCtFile).filter((f) => f.rows.length);
+    else addCtFromRows(firstFilled(CT_NAME_KEYS) || "Saved CSV", alias.value);
+    flattenCt();
+    paintCtFiles();
+    return;
+  }
+  CT_CSV_KEYS.forEach((key) => {
+    const got = peekJson(key);
+    if (!got.found || !Array.isArray(got.value) || !got.value.length) return;
+    if (!looksLikeCtRow(got.value[0])) return;
+    addCtFromRows(lsPeek(key.replace(/:csv$/, ":csvName")) || firstFilled(CT_NAME_KEYS) || key.replace(/^.*:/, "") + ".csv", got.value, ctKindOf(key));
+  });
+  const roster = peekJson("hx-ct-roster");
+  if (roster.found && Array.isArray(roster.value) && roster.value.length && looksLikeCtRow(roster.value[0]) && roster.value.some((r) => r.code || r.cname || r.exp)) {
+    addCtFromRows("hx-ct-roster", roster.value);
+  }
+  listStoreKeys().forEach((k) => {
+    if (!/^(hx:ct-reminder:|hx-ct-|hx:team-board:ct|hx-team-board-ct)/.test(k)) return;
+    if (CT_FILE_KEYS.indexOf(k) >= 0 || CT_CSV_KEYS.indexOf(k) >= 0 || CT_NAME_KEYS.indexOf(k) >= 0) return;
+    const got = peekJson(k);
+    if (!got.found || !Array.isArray(got.value) || !got.value.length) return;
+    if (got.value[0] && got.value[0].rows) {
+      got.value.forEach((f) => addCtFromRows(f.name, f.rows, f.kind));
+    } else if (looksLikeCtRow(got.value[0])) {
+      addCtFromRows(k.replace(/^.*:/, "") + ".csv", got.value, ctKindOf(k));
+    }
+  });
+  flattenCt();
+  paintCtFiles();
+}
+function restoreOmt() {
+  if (lsPeek(OMT_CLEARED) === "1") {
+    flattenOmt();
+    paintOmtFiles();
+    return;
+  }
+  const primary = peekJson(OMT_FILES);
+  if (primary.found && Array.isArray(primary.value) && primary.value.length) {
+    omtFiles = primary.value.map((f) => ({
+      name: f.name || "Mandatory.xlsx",
+      rows: (f.rows || []).filter((r) => r.uid && r.code)
+    })).filter((f) => f.rows.length);
+    flattenOmt();
+    paintOmtFiles();
+    return;
+  }
+  const alias = firstJson(OMT_FILE_KEYS);
+  if (Array.isArray(alias.value) && alias.value.length) {
+    if (alias.value[0] && alias.value[0].rows) {
+      omtFiles = alias.value.map((f) => ({
         name: f.name || "Mandatory.xlsx",
         rows: (f.rows || []).filter((r) => r.uid && r.code)
-      }));
-      flattenOmt();
-      paintOmtFiles();
+      })).filter((f) => f.rows.length);
+    } else {
+      const rows = alias.value.filter((r) => r && r.uid && r.code);
+      if (rows.length) omtFiles = [{ name: "Saved Mandatory.xlsx", rows: rows }];
     }
-  } catch (e) {}
+  }
+  flattenOmt();
+  paintOmtFiles();
+}
+function migratePersisted() {
+  const ualText = document.getElementById("ual-src").value;
+  if (ualText && ualText.trim()) lsSet(UAL_STORE, ualText);
+  if (ctFiles.length) persistCtFiles();
+  if (omtFiles.length) persistOmtFiles();
+  if (manualRows.length) persistManualCourses();
+}
+(async function init() {
+  PEOPLE.forEach((p) => byStaff.set(padStaff(p.staff), p));
+  await prefetchParentStore();
+  restoreUi();
+  restoreCourseStatus();
+  restoreManualCourses();
+  restoreUal();
+  restoreCt();
+  restoreOmt();
+  persistArmed = true;
+  migratePersisted();
+  mergeCatalogFromBoard();
   paint();
+  applyWriteAccess();
   document.documentElement.classList.add("hx-ready");
 })();
+window.addEventListener("storage", (e) => {
+  if (e.key === COURSE_STORE) paint();
+});
 </script>
 </body>
 </html>
