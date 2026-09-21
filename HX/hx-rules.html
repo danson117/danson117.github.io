@@ -97,6 +97,7 @@
         <li>Training Team Board：<b>%</b>＝嗰個 tab + team 入面、唔喺 outstanding 名單嘅人。行色跟 remaining days（UAL / CT / Mandatory / Manual 同一套）：紅／粉＝≤30 日（過期、0、30 日內）；黃＝&gt;30 同 ≤90 日；&gt;90 日唔上紅黃。Completed 行全行淺綠，唔再疊紅黃。In Progress 只藍 Status 格。</li>
         <li>例外：<b>236051 CHAN SIU CHUNG</b> 係已記低嘅 PAX（唔喺 Crew List）。唔好自己加去出街 Crew List。</li>
         <li><b>Ingest reject (no silent skip):</b> If the designed parser cannot recognize a row or cannot complete a required step, <strong>popup and reject the entire file</strong>. Do not skip unknown rows and still update. User must fix the source (or the parser / <code>CODE_RE</code>) first. Examples: unknown staff (UAL), unknown course code, missing usual columns, unreadable file.<br>認唔到或做唔到必要步驟 → 彈窗、整份檔 REJECT、唔寫入。唔好跳過認唔到嘅行仲 UPDATE。要攪清楚先比 UPDATE。<br>UAL OCG Functional Area only：<b>LM OCG AV / LM OCG PAX AF / LM OCG AF / LM OCG Management</b>（同 <code>LM OCG</code> / <code>LMOCG</code> / <code>LMOC</code>）。Planning 唔算。<b>145 &amp; OCG Planning</b> 雖然有 OCG 字樣，係 <b>PLANNING</b>，唔係 OCG 人；唔好因為 Planning staff 唔喺 Name List 就 reject 成份 UAL。<br>UAL：真正 OCG 人唔喺 Name List → 彈窗（英文，跟 Team Board）。<b>OK</b>＝唔寫入。橙色 <b>Override — continue</b>＝確認有問題，但仍可用 Name List 入面嘅 OCG 行繼續。唔識 course code／檔壞／0 個 OCG 行 → 硬 reject，冇 Override。CT／Mandatory 全 LM export：Transit／非 OCG 唔當 reject（板面之後先 filter）；認唔到 staff # 或冇 course code 先 reject 整份。Add course：staff 唔喺 Name List → 彈窗、唔加。</li>
+        <li><b>UAL email trail:</b> Outlook reply is newest on top. Keep only the <strong>top email</strong>. Cut at the first thread header: newline + <code>From:</code> (space optional), or <code>-----Original Message-----</code> / Begin forwarded message. Ignore older tables under that cut. Do not pick newest by scanning later subjects. Status uses the top subject, e.g. <code>UAL CBT training on 21-SEP-2026</code>. Only parse <b>Functional Area</b> tables in that top email; ignore the yellow X matrix and older trails.<br>UAL 回覆串：<strong>最上嗰封先係最新</strong>。第一個 <code>From:</code>／Original Message 切開，下面舊 email 全部忽略。唔好用後面較舊嘅 subject 日期。只讀最上封嘅 Functional Area 表。</li>
       </ul>
     </div>
 
@@ -113,6 +114,6 @@
       </ul>
     </div>
   </div>
-  <div class="page-version" data-version="2.6">v2.6</div>
+  <div class="page-version" data-version="2.7">v2.7</div>
 </body>
 </html>
