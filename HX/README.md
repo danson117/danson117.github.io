@@ -13,8 +13,8 @@
 - [LM audit / visitor schedule](lm-audit-schedule.html)
 - [Training One View (UAL / CT / Mandatory / Manual)](hx.html#team-board) — [standalone page](training-team-board.html)
 - [Course List (Name / Code / Type / Interval)](hx.html#courses) — [standalone page](course-catalog.html)
-- [Section codes (LT families, no team 1–9)](hx.html#sections) — [standalone page](section-codes.html)
-- [OCG Name List (Crew List / Name List / Full List / Section codes)](ocg-pax-mechanics-list.html)
+- [Future section codes (new LT families, later use)](hx.html#sections) — [standalone page](section-codes.html)
+- [OCG Name List (Crew List / Name List / Full List / Future sections)](ocg-pax-mechanics-list.html)
 - [零碎筆記 / Scratch notes](scratch-notes.html)（畫面唔顯示 記下／日期時間／caption；時間喺頁內 hidden `#scratch-ledger`，問先答）
 - [HX 規矩（跨機）](hx-rules.html)（紅字＝呢部機新加；另一部機對齊用）
 
