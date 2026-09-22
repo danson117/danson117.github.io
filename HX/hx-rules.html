@@ -95,6 +95,7 @@
         <li>新頁 <code>course-catalog.html</code>（<code>hx.html#courses</code>）Course List：Name / Code / Type（Online / Classroom），加 Award / Issued By / Description / <b>Interval</b>。Course <strong>冇 Expiry</strong>——Staff 到期日留喺 CT / UAL / Mandatory，唔好 copy 入 Course List。Interval＝幾耐重做一次（例如 12 months / 24 months / annual），人手填，存 <code>hx:course-catalog:rows</code>。Code 係 unique key。資料只喺呢個 browser。Mandatory 只有 Course Code、冇 Course Name 時，跟 Course List / CT / UAL 對名。</li>
         <li>新頁 <code>section-codes.html</code>（<code>hx.html#sections</code>）<b>Future section codes</b>：呢批係<strong>將來用嘅新 section</strong>，唔係而家出街 Name List Home / Current。未正式出街之前<strong>唔好覆蓋</strong>現有 section。表只 show LT <b>family</b>（LTA / LTC / LTY…）。<b>唔要 TEAM 數字 1–9</b>（LTY1–9 → LTY），<b>唔要 duplicate</b>。Letter suffix 留（LTCX / LTDC / LTFA / LTXM）。同一表喺 Name List（<code>ocg-pax-mechanics-list.html</code>）<b>Future sections</b> tab。</li>
         <li>新頁 <code>authorization-list.html</code>（<code>hx.html#auth-list</code>）<b>Authorization List</b>：由 <code>QA_Auth_Full_Detailed_List.csv</code> 入。Staff # 6 位。呢份 QA 名單 93 人／全部行都喺 Name List（OCG）。唔改出街 Name List Home / Current。Expiry 粉≤30／黃 31–90。</li>
+        <li>大名單 <b>packed lossless</b>：<code>ocg-pax-data.js</code> 存 TEAM / STAFF / FULL / PEOPLE（字典壓縮，欄同值唔改）。Name List 同 Training One View 共用。畫面只畫見到嘅列。QA CSV 原檔留低，唔改。</li>
         <li>改 page-version / <code>?v=</code> <strong>唔好清</strong>已經載入嘅 UAL email、CT CSV、Mandatory、Course List（browser storage 留低）。</li>
         <li>Training One View：<b>%</b>＝嗰個 tab + team 入面、唔喺 outstanding 名單嘅人。行色跟 remaining days（UAL / CT / Mandatory / Manual 同一套）：紅／粉＝≤30 日（過期、0、30 日內）；黃＝&gt;30 同 ≤90 日；&gt;90 日唔上紅黃。Completed 行全行淺綠，唔再疊紅黃。In Progress 只藍 Status 格。</li>
         <li>例外：<b>236051 CHAN SIU CHUNG</b> 係已記低嘅 PAX（唔喺 Crew List）。唔好自己加去出街 Crew List。</li>
@@ -121,6 +122,6 @@
       </ul>
     </div>
   </div>
-  <div class="page-version" data-version="3.13">v3.13</div>
+  <div class="page-version" data-version="3.14">v3.14</div>
 </body>
 </html>
