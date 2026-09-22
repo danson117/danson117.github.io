@@ -93,7 +93,7 @@
         <li>UAL CBT / CT Reminder 已合併入 <code>training-team-board.html</code>（<code>hx.html#team-board</code>）。唔再保留 <code>ual-cbt-training.html</code> / <code>lm-daily-ct-reminder.html</code> 單獨頁。<strong>本機呢兩份檔已刪</strong>。舊 hash <code>#ual-cbt</code> / <code>#ct-reminder</code> 轉去 <code>#team-board</code>。</li>
         <li>Training One View <b>Sources</b> 同 <b>Section</b> 分開：Sources＝邊份訓練檔（可<strong>多選</strong> All / UAL CBT / CT Reminder / Mandatory；All＝三個都開）；Section＝OCG / CG / PAX。</li>
         <li>新頁 <code>course-catalog.html</code>（<code>hx.html#courses</code>）Course List：Name / Code / Type（Online / Classroom），加 Award / Issued By / Description / <b>Interval</b>。Course <strong>冇 Expiry</strong>——Staff 到期日留喺 CT / UAL / Mandatory，唔好 copy 入 Course List。Interval＝幾耐重做一次（例如 12 months / 24 months / annual），人手填，存 <code>hx:course-catalog:rows</code>。Code 係 unique key。資料只喺呢個 browser。Mandatory 只有 Course Code、冇 Course Name 時，跟 Course List / CT / UAL 對名。</li>
-        <li>新頁 <code>section-codes.html</code>（<code>hx.html#sections</code>）Section codes：只 show LT <b>family</b>（LTA / LTC / LTY…）。<b>唔要 TEAM 數字 1–9</b>（LTY1–9 → LTY），<b>唔要 duplicate</b>。Letter suffix 留（LTCX / LTDC / LTFA / LTXM）。</li>
+        <li>新頁 <code>section-codes.html</code>（<code>hx.html#sections</code>）Section codes：只 show LT <b>family</b>（LTA / LTC / LTY…）。<b>唔要 TEAM 數字 1–9</b>（LTY1–9 → LTY），<b>唔要 duplicate</b>。Letter suffix 留（LTCX / LTDC / LTFA / LTXM）。同一表加喺 Name List（<code>ocg-pax-mechanics-list.html</code>）<b>Section codes</b> tab。</li>
         <li>改 page-version / <code>?v=</code> <strong>唔好清</strong>已經載入嘅 UAL email、CT CSV、Mandatory、Course List（browser storage 留低）。</li>
         <li>Training One View：<b>%</b>＝嗰個 tab + team 入面、唔喺 outstanding 名單嘅人。行色跟 remaining days（UAL / CT / Mandatory / Manual 同一套）：紅／粉＝≤30 日（過期、0、30 日內）；黃＝&gt;30 同 ≤90 日；&gt;90 日唔上紅黃。Completed 行全行淺綠，唔再疊紅黃。In Progress 只藍 Status 格。</li>
         <li>例外：<b>236051 CHAN SIU CHUNG</b> 係已記低嘅 PAX（唔喺 Crew List）。唔好自己加去出街 Crew List。</li>
@@ -120,6 +120,6 @@
       </ul>
     </div>
   </div>
-  <div class="page-version" data-version="3.10">v3.10</div>
+  <div class="page-version" data-version="3.11">v3.11</div>
 </body>
 </html>
