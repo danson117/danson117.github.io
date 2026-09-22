@@ -114,7 +114,7 @@
       <input id="q" type="search" placeholder="Search name / code / type / award / issued by / interval">
       <button type="button" class="primary" id="add-row">Add row</button>
     </div>
-    <p class="note" id="status">No courses yet. Codes from the Training Team Board seed this list.</p>
+    <p class="note" id="status">No courses yet. Codes from All-source Training seed this list.</p>
     <div class="table-wrap">
       <table>
         <thead>
@@ -134,7 +134,7 @@
     </div>
     <div class="why">
       <p>This page stores course master data <b>in this browser</b> (same idea as OCG Name List). <b>Code</b> is the unique key. <b>Type</b> is Online or Classroom; leave blank until you set it. <b>Name</b> is the course / certification name.</p>
-      <p>Award, Issued By, and Description are course-level fields. <b>Interval</b> is how often the course is done (e.g. 12 months, 24 months, annual). Courses do not have an expiry date — staff due / expire dates stay on CT / UAL / Mandatory. The Training Team Board reads this list: a name typed here fills Mandatory rows that only have a Course Code.</p>
+      <p>Award, Issued By, and Description are course-level fields. <b>Interval</b> is how often the course is done (e.g. 12 months, 24 months, annual). Courses do not have an expiry date — staff due / expire dates stay on CT / UAL / Mandatory. All-source Training reads this list: a name typed here fills Mandatory rows that only have a Course Code.</p>
     </div>
   </div>
   <datalist id="interval-hints">
@@ -144,7 +144,7 @@
     <option value="annual"></option>
     <option value="one-time"></option>
   </datalist>
-  <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
+  <div class="page-version" data-version="1.2" aria-label="Page version 1.2">v1.2</div>
 <script>
 const COURSE_STORE = "hx:course-catalog:rows";
 const UI_Q = "hx:course-catalog:q";
@@ -363,7 +363,7 @@ function paintStatus(extra) {
   document.getElementById("n-typed").textContent = String(typed);
   document.getElementById("status").textContent = extra || (n
     ? n + " course" + (n === 1 ? "" : "s") + " in this browser. Code is unique."
-    : "No courses yet. Codes from the Training Team Board seed this list.");
+    : "No courses yet. Codes from All-source Training seed this list.");
 }
 function typeOptions(cur) {
   return [["", "—"], ["Online", "Online"], ["Classroom", "Classroom"]].map(([v, l]) =>
@@ -385,7 +385,7 @@ function paint() {
       "<td><input class=\"cell\" data-k=\"interval\" list=\"interval-hints\" placeholder=\"e.g. 12 months\" value=\"" + esc(r.interval) + "\"></td>" +
       "<td class=\"act\"><button type=\"button\" data-del=\"" + i + "\">Remove</button></td>" +
       "</tr>";
-  }).join("") || "<tr><td colspan=\"8\">No rows. Add a course, or load UAL / CT / Mandatory on the Training Team Board.</td></tr>";
+  }).join("") || "<tr><td colspan=\"8\">No rows. Add a course, or load UAL / CT / Mandatory on All-source Training.</td></tr>";
   paintStatus();
 }
 function otherHasCode(i, code) {
