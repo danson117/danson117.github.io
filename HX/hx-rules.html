@@ -80,6 +80,7 @@
     <div class="card new-box">
       <ul class="new">
         <li>After every local HX / repo update that should live on GitHub, <strong>commit and <code>git push</code> immediately</strong> (same turn). Do not leave work only on this PC. If several versions were never pushed, <strong>push the latest</strong> (one commit of current state is enough — do not invent one commit per missed version). Still: do not open a new browser; tell version numbers; user refreshes. Do not push secrets (<code>.env</code>, passwords, credentials). Do not force-push. Do not skip hooks unless the user asked.<br>每次本機更新（應上 GitHub 嘅 HX／倉資料）<strong>即刻 commit + push</strong>，唔好只留喺呢部機。之前漏咗就 <strong>push 而家最新</strong>（一次 commit 夠）。仍然唔開新 browser，講 version，用戶自己 refresh。唔 push 秘密；唔 force；唔 skip hooks（除非用戶叫）。</li>
+        <li><b>暗號 bye / 收工：</b>用戶收工返屋企。即刻把<strong>所有本機</strong>應上 GitHub 嘅野 <code>commit + push</code>（呢個倉 <code>main</code>），<strong>包 Status / Remark / Manual</strong>（<code>HX/team-board-actions.json</code>）。唔好留低未 push 嘅 HTML／規則／名單／actions。唔 force；唔 push 秘密／PAT。Status 只喺呢個 browser 而未 auto-push 嘅，講清楚；唔好開新 Chrome。<br>bye / 收工＝而家即刻 sync 晒去 GitHub，返屋企另一部機先有得用。</li>
         <li>After an HX update, <strong>do not open a new browser / Chrome</strong>. Tell the user the <strong>page version number(s)</strong> in the chat. The user will <strong>manually refresh</strong> the tab they already have.<br>改完 HX <strong>唔好開新 browser / Chrome</strong>。喺對話講 <strong>version 號</strong> 就得；用戶自己 refresh 已開嘅 tab。</li>
         <li>每次改 HTML，<strong>右下角 version 必改</strong>（細改 +0.1，大改 +1.0）。<code>hx.html</code> 側欄 <code>?v=</code> 跟住加。</li>
         <li>零碎筆記畫面 <strong>唔顯示</strong>「記下」、日期時間、caption（邊個負責邊塊／口徑／Initial…）。時間只留 hidden <code>#scratch-ledger</code>，問先答。</li>
@@ -122,6 +123,6 @@
       </ul>
     </div>
   </div>
-  <div class="page-version" data-version="3.14">v3.14</div>
+  <div class="page-version" data-version="3.15">v3.15</div>
 </body>
 </html>

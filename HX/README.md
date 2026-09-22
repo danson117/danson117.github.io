@@ -23,6 +23,7 @@
 
 - After every local HX / repo update that should live on GitHub, **commit and `git push` immediately** (same turn). Do not leave work only on this PC. If several versions were never pushed, **push the latest** (one commit of current state is enough — do not invent one commit per missed version). Do not push secrets (`.env`, passwords, credentials). Do not force-push. Do not skip hooks unless the user asked.
 - 每次本機更新（應上 GitHub 嘅 HX／倉資料）**即刻 commit + push**，唔好只留喺呢部機。之前漏咗就 **push 而家最新**（一次 commit 夠）。唔 push 秘密；唔 force；唔 skip hooks（除非用戶叫）。
+- **暗號 bye / 收工：** 用戶收工返屋企。即刻 `commit + push` 所有本機應上 GitHub 嘅野，包 Status / actions（`HX/team-board-actions.json`）。唔 force。Status 只喺 browser 而未 auto-push 嘅要講清楚。唔開新 Chrome。
 - After an HX update, **do not open a new browser / Chrome**. Tell the user the **page version number(s)** in the chat. The user will **manually refresh** the tab they already have.
 - **English-only pages:** `hx.html#links` / `#flow` / `#training` / `#auth-list` / `#audit` / `#team-board` / `#courses` / `#sections` / `#ocg-pax` and those HTML files must be English UI. Staff Chinese names stay. Not this rule: `#docs` / `#tooling` / `#fth-rewrite` / `#scratch` / `#rules`.
 - 改完 HX **唔好開新 browser / Chrome**。喺對話講 **version 號** 就得；用戶自己 refresh 已開嘅 tab。

@@ -26,6 +26,8 @@ Downloads 入面嘅舊檔（用戶 download GitHub 之後留低）**唔好**自�
 
 「自動咁 PUSH」（STT 有時變「唔知咁 push」）= 呢個倉改完一定 push。
 
+**暗號 bye / 收工：** 用戶收工返屋企。即刻把呢個倉所有本機應上 GitHub 嘅改動 `commit + push`（包 `HX/team-board-actions.json` Status / Remark / Manual）。唔好留未 push。唔 force。唔 push 秘密／PAT。Status 只喺 browser 而未 auto-push 嘅要講清楚。唔開新 Chrome。
+
 ## 禁止
 
 - 唔好 `--force` 去 `main`

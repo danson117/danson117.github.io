@@ -11,6 +11,7 @@ alwaysApply: true
 - 另一部機：開該 HTML。紅字＝未對齊／新加。對齊完先可轉普通色。
 - After every local HX / repo update that should live on GitHub, **commit and `git push` immediately** (same turn). Do not leave work only on this PC. If several versions were never pushed, **push the latest** (one commit of current state is enough). Do not push secrets. Do not force-push. Do not skip hooks unless the user asked.
 - 每次本機更新（應上 GitHub）**即刻 commit + push**。之前漏咗就 **push 而家最新**（一次 commit 夠）。唔 push 秘密；唔 force。
+- **暗號 bye / 收工：** 用戶收工返屋企。即刻 `commit + push` 所有本機應上 GitHub 嘅野，包 `HX/team-board-actions.json` Status／actions。唔 force。Status 只喺 browser 而未 auto-push 嘅要講清楚。唔開新 Chrome。
 - After an HX update, **do not open a new browser / Chrome**. Tell the user the **page version number(s)** in the chat. The user will **manually refresh** the tab they already have.
 - 改完 HX **唔好開新 browser / Chrome**。喺對話講 **version 號** 就得；用戶自己 refresh 已開嘅 tab。
 - 右下角 `page-version` **必 +0.1**（大改 +1.0）。`hx.html` 側欄 `?v=` 一齊加。
