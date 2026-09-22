@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Section codes</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #d5dbe3;
+    --paper: #f4f6f8;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.4;
+    font-size: 13.5px;
+  }
+  .page { max-width: 980px; margin: 0 auto; padding: 18px 16px 72px; }
+  h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); font-weight: 700; }
+  .subtitle { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  .table-wrap { overflow: auto; border: 1px solid var(--line); background: var(--card); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+  th { background: var(--navy); color: #fff; font-weight: 650; }
+  td.code { font-weight: 700; white-space: nowrap; width: 5em; }
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>Section codes</h1>
+    <p class="subtitle">LM Transit families only. Team numbers 1–9 and duplicate rows are dropped. LTY1–LTY9 → LTY.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Code</th><th>Name</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="code">LT</td><td>LM TRANSIT OPERATIONS TEAM</td></tr>
+          <tr><td class="code">LTA</td><td>LM TRANSIT OPERATIONS CX PAX MECH.</td></tr>
+          <tr><td class="code">LTC</td><td>LM TRANSIT OPERATIONS OC PAX MECH.</td></tr>
+          <tr><td class="code">LTCX</td><td>LM TRANSIT OC PAX OPERATIONS OFFICE</td></tr>
+          <tr><td class="code">LTD</td><td>LM TRANSIT OPERATIONS SUPPORT OFFICE</td></tr>
+          <tr><td class="code">LTDC</td><td>LS PAX OPERATIONS MAINT CONTROL</td></tr>
+          <tr><td class="code">LTDM</td><td>LS PAX OPERATIONS MOBILE SERVICES</td></tr>
+          <tr><td class="code">LTDR</td><td>LS PAX OPERATIONS RAMP CONTROL</td></tr>
+          <tr><td class="code">LTDT</td><td>LM TRANSIT OPERATIONS OFFICE</td></tr>
+          <tr><td class="code">LTDX</td><td>LM TRANSIT CX PAX OPERATIONS OFFICE</td></tr>
+          <tr><td class="code">LTF</td><td>LM TRANSIT OPERATIONS REFUELLERS TEAM</td></tr>
+          <tr><td class="code">LTFA</td><td>LM TRANSIT OPERATIONS PASSENGER REFUELLERS TEAM</td></tr>
+          <tr><td class="code">LTG</td><td>LM TRANSIT OPERATIONS TRAINING</td></tr>
+          <tr><td class="code">LTGC</td><td>LM TRANSIT OPERATIONS PAX TRAINING - MECHANIC</td></tr>
+          <tr><td class="code">LTGE</td><td>LM TRANSIT OPERATIONS PAX TRAINING - ENGINEER</td></tr>
+          <tr><td class="code">LTH</td><td>LM TRANSIT OPERATIONS AFH TEAM</td></tr>
+          <tr><td class="code">LTN</td><td>LM TRANSIT OPERATIONS CX PAX A320 TEAM</td></tr>
+          <tr><td class="code">LTT</td><td>LM TRANSIT OPERATIONS TOWING TEAM</td></tr>
+          <tr><td class="code">LTW</td><td>LM TRANSIT OPERATIONS OC PAX ENGINEER</td></tr>
+          <tr><td class="code">LTX</td><td>LM TRANSIT OPERATIONS MANAGEMENT</td></tr>
+          <tr><td class="code">LTXM</td><td>LM TRANSIT OPERATIONS MANAGEMENT TEAM</td></tr>
+          <tr><td class="code">LTY</td><td>LM TRANSIT OPERATIONS CX PAX ENGINEER</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+</body>
+</html>
