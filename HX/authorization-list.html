@@ -9,10 +9,11 @@
     --ink: #1c2430; --muted: #4a5564; --line: #d7dee6; --paper: #eef1f4;
     --card: #ffffff; --navy: #1e3a5f; --navy-soft: #e8eef5;
     --hot: #6b1f1a; --hot-bg: #f4d4d0; --warn: #6b5310; --warn-bg: #fff3b0;
+    --row-h: 28px;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; color: var(--ink); background: var(--paper); line-height: 1.45; font-size: 13.5px; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; color: var(--ink); background: var(--paper); line-height: 1.35; font-size: 13.5px; }
   .page { max-width: 1680px; margin: 0 auto; padding: 22px 18px 64px; }
   h1 { font-size: 22px; margin: 0 0 6px; color: var(--navy); }
   .subtitle { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
@@ -31,16 +32,18 @@
   button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--card); padding: 6px 10px; cursor: pointer; }
   button:hover { background: var(--navy-soft); }
   .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
-  .table-wrap { overflow: auto; max-height: 66vh; border: 1px solid var(--line); background: var(--card); }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1280px; }
-  th, td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
-  th { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 1; white-space: nowrap; cursor: pointer; }
+  .table-wrap { overflow: auto; height: 66vh; border: 1px solid var(--line); background: var(--card); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1280px; table-layout: fixed; }
+  th, td { border: 1px solid var(--line); padding: 4px 6px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  th { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 2; cursor: pointer; height: 30px; }
   th.on::after { content: attr(data-dir); margin-left: 6px; }
+  td { height: var(--row-h); }
+  tr.pad td { border: 0; padding: 0; height: auto; }
   tr.warn td { background: var(--warn-bg); }
   tr.hot td { background: var(--hot-bg); }
   td.pax { font-weight: 650; color: var(--navy); }
   td.cg { color: #5a4630; }
-  td.staff { white-space: nowrap; font-weight: 650; }
+  td.staff { font-weight: 650; }
   .notes { border: 1px solid var(--line); background: var(--card); padding: 10px 12px; margin: 14px 0 0; font-size: 12px; color: var(--muted); }
   .notes p { margin: 0 0 6px; }
   .notes p:last-child { margin: 0; }
@@ -70,19 +73,25 @@
       <label>Aircraft <select id="f-ac"><option value="">All</option></select></label>
     </div>
     <p class="note" id="status">Loading…</p>
-    <div class="table-wrap">
+    <div class="table-wrap" id="wrap">
       <table>
+        <colgroup>
+          <col style="width:5em"><col style="width:5em"><col style="width:6em"><col style="width:14em">
+          <col style="width:9em"><col style="width:6em"><col style="width:6em"><col style="width:6em">
+          <col style="width:22em"><col style="width:7em"><col style="width:7em"><col style="width:16em">
+          <col style="width:8em"><col style="width:14em">
+        </colgroup>
         <thead><tr id="head"></tr></thead>
         <tbody id="body"></tbody>
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code>. Pink = expiry in 30 days or overdue. Yellow = 31–90 days. Empty expiry is not coloured.</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code>, packed for the page. Only visible rows are drawn. Pink = expiry in 30 days or overdue. Yellow = 31–90 days.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.0">v1.0</div>
-<script src="authorization-list-data.js?v=1.0"></script>
+  <div class="page-version" data-version="1.1">v1.1</div>
+<script src="authorization-list-data.js?v=2"></script>
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["staff","Staff #"],["name","Name"],
@@ -90,6 +99,11 @@ const COLS = [
   ["module","Module"],["issue","Issue"],["expiry","Expiry"],["lim","Limitations"],
   ["ref","Operator ref"],["email","Email"]
 ];
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const ROW_H = 28;
+const OVERSCAN = 16;
+let AUTH_ROWS = [];
+let view = [];
 let q = "";
 let fGroup = "ocg";
 let fDept = "";
@@ -98,29 +112,51 @@ let fCat = "";
 let fAc = "";
 let sortKey = "name";
 let sortDir = 1;
+let searchTimer = 0;
+let scrollTick = 0;
 const TODAY = new Date();
 TODAY.setHours(0,0,0,0);
 
 function esc(s){
   return String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 }
-function daysLeft(iso){
-  if (!iso) return null;
-  const d = new Date(iso + "T00:00:00");
-  if (isNaN(d)) return null;
+function fmtYmd(n){
+  n = Number(n) || 0;
+  if (!n) return "";
+  const s = String(n);
+  const y = s.slice(0,4), m = Number(s.slice(4,6))-1, d = s.slice(6,8);
+  return d + "-" + (MON[m] || "") + "-" + y;
+}
+function daysLeft(n){
+  n = Number(n) || 0;
+  if (!n) return null;
+  const s = String(n);
+  const d = new Date(Number(s.slice(0,4)), Number(s.slice(4,6))-1, Number(s.slice(6,8)));
   return Math.round((d - TODAY) / 86400000);
 }
-function rowClass(r){
-  const n = daysLeft(r.expiryIso);
-  if (n == null) return "";
-  if (n <= 30) return "hot";
-  if (n <= 90) return "warn";
-  return "";
-}
-function cellClass(k, r){
-  if (k === "group") return r.group === "PAX" ? "pax" : "cg";
-  if (k === "staff") return "staff";
-  return "";
+function unpack(){
+  const pack = window.AUTH_PACK;
+  if (!pack || !pack.r) return false;
+  const D = pack.d;
+  const people = pack.p.map(p => ({
+    staff: String(p[0]).padStart(6, "0"),
+    name: D.name[p[1]] || "",
+    group: p[2] ? "PAX" : "CG",
+    dept: D.dept[p[3]] || "",
+    email: D.email[p[4]] || ""
+  }));
+  AUTH_ROWS = pack.r.map(r => {
+    const p = people[r[0]];
+    return {
+      group: p.group, dept: p.dept, staff: p.staff, name: p.name, email: p.email,
+      cat: D.cat[r[1]] || "", op: D.op[r[2]] || "", ac: D.ac[r[3]] || "",
+      eng: D.eng[r[4]] || "", module: D.mod[r[5]] || "",
+      issueN: r[6] || 0, expiryN: r[7] || 0,
+      issue: fmtYmd(r[6]), expiry: fmtYmd(r[7]),
+      lim: D.lim[r[8]] || "", ref: D.ref[r[9]] || ""
+    };
+  });
+  return true;
 }
 function fillSelect(id, values){
   const sel = document.getElementById(id);
@@ -129,14 +165,11 @@ function fillSelect(id, values){
     o.value = v; o.textContent = v; sel.appendChild(o);
   });
 }
-function groupOk(r){
-  if (!fGroup || fGroup === "ocg") return true;
-  return r.group === fGroup;
-}
 function filtered(){
   const s = q.trim().toLowerCase();
   return AUTH_ROWS.filter(r => {
-    if (!groupOk(r)) return false;
+    if (fGroup === "CG" && r.group !== "CG") return false;
+    if (fGroup === "PAX" && r.group !== "PAX") return false;
     if (fDept && r.dept !== fDept) return false;
     if (fOp && r.op !== fOp) return false;
     if (fCat && r.cat !== fCat) return false;
@@ -146,8 +179,8 @@ function filtered(){
   });
 }
 function sortVal(r, key){
-  if (key === "expiry") return r.expiryIso || "";
-  if (key === "issue") return r.issueIso || "";
+  if (key === "expiry") return r.expiryN || 0;
+  if (key === "issue") return r.issueN || 0;
   if (key === "staff") return Number(r.staff) || 0;
   return String(r[key] || "").toLowerCase();
 }
@@ -160,24 +193,57 @@ function sorted(list){
     return sortDir * cmp || String(a.name||"").localeCompare(String(b.name||"")) || String(a.module||"").localeCompare(String(b.module||""));
   });
 }
-function paint(){
-  const rows = sorted(filtered());
+function rowClass(r){
+  const n = daysLeft(r.expiryN);
+  if (n == null) return "";
+  if (n <= 30) return "hot";
+  if (n <= 90) return "warn";
+  return "";
+}
+function cellClass(k, r){
+  if (k === "group") return r.group === "PAX" ? "pax" : "cg";
+  if (k === "staff") return "staff";
+  return "";
+}
+function paintHead(){
+  document.getElementById("head").innerHTML = COLS.map(([k,l]) => {
+    const on = sortKey === k;
+    return "<th class=\""+(on?"on":"")+"\" data-sort=\""+k+"\""+(on?" data-dir=\""+(sortDir>0?"▲":"▼")+"\"":"")+">"+esc(l)+"</th>";
+  }).join("");
+}
+function paintBody(){
+  const wrap = document.getElementById("wrap");
+  const total = view.length;
+  const start = Math.max(0, Math.floor(wrap.scrollTop / ROW_H) - OVERSCAN);
+  const vis = Math.ceil(wrap.clientHeight / ROW_H) + OVERSCAN * 2;
+  const end = Math.min(total, start + vis);
+  const topH = start * ROW_H;
+  const botH = Math.max(0, (total - end) * ROW_H);
+  let html = "<tr class=\"pad\"><td colspan=\""+COLS.length+"\" style=\"height:"+topH+"px\"></td></tr>";
+  for (let i = start; i < end; i++) {
+    const r = view[i];
+    html += "<tr class=\""+rowClass(r)+"\">"+COLS.map(([k]) => {
+      const cls = cellClass(k, r);
+      const val = r[k] == null ? "" : r[k];
+      return "<td"+(cls?" class=\""+cls+"\"":"")+" title=\""+esc(val)+"\">"+esc(val)+"</td>";
+    }).join("")+"</tr>";
+  }
+  html += "<tr class=\"pad\"><td colspan=\""+COLS.length+"\" style=\"height:"+botH+"px\"></td></tr>";
+  document.getElementById("body").innerHTML = html;
+}
+function rebuildView(resetScroll){
+  view = sorted(filtered());
+  document.getElementById("status").textContent = view.length + " of " + AUTH_ROWS.length + " rows";
+  if (resetScroll) document.getElementById("wrap").scrollTop = 0;
+  paintBody();
+}
+function paintChrome(){
   document.getElementById("n-all").textContent = String(AUTH_ROWS.length);
   document.getElementById("n-cg").textContent = String(AUTH_ROWS.filter(r => r.group === "CG").length);
   document.getElementById("n-pax").textContent = String(AUTH_ROWS.filter(r => r.group === "PAX").length);
   document.getElementById("n-people").textContent = String(new Set(AUTH_ROWS.map(r => r.staff)).size);
   document.querySelectorAll("[data-group]").forEach(el => el.classList.toggle("on", el.dataset.group === fGroup));
-  document.getElementById("head").innerHTML = COLS.map(([k,l]) => {
-    const on = sortKey === k;
-    return "<th class=\""+(on?"on":"")+"\" data-sort=\""+k+"\""+(on?" data-dir=\""+(sortDir>0?"▲":"▼")+"\"":"")+">"+esc(l)+"</th>";
-  }).join("");
-  document.getElementById("body").innerHTML = rows.map(r =>
-    "<tr class=\""+rowClass(r)+"\">"+COLS.map(([k]) => {
-      const cls = cellClass(k, r);
-      return "<td"+(cls?" class=\""+cls+"\"":"")+">"+esc(r[k])+"</td>";
-    }).join("")+"</tr>"
-  ).join("");
-  document.getElementById("status").textContent = rows.length + " of " + AUTH_ROWS.length + " rows";
+  paintHead();
 }
 function copyText(text, btn, label){
   const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = label, 1200); };
@@ -191,16 +257,15 @@ function fallback(text, done){
   document.execCommand("copy"); ta.remove(); done();
 }
 function sheet(sep){
-  const rows = sorted(filtered());
   const head = COLS.map(([,l]) => l).join(sep);
-  const body = rows.map(r => COLS.map(([k]) => {
+  const body = view.map(r => COLS.map(([k]) => {
     let v = String(r[k] ?? "");
     if (sep === "," && /[",\n]/.test(v)) v = "\""+v.replace(/"/g,"\"\"")+"\"";
     return v;
   }).join(sep));
   return [head].concat(body).join("\r\n");
 }
-if (typeof AUTH_ROWS === "undefined") {
+if (!unpack()) {
   document.getElementById("status").textContent = "Authorization data file failed to load.";
   document.documentElement.classList.add("hx-ready");
 } else {
@@ -208,18 +273,27 @@ if (typeof AUTH_ROWS === "undefined") {
   fillSelect("f-op", AUTH_ROWS.map(r => r.op));
   fillSelect("f-cat", AUTH_ROWS.map(r => r.cat));
   fillSelect("f-ac", AUTH_ROWS.map(r => r.ac));
-  document.getElementById("q").addEventListener("input", e => { q = e.target.value; paint(); });
-  document.getElementById("f-dept").addEventListener("change", e => { fDept = e.target.value; paint(); });
-  document.getElementById("f-op").addEventListener("change", e => { fOp = e.target.value; paint(); });
-  document.getElementById("f-cat").addEventListener("change", e => { fCat = e.target.value; paint(); });
-  document.getElementById("f-ac").addEventListener("change", e => { fAc = e.target.value; paint(); });
+  document.getElementById("q").addEventListener("input", e => {
+    q = e.target.value;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => rebuildView(true), 120);
+  });
+  document.getElementById("f-dept").addEventListener("change", e => { fDept = e.target.value; rebuildView(true); });
+  document.getElementById("f-op").addEventListener("change", e => { fOp = e.target.value; rebuildView(true); });
+  document.getElementById("f-cat").addEventListener("change", e => { fCat = e.target.value; rebuildView(true); });
+  document.getElementById("f-ac").addEventListener("change", e => { fAc = e.target.value; rebuildView(true); });
   document.querySelectorAll("[data-group]").forEach(el => {
-    el.addEventListener("click", () => { fGroup = el.dataset.group; paint(); });
+    el.addEventListener("click", () => { fGroup = el.dataset.group; rebuildView(true); paintChrome(); });
   });
   document.getElementById("head").addEventListener("click", e => {
     const th = e.target.closest("[data-sort]"); if (!th) return;
     if (sortKey === th.dataset.sort) sortDir *= -1; else { sortKey = th.dataset.sort; sortDir = 1; }
-    paint();
+    paintHead();
+    rebuildView(true);
+  });
+  document.getElementById("wrap").addEventListener("scroll", () => {
+    if (scrollTick) return;
+    scrollTick = requestAnimationFrame(() => { scrollTick = 0; paintBody(); });
   });
   document.getElementById("copy-tsv").addEventListener("click", e => copyText(sheet("\t"), e.currentTarget, "Copy TSV"));
   document.getElementById("copy-csv").addEventListener("click", e => copyText(sheet(","), e.currentTarget, "Copy CSV"));
@@ -231,9 +305,11 @@ if (typeof AUTH_ROWS === "undefined") {
     document.getElementById("f-op").value = "";
     document.getElementById("f-cat").value = "";
     document.getElementById("f-ac").value = "";
-    paint();
+    paintChrome();
+    rebuildView(true);
   });
-  paint();
+  paintChrome();
+  rebuildView(true);
   document.documentElement.classList.add("hx-ready");
 }
 </script>
