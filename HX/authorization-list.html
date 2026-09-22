@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Authorization List</title>
+<style>
+  :root {
+    --ink: #1c2430; --muted: #4a5564; --line: #d7dee6; --paper: #eef1f4;
+    --card: #ffffff; --navy: #1e3a5f; --navy-soft: #e8eef5;
+    --hot: #6b1f1a; --hot-bg: #f4d4d0; --warn: #6b5310; --warn-bg: #fff3b0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; color: var(--ink); background: var(--paper); line-height: 1.45; font-size: 13.5px; }
+  .page { max-width: 1680px; margin: 0 auto; padding: 22px 18px 64px; }
+  h1 { font-size: 22px; margin: 0 0 6px; color: var(--navy); }
+  .subtitle { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+  html:not(.hx-ready) body { visibility: hidden; }
+  .stats { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+  .stat { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 10px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+  .stat:hover { background: var(--navy-soft); }
+  .stat.on { background: var(--navy); }
+  .stat.on b, .stat.on span { color: #fff; }
+  .stat b { font-size: 15px; color: var(--navy); }
+  .stat span { color: var(--muted); font-size: 13px; }
+  .toolbar, .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
+  .toolbar input[type="search"], .filters select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); background: #fff; }
+  .toolbar input[type="search"] { flex: 1; min-width: 220px; }
+  .filters label { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--card); padding: 6px 10px; cursor: pointer; }
+  button:hover { background: var(--navy-soft); }
+  .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+  .table-wrap { overflow: auto; max-height: 66vh; border: 1px solid var(--line); background: var(--card); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1280px; }
+  th, td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 1; white-space: nowrap; cursor: pointer; }
+  th.on::after { content: attr(data-dir); margin-left: 6px; }
+  tr.warn td { background: var(--warn-bg); }
+  tr.hot td { background: var(--hot-bg); }
+  td.pax { font-weight: 650; color: var(--navy); }
+  td.cg { color: #5a4630; }
+  td.staff { white-space: nowrap; font-weight: 650; }
+  .notes { border: 1px solid var(--line); background: var(--card); padding: 10px 12px; margin: 14px 0 0; font-size: 12px; color: var(--muted); }
+  .notes p { margin: 0 0 6px; }
+  .notes p:last-child { margin: 0; }
+  .page-version { position: fixed; right: 12px; bottom: 12px; font-size: 0.72rem; font-weight: 700; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; pointer-events: none; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>Authorization List</h1>
+    <p class="subtitle">QA full detailed list · every person is on the OCG Name List · staff # is 6 digits.</p>
+    <div class="stats">
+      <div class="stat on" data-group="ocg"><b id="n-all">0</b><span>OCG rows</span></div>
+      <div class="stat" data-group="CG"><b id="n-cg">0</b><span>CG rows</span></div>
+      <div class="stat" data-group="PAX"><b id="n-pax">0</b><span>PAX rows</span></div>
+      <div class="stat" data-stat="people"><b id="n-people">0</b><span>People</span></div>
+    </div>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Search staff # / name / section / operator / aircraft / module / email">
+      <button type="button" id="copy-tsv">Copy TSV</button>
+      <button type="button" id="copy-csv">Copy CSV</button>
+      <button type="button" id="clear">Clear filters</button>
+    </div>
+    <div class="filters">
+      <label>Section <select id="f-dept"><option value="">All</option></select></label>
+      <label>Operator <select id="f-op"><option value="">All</option></select></label>
+      <label>Category <select id="f-cat"><option value="">All</option></select></label>
+      <label>Aircraft <select id="f-ac"><option value="">All</option></select></label>
+    </div>
+    <p class="note" id="status">Loading…</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr id="head"></tr></thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <div class="notes">
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code>. Pink = expiry in 30 days or overdue. Yellow = 31–90 days. Empty expiry is not coloured.</p>
+      <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
+    </div>
+  </div>
+  <div class="page-version" data-version="1.0">v1.0</div>
+<script src="authorization-list-data.js?v=1.0"></script>
+<script>
+const COLS = [
+  ["group","CG/PAX"],["dept","Section"],["staff","Staff #"],["name","Name"],
+  ["cat","Category"],["op","Operator"],["ac","Aircraft"],["eng","Engine"],
+  ["module","Module"],["issue","Issue"],["expiry","Expiry"],["lim","Limitations"],
+  ["ref","Operator ref"],["email","Email"]
+];
+let q = "";
+let fGroup = "ocg";
+let fDept = "";
+let fOp = "";
+let fCat = "";
+let fAc = "";
+let sortKey = "name";
+let sortDir = 1;
+const TODAY = new Date();
+TODAY.setHours(0,0,0,0);
+
+function esc(s){
+  return String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+}
+function daysLeft(iso){
+  if (!iso) return null;
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(d)) return null;
+  return Math.round((d - TODAY) / 86400000);
+}
+function rowClass(r){
+  const n = daysLeft(r.expiryIso);
+  if (n == null) return "";
+  if (n <= 30) return "hot";
+  if (n <= 90) return "warn";
+  return "";
+}
+function cellClass(k, r){
+  if (k === "group") return r.group === "PAX" ? "pax" : "cg";
+  if (k === "staff") return "staff";
+  return "";
+}
+function fillSelect(id, values){
+  const sel = document.getElementById(id);
+  [...new Set(values.filter(Boolean))].sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:"base"})).forEach(v => {
+    const o = document.createElement("option");
+    o.value = v; o.textContent = v; sel.appendChild(o);
+  });
+}
+function groupOk(r){
+  if (!fGroup || fGroup === "ocg") return true;
+  return r.group === fGroup;
+}
+function filtered(){
+  const s = q.trim().toLowerCase();
+  return AUTH_ROWS.filter(r => {
+    if (!groupOk(r)) return false;
+    if (fDept && r.dept !== fDept) return false;
+    if (fOp && r.op !== fOp) return false;
+    if (fCat && r.cat !== fCat) return false;
+    if (fAc && r.ac !== fAc) return false;
+    if (!s) return true;
+    return COLS.some(([k]) => String(r[k] || "").toLowerCase().includes(s));
+  });
+}
+function sortVal(r, key){
+  if (key === "expiry") return r.expiryIso || "";
+  if (key === "issue") return r.issueIso || "";
+  if (key === "staff") return Number(r.staff) || 0;
+  return String(r[key] || "").toLowerCase();
+}
+function sorted(list){
+  return list.slice().sort((a,b) => {
+    const va = sortVal(a, sortKey), vb = sortVal(b, sortKey);
+    const cmp = typeof va === "number" && typeof vb === "number"
+      ? va - vb
+      : String(va).localeCompare(String(vb), undefined, {sensitivity:"base", numeric:true});
+    return sortDir * cmp || String(a.name||"").localeCompare(String(b.name||"")) || String(a.module||"").localeCompare(String(b.module||""));
+  });
+}
+function paint(){
+  const rows = sorted(filtered());
+  document.getElementById("n-all").textContent = String(AUTH_ROWS.length);
+  document.getElementById("n-cg").textContent = String(AUTH_ROWS.filter(r => r.group === "CG").length);
+  document.getElementById("n-pax").textContent = String(AUTH_ROWS.filter(r => r.group === "PAX").length);
+  document.getElementById("n-people").textContent = String(new Set(AUTH_ROWS.map(r => r.staff)).size);
+  document.querySelectorAll("[data-group]").forEach(el => el.classList.toggle("on", el.dataset.group === fGroup));
+  document.getElementById("head").innerHTML = COLS.map(([k,l]) => {
+    const on = sortKey === k;
+    return "<th class=\""+(on?"on":"")+"\" data-sort=\""+k+"\""+(on?" data-dir=\""+(sortDir>0?"▲":"▼")+"\"":"")+">"+esc(l)+"</th>";
+  }).join("");
+  document.getElementById("body").innerHTML = rows.map(r =>
+    "<tr class=\""+rowClass(r)+"\">"+COLS.map(([k]) => {
+      const cls = cellClass(k, r);
+      return "<td"+(cls?" class=\""+cls+"\"":"")+">"+esc(r[k])+"</td>";
+    }).join("")+"</tr>"
+  ).join("");
+  document.getElementById("status").textContent = rows.length + " of " + AUTH_ROWS.length + " rows";
+}
+function copyText(text, btn, label){
+  const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = label, 1200); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallback(text, done));
+  } else fallback(text, done);
+}
+function fallback(text, done){
+  const ta = document.createElement("textarea");
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  document.execCommand("copy"); ta.remove(); done();
+}
+function sheet(sep){
+  const rows = sorted(filtered());
+  const head = COLS.map(([,l]) => l).join(sep);
+  const body = rows.map(r => COLS.map(([k]) => {
+    let v = String(r[k] ?? "");
+    if (sep === "," && /[",\n]/.test(v)) v = "\""+v.replace(/"/g,"\"\"")+"\"";
+    return v;
+  }).join(sep));
+  return [head].concat(body).join("\r\n");
+}
+if (typeof AUTH_ROWS === "undefined") {
+  document.getElementById("status").textContent = "Authorization data file failed to load.";
+  document.documentElement.classList.add("hx-ready");
+} else {
+  fillSelect("f-dept", AUTH_ROWS.map(r => r.dept));
+  fillSelect("f-op", AUTH_ROWS.map(r => r.op));
+  fillSelect("f-cat", AUTH_ROWS.map(r => r.cat));
+  fillSelect("f-ac", AUTH_ROWS.map(r => r.ac));
+  document.getElementById("q").addEventListener("input", e => { q = e.target.value; paint(); });
+  document.getElementById("f-dept").addEventListener("change", e => { fDept = e.target.value; paint(); });
+  document.getElementById("f-op").addEventListener("change", e => { fOp = e.target.value; paint(); });
+  document.getElementById("f-cat").addEventListener("change", e => { fCat = e.target.value; paint(); });
+  document.getElementById("f-ac").addEventListener("change", e => { fAc = e.target.value; paint(); });
+  document.querySelectorAll("[data-group]").forEach(el => {
+    el.addEventListener("click", () => { fGroup = el.dataset.group; paint(); });
+  });
+  document.getElementById("head").addEventListener("click", e => {
+    const th = e.target.closest("[data-sort]"); if (!th) return;
+    if (sortKey === th.dataset.sort) sortDir *= -1; else { sortKey = th.dataset.sort; sortDir = 1; }
+    paint();
+  });
+  document.getElementById("copy-tsv").addEventListener("click", e => copyText(sheet("\t"), e.currentTarget, "Copy TSV"));
+  document.getElementById("copy-csv").addEventListener("click", e => copyText(sheet(","), e.currentTarget, "Copy CSV"));
+  document.getElementById("clear").addEventListener("click", () => {
+    q = fDept = fOp = fCat = fAc = "";
+    fGroup = "ocg";
+    document.getElementById("q").value = "";
+    document.getElementById("f-dept").value = "";
+    document.getElementById("f-op").value = "";
+    document.getElementById("f-cat").value = "";
+    document.getElementById("f-ac").value = "";
+    paint();
+  });
+  paint();
+  document.documentElement.classList.add("hx-ready");
+}
+</script>
+</body>
+</html>
