@@ -11,7 +11,7 @@
 - [Authorization Training Management Process](authorization-training-process.html)
 - [EASA / HKAR / CX / HAECO Documentation Hierarchy](easa-cx-hk-document-hierarchy.html)
 - [LM audit / visitor schedule](lm-audit-schedule.html)
-- [All-source Training (UAL / CT / Mandatory / Manual)](hx.html#team-board) — [standalone page](training-team-board.html)
+- [Training One View (UAL / CT / Mandatory / Manual)](hx.html#team-board) — [standalone page](training-team-board.html)
 - [Course List (Name / Code / Type / Interval)](hx.html#courses) — [standalone page](course-catalog.html)
 - [OCG Name List (Crew List / Name List / Full List)](ocg-pax-mechanics-list.html)
 - [零碎筆記 / Scratch notes](scratch-notes.html)（畫面唔顯示 記下／日期時間／caption；時間喺頁內 hidden `#scratch-ledger`，問先答）

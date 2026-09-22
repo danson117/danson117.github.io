@@ -27,7 +27,7 @@ Must stay aligned:
 
 - `HX/hx.html` — titles, blurbs, cache-bust `?v=`
 - `HX/ocg-pax-mechanics-list.html` — Crew List / Name List / Full List (source of truth)
-- `HX/training-team-board.html` — All-source Training: combined UAL CBT / CT Reminder / Mandatory; filters OCG / CG / PAX; roster from Name List
+- `HX/training-team-board.html` — Training One View: combined UAL CBT / CT Reminder / Mandatory; filters OCG / CG / PAX; roster from Name List
 - `HX/README.md` and `HX/links.html` — names and wording
 - 出街顯示 vs 背底：見 `hx-published-vs-backend.mdc`（只改邏輯；有 Team／Shift／session 出入要先講）
 
