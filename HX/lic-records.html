@@ -98,14 +98,14 @@
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>Lic_Records_Dept.csv</code>, packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days.</p>
+      <p>Source: <code>Lic_Records_Dept.csv</code>, packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.3">v1.3</div>
+  <div class="page-version" data-version="1.4">v1.4</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
-<script src="hx-xlsx.js?v=1"></script>
+<script src="hx-xlsx.js?v=2"></script>
 <script src="lic-records-data.js?v=2"></script>
 <script>
 const COLS = [
@@ -308,14 +308,18 @@ function paintChrome(){
   setDueButtons();
   paintHead();
 }
-function tableTsv(){
+/** Same row list as status "N of TOTAL" after all filters. Never LIC_PACK / stage / DOM. */
+function exportRows(){
+  return sorted(filtered());
+}
+function tableTsv(rows){
   const head = COLS.map(([,l]) => l).join("\t");
-  const body = view.map(r => COLS.map(([k]) => String(r[k] ?? "")).join("\t"));
+  const body = rows.map(r => COLS.map(([k]) => String(r[k] ?? "")).join("\t"));
   return [head].concat(body).join("\r\n");
 }
-function tableHtml(){
+function tableHtml(rows){
   const th = COLS.map(([,l]) => "<th>"+esc(l)+"</th>").join("");
-  const tr = view.map(r => "<tr>"+COLS.map(([k]) => "<td>"+esc(r[k] == null ? "" : r[k])+"</td>").join("")+"</tr>").join("");
+  const tr = rows.map(r => "<tr>"+COLS.map(([k]) => "<td>"+esc(r[k] == null ? "" : r[k])+"</td>").join("")+"</tr>").join("");
   return "<table><thead><tr>"+th+"</tr></thead><tbody>"+tr+"</tbody></table>";
 }
 function fallbackPlain(text){
@@ -327,9 +331,11 @@ function fallbackPlain(text){
 }
 async function copyTable(btn){
   const label = "Copy Table";
-  const tsv = tableTsv();
-  const html = tableHtml();
-  const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = label, 1200); };
+  const rows = exportRows();
+  const n = rows.length;
+  const tsv = tableTsv(rows);
+  const html = tableHtml(rows);
+  const done = () => { btn.textContent = "Copied " + n; setTimeout(() => btn.textContent = label, 1400); };
   try {
     if (navigator.clipboard && window.ClipboardItem) {
       await navigator.clipboard.write([new ClipboardItem({
@@ -352,17 +358,19 @@ async function copyTable(btn){
     alert("Copy failed.");
   }
 }
-function tableMatrix(){
-  return [COLS.map(([,l]) => l)].concat(view.map(r => COLS.map(([k]) => String(r[k] ?? ""))));
+function tableMatrix(rows){
+  return [COLS.map(([,l]) => l)].concat(rows.map(r => COLS.map(([k]) => String(r[k] ?? ""))));
 }
 async function toXlsx(btn){
   const label = "To XLSX";
   try {
     if (!window.HxXlsx) throw new Error("missing writer");
-    const blob = await HxXlsx.build(tableMatrix(), "License");
-    HxXlsx.download(blob, "license-records.xlsx");
-    btn.textContent = "Downloaded";
-    setTimeout(() => btn.textContent = label, 1200);
+    const rows = exportRows();
+    const n = rows.length;
+    const blob = await HxXlsx.build(tableMatrix(rows), "License");
+    HxXlsx.download(blob, "license-records-" + n + ".xlsx");
+    btn.textContent = "Downloaded " + n;
+    setTimeout(() => btn.textContent = label, 1400);
   } catch (_) {
     alert("XLSX export failed.");
   }
