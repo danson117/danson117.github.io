@@ -98,11 +98,11 @@
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Use the Due buttons to show only those rows. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows.</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Due Red / Yellow / Red + Yellow only show module <code>--/--/AUTH/HAECO</code> rows in those windows; All stays unrestricted by module. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.1">v2.1</div>
+  <div class="page-version" data-version="2.2">v2.2</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=3"></script>
@@ -248,6 +248,11 @@ function setDueButtons(){
     btn.classList.toggle("on", (btn.dataset.due || "") === fDue);
   });
 }
+const DUE_HAECO_MODULE = "--/--/AUTH/HAECO";
+function isDueHaecoModule(r){
+  const m = String(r.module || "");
+  return m === DUE_HAECO_MODULE || m.includes(DUE_HAECO_MODULE);
+}
 function filtered(){
   const s = q.trim().toLowerCase();
   return AUTH_ROWS.filter(r => {
@@ -258,6 +263,7 @@ function filtered(){
     if (fCat && r.cat !== fCat) return false;
     if (fAc && r.ac !== fAc) return false;
     if (fDue) {
+      if (!isDueHaecoModule(r)) return false;
       const hl = rowClass(r);
       if (fDue === "red" && hl !== "hot") return false;
       if (fDue === "yellow" && hl !== "warn") return false;
