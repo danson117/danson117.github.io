@@ -102,7 +102,7 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.9">v1.9</div>
+  <div class="page-version" data-version="2.0">v2.0</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=2"></script>
@@ -396,8 +396,8 @@ async function toXlsx(btn){
     const n = rows.length;
     const blob = await HxXlsx.build(tableMatrix(rows), "Authorization");
     HxXlsx.download(blob, "authorization-list-" + n + ".xlsx");
-    btn.textContent = "Downloaded " + n;
-    setTimeout(() => btn.textContent = label, 1400);
+    btn.textContent = "Downloaded " + n + " → Downloads";
+    setTimeout(() => btn.textContent = label, 1800);
   } catch (_) {
     alert("XLSX export failed.");
   }
