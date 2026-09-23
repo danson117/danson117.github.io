@@ -67,6 +67,7 @@
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search staff # / name / section / operator / aircraft / module / email">
       <button type="button" id="copy-table">Copy Table</button>
+      <button type="button" id="to-xlsx">To XLSX</button>
       <button type="button" id="update-csv-btn">Update CSV</button>
       <input id="update-csv" type="file" accept=".csv,text/csv" hidden>
       <button type="button" id="clear">Clear filters</button>
@@ -101,9 +102,10 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.7">v1.7</div>
+  <div class="page-version" data-version="1.8">v1.8</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
+<script src="hx-xlsx.js?v=1"></script>
 <script src="authorization-list-data.js?v=6"></script>
 <script>
 const COLS = [
@@ -375,6 +377,21 @@ async function copyTable(btn){
     done();
   } catch (_) {
     alert("Copy failed.");
+  }
+}
+function tableMatrix(){
+  return [COLS.map(([,l]) => l)].concat(view.map(r => COLS.map(([k]) => String(r[k] ?? ""))));
+}
+async function toXlsx(btn){
+  const label = "To XLSX";
+  try {
+    if (!window.HxXlsx) throw new Error("missing writer");
+    const blob = await HxXlsx.build(tableMatrix(), "Authorization");
+    HxXlsx.download(blob, "authorization-list.xlsx");
+    btn.textContent = "Downloaded";
+    setTimeout(() => btn.textContent = label, 1200);
+  } catch (_) {
+    alert("XLSX export failed.");
   }
 }
 
@@ -762,6 +779,7 @@ function bindUi(){
     scrollTick = requestAnimationFrame(() => { scrollTick = 0; paintBody(); });
   });
   document.getElementById("copy-table").addEventListener("click", e => copyTable(e.currentTarget));
+  document.getElementById("to-xlsx").addEventListener("click", e => toXlsx(e.currentTarget));
   document.getElementById("update-csv-btn").addEventListener("click", () => {
     document.getElementById("update-csv").click();
   });

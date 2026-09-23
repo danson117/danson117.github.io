@@ -67,6 +67,7 @@
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search staff # / name / section / authority / aircraft / module / license #">
       <button type="button" id="copy-table">Copy Table</button>
+      <button type="button" id="to-xlsx">To XLSX</button>
       <button type="button" id="update-csv-btn">Update CSV</button>
       <input id="update-csv" type="file" accept=".csv,text/csv" hidden>
       <button type="button" id="clear">Clear filters</button>
@@ -101,9 +102,10 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.2">v1.2</div>
+  <div class="page-version" data-version="1.3">v1.3</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
+<script src="hx-xlsx.js?v=1"></script>
 <script src="lic-records-data.js?v=2"></script>
 <script>
 const COLS = [
@@ -348,6 +350,21 @@ async function copyTable(btn){
     done();
   } catch (_) {
     alert("Copy failed.");
+  }
+}
+function tableMatrix(){
+  return [COLS.map(([,l]) => l)].concat(view.map(r => COLS.map(([k]) => String(r[k] ?? ""))));
+}
+async function toXlsx(btn){
+  const label = "To XLSX";
+  try {
+    if (!window.HxXlsx) throw new Error("missing writer");
+    const blob = await HxXlsx.build(tableMatrix(), "License");
+    HxXlsx.download(blob, "license-records.xlsx");
+    btn.textContent = "Downloaded";
+    setTimeout(() => btn.textContent = label, 1200);
+  } catch (_) {
+    alert("XLSX export failed.");
   }
 }
 
@@ -711,6 +728,7 @@ function bindUi(){
     rebuildView(true);
   });
   document.getElementById("copy-table").addEventListener("click", e => copyTable(e.currentTarget));
+  document.getElementById("to-xlsx").addEventListener("click", e => toXlsx(e.currentTarget));
   document.getElementById("update-csv-btn").addEventListener("click", () => document.getElementById("update-csv").click());
   document.getElementById("update-csv").addEventListener("change", e => {
     const f = e.target.files && e.target.files[0];
