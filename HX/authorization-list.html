@@ -31,6 +31,10 @@
   .filters label { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
   button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--card); padding: 6px 10px; cursor: pointer; }
   button:hover { background: var(--navy-soft); }
+  button.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+  button.on:hover { background: var(--navy); color: #fff; }
+  .due-btns { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+  .due-btns button { padding: 5px 9px; }
   .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
   .table-wrap { overflow: auto; height: 66vh; border: 1px solid var(--line); background: var(--card); }
   table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1280px; table-layout: fixed; }
@@ -64,6 +68,8 @@
       <input id="q" type="search" placeholder="Search staff # / name / section / operator / aircraft / module / email">
       <button type="button" id="copy-tsv">Copy TSV</button>
       <button type="button" id="copy-csv">Copy CSV</button>
+      <button type="button" id="update-csv-btn">Update CSV</button>
+      <input id="update-csv" type="file" accept=".csv,text/csv" hidden>
       <button type="button" id="clear">Clear filters</button>
     </div>
     <div class="filters">
@@ -71,12 +77,12 @@
       <label>Operator <select id="f-op"><option value="">All</option></select></label>
       <label>Category <select id="f-cat"><option value="">All</option></select></label>
       <label>Aircraft <select id="f-ac"><option value="">All</option></select></label>
-      <label>Due <select id="f-due">
-        <option value="">All</option>
-        <option value="red">Red</option>
-        <option value="yellow">Yellow</option>
-        <option value="both">Red + Yellow</option>
-      </select></label>
+      <label>Due <span class="due-btns" id="f-due" role="group" aria-label="Due">
+        <button type="button" data-due="" class="on">All</button>
+        <button type="button" data-due="red">Red</button>
+        <button type="button" data-due="yellow">Yellow</button>
+        <button type="button" data-due="both">Red + Yellow</button>
+      </span></label>
     </div>
     <p class="note" id="status">Loading…</p>
     <div class="table-wrap" id="wrap">
@@ -92,14 +98,14 @@
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code>, packed for the page. Email overlay fills real addresses for staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Use the Due filter to show only those rows.</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code>, packed for the page. Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Use the Due buttons to show only those rows.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.3">v1.3</div>
+  <div class="page-version" data-version="1.4">v1.4</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
-<script src="authorization-list-data.js?v=3"></script>
+<script src="authorization-list-data.js?v=4"></script>
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["staff","Staff #"],["name","Name"],
@@ -210,9 +216,17 @@ function unpack(){
 }
 function fillSelect(id, values){
   const sel = document.getElementById(id);
+  sel.innerHTML = "";
+  const all = document.createElement("option");
+  all.value = ""; all.textContent = "All"; sel.appendChild(all);
   [...new Set(values.filter(Boolean))].sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:"base"})).forEach(v => {
     const o = document.createElement("option");
     o.value = v; o.textContent = v; sel.appendChild(o);
+  });
+}
+function setDueButtons(){
+  document.querySelectorAll("#f-due [data-due]").forEach(btn => {
+    btn.classList.toggle("on", (btn.dataset.due || "") === fDue);
   });
 }
 function filtered(){
@@ -299,6 +313,7 @@ function paintChrome(){
   document.getElementById("n-pax").textContent = String(AUTH_ROWS.filter(r => r.group === "PAX").length);
   document.getElementById("n-people").textContent = String(new Set(AUTH_ROWS.map(r => r.staff)).size);
   document.querySelectorAll("[data-group]").forEach(el => el.classList.toggle("on", el.dataset.group === fGroup));
+  setDueButtons();
   paintHead();
 }
 function copyText(text, btn, label){
@@ -321,10 +336,335 @@ function sheet(sep){
   }).join(sep));
   return [head].concat(body).join("\r\n");
 }
-if (!unpack()) {
-  document.getElementById("status").textContent = "Authorization data file failed to load.";
-  document.documentElement.classList.add("hx-ready");
-} else {
+
+const REQUIRED_CSV_COLS = [
+  "User Properties-Department ID",
+  "User Properties-Employee Number",
+  "User Attribute Extensions (Columns)-ID Name",
+  "Module Properties-Module ID",
+  "Module Properties-Module Title",
+  "Transcript Attribute-15A-Authorization / License Issue date",
+  "Transcript Attribute-15E-Authorization / License Expiry date",
+  "Transcript Attribute-31A-Authorization / License Limitation 1- Label",
+  "Transcript Attribute-31E-Authorization / License Limitation 1 Expiry Date",
+  "Transcript Attribute-32A-Authorization / License Limitation 2- Label",
+  "Transcript Attribute-32E-Authorization / License Limitation 2 Expiry Date",
+  "Transcript Attribute-33A-Authorization / License Limitation 3- Label",
+  "Transcript Attribute-33E-Authorization / License Limitation 3 Expiry Date",
+  "Transcript Attribute-34A-Authorization / License Limitation 4- Label",
+  "Transcript Attribute-34E-Authorization / License Limitation 4 Expiry Date",
+  "Transcript Attribute-35A-Authorization / License Limitation 5- Label",
+  "Transcript Attribute-35E-Authorization / License Limitation 5 Expiry Date",
+  "Transcript Attribute-36A-Authorization / License Limitation 6- Label",
+  "Transcript Attribute-36E-Authorization / License Limitation 6 Expiry Date",
+  "Transcript Attribute-37A-Authorization / License Limitation 7- Label",
+  "Transcript Attribute-37E-Authorization / License Limitation 7 Expiry Date",
+  "Transcript Attribute-38A-Authorization / License Limitation 8- Label",
+  "Transcript Attribute-38E-Authorization / License Limitation 8 Expiry Date",
+  "Dynamic Module Attributes-Authorisation Aircraft Type- Label",
+  "Dynamic Module Attributes-Authorisation Engine Type- Label",
+  "Dynamic Module Attributes-Authorisation Category- Label",
+  "Dynamic Module Attributes-Authorisation Operator- Label",
+  "Transcript Attribute-13-Operator Reference Number",
+  "User Properties-E-mail"
+];
+const BLANK_CSV = {"":1,"'--":1,"--":1,"'--/--":1,"--/--":1};
+const LIM_JOIN = " \u00b7 ";
+const GH_TOKEN_KEY = "hx:team-board:gh-token";
+const GH_REPO = "danson117/danson117.github.io";
+const GH_BRANCH = "main";
+const DATA_PATH = "HX/authorization-list-data.js";
+const CSV_PATH = "HX/QA_Auth_Full_Detailed_List.csv";
+let csvBusy = false;
+
+function cleanCsv(v){
+  let s = String(v == null ? "" : v).trim();
+  if (BLANK_CSV[s]) return "";
+  if (s.indexOf("'--") === 0) s = s.slice(1);
+  if (BLANK_CSV[s] || s.replace(/[/\-]/g, "") === "") return "";
+  return s;
+}
+function padStaff(v){
+  const s = String(v == null ? "" : v).trim();
+  if (/^\d+$/.test(s)) return s.padStart(6, "0");
+  return s;
+}
+function parseYmd(v){
+  const s = cleanCsv(v);
+  if (!s) return 0;
+  const tries = [
+    /^([A-Za-z]{3})\s+(\d{1,2}),\s+(\d{4})\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i,
+    /^([A-Za-z]{3})\s+(\d{1,2}),\s+(\d{4})$/i,
+    /^(\d{4})-(\d{2})-(\d{2})$/
+  ];
+  let m = s.match(tries[0]);
+  if (m) {
+    const mon = MON.indexOf(m[1].slice(0,1).toUpperCase() + m[1].slice(1,3).toLowerCase());
+    if (mon < 0) return 0;
+    let hh = Number(m[4]) % 12;
+    if (/pm/i.test(m[6])) hh += 12;
+    const d = new Date(Number(m[3]), mon, Number(m[2]), hh, Number(m[5]));
+    if (isNaN(d)) return 0;
+    return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+  }
+  m = s.match(tries[1]);
+  if (m) {
+    const mon = MON.indexOf(m[1].slice(0,1).toUpperCase() + m[1].slice(1,3).toLowerCase());
+    if (mon < 0) return 0;
+    const d = new Date(Number(m[3]), mon, Number(m[2]));
+    if (isNaN(d)) return 0;
+    return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+  }
+  m = s.match(tries[2]);
+  if (m) return Number(m[1]+m[2]+m[3]) || 0;
+  return 0;
+}
+function parseCsvText(text){
+  const rows = [];
+  let row = [], cell = "", i = 0, inQ = false;
+  const s = String(text || "").replace(/^\uFEFF/, "");
+  while (i < s.length) {
+    const c = s[i];
+    if (inQ) {
+      if (c === "\"") {
+        if (s[i+1] === "\"") { cell += "\""; i += 2; continue; }
+        inQ = false; i++; continue;
+      }
+      cell += c; i++; continue;
+    }
+    if (c === "\"") { inQ = true; i++; continue; }
+    if (c === ",") { row.push(cell); cell = ""; i++; continue; }
+    if (c === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; i++; continue; }
+    if (c === "\r") { i++; continue; }
+    cell += c; i++;
+  }
+  if (cell.length || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(v => String(v || "").trim() !== ""));
+}
+function dictAdd(maps, key, value){
+  let bucket = maps[key];
+  if (!bucket) { bucket = maps[key] = { i: Object.create(null), a: [] }; }
+  if (!(value in bucket.i)) {
+    bucket.i[value] = bucket.a.length;
+    bucket.a.push(value);
+  }
+  return bucket.i[value];
+}
+function packFromCsvRows(header, dataRows, prevPack){
+  const maps = Object.create(null);
+  const people = [];
+  const peopleI = Object.create(null);
+  const rows = [];
+  const roster = rosterIndex();
+  const col = Object.create(null);
+  header.forEach((h, idx) => { col[h] = idx; });
+  const get = (r, name) => r[col[name]];
+  dataRows.forEach(r => {
+    const staff = padStaff(get(r, "User Properties-Employee Number"));
+    const person = roster[staff];
+    const group = person && person.group === "PAX" ? "PAX" : "CG";
+    const name = cleanCsv(get(r, "User Attribute Extensions (Columns)-ID Name"));
+    const dept = cleanCsv(get(r, "User Properties-Department ID"));
+    const email = cleanCsv(get(r, "User Properties-E-mail"));
+    const pkey = staff + "\0" + name + "\0" + group + "\0" + dept + "\0" + email;
+    if (!(pkey in peopleI)) {
+      peopleI[pkey] = people.length;
+      people.push([
+        /^\d+$/.test(staff) ? Number(staff) : staff,
+        dictAdd(maps, "name", name),
+        group === "PAX" ? 1 : 0,
+        dictAdd(maps, "dept", dept),
+        dictAdd(maps, "email", email)
+      ]);
+    }
+    const lims = [];
+    for (let n = 1; n <= 7; n++) {
+      const lab = cleanCsv(get(r, "Transcript Attribute-3" + n + "A-Authorization / License Limitation " + n + "- Label"));
+      const exp = parseYmd(get(r, "Transcript Attribute-3" + n + "E-Authorization / License Limitation " + n + " Expiry Date"));
+      if (!lab && !exp) continue;
+      lims.push(lab + (exp ? " (" + exp + ")" : ""));
+    }
+    rows.push([
+      peopleI[pkey],
+      dictAdd(maps, "cat", cleanCsv(get(r, "Dynamic Module Attributes-Authorisation Category- Label"))),
+      dictAdd(maps, "op", cleanCsv(get(r, "Dynamic Module Attributes-Authorisation Operator- Label"))),
+      dictAdd(maps, "ac", cleanCsv(get(r, "Dynamic Module Attributes-Authorisation Aircraft Type- Label"))),
+      dictAdd(maps, "eng", cleanCsv(get(r, "Dynamic Module Attributes-Authorisation Engine Type- Label"))),
+      dictAdd(maps, "mod", cleanCsv(get(r, "Module Properties-Module Title"))),
+      parseYmd(get(r, "Transcript Attribute-15A-Authorization / License Issue date")),
+      parseYmd(get(r, "Transcript Attribute-15E-Authorization / License Expiry date")),
+      dictAdd(maps, "lim", lims.join(LIM_JOIN)),
+      dictAdd(maps, "ref", cleanCsv(get(r, "Transcript Attribute-13-Operator Reference Number")))
+    ]);
+  });
+  const inCsv = new Set(people.map(p => String(p[0]).padStart(6, "0")));
+  const prevOverlay = (prevPack && prevPack.emailByStaff) || {};
+  const prevNames = (prevPack && prevPack.emailOnlyNames) || {};
+  const emailByStaff = {};
+  const emailOnlyNames = {};
+  Object.keys(prevOverlay).sort().forEach(staff => {
+    if (inCsv.has(staff)) return;
+    emailByStaff[staff] = prevOverlay[staff];
+    if (prevNames[staff]) emailOnlyNames[staff] = prevNames[staff];
+  });
+  const d = {};
+  ["name","dept","email","cat","op","ac","eng","mod","lim","ref"].forEach(k => {
+    d[k] = maps[k] ? maps[k].a : [];
+  });
+  return {
+    v: 3,
+    source: "QA_Auth_Full_Detailed_List.csv",
+    d: d,
+    p: people,
+    r: rows,
+    emailByStaff: emailByStaff,
+    emailOnlyNames: emailOnlyNames
+  };
+}
+function rejectCsv(msg){
+  alert(msg);
+}
+function applyPack(pack){
+  window.AUTH_PACK = pack;
+  if (!unpack()) {
+    rejectCsv("Packed authorization data could not be read.");
+    return false;
+  }
+  fillSelect("f-dept", AUTH_ROWS.map(r => r.dept));
+  fillSelect("f-op", AUTH_ROWS.map(r => r.op));
+  fillSelect("f-cat", AUTH_ROWS.map(r => r.cat));
+  fillSelect("f-ac", AUTH_ROWS.map(r => r.ac));
+  document.getElementById("f-dept").value = fDept;
+  document.getElementById("f-op").value = fOp;
+  document.getElementById("f-cat").value = fCat;
+  document.getElementById("f-ac").value = fAc;
+  paintChrome();
+  rebuildView(true);
+  return true;
+}
+function packFileText(pack){
+  return "window.AUTH_PACK=" + JSON.stringify(pack) + ";\n";
+}
+function getGhToken(){
+  try { return String(localStorage.getItem(GH_TOKEN_KEY) || "").trim(); }
+  catch (e) { return ""; }
+}
+function clearGhToken(){
+  try { localStorage.removeItem(GH_TOKEN_KEY); } catch (e) { /* ignore */ }
+}
+function utf8ToB64(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+function ghHeaders(token){
+  return {
+    Accept: "application/vnd.github+json",
+    Authorization: "Bearer " + token,
+    "X-GitHub-Api-Version": "2022-11-28"
+  };
+}
+async function putGitHubFile(path, text, message, token){
+  const url = "https://api.github.com/repos/" + GH_REPO + "/contents/" + path;
+  let tries = 0;
+  while (tries < 3) {
+    tries += 1;
+    const getRes = await fetch(url + "?ref=" + encodeURIComponent(GH_BRANCH), { headers: ghHeaders(token) });
+    if (getRes.status === 401 || getRes.status === 403) {
+      clearGhToken();
+      throw new Error("GitHub did not accept the stored token.");
+    }
+    if (!getRes.ok && getRes.status !== 404) {
+      throw new Error("Could not read " + path + " on GitHub (" + getRes.status + ").");
+    }
+    let sha = "";
+    if (getRes.ok) {
+      const data = await getRes.json();
+      sha = data && data.sha ? String(data.sha) : "";
+    }
+    const body = {
+      message: message,
+      content: utf8ToB64(text),
+      branch: GH_BRANCH
+    };
+    if (sha) body.sha = sha;
+    const putRes = await fetch(url, {
+      method: "PUT",
+      headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders(token)),
+      body: JSON.stringify(body)
+    });
+    if ((putRes.status === 409 || putRes.status === 422) && tries < 3) continue;
+    if (putRes.status === 401 || putRes.status === 403) {
+      clearGhToken();
+      throw new Error("GitHub did not accept the stored token.");
+    }
+    if (!putRes.ok) throw new Error("Could not save " + path + " (" + putRes.status + ").");
+    return;
+  }
+}
+async function saveAuthToGitHub(pack, csvText){
+  const token = getGhToken();
+  if (!token) {
+    alert("Updated on screen only. Not saved to GitHub (no token in this browser).");
+    return;
+  }
+  try {
+    await putGitHubFile(DATA_PATH, packFileText(pack), "Authorization List: update packed AUTH_PACK from CSV", token);
+    await putGitHubFile(CSV_PATH, csvText, "Authorization List: update QA_Auth_Full_Detailed_List.csv", token);
+  } catch (e) {
+    alert((e && e.message) ? e.message : "Could not save Authorization List to GitHub.");
+  }
+}
+async function handleCsvFile(file){
+  if (!file || csvBusy) return;
+  csvBusy = true;
+  const btn = document.getElementById("update-csv-btn");
+  const prevLabel = btn.textContent;
+  btn.textContent = "Updating…";
+  try {
+    const text = await file.text();
+    const table = parseCsvText(text);
+    if (!table.length) {
+      rejectCsv("CSV rejected: file is empty or unreadable.");
+      return;
+    }
+    const header = table[0].map(h => String(h || "").trim());
+    const missing = REQUIRED_CSV_COLS.filter(c => header.indexOf(c) < 0);
+    if (missing.length) {
+      rejectCsv("CSV rejected: missing required column(s):\n" + missing.slice(0, 8).join("\n") + (missing.length > 8 ? "\n…" : ""));
+      return;
+    }
+    const dataRows = table.slice(1);
+    if (!dataRows.length) {
+      rejectCsv("CSV rejected: 0 data rows.");
+      return;
+    }
+    const prev = window.AUTH_PACK || null;
+    let pack;
+    try {
+      pack = packFromCsvRows(header, dataRows, prev);
+    } catch (e) {
+      rejectCsv("CSV rejected: could not parse file.");
+      return;
+    }
+    if (!pack.r.length) {
+      rejectCsv("CSV rejected: 0 data rows.");
+      return;
+    }
+    if (!applyPack(pack)) return;
+    await saveAuthToGitHub(pack, text.replace(/^\uFEFF/, ""));
+  } catch (e) {
+    rejectCsv("CSV rejected: file is unreadable.");
+  } finally {
+    btn.textContent = prevLabel;
+    csvBusy = false;
+    const input = document.getElementById("update-csv");
+    if (input) input.value = "";
+  }
+}
+
+function bindUi(){
   fillSelect("f-dept", AUTH_ROWS.map(r => r.dept));
   fillSelect("f-op", AUTH_ROWS.map(r => r.op));
   fillSelect("f-cat", AUTH_ROWS.map(r => r.cat));
@@ -338,7 +678,13 @@ if (!unpack()) {
   document.getElementById("f-op").addEventListener("change", e => { fOp = e.target.value; rebuildView(true); });
   document.getElementById("f-cat").addEventListener("change", e => { fCat = e.target.value; rebuildView(true); });
   document.getElementById("f-ac").addEventListener("change", e => { fAc = e.target.value; rebuildView(true); });
-  document.getElementById("f-due").addEventListener("change", e => { fDue = e.target.value; rebuildView(true); });
+  document.getElementById("f-due").addEventListener("click", e => {
+    const btn = e.target.closest("[data-due]");
+    if (!btn) return;
+    fDue = btn.dataset.due || "";
+    setDueButtons();
+    rebuildView(true);
+  });
   document.querySelectorAll("[data-group]").forEach(el => {
     el.addEventListener("click", () => { fGroup = el.dataset.group; rebuildView(true); paintChrome(); });
   });
@@ -354,6 +700,13 @@ if (!unpack()) {
   });
   document.getElementById("copy-tsv").addEventListener("click", e => copyText(sheet("\t"), e.currentTarget, "Copy TSV"));
   document.getElementById("copy-csv").addEventListener("click", e => copyText(sheet(","), e.currentTarget, "Copy CSV"));
+  document.getElementById("update-csv-btn").addEventListener("click", () => {
+    document.getElementById("update-csv").click();
+  });
+  document.getElementById("update-csv").addEventListener("change", e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) handleCsvFile(f);
+  });
   document.getElementById("clear").addEventListener("click", () => {
     q = fDept = fOp = fCat = fAc = fDue = "";
     fGroup = "ocg";
@@ -362,12 +715,18 @@ if (!unpack()) {
     document.getElementById("f-op").value = "";
     document.getElementById("f-cat").value = "";
     document.getElementById("f-ac").value = "";
-    document.getElementById("f-due").value = "";
     paintChrome();
     rebuildView(true);
   });
   paintChrome();
   rebuildView(true);
+}
+
+if (!unpack()) {
+  document.getElementById("status").textContent = "Authorization data file failed to load.";
+  document.documentElement.classList.add("hx-ready");
+} else {
+  bindUi();
   document.documentElement.classList.add("hx-ready");
 }
 </script>
