@@ -35,3 +35,11 @@ alwaysApply: true
 - Home／Current section、title 同 feedback 唔夾
 
 只改背底（group／Remark）去記新資訊；顯示等下一次出街。
+
+## Auth / Lic：出街顯示 vs CSV／stage
+
+Authorization List 同 License Records：
+
+- **出街顯示（HTML 表／counters）：** 只 Name List 嘅人。Staff #、Section、Team、CG/PAX 跟 Name List roster。**唔好**用 CSV Department 做 Section／Team。
+- **背底 stage：** CSV 有但唔喺 Name List 嘅人／行，留喺 packed `stage`（慳位、唔丟欄）。唔寫入出街表；問起上嚟先用。
+- 唔好因為 CSV 有人就加去出街 Name List／Crew List。

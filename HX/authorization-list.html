@@ -57,7 +57,7 @@
 <body>
   <div class="page">
     <h1>Authorization List</h1>
-    <p class="subtitle">Dept auth extract · OCG Name List · email overlay for staff not in CSV · staff # is 6 digits.</p>
+    <p class="subtitle">QA auth extract · Name List staff only · Section/Team from Name List · CSV dept is reference only · staff # is 6 digits.</p>
     <div class="stats">
       <div class="stat on" data-group="ocg"><b id="n-all">0</b><span>OCG rows</span></div>
       <div class="stat" data-group="CG"><b id="n-cg">0</b><span>CG rows</span></div>
@@ -88,27 +88,27 @@
     <div class="table-wrap" id="wrap">
       <table>
         <colgroup>
-          <col style="width:5em"><col style="width:5em"><col style="width:6em"><col style="width:14em">
-          <col style="width:9em"><col style="width:6em"><col style="width:6em"><col style="width:6em">
-          <col style="width:22em"><col style="width:7em"><col style="width:7em"><col style="width:16em">
-          <col style="width:8em"><col style="width:14em">
+          <col style="width:5em"><col style="width:5em"><col style="width:4em"><col style="width:6em"><col style="width:13em">
+          <col style="width:8em"><col style="width:6em"><col style="width:6em"><col style="width:6em">
+          <col style="width:20em"><col style="width:7em"><col style="width:7em"><col style="width:14em">
+          <col style="width:8em"><col style="width:13em">
         </colgroup>
         <thead><tr id="head"></tr></thead>
         <tbody id="body"></tbody>
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Use the Due buttons to show only those rows.</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Use the Due buttons to show only those rows.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.5">v1.5</div>
+  <div class="page-version" data-version="1.6">v1.6</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
-<script src="authorization-list-data.js?v=5"></script>
+<script src="authorization-list-data.js?v=6"></script>
 <script>
 const COLS = [
-  ["group","CG/PAX"],["dept","Section"],["staff","Staff #"],["name","Name"],
+  ["group","CG/PAX"],["dept","Section"],["team","Team"],["staff","Staff #"],["name","Name"],
   ["cat","Category"],["op","Operator"],["ac","Aircraft"],["eng","Engine"],
   ["module","Module"],["issue","Issue"],["expiry","Expiry"],["lim","Limitations"],
   ["ref","Operator ref"],["email","Email"]
@@ -149,9 +149,9 @@ function daysLeft(n){
   const d = new Date(Number(s.slice(0,4)), Number(s.slice(4,6))-1, Number(s.slice(6,8)));
   return Math.round((d - TODAY) / 86400000);
 }
-function blankAuthRow(staff, name, group, dept, email){
+function blankAuthRow(staff, name, group, dept, team, email){
   return {
-    group: group || "", dept: dept || "", staff: staff, name: name || "", email: email || "",
+    group: group || "", dept: dept || "", team: team || "", staff: staff, name: name || "", email: email || "",
     cat: "", op: "", ac: "", eng: "", module: "",
     issueN: 0, expiryN: 0, issue: "", expiry: "", lim: "", ref: ""
   };
@@ -160,12 +160,26 @@ function rosterIndex(){
   const map = Object.create(null);
   try {
     if (typeof hxUnpackRoster === "function") hxUnpackRoster();
-  } catch (e) { /* Name List optional for email-only stubs */ }
+  } catch (e) { /* Name List required for display */ }
   (window.FULL || []).forEach(r => {
     const st = String(r.staff || "").padStart(6, "0");
     if (st) map[st] = r;
   });
   return map;
+}
+function nlGroup(person){
+  if (!person) return "";
+  if (person.group === "PAX") return "PAX";
+  if (person.group === "CG" || person.group === "OC") return "CG";
+  return "";
+}
+function nlSection(person){
+  if (!person) return "";
+  return person.home || person.current || "";
+}
+function nlTeam(person){
+  if (!person) return "";
+  return person.team == null ? "" : String(person.team);
 }
 function unpack(){
   const pack = window.AUTH_PACK;
@@ -173,44 +187,48 @@ function unpack(){
   const D = pack.d;
   const overlay = pack.emailByStaff || {};
   const fallbackNames = pack.emailOnlyNames || {};
+  const roster = rosterIndex();
   const people = pack.p.map(p => {
     const staff = String(p[0]).padStart(6, "0");
+    const nl = roster[staff];
+    if (!nl) return null;
     let email = D.email[p[4]] || "";
     if (overlay[staff]) email = overlay[staff];
     return {
       staff,
-      name: D.name[p[1]] || "",
-      group: p[2] ? "PAX" : "CG",
-      dept: D.dept[p[3]] || "",
+      name: D.name[p[1]] || nl.name || "",
+      group: nlGroup(nl),
+      dept: nlSection(nl),
+      team: nlTeam(nl),
       email
     };
   });
-  AUTH_ROWS = pack.r.map(r => {
+  AUTH_ROWS = [];
+  pack.r.forEach(r => {
     const p = people[r[0]];
-    return {
-      group: p.group, dept: p.dept, staff: p.staff, name: p.name, email: p.email,
+    if (!p) return;
+    AUTH_ROWS.push({
+      group: p.group, dept: p.dept, team: p.team, staff: p.staff, name: p.name, email: p.email,
       cat: D.cat[r[1]] || "", op: D.op[r[2]] || "", ac: D.ac[r[3]] || "",
       eng: D.eng[r[4]] || "", module: D.mod[r[5]] || "",
       issueN: r[6] || 0, expiryN: r[7] || 0,
       issue: fmtYmd(r[6]), expiry: fmtYmd(r[7]),
       lim: D.lim[r[8]] || "", ref: D.ref[r[9]] || ""
-    };
+    });
   });
-  const present = new Set(people.map(p => p.staff));
-  const roster = rosterIndex();
+  const present = new Set(AUTH_ROWS.map(r => r.staff));
   Object.keys(overlay).sort().forEach(staff => {
     if (present.has(staff)) return;
-    const r = roster[staff];
-    let name = fallbackNames[staff] || "";
-    let dept = "";
-    let group = "";
-    if (r) {
-      name = r.name || name;
-      dept = r.home || r.current || "";
-      if (r.group === "PAX") group = "PAX";
-      else if (r.group === "CG" || r.group === "OC") group = "CG";
-    }
-    AUTH_ROWS.push(blankAuthRow(staff, name, group, dept, overlay[staff]));
+    const nl = roster[staff];
+    if (!nl) return;
+    AUTH_ROWS.push(blankAuthRow(
+      staff,
+      nl.name || fallbackNames[staff] || "",
+      nlGroup(nl),
+      nlSection(nl),
+      nlTeam(nl),
+      overlay[staff]
+    ));
   });
   return true;
 }
@@ -461,19 +479,19 @@ function packFromCsvRows(header, dataRows, prevPack){
   const get = (r, name) => r[col[name]];
   dataRows.forEach(r => {
     const staff = padStaff(get(r, "User Properties-Employee Number"));
+    const name = cleanCsv(get(r, "User Attribute Extensions (Columns)-ID Name"));
+    const csvDept = cleanCsv(get(r, "User Properties-Department ID"));
+    const email = cleanCsv(get(r, "User Properties-E-mail"));
     const person = roster[staff];
     const group = person && person.group === "PAX" ? "PAX" : "CG";
-    const name = cleanCsv(get(r, "User Attribute Extensions (Columns)-ID Name"));
-    const dept = cleanCsv(get(r, "User Properties-Department ID"));
-    const email = cleanCsv(get(r, "User Properties-E-mail"));
-    const pkey = staff + "\0" + name + "\0" + group + "\0" + dept + "\0" + email;
+    const pkey = staff + "\0" + name + "\0" + group + "\0" + csvDept + "\0" + email;
     if (!(pkey in peopleI)) {
       peopleI[pkey] = people.length;
       people.push([
         /^\d+$/.test(staff) ? Number(staff) : staff,
         dictAdd(maps, "name", name),
         group === "PAX" ? 1 : 0,
-        dictAdd(maps, "dept", dept),
+        dictAdd(maps, "dept", csvDept),
         dictAdd(maps, "email", email)
       ]);
     }
@@ -497,6 +515,26 @@ function packFromCsvRows(header, dataRows, prevPack){
       dictAdd(maps, "ref", cleanCsv(get(r, "Transcript Attribute-13-Operator Reference Number")))
     ]);
   });
+  const shownPi = [];
+  const stagePi = [];
+  people.forEach((p, i) => {
+    const st = String(p[0]).padStart(6, "0");
+    if (roster[st]) shownPi.push(i);
+    else stagePi.push(i);
+  });
+  const mapShown = Object.create(null);
+  const mapStage = Object.create(null);
+  shownPi.forEach((old, neu) => { mapShown[old] = neu; });
+  stagePi.forEach((old, neu) => { mapStage[old] = neu; });
+  const shownP = shownPi.map(i => people[i]);
+  const stageP = stagePi.map(i => people[i]);
+  const shownR = [];
+  const stageR = [];
+  rows.forEach(r => {
+    const nr = r.slice();
+    if (r[0] in mapShown) { nr[0] = mapShown[r[0]]; shownR.push(nr); }
+    else { nr[0] = mapStage[r[0]]; stageR.push(nr); }
+  });
   const inCsv = new Set(people.map(p => String(p[0]).padStart(6, "0")));
   const prevOverlay = (prevPack && prevPack.emailByStaff) || {};
   const prevNames = (prevPack && prevPack.emailOnlyNames) || {};
@@ -504,6 +542,7 @@ function packFromCsvRows(header, dataRows, prevPack){
   const emailOnlyNames = {};
   Object.keys(prevOverlay).sort().forEach(staff => {
     if (inCsv.has(staff)) return;
+    if (!roster[staff]) return;
     emailByStaff[staff] = prevOverlay[staff];
     if (prevNames[staff]) emailOnlyNames[staff] = prevNames[staff];
   });
@@ -512,11 +551,12 @@ function packFromCsvRows(header, dataRows, prevPack){
     d[k] = maps[k] ? maps[k].a : [];
   });
   return {
-    v: 3,
+    v: 4,
     source: "QA_Auth_Full_Detailed_List.csv",
     d: d,
-    p: people,
-    r: rows,
+    p: shownP,
+    r: shownR,
+    stage: { p: stageP, r: stageR },
     emailByStaff: emailByStaff,
     emailOnlyNames: emailOnlyNames
   };
@@ -648,7 +688,7 @@ async function handleCsvFile(file){
       rejectCsv("CSV rejected: could not parse file.");
       return;
     }
-    if (!pack.r.length) {
+    if (!pack.r.length && !(pack.stage && pack.stage.r && pack.stage.r.length)) {
       rejectCsv("CSV rejected: 0 data rows.");
       return;
     }
