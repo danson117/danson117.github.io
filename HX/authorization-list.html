@@ -53,7 +53,7 @@
 <body>
   <div class="page">
     <h1>Authorization List</h1>
-    <p class="subtitle">QA full detailed list · every person is on the OCG Name List · staff # is 6 digits.</p>
+    <p class="subtitle">QA full detailed list · OCG Name List · matched emails for CXG / One TRT · staff # is 6 digits.</p>
     <div class="stats">
       <div class="stat on" data-group="ocg"><b id="n-all">0</b><span>OCG rows</span></div>
       <div class="stat" data-group="CG"><b id="n-cg">0</b><span>CG rows</span></div>
@@ -86,12 +86,14 @@
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code>, packed for the page. Only visible rows are drawn. Pink = expiry in 30 days or overdue. Yellow = 31–90 days.</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code>, packed for the page. Email overlay fills real addresses for staff not in that CSV (no invented auth modules). Only visible rows are drawn. Pink = expiry in 30 days or overdue. Yellow = 31–90 days.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.1">v1.1</div>
-<script src="authorization-list-data.js?v=2"></script>
+  <div class="page-version" data-version="1.2">v1.2</div>
+<script src="ocg-pax-data.js?v=1"></script>
+<script src="ocg-pax-data-unpack.js?v=1"></script>
+<script src="authorization-list-data.js?v=3"></script>
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["staff","Staff #"],["name","Name"],
@@ -134,17 +136,42 @@ function daysLeft(n){
   const d = new Date(Number(s.slice(0,4)), Number(s.slice(4,6))-1, Number(s.slice(6,8)));
   return Math.round((d - TODAY) / 86400000);
 }
+function blankAuthRow(staff, name, group, dept, email){
+  return {
+    group: group || "", dept: dept || "", staff: staff, name: name || "", email: email || "",
+    cat: "", op: "", ac: "", eng: "", module: "",
+    issueN: 0, expiryN: 0, issue: "", expiry: "", lim: "", ref: ""
+  };
+}
+function rosterIndex(){
+  const map = Object.create(null);
+  try {
+    if (typeof hxUnpackRoster === "function") hxUnpackRoster();
+  } catch (e) { /* Name List optional for email-only stubs */ }
+  (window.FULL || []).forEach(r => {
+    const st = String(r.staff || "").padStart(6, "0");
+    if (st) map[st] = r;
+  });
+  return map;
+}
 function unpack(){
   const pack = window.AUTH_PACK;
   if (!pack || !pack.r) return false;
   const D = pack.d;
-  const people = pack.p.map(p => ({
-    staff: String(p[0]).padStart(6, "0"),
-    name: D.name[p[1]] || "",
-    group: p[2] ? "PAX" : "CG",
-    dept: D.dept[p[3]] || "",
-    email: D.email[p[4]] || ""
-  }));
+  const overlay = pack.emailByStaff || {};
+  const fallbackNames = pack.emailOnlyNames || {};
+  const people = pack.p.map(p => {
+    const staff = String(p[0]).padStart(6, "0");
+    let email = D.email[p[4]] || "";
+    if (overlay[staff]) email = overlay[staff];
+    return {
+      staff,
+      name: D.name[p[1]] || "",
+      group: p[2] ? "PAX" : "CG",
+      dept: D.dept[p[3]] || "",
+      email
+    };
+  });
   AUTH_ROWS = pack.r.map(r => {
     const p = people[r[0]];
     return {
@@ -155,6 +182,22 @@ function unpack(){
       issue: fmtYmd(r[6]), expiry: fmtYmd(r[7]),
       lim: D.lim[r[8]] || "", ref: D.ref[r[9]] || ""
     };
+  });
+  const present = new Set(people.map(p => p.staff));
+  const roster = rosterIndex();
+  Object.keys(overlay).sort().forEach(staff => {
+    if (present.has(staff)) return;
+    const r = roster[staff];
+    let name = fallbackNames[staff] || "";
+    let dept = "";
+    let group = "";
+    if (r) {
+      name = r.name || name;
+      dept = r.home || r.current || "";
+      if (r.group === "PAX") group = "PAX";
+      else if (r.group === "CG" || r.group === "OC") group = "CG";
+    }
+    AUTH_ROWS.push(blankAuthRow(staff, name, group, dept, overlay[staff]));
   });
   return true;
 }
