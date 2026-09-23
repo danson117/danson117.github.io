@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Authorization List</title>
+<title>License Records</title>
 <style>
   :root {
     --ink: #1c2430; --muted: #4a5564; --line: #d7dee6; --paper: #eef1f4;
@@ -56,8 +56,8 @@
 </head>
 <body>
   <div class="page">
-    <h1>Authorization List</h1>
-    <p class="subtitle">Dept auth extract · OCG Name List · email overlay for staff not in CSV · staff # is 6 digits.</p>
+    <h1>License Records</h1>
+    <p class="subtitle">Dept license extract · OCG Name List for CG/PAX · staff # is 6 digits.</p>
     <div class="stats">
       <div class="stat on" data-group="ocg"><b id="n-all">0</b><span>OCG rows</span></div>
       <div class="stat" data-group="CG"><b id="n-cg">0</b><span>CG rows</span></div>
@@ -65,7 +65,7 @@
       <div class="stat" data-stat="people"><b id="n-people">0</b><span>People</span></div>
     </div>
     <div class="toolbar">
-      <input id="q" type="search" placeholder="Search staff # / name / section / operator / aircraft / module / email">
+      <input id="q" type="search" placeholder="Search staff # / name / section / authority / aircraft / module / license #">
       <button type="button" id="copy-tsv">Copy TSV</button>
       <button type="button" id="copy-csv">Copy CSV</button>
       <button type="button" id="update-csv-btn">Update CSV</button>
@@ -74,7 +74,7 @@
     </div>
     <div class="filters">
       <label>Section <select id="f-dept"><option value="">All</option></select></label>
-      <label>Operator <select id="f-op"><option value="">All</option></select></label>
+      <label>Authority <select id="f-auth"><option value="">All</option></select></label>
       <label>Category <select id="f-cat"><option value="">All</option></select></label>
       <label>Aircraft <select id="f-ac"><option value="">All</option></select></label>
       <label>Due <span class="due-btns" id="f-due" role="group" aria-label="Due">
@@ -89,46 +89,45 @@
       <table>
         <colgroup>
           <col style="width:5em"><col style="width:5em"><col style="width:6em"><col style="width:14em">
-          <col style="width:9em"><col style="width:6em"><col style="width:6em"><col style="width:6em">
-          <col style="width:22em"><col style="width:7em"><col style="width:7em"><col style="width:16em">
-          <col style="width:8em"><col style="width:14em">
+          <col style="width:8em"><col style="width:7em"><col style="width:6em"><col style="width:6em">
+          <col style="width:20em"><col style="width:7em"><col style="width:7em"><col style="width:14em">
+          <col style="width:8em">
         </colgroup>
         <thead><tr id="head"></tr></thead>
         <tbody id="body"></tbody>
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Use the Due buttons to show only those rows.</p>
+      <p>Source: <code>Lic_Records_Dept.csv</code>, packed for the page. Use <b>Update CSV</b> to replace the list (same compact pack). CG/PAX comes from the Name List roster, not from inventing published Crew List columns. Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.5">v1.5</div>
+  <div class="page-version" data-version="1.0">v1.0</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
-<script src="authorization-list-data.js?v=5"></script>
+<script src="lic-records-data.js?v=1"></script>
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["staff","Staff #"],["name","Name"],
-  ["cat","Category"],["op","Operator"],["ac","Aircraft"],["eng","Engine"],
+  ["cat","Category"],["auth","Authority"],["ac","Aircraft"],["eng","Engine"],
   ["module","Module"],["issue","Issue"],["expiry","Expiry"],["lim","Limitations"],
-  ["ref","Operator ref"],["email","Email"]
+  ["licNo","License #"]
 ];
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const ROW_H = 28;
 const OVERSCAN = 16;
-let AUTH_ROWS = [];
+let LIC_ROWS = [];
 let view = [];
 let q = "";
 let fGroup = "ocg";
 let fDept = "";
-let fOp = "";
+let fAuth = "";
 let fCat = "";
 let fAc = "";
 let fDue = "";
 let sortKey = "name";
 let sortDir = 1;
 let searchTimer = 0;
-let scrollTick = 0;
 const TODAY = new Date();
 TODAY.setHours(0,0,0,0);
 
@@ -149,18 +148,11 @@ function daysLeft(n){
   const d = new Date(Number(s.slice(0,4)), Number(s.slice(4,6))-1, Number(s.slice(6,8)));
   return Math.round((d - TODAY) / 86400000);
 }
-function blankAuthRow(staff, name, group, dept, email){
-  return {
-    group: group || "", dept: dept || "", staff: staff, name: name || "", email: email || "",
-    cat: "", op: "", ac: "", eng: "", module: "",
-    issueN: 0, expiryN: 0, issue: "", expiry: "", lim: "", ref: ""
-  };
-}
 function rosterIndex(){
   const map = Object.create(null);
   try {
     if (typeof hxUnpackRoster === "function") hxUnpackRoster();
-  } catch (e) { /* Name List optional for email-only stubs */ }
+  } catch (e) { /* optional */ }
   (window.FULL || []).forEach(r => {
     const st = String(r.staff || "").padStart(6, "0");
     if (st) map[st] = r;
@@ -168,49 +160,25 @@ function rosterIndex(){
   return map;
 }
 function unpack(){
-  const pack = window.AUTH_PACK;
+  const pack = window.LIC_PACK;
   if (!pack || !pack.r) return false;
   const D = pack.d;
-  const overlay = pack.emailByStaff || {};
-  const fallbackNames = pack.emailOnlyNames || {};
-  const people = pack.p.map(p => {
-    const staff = String(p[0]).padStart(6, "0");
-    let email = D.email[p[4]] || "";
-    if (overlay[staff]) email = overlay[staff];
-    return {
-      staff,
-      name: D.name[p[1]] || "",
-      group: p[2] ? "PAX" : "CG",
-      dept: D.dept[p[3]] || "",
-      email
-    };
-  });
-  AUTH_ROWS = pack.r.map(r => {
+  const people = pack.p.map(p => ({
+    staff: String(p[0]).padStart(6, "0"),
+    name: D.name[p[1]] || "",
+    group: p[2] ? "PAX" : "CG",
+    dept: D.dept[p[3]] || ""
+  }));
+  LIC_ROWS = pack.r.map(r => {
     const p = people[r[0]];
     return {
-      group: p.group, dept: p.dept, staff: p.staff, name: p.name, email: p.email,
-      cat: D.cat[r[1]] || "", op: D.op[r[2]] || "", ac: D.ac[r[3]] || "",
+      group: p.group, dept: p.dept, staff: p.staff, name: p.name,
+      cat: D.cat[r[1]] || "", auth: D.auth[r[2]] || "", ac: D.ac[r[3]] || "",
       eng: D.eng[r[4]] || "", module: D.mod[r[5]] || "",
-      issueN: r[6] || 0, expiryN: r[7] || 0,
-      issue: fmtYmd(r[6]), expiry: fmtYmd(r[7]),
-      lim: D.lim[r[8]] || "", ref: D.ref[r[9]] || ""
+      issueN: r[7] || 0, expiryN: r[8] || 0,
+      issue: fmtYmd(r[7]), expiry: fmtYmd(r[8]),
+      lim: D.lim[r[9]] || "", licNo: D.licNo[r[10]] || ""
     };
-  });
-  const present = new Set(people.map(p => p.staff));
-  const roster = rosterIndex();
-  Object.keys(overlay).sort().forEach(staff => {
-    if (present.has(staff)) return;
-    const r = roster[staff];
-    let name = fallbackNames[staff] || "";
-    let dept = "";
-    let group = "";
-    if (r) {
-      name = r.name || name;
-      dept = r.home || r.current || "";
-      if (r.group === "PAX") group = "PAX";
-      else if (r.group === "CG" || r.group === "OC") group = "CG";
-    }
-    AUTH_ROWS.push(blankAuthRow(staff, name, group, dept, overlay[staff]));
   });
   return true;
 }
@@ -231,11 +199,11 @@ function setDueButtons(){
 }
 function filtered(){
   const s = q.trim().toLowerCase();
-  return AUTH_ROWS.filter(r => {
+  return LIC_ROWS.filter(r => {
     if (fGroup === "CG" && r.group !== "CG") return false;
     if (fGroup === "PAX" && r.group !== "PAX") return false;
     if (fDept && r.dept !== fDept) return false;
-    if (fOp && r.op !== fOp) return false;
+    if (fAuth && r.auth !== fAuth) return false;
     if (fCat && r.cat !== fCat) return false;
     if (fAc && r.ac !== fAc) return false;
     if (fDue) {
@@ -303,15 +271,15 @@ function paintBody(){
 }
 function rebuildView(resetScroll){
   view = sorted(filtered());
-  document.getElementById("status").textContent = view.length + " of " + AUTH_ROWS.length + " rows";
+  document.getElementById("status").textContent = view.length + " of " + LIC_ROWS.length + " rows";
   if (resetScroll) document.getElementById("wrap").scrollTop = 0;
   paintBody();
 }
 function paintChrome(){
-  document.getElementById("n-all").textContent = String(AUTH_ROWS.length);
-  document.getElementById("n-cg").textContent = String(AUTH_ROWS.filter(r => r.group === "CG").length);
-  document.getElementById("n-pax").textContent = String(AUTH_ROWS.filter(r => r.group === "PAX").length);
-  document.getElementById("n-people").textContent = String(new Set(AUTH_ROWS.map(r => r.staff)).size);
+  document.getElementById("n-all").textContent = String(LIC_ROWS.length);
+  document.getElementById("n-cg").textContent = String(LIC_ROWS.filter(r => r.group === "CG").length);
+  document.getElementById("n-pax").textContent = String(LIC_ROWS.filter(r => r.group === "PAX").length);
+  document.getElementById("n-people").textContent = String(new Set(LIC_ROWS.map(r => r.staff)).size);
   document.querySelectorAll("[data-group]").forEach(el => el.classList.toggle("on", el.dataset.group === fGroup));
   setDueButtons();
   paintHead();
@@ -361,20 +329,19 @@ const REQUIRED_CSV_COLS = [
   "Transcript Attribute-37E-Authorization / License Limitation 7 Expiry Date",
   "Transcript Attribute-38A-Authorization / License Limitation 8- Label",
   "Transcript Attribute-38E-Authorization / License Limitation 8 Expiry Date",
-  "Dynamic Module Attributes-Authorisation Aircraft Type- Label",
-  "Dynamic Module Attributes-Authorisation Engine Type- Label",
-  "Dynamic Module Attributes-Authorisation Category- Label",
-  "Dynamic Module Attributes-Authorisation Operator- Label",
-  "Transcript Attribute-13-Operator Reference Number",
-  "User Properties-E-mail"
+  "Dynamic Module Attributes-License Aircraft Type- Label",
+  "Dynamic Module Attributes-License Engine Type- Label",
+  "Dynamic Module Attributes-License Category- Label",
+  "Dynamic Module Attributes-Licence Authority- Label",
+  "Transcript Attribute-14-License Number"
 ];
 const BLANK_CSV = {"":1,"'--":1,"--":1,"'--/--":1,"--/--":1};
 const LIM_JOIN = " \u00b7 ";
 const GH_TOKEN_KEY = "hx:team-board:gh-token";
 const GH_REPO = "danson117/danson117.github.io";
 const GH_BRANCH = "main";
-const DATA_PATH = "HX/authorization-list-data.js";
-const CSV_PATH = "HX/QA_Auth_Full_Detailed_List.csv";
+const DATA_PATH = "HX/lic-records-data.js";
+const CSV_PATH = "HX/Lic_Records_Dept.csv";
 let csvBusy = false;
 
 function cleanCsv(v){
@@ -450,7 +417,7 @@ function dictAdd(maps, key, value){
   }
   return bucket.i[value];
 }
-function packFromCsvRows(header, dataRows, prevPack){
+function packFromCsvRows(header, dataRows){
   const maps = Object.create(null);
   const people = [];
   const peopleI = Object.create(null);
@@ -461,20 +428,19 @@ function packFromCsvRows(header, dataRows, prevPack){
   const get = (r, name) => r[col[name]];
   dataRows.forEach(r => {
     const staff = padStaff(get(r, "User Properties-Employee Number"));
+    if (!staff) return;
     const person = roster[staff];
     const group = person && person.group === "PAX" ? "PAX" : "CG";
     const name = cleanCsv(get(r, "User Attribute Extensions (Columns)-ID Name"));
     const dept = cleanCsv(get(r, "User Properties-Department ID"));
-    const email = cleanCsv(get(r, "User Properties-E-mail"));
-    const pkey = staff + "\0" + name + "\0" + group + "\0" + dept + "\0" + email;
+    const pkey = staff + "\0" + name + "\0" + group + "\0" + dept;
     if (!(pkey in peopleI)) {
       peopleI[pkey] = people.length;
       people.push([
         /^\d+$/.test(staff) ? Number(staff) : staff,
         dictAdd(maps, "name", name),
         group === "PAX" ? 1 : 0,
-        dictAdd(maps, "dept", dept),
-        dictAdd(maps, "email", email)
+        dictAdd(maps, "dept", dept)
       ]);
     }
     const lims = [];
@@ -486,56 +452,37 @@ function packFromCsvRows(header, dataRows, prevPack){
     }
     rows.push([
       peopleI[pkey],
-      dictAdd(maps, "cat", cleanCsv(get(r, "Dynamic Module Attributes-Authorisation Category- Label"))),
-      dictAdd(maps, "op", cleanCsv(get(r, "Dynamic Module Attributes-Authorisation Operator- Label"))),
-      dictAdd(maps, "ac", cleanCsv(get(r, "Dynamic Module Attributes-Authorisation Aircraft Type- Label"))),
-      dictAdd(maps, "eng", cleanCsv(get(r, "Dynamic Module Attributes-Authorisation Engine Type- Label"))),
+      dictAdd(maps, "cat", cleanCsv(get(r, "Dynamic Module Attributes-License Category- Label"))),
+      dictAdd(maps, "auth", cleanCsv(get(r, "Dynamic Module Attributes-Licence Authority- Label"))),
+      dictAdd(maps, "ac", cleanCsv(get(r, "Dynamic Module Attributes-License Aircraft Type- Label"))),
+      dictAdd(maps, "eng", cleanCsv(get(r, "Dynamic Module Attributes-License Engine Type- Label"))),
       dictAdd(maps, "mod", cleanCsv(get(r, "Module Properties-Module Title"))),
+      dictAdd(maps, "modId", cleanCsv(get(r, "Module Properties-Module ID"))),
       parseYmd(get(r, "Transcript Attribute-15A-Authorization / License Issue date")),
       parseYmd(get(r, "Transcript Attribute-15E-Authorization / License Expiry date")),
       dictAdd(maps, "lim", lims.join(LIM_JOIN)),
-      dictAdd(maps, "ref", cleanCsv(get(r, "Transcript Attribute-13-Operator Reference Number")))
+      dictAdd(maps, "licNo", cleanCsv(get(r, "Transcript Attribute-14-License Number")))
     ]);
   });
-  const inCsv = new Set(people.map(p => String(p[0]).padStart(6, "0")));
-  const prevOverlay = (prevPack && prevPack.emailByStaff) || {};
-  const prevNames = (prevPack && prevPack.emailOnlyNames) || {};
-  const emailByStaff = {};
-  const emailOnlyNames = {};
-  Object.keys(prevOverlay).sort().forEach(staff => {
-    if (inCsv.has(staff)) return;
-    emailByStaff[staff] = prevOverlay[staff];
-    if (prevNames[staff]) emailOnlyNames[staff] = prevNames[staff];
-  });
   const d = {};
-  ["name","dept","email","cat","op","ac","eng","mod","lim","ref"].forEach(k => {
+  ["name","dept","cat","auth","ac","eng","mod","modId","lim","licNo"].forEach(k => {
     d[k] = maps[k] ? maps[k].a : [];
   });
-  return {
-    v: 3,
-    source: "QA_Auth_Full_Detailed_List.csv",
-    d: d,
-    p: people,
-    r: rows,
-    emailByStaff: emailByStaff,
-    emailOnlyNames: emailOnlyNames
-  };
+  return { v: 1, source: "Lic_Records_Dept.csv", d: d, p: people, r: rows };
 }
-function rejectCsv(msg){
-  alert(msg);
-}
+function rejectCsv(msg){ alert(msg); }
 function applyPack(pack){
-  window.AUTH_PACK = pack;
+  window.LIC_PACK = pack;
   if (!unpack()) {
-    rejectCsv("Packed authorization data could not be read.");
+    rejectCsv("Packed license data could not be read.");
     return false;
   }
-  fillSelect("f-dept", AUTH_ROWS.map(r => r.dept));
-  fillSelect("f-op", AUTH_ROWS.map(r => r.op));
-  fillSelect("f-cat", AUTH_ROWS.map(r => r.cat));
-  fillSelect("f-ac", AUTH_ROWS.map(r => r.ac));
+  fillSelect("f-dept", LIC_ROWS.map(r => r.dept));
+  fillSelect("f-auth", LIC_ROWS.map(r => r.auth));
+  fillSelect("f-cat", LIC_ROWS.map(r => r.cat));
+  fillSelect("f-ac", LIC_ROWS.map(r => r.ac));
   document.getElementById("f-dept").value = fDept;
-  document.getElementById("f-op").value = fOp;
+  document.getElementById("f-auth").value = fAuth;
   document.getElementById("f-cat").value = fCat;
   document.getElementById("f-ac").value = fAc;
   paintChrome();
@@ -543,7 +490,7 @@ function applyPack(pack){
   return true;
 }
 function packFileText(pack){
-  return "window.AUTH_PACK=" + JSON.stringify(pack) + ";\n";
+  return "window.LIC_PACK=" + JSON.stringify(pack) + ";\n";
 }
 function getGhToken(){
   try { return String(localStorage.getItem(GH_TOKEN_KEY) || "").trim(); }
@@ -583,11 +530,7 @@ async function putGitHubFile(path, text, message, token){
       const data = await getRes.json();
       sha = data && data.sha ? String(data.sha) : "";
     }
-    const body = {
-      message: message,
-      content: utf8ToB64(text),
-      branch: GH_BRANCH
-    };
+    const body = { message: message, content: utf8ToB64(text), branch: GH_BRANCH };
     if (sha) body.sha = sha;
     const putRes = await fetch(url, {
       method: "PUT",
@@ -603,17 +546,17 @@ async function putGitHubFile(path, text, message, token){
     return;
   }
 }
-async function saveAuthToGitHub(pack, csvText){
+async function saveLicToGitHub(pack, csvText){
   const token = getGhToken();
   if (!token) {
     alert("Updated on screen only. Not saved to GitHub (no token in this browser).");
     return;
   }
   try {
-    await putGitHubFile(DATA_PATH, packFileText(pack), "Authorization List: update packed AUTH_PACK from CSV", token);
-    await putGitHubFile(CSV_PATH, csvText, "Authorization List: update QA_Auth_Full_Detailed_List.csv", token);
+    await putGitHubFile(DATA_PATH, packFileText(pack), "License Records: update packed LIC_PACK from CSV", token);
+    await putGitHubFile(CSV_PATH, csvText, "License Records: update Lic_Records_Dept.csv", token);
   } catch (e) {
-    alert((e && e.message) ? e.message : "Could not save Authorization List to GitHub.");
+    alert((e && e.message) ? e.message : "Could not save License Records to GitHub.");
   }
 }
 async function handleCsvFile(file){
@@ -640,10 +583,9 @@ async function handleCsvFile(file){
       rejectCsv("CSV rejected: 0 data rows.");
       return;
     }
-    const prev = window.AUTH_PACK || null;
     let pack;
     try {
-      pack = packFromCsvRows(header, dataRows, prev);
+      pack = packFromCsvRows(header, dataRows);
     } catch (e) {
       rejectCsv("CSV rejected: could not parse file.");
       return;
@@ -653,7 +595,7 @@ async function handleCsvFile(file){
       return;
     }
     if (!applyPack(pack)) return;
-    await saveAuthToGitHub(pack, text.replace(/^\uFEFF/, ""));
+    await saveLicToGitHub(pack, text.replace(/^\uFEFF/, ""));
   } catch (e) {
     rejectCsv("CSV rejected: file is unreadable.");
   } finally {
@@ -665,17 +607,17 @@ async function handleCsvFile(file){
 }
 
 function bindUi(){
-  fillSelect("f-dept", AUTH_ROWS.map(r => r.dept));
-  fillSelect("f-op", AUTH_ROWS.map(r => r.op));
-  fillSelect("f-cat", AUTH_ROWS.map(r => r.cat));
-  fillSelect("f-ac", AUTH_ROWS.map(r => r.ac));
+  fillSelect("f-dept", LIC_ROWS.map(r => r.dept));
+  fillSelect("f-auth", LIC_ROWS.map(r => r.auth));
+  fillSelect("f-cat", LIC_ROWS.map(r => r.cat));
+  fillSelect("f-ac", LIC_ROWS.map(r => r.ac));
   document.getElementById("q").addEventListener("input", e => {
     q = e.target.value;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => rebuildView(true), 120);
   });
   document.getElementById("f-dept").addEventListener("change", e => { fDept = e.target.value; rebuildView(true); });
-  document.getElementById("f-op").addEventListener("change", e => { fOp = e.target.value; rebuildView(true); });
+  document.getElementById("f-auth").addEventListener("change", e => { fAuth = e.target.value; rebuildView(true); });
   document.getElementById("f-cat").addEventListener("change", e => { fCat = e.target.value; rebuildView(true); });
   document.getElementById("f-ac").addEventListener("change", e => { fAc = e.target.value; rebuildView(true); });
   document.getElementById("f-due").addEventListener("click", e => {
@@ -685,50 +627,50 @@ function bindUi(){
     setDueButtons();
     rebuildView(true);
   });
+  document.getElementById("clear").addEventListener("click", () => {
+    q = ""; fDept = ""; fAuth = ""; fCat = ""; fAc = ""; fDue = "";
+    document.getElementById("q").value = "";
+    document.getElementById("f-dept").value = "";
+    document.getElementById("f-auth").value = "";
+    document.getElementById("f-cat").value = "";
+    document.getElementById("f-ac").value = "";
+    setDueButtons();
+    rebuildView(true);
+  });
+  document.getElementById("copy-tsv").addEventListener("click", e => copyText(sheet("\t"), e.currentTarget, "Copy TSV"));
+  document.getElementById("copy-csv").addEventListener("click", e => copyText(sheet(","), e.currentTarget, "Copy CSV"));
+  document.getElementById("update-csv-btn").addEventListener("click", () => document.getElementById("update-csv").click());
+  document.getElementById("update-csv").addEventListener("change", e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) handleCsvFile(f);
+  });
   document.querySelectorAll("[data-group]").forEach(el => {
-    el.addEventListener("click", () => { fGroup = el.dataset.group; rebuildView(true); paintChrome(); });
+    el.addEventListener("click", () => { fGroup = el.dataset.group; paintChrome(); rebuildView(true); });
   });
   document.getElementById("head").addEventListener("click", e => {
-    const th = e.target.closest("[data-sort]"); if (!th) return;
-    if (sortKey === th.dataset.sort) sortDir *= -1; else { sortKey = th.dataset.sort; sortDir = 1; }
+    const th = e.target.closest("[data-sort]");
+    if (!th) return;
+    const k = th.dataset.sort;
+    if (sortKey === k) sortDir = -sortDir;
+    else { sortKey = k; sortDir = 1; }
     paintHead();
-    rebuildView(true);
+    rebuildView(false);
   });
   document.getElementById("wrap").addEventListener("scroll", () => {
     if (scrollTick) return;
     scrollTick = requestAnimationFrame(() => { scrollTick = 0; paintBody(); });
   });
-  document.getElementById("copy-tsv").addEventListener("click", e => copyText(sheet("\t"), e.currentTarget, "Copy TSV"));
-  document.getElementById("copy-csv").addEventListener("click", e => copyText(sheet(","), e.currentTarget, "Copy CSV"));
-  document.getElementById("update-csv-btn").addEventListener("click", () => {
-    document.getElementById("update-csv").click();
-  });
-  document.getElementById("update-csv").addEventListener("change", e => {
-    const f = e.target.files && e.target.files[0];
-    if (f) handleCsvFile(f);
-  });
-  document.getElementById("clear").addEventListener("click", () => {
-    q = fDept = fOp = fCat = fAc = fDue = "";
-    fGroup = "ocg";
-    document.getElementById("q").value = "";
-    document.getElementById("f-dept").value = "";
-    document.getElementById("f-op").value = "";
-    document.getElementById("f-cat").value = "";
-    document.getElementById("f-ac").value = "";
-    paintChrome();
-    rebuildView(true);
-  });
+}
+let scrollTick = 0;
+
+if (!unpack()) {
+  document.getElementById("status").textContent = "License pack missing.";
+} else {
+  bindUi();
   paintChrome();
   rebuildView(true);
 }
-
-if (!unpack()) {
-  document.getElementById("status").textContent = "Authorization data file failed to load.";
-  document.documentElement.classList.add("hx-ready");
-} else {
-  bindUi();
-  document.documentElement.classList.add("hx-ready");
-}
+document.documentElement.classList.add("hx-ready");
 </script>
 </body>
 </html>
