@@ -66,8 +66,7 @@
     </div>
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search staff # / name / section / authority / aircraft / module / license #">
-      <button type="button" id="copy-tsv">Copy TSV</button>
-      <button type="button" id="copy-csv">Copy CSV</button>
+      <button type="button" id="copy-table">Copy Table</button>
       <button type="button" id="update-csv-btn">Update CSV</button>
       <input id="update-csv" type="file" accept=".csv,text/csv" hidden>
       <button type="button" id="clear">Clear filters</button>
@@ -102,7 +101,7 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.1">v1.1</div>
+  <div class="page-version" data-version="1.2">v1.2</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="lic-records-data.js?v=2"></script>
@@ -307,25 +306,49 @@ function paintChrome(){
   setDueButtons();
   paintHead();
 }
-function copyText(text, btn, label){
-  const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = label, 1200); };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(done).catch(() => fallback(text, done));
-  } else fallback(text, done);
+function tableTsv(){
+  const head = COLS.map(([,l]) => l).join("\t");
+  const body = view.map(r => COLS.map(([k]) => String(r[k] ?? "")).join("\t"));
+  return [head].concat(body).join("\r\n");
 }
-function fallback(text, done){
+function tableHtml(){
+  const th = COLS.map(([,l]) => "<th>"+esc(l)+"</th>").join("");
+  const tr = view.map(r => "<tr>"+COLS.map(([k]) => "<td>"+esc(r[k] == null ? "" : r[k])+"</td>").join("")+"</tr>").join("");
+  return "<table><thead><tr>"+th+"</tr></thead><tbody>"+tr+"</tbody></table>";
+}
+function fallbackPlain(text){
   const ta = document.createElement("textarea");
   ta.value = text; document.body.appendChild(ta); ta.select();
-  document.execCommand("copy"); ta.remove(); done();
+  const ok = document.execCommand("copy");
+  ta.remove();
+  if (!ok) throw new Error("copy failed");
 }
-function sheet(sep){
-  const head = COLS.map(([,l]) => l).join(sep);
-  const body = view.map(r => COLS.map(([k]) => {
-    let v = String(r[k] ?? "");
-    if (sep === "," && /[",\n]/.test(v)) v = "\""+v.replace(/"/g,"\"\"")+"\"";
-    return v;
-  }).join(sep));
-  return [head].concat(body).join("\r\n");
+async function copyTable(btn){
+  const label = "Copy Table";
+  const tsv = tableTsv();
+  const html = tableHtml();
+  const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = label, 1200); };
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({
+        "text/plain": new Blob([tsv], {type:"text/plain"}),
+        "text/html": new Blob([html], {type:"text/html"})
+      })]);
+      done();
+      return;
+    }
+  } catch (_) { /* fall back to plain TSV */ }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(tsv);
+      done();
+      return;
+    }
+    fallbackPlain(tsv);
+    done();
+  } catch (_) {
+    alert("Copy failed.");
+  }
 }
 
 const REQUIRED_CSV_COLS = [
@@ -687,8 +710,7 @@ function bindUi(){
     setDueButtons();
     rebuildView(true);
   });
-  document.getElementById("copy-tsv").addEventListener("click", e => copyText(sheet("\t"), e.currentTarget, "Copy TSV"));
-  document.getElementById("copy-csv").addEventListener("click", e => copyText(sheet(","), e.currentTarget, "Copy CSV"));
+  document.getElementById("copy-table").addEventListener("click", e => copyTable(e.currentTarget));
   document.getElementById("update-csv-btn").addEventListener("click", () => document.getElementById("update-csv").click());
   document.getElementById("update-csv").addEventListener("change", e => {
     const f = e.target.files && e.target.files[0];
