@@ -102,10 +102,10 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.0">v2.0</div>
+  <div class="page-version" data-version="2.1">v2.1</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
-<script src="hx-xlsx.js?v=2"></script>
+<script src="hx-xlsx.js?v=3"></script>
 <script src="authorization-list-data.js?v=6"></script>
 <script>
 const COLS = [
@@ -358,22 +358,24 @@ function fallbackPlain(text){
 }
 async function copyTable(btn){
   const label = "Copy Table";
-  const rows = exportRows();
-  const n = rows.length;
-  const tsv = tableTsv(rows);
-  const html = tableHtml(rows);
-  const done = () => { btn.textContent = "Copied " + n; setTimeout(() => btn.textContent = label, 1400); };
+  btn.textContent = "Copying…";
+  btn.disabled = true;
   try {
-    if (navigator.clipboard && window.ClipboardItem) {
-      await navigator.clipboard.write([new ClipboardItem({
-        "text/plain": new Blob([tsv], {type:"text/plain"}),
-        "text/html": new Blob([html], {type:"text/html"})
-      })]);
-      done();
-      return;
-    }
-  } catch (_) { /* fall back to plain TSV */ }
-  try {
+    const rows = exportRows();
+    const n = rows.length;
+    const tsv = tableTsv(rows);
+    const html = tableHtml(rows);
+    const done = () => { btn.textContent = "Copied " + n; setTimeout(() => { btn.textContent = label; btn.disabled = false; }, 1400); };
+    try {
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([new ClipboardItem({
+          "text/plain": new Blob([tsv], {type:"text/plain"}),
+          "text/html": new Blob([html], {type:"text/html"})
+        })]);
+        done();
+        return;
+      }
+    } catch (_) { /* fall back to plain TSV */ }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(tsv);
       done();
@@ -381,25 +383,36 @@ async function copyTable(btn){
     }
     fallbackPlain(tsv);
     done();
-  } catch (_) {
-    alert("Copy failed.");
+  } catch (err) {
+    const msg = (err && err.message) ? String(err.message) : "copy failed";
+    btn.textContent = "Copy failed";
+    btn.disabled = false;
+    alert("Copy failed: " + msg);
+    setTimeout(() => { btn.textContent = label; }, 1800);
   }
 }
 function tableMatrix(rows){
   return [COLS.map(([,l]) => l)].concat(rows.map(r => COLS.map(([k]) => String(r[k] ?? ""))));
 }
-async function toXlsx(btn){
+function toXlsx(btn){
   const label = "To XLSX";
+  btn.textContent = "Downloading…";
+  btn.disabled = true;
   try {
-    if (!window.HxXlsx) throw new Error("missing writer");
+    if (!window.HxXlsx || typeof HxXlsx.buildSync !== "function") throw new Error("missing writer (hx-xlsx.js)");
     const rows = exportRows();
     const n = rows.length;
-    const blob = await HxXlsx.build(tableMatrix(rows), "Authorization");
-    HxXlsx.download(blob, "authorization-list-" + n + ".xlsx");
+    const blob = HxXlsx.buildSync(tableMatrix(rows), "Authorization");
+    const name = "authorization-list-" + n + ".xlsx";
+    HxXlsx.download(blob, name);
     btn.textContent = "Downloaded " + n + " → Downloads";
-    setTimeout(() => btn.textContent = label, 1800);
-  } catch (_) {
-    alert("XLSX export failed.");
+    setTimeout(() => { btn.textContent = label; btn.disabled = false; }, 2200);
+  } catch (err) {
+    const msg = (err && err.message) ? String(err.message) : "export failed";
+    btn.textContent = "XLSX failed";
+    btn.disabled = false;
+    alert("XLSX export failed: " + msg);
+    setTimeout(() => { btn.textContent = label; }, 2200);
   }
 }
 

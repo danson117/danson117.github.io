@@ -283,9 +283,13 @@
           >Open this page</a
         >
       </div>
-      <iframe id="frame" title="HX topic"></iframe>
+      <iframe
+        id="frame"
+        title="HX topic"
+        allow="clipboard-write; downloads"
+      ></iframe>
     </main>
-    <div class="page-version" data-version="8.23">v8.23</div>
+    <div class="page-version" data-version="8.24">v8.24</div>
     <script>
       const TOPICS = [
         {
@@ -308,13 +312,13 @@
         },
         {
           id: "auth-list",
-          file: "authorization-list.html?v=2.0",
+          file: "authorization-list.html?v=2.1",
           title: "Authorization List",
           blurb: "QA auth · Name List only",
         },
         {
           id: "lic-records",
-          file: "lic-records.html?v=1.5",
+          file: "lic-records.html?v=1.6",
           title: "License Records",
           blurb: "License · Name List only",
         },
@@ -437,6 +441,24 @@
           } catch (err) {}
           try {
             e.source.postMessage({ type: "hx-store-keys-got", id: msg.id, keys: keys }, "*");
+          } catch (err) {}
+        } else if (msg.type === "hx-download" && msg.buffer) {
+          try {
+            const blob = new Blob([msg.buffer], {
+              type:
+                msg.mime ||
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+            const a = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = msg.filename || "export.xlsx";
+            a.rel = "noopener";
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 2500);
           } catch (err) {}
         }
       });

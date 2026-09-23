@@ -1,4 +1,5 @@
-/* Tiny OOXML .xlsx writer (no CDN). Zip + sheet XML. */
+/* Tiny OOXML .xlsx writer (no CDN). Zip store + sheet XML. Sync build so
+   <a download> stays inside the click user-gesture (iframe-safe). */
 (function (root) {
   "use strict";
   var CRC_TABLE = (function () {
@@ -60,33 +61,19 @@
       parts.push('<row r="' + (r + 1) + '">');
       for (var c = 0; c < row.length; c++) {
         var ref = colName(c) + (r + 1);
-        parts.push('<c r="' + ref + '" t="inlineStr"><is><t>' + xmlEsc(row[c]) + "</t></is></c>");
+        var text = xmlEsc(row[c]);
+        /* Excel 32767-char cell cap — keep accuracy for staff # / dates; trim only extreme module text. */
+        if (text.length > 32767) text = text.slice(0, 32767);
+        parts.push('<c r="' + ref + '" t="inlineStr"><is><t xml:space="preserve">' + text + "</t></is></c>");
       }
       parts.push("</row>");
     }
     parts.push("</sheetData></worksheet>");
     return parts.join("");
   }
-  async function deflateRaw(data) {
-    if (typeof CompressionStream === "undefined") return null;
-    try {
-      var cs = new CompressionStream("deflate-raw");
-      var w = cs.writable.getWriter();
-      await w.write(data);
-      await w.close();
-      var r = cs.readable.getReader();
-      var chunks = [];
-      for (;;) {
-        var step = await r.read();
-        if (step.done) break;
-        chunks.push(step.value);
-      }
-      return concat(chunks);
-    } catch (_) {
-      return null;
-    }
-  }
-  async function zipStore(files) {
+  /* Store-only ZIP (method 0). No CompressionStream — that was async and could stall
+     or drop the click user-gesture so <a download> is ignored with no error. */
+  function zipStore(files) {
     var locals = [];
     var centrals = [];
     var offset = 0;
@@ -95,11 +82,6 @@
       var data = files[i].data;
       var method = 0;
       var payload = data;
-      var comp = await deflateRaw(data);
-      if (comp && comp.length < data.length) {
-        method = 8;
-        payload = comp;
-      }
       var crc = crc32(data);
       var local = concat([
         u32le(0x04034b50),
@@ -153,7 +135,7 @@
     ]);
     return concat(locals.concat([centralBlob, end]));
   }
-  async function build(rows, sheetName) {
+  function buildSync(rows, sheetName) {
     sheetName = sheetName || "Sheet1";
     var safeName = String(sheetName).replace(/[\\/*?:\[\]]/g, "_").slice(0, 31) || "Sheet1";
     var contentTypes =
@@ -179,7 +161,7 @@
       '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
       '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
       "</Relationships>";
-    var bytes = await zipStore([
+    var bytes = zipStore([
       { name: "[Content_Types].xml", data: u8(contentTypes) },
       { name: "_rels/.rels", data: u8(rootRels) },
       { name: "xl/workbook.xml", data: u8(workbook) },
@@ -190,15 +172,43 @@
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     });
   }
+  function build(rows, sheetName) {
+    return Promise.resolve(buildSync(rows, sheetName));
+  }
   function download(blob, filename) {
+    if (!blob) throw new Error("empty file");
     var a = document.createElement("a");
     var url = URL.createObjectURL(blob);
     a.href = url;
-    a.download = filename;
+    a.download = filename || "export.xlsx";
+    a.rel = "noopener";
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2500);
   }
-  root.HxXlsx = { build: build, download: download };
+  /* Ask the hub (top frame) to save — works if iframe download is restricted. */
+  function downloadViaParent(blob, filename) {
+    if (!blob || !window.parent || window.parent === window) return false;
+    try {
+      blob.arrayBuffer().then(function (buf) {
+        window.parent.postMessage({
+          type: "hx-download",
+          filename: filename || "export.xlsx",
+          mime: blob.type || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          buffer: buf
+        }, "*");
+      });
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+  root.HxXlsx = {
+    build: build,
+    buildSync: buildSync,
+    download: download,
+    downloadViaParent: downloadViaParent
+  };
 })(typeof window !== "undefined" ? window : globalThis);
