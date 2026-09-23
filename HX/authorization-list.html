@@ -102,7 +102,7 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.2">v2.2</div>
+  <div class="page-version" data-version="2.3">v2.3</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=3"></script>
@@ -789,7 +789,9 @@ function bindUi(){
     const btn = e.target.closest("[data-due]");
     if (!btn) return;
     fDue = btn.dataset.due || "";
+    if (fDue) { sortKey = "expiry"; sortDir = 1; }
     setDueButtons();
+    paintHead();
     rebuildView(true);
   });
   document.querySelectorAll("[data-group]").forEach(el => {
