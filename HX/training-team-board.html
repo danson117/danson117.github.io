@@ -721,7 +721,7 @@
     </div>
     <div id="detail" class="detail hidden"></div>
     <div class="why write-zone" hidden>
-      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. After a one-time Unlock with a GitHub token (Contents: write, stored only in this browser), each change also auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
+      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. When a GitHub token is already stored in this browser, each change also auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
       <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Each PIC cell shows <b>98% (xx/yy) 6 left</b> — xx = clear of this item, yy = roster for that tab + team, left = still outstanding. PIC item rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. Table and Details people follow <b>Team 1–4</b> top to bottom, then <b>section + crew</b> (Team n: LTA<i>n</i> then other LTA, then crew). Other / TBD (office sections such as LGC1) sit after Team 4. Click a people-list column to override. Course rows inside one person stay remaining / due order. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. Row colors use remaining days for UAL / CT / Mandatory / Manual: <b>Overdue or will expire</b> (pink) = remaining ≤30 days; <b>Coming due</b> (yellow) = remaining &gt;30 and ≤90 days; remaining &gt;90 has no due-color. <b>Completed</b> wins (whole course row light green). <b>In Progress</b> blues the Status cell only. <b>Table</b> is the people list — click a row for that person’s course card (this browser only). <b>Details</b> stacks the same course card for every visible person (Section + Crew · Staff # · Name, with course count on the right) for capture / print. Course tables end with <b>Remark</b> (last column; stays with Status). Click a PIC cell for one course.</p>
     </div>
   </div>
@@ -755,11 +755,6 @@
       <div id="access-pw2-wrap" hidden>
         <label for="access-pw2">Confirm password</label>
         <input id="access-pw2" type="password" autocomplete="new-password">
-      </div>
-      <div id="access-token-wrap" hidden>
-        <label for="access-token">GitHub token (once)</label>
-        <p class="note" id="access-token-hint">Create a Personal Access Token with Contents: write on <code>danson117/danson117.github.io</code>. It stays in this browser only — it never ships with the page.</p>
-        <input id="access-token" type="password" autocomplete="off" spellcheck="false">
       </div>
       <p class="note access-err" id="access-err" hidden></p>
       <div class="toolbar">
@@ -798,7 +793,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="8.8" aria-label="Page version 8.8">v8.8</div>
+  <div class="page-version" data-version="8.9" aria-label="Page version 8.9">v8.9</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script>
@@ -833,7 +828,6 @@ const ACTIONS_FILE = "team-board-actions.json";
 const ACTIONS_IDB = "hx-team-board";
 const ACTIONS_IDB_STORE = "fs";
 const GH_TOKEN_KEY = "hx:team-board:gh-token";
-const GH_TOKEN_REMINDED = "hx:team-board:gh-token-reminded";
 const GH_REPO = "danson117/danson117.github.io";
 const GH_PATH = "HX/team-board-actions.json";
 const GH_BRANCH = "main";
@@ -1126,62 +1120,22 @@ function closeAccessPop() {
   pop.hidden = true;
   document.getElementById("access-pw").value = "";
   document.getElementById("access-pw2").value = "";
-  const tok = document.getElementById("access-token");
-  if (tok) tok.value = "";
   showAccessErr("");
 }
 function getGhToken() {
   return String(lsPeek(GH_TOKEN_KEY) || "").trim();
 }
-function setGhToken(token) {
-  const t = String(token || "").trim();
-  if (t) lsSet(GH_TOKEN_KEY, t);
-}
-function markTokenReminded() {
-  lsSet(GH_TOKEN_REMINDED, "1");
-}
-function tokenWasReminded() {
-  return lsPeek(GH_TOKEN_REMINDED) === "1";
-}
-function paintTokenField() {
-  const wrap = document.getElementById("access-token-wrap");
-  const hint = document.getElementById("access-token-hint");
-  const tok = document.getElementById("access-token");
-  if (!wrap) return;
-  const have = !!getGhToken();
-  wrap.hidden = have;
-  if (tok) tok.value = "";
-  if (hint && !have) {
-    hint.textContent = tokenWasReminded()
-      ? "Optional: paste a GitHub token (Contents: write) so Status auto-pushes to GitHub. It stays in this browser only."
-      : "Paste a GitHub personal access token (Contents: write on danson117/danson117.github.io) so Status auto-pushes. It stays in this browser only — it never ships with the page.";
-  }
-}
-function takeTokenFromUnlock() {
-  const tok = document.getElementById("access-token");
-  const pasted = tok ? String(tok.value || "").trim() : "";
-  const had = !!getGhToken();
-  if (pasted) setGhToken(pasted);
-  if (!getGhToken()) markTokenReminded();
-  return !had && !!getGhToken();
-}
 function openAccessPop() {
   const rec = readAccessRec();
   const setting = !rec;
   document.getElementById("access-title").textContent = setting ? "Set write password" : "Unlock";
-  const needToken = !getGhToken();
   document.getElementById("access-hint").textContent = setting
-    ? (needToken
-      ? "First time on this browser: choose a password, and paste a GitHub token once so Status auto-pushes."
-      : "First time on this browser: choose a password. It is stored as a hash, not the password itself.")
-    : (needToken && !tokenWasReminded()
-      ? "Enter the write password. Also paste a GitHub token once so the other PC can get Status."
-      : "Enter the write password for this browser.");
+    ? "First time on this browser: choose a password. It is stored as a hash, not the password itself."
+    : "Enter the write password for this browser.";
   document.getElementById("access-pw2-wrap").hidden = !setting;
   document.getElementById("access-pw").autocomplete = setting ? "new-password" : "current-password";
   document.getElementById("access-pw").value = "";
   document.getElementById("access-pw2").value = "";
-  paintTokenField();
   showAccessErr("");
   const pop = accessPop();
   pop.hidden = false;
@@ -1199,21 +1153,19 @@ async function submitAccessPop() {
     const salt = randomSalt();
     const hash = await hashPassword(pw, salt);
     lsSet(ACCESS_HASH, JSON.stringify({ v: 1, salt: salt, hash: hash }));
-    const justSet = takeTokenFromUnlock();
     setBoardUnlocked(true);
     applyWriteAccess();
     closeAccessPop();
-    if (justSet) schedulePersistActions();
+    if (getGhToken()) schedulePersistActions();
     return;
   }
   if (!pw) { showAccessErr("Enter the password."); return; }
   const got = await hashPassword(pw, rec.salt);
   if (got !== rec.hash) { showAccessErr("Wrong password."); return; }
-  const justSet = takeTokenFromUnlock();
   setBoardUnlocked(true);
   applyWriteAccess();
   closeAccessPop();
-  if (justSet) schedulePersistActions();
+  if (getGhToken()) schedulePersistActions();
 }
 function toggleBoardAccess() {
   if (isBoardUnlocked()) {
@@ -3265,7 +3217,7 @@ async function pushActionsToGitHub() {
       const getRes = await fetch(url + "?ref=" + encodeURIComponent(GH_BRANCH), { headers: ghHeaders() });
       if (getRes.status === 401 || getRes.status === 403) {
         lsRemove(GH_TOKEN_KEY);
-        showPushFail("GitHub did not accept the token. Unlock again and paste a PAT with Contents: write. Status is saved in this browser.");
+        showPushFail("GitHub did not accept the stored token. Status is saved in this browser.");
         setSaveSync("Saved · offline");
         return;
       }
@@ -3296,7 +3248,7 @@ async function pushActionsToGitHub() {
       }
       if (putRes.status === 401 || putRes.status === 403) {
         lsRemove(GH_TOKEN_KEY);
-        showPushFail("GitHub did not accept the token. Unlock again and paste a PAT with Contents: write. Status is saved in this browser.");
+        showPushFail("GitHub did not accept the stored token. Status is saved in this browser.");
         setSaveSync("Saved · offline");
         return;
       }
@@ -4467,9 +4419,6 @@ document.getElementById("access-pw").addEventListener("keydown", (e) => {
   if (e.key === "Enter") { e.preventDefault(); submitAccessPop(); }
 });
 document.getElementById("access-pw2").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") { e.preventDefault(); submitAccessPop(); }
-});
-document.getElementById("access-token").addEventListener("keydown", (e) => {
   if (e.key === "Enter") { e.preventDefault(); submitAccessPop(); }
 });
 document.getElementById("push-fail-ok").addEventListener("click", closePushFailPop);

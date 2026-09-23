@@ -37,7 +37,7 @@ Name list / PAX / CG / 角色 / staff # 有新規則，唔好只改一頁。要�
 
 - `hx.html` 側欄名、blurb、`?v=`
 - `ocg-pax-mechanics-list.html`（Crew List 係 PAX 來源）
-- `training-team-board.html`（UAL CBT + CT Reminder + Mandatory；`PAX` 跟 Crew List；Team 1–4 / Other 用 Name List）。Status / Remark / Manual auto-save in the browser and, after a one-time Unlock GitHub PAT (Contents: write, `localStorage` only — never in the repo), auto-PUT `HX/team-board-actions.json`. No daily Keep Status click.
+- `training-team-board.html`（UAL CBT + CT Reminder + Mandatory；`PAX` 跟 Crew List；Team 1–4 / Other 用 Name List）。Status / Remark / Manual auto-save in the browser and, when `localStorage` already has a GitHub token (Contents: write — never in the repo; page has no token field), auto-PUT `HX/team-board-actions.json`. No daily Keep Status click.
 - `course-catalog.html`（Course List：Name / Code / Type / Interval；course 冇 Expiry；board Mandatory 空白 Course Name 跟 Code 對呢頁）
 - 呢份 README / `links.html` 用詞
 
