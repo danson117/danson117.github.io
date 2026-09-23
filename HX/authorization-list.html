@@ -8,7 +8,7 @@
   :root {
     --ink: #1c2430; --muted: #4a5564; --line: #d7dee6; --paper: #eef1f4;
     --card: #ffffff; --navy: #1e3a5f; --navy-soft: #e8eef5;
-    --hot: #6b1f1a; --hot-bg: #f4d4d0; --warn: #6b5310; --warn-bg: #fff3b0;
+    --hot: #7a1010; --hot-bg: #ffc9c9; --warn: #6b5310; --warn-bg: #fff3b0;
     --row-h: 28px;
   }
   * { box-sizing: border-box; }
@@ -71,6 +71,12 @@
       <label>Operator <select id="f-op"><option value="">All</option></select></label>
       <label>Category <select id="f-cat"><option value="">All</option></select></label>
       <label>Aircraft <select id="f-ac"><option value="">All</option></select></label>
+      <label>Due <select id="f-due">
+        <option value="">All</option>
+        <option value="red">Red</option>
+        <option value="yellow">Yellow</option>
+        <option value="both">Red + Yellow</option>
+      </select></label>
     </div>
     <p class="note" id="status">Loading…</p>
     <div class="table-wrap" id="wrap">
@@ -86,11 +92,11 @@
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code>, packed for the page. Email overlay fills real addresses for staff not in that CSV (no invented auth modules). Only visible rows are drawn. Pink = expiry in 30 days or overdue. Yellow = 31–90 days.</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code>, packed for the page. Email overlay fills real addresses for staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Use the Due filter to show only those rows.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.2">v1.2</div>
+  <div class="page-version" data-version="1.3">v1.3</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=3"></script>
@@ -112,6 +118,7 @@ let fDept = "";
 let fOp = "";
 let fCat = "";
 let fAc = "";
+let fDue = "";
 let sortKey = "name";
 let sortDir = 1;
 let searchTimer = 0;
@@ -217,6 +224,12 @@ function filtered(){
     if (fOp && r.op !== fOp) return false;
     if (fCat && r.cat !== fCat) return false;
     if (fAc && r.ac !== fAc) return false;
+    if (fDue) {
+      const hl = rowClass(r);
+      if (fDue === "red" && hl !== "hot") return false;
+      if (fDue === "yellow" && hl !== "warn") return false;
+      if (fDue === "both" && hl !== "hot" && hl !== "warn") return false;
+    }
     if (!s) return true;
     return COLS.some(([k]) => String(r[k] || "").toLowerCase().includes(s));
   });
@@ -325,6 +338,7 @@ if (!unpack()) {
   document.getElementById("f-op").addEventListener("change", e => { fOp = e.target.value; rebuildView(true); });
   document.getElementById("f-cat").addEventListener("change", e => { fCat = e.target.value; rebuildView(true); });
   document.getElementById("f-ac").addEventListener("change", e => { fAc = e.target.value; rebuildView(true); });
+  document.getElementById("f-due").addEventListener("change", e => { fDue = e.target.value; rebuildView(true); });
   document.querySelectorAll("[data-group]").forEach(el => {
     el.addEventListener("click", () => { fGroup = el.dataset.group; rebuildView(true); paintChrome(); });
   });
@@ -341,13 +355,14 @@ if (!unpack()) {
   document.getElementById("copy-tsv").addEventListener("click", e => copyText(sheet("\t"), e.currentTarget, "Copy TSV"));
   document.getElementById("copy-csv").addEventListener("click", e => copyText(sheet(","), e.currentTarget, "Copy CSV"));
   document.getElementById("clear").addEventListener("click", () => {
-    q = fDept = fOp = fCat = fAc = "";
+    q = fDept = fOp = fCat = fAc = fDue = "";
     fGroup = "ocg";
     document.getElementById("q").value = "";
     document.getElementById("f-dept").value = "";
     document.getElementById("f-op").value = "";
     document.getElementById("f-cat").value = "";
     document.getElementById("f-ac").value = "";
+    document.getElementById("f-due").value = "";
     paintChrome();
     rebuildView(true);
   });
