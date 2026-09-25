@@ -1,0 +1,34 @@
+---
+description: GitHub ops only as user danson117 — never 0421ALPHA or any other account
+alwaysApply: true
+---
+
+# GitHub account lock — danson117 only
+
+GitHub operations may use **ONLY** the GitHub user `danson117`. Never use any other GitHub account, especially `0421ALPHA` / `0421alpha`.
+
+This is an **account lock** (User Rule + every project). Different from `github-sync.mdc` (Pages SSOT / pull-then-push for this repo only).
+
+Visible SoT: `HX/hx-rules.html` red **GitHub account lock**.
+
+## Before any GitHub write
+
+Before `gh`, `git push`, `git remote`, repo create, or Vercel GitHub import: check the authenticated username (`gh api user --jq .login` or equivalent).
+
+- If it is **not** `danson117` → **STOP**. Do not create, push, authorize, or import.
+- If `gh` is logged in as someone else → stop and say so. Do not proceed with that account.
+
+## Forbidden
+
+- Never create or push repos under another user or org
+- Never switch to, log in as, or reuse credentials for `0421ALPHA` or any other account
+
+## Allowed target example
+
+- Life OS private repo, if created: **`danson117/life-os` only**
+
+## Unchanged safety
+
+- Do not delete `danson117/danson117.github.io` files
+- Do not force-push
+- Do not commit secrets, `.env`, `*.db`, or tokens

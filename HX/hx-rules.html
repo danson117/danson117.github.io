@@ -98,6 +98,7 @@
         <li>新頁 <code>authorization-list.html</code>（<code>hx.html#auth-list</code>）<b>Authorization List</b>：由 <code>QA_Auth_Full_Detailed_List.csv</code>／同 schema 嘅 <code>Auth_Records_Dept.csv</code> 入。Staff # 6 位。CG/PAX／Section／Team 跟 Name List。唔改出街 Name List Home / Current。Expiry 粉≤30／黃 31–90。</li>
         <li>新頁 <code>lic-records.html</code>（<code>hx.html#lic-records</code>）<b>License Records</b>：由 <code>Lic_Records_Dept.csv</code> 入；packed <code>LIC_PACK</code>。Staff # 6 位。CG/PAX／Section／Team 跟 Name List；唔改出街 Crew／Name List 欄。</li>
         <li class="new"><span style="color:#b00000"><b>Auth / Lic · Name List only (CSV dept reference):</b> On Authorization List and License Records, CSV Department is <strong>reference only</strong> — never the displayed Section/Team. Displayed staff #, Section, and Team come from our Name List roster (<code>hxUnpackRoster</code> / FULL). Staff not on the Name List must <strong>not</strong> appear in the HTML table or on-screen counters. Keep them in packed <code>stage</code> (compact dictionary, lossless CSV fields) so we can answer if asked. Keep the packed format for speed; do not drop real fields; data must stay accurate (unpack equals source).<br>CSV DEPT 只做參考。主要用我哋 Name List 對應 staff # 同 Section／Team。Name List 冇嘅人唔好喺 HTML 出現；可以留背底 <code>stage</code>（慳位）。格式要慳位令頁面快，但數據一定要準。</span></li>
+        <li class="new"><span style="color:#b00000"><b>GitHub account lock — danson117 only:</b> Every Cursor project (User Rule + this page). GitHub ops may use <strong>ONLY</strong> user <code>danson117</code>. Never <code>0421ALPHA</code> / <code>0421alpha</code> or any other account. Before <code>gh</code>, <code>git push</code>, <code>git remote</code>, repo create, or Vercel GitHub import: check authenticated username; if not <code>danson117</code>, <strong>STOP</strong> — do not create, push, authorize, or import. Never create/push under another user/org; never switch to or reuse other credentials. If <code>gh</code> is someone else, stop and say so. Life OS private repo (if any) = <code>danson117/life-os</code> only. Unchanged: do not delete Pages files; no force-push; no secrets / <code>.env</code> / <code>*.db</code> / tokens.<br>全部 Cursor project 只用 <code>danson117</code> GitHub。唔好用 <code>0421ALPHA</code> 或其他帳。唔係就停手。Life OS 倉只可以係 <code>danson117/life-os</code>。</span></li>
         <li>大名單 <b>packed lossless</b>：<code>ocg-pax-data.js</code> 存 TEAM / STAFF / FULL / PEOPLE（字典壓縮，欄同值唔改）。Name List 同 Training One View 共用。畫面只畫見到嘅列。QA CSV 原檔留低，唔改。</li>
         <li>改 page-version / <code>?v=</code> <strong>唔好清</strong>已經載入嘅 UAL email、CT CSV、Mandatory、Course List（browser storage 留低）。</li>
         <li>Training One View：Unlock 之後保持 unlocked（記喺呢個 browser 嘅 <code>localStorage</code>），refresh／重開都唔會自己 Lock；只有主動按 <b>Lock</b> 先登出返 view-only。</li>
@@ -127,6 +128,6 @@
       </ul>
     </div>
   </div>
-  <div class="page-version" data-version="3.19">v3.19</div>
+  <div class="page-version" data-version="3.20">v3.20</div>
 </body>
 </html>
