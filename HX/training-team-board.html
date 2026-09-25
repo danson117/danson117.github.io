@@ -1018,7 +1018,7 @@
     </div>
     <div id="detail" class="detail hidden"></div>
     <div class="why write-zone" hidden>
-      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. When a GitHub token is already stored in this browser, each change also auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
+      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. When a Team Board sync key is stored in this browser (<code>hx:team-board:sync-key</code>), each change also syncs immediately through a locked server path (every computer with the same key). Else, when a GitHub token is stored, each change auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. The sync key is never embedded in this page; paste it once per browser. Anon cannot read or write staff Status. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
       <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Each PIC cell shows <b>98% (xx/yy) 6 left</b> — xx = clear of this item, yy = roster for that tab + team, left = still outstanding. The PIC training-item grid starts <b>collapsed</b> (Other / Team 1–4 headers only); use <b>Show training items</b> to expand. Open/closed is remembered in this browser. PIC item rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. Table and Details people follow <b>Team 1–4</b> top to bottom, then <b>section + crew</b> (Team n: LTA<i>n</i> then other LTA, then crew). Other / TBD (office sections such as LGC1) sit after Team 4. Click a people-list column to override. Course rows inside one person stay remaining / due order. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. Row colors use remaining days for UAL / CT / Mandatory / Manual: <b>Overdue or will expire</b> (pink) = remaining ≤30 days; <b>Coming due</b> (yellow) = remaining &gt;30 and ≤90 days; remaining &gt;90 has no due-color. <b>Completed</b> clears that course from the PIC board and from Table / Details. When every course for a person is <b>Completed</b>, their name drops off Details. <b>In Progress</b> blues the Status cell only. <b>Add course</b> accepts a staff # or an Authorization group code (e.g. Operator <b>D0</b>) to select matching CS from the Authorization List, with +/− before one course + expire date for all. <b>Table</b> is the people list — click a row for that person’s course card (this browser only). <b>Details</b> stacks the same course card for every visible person (Section + Crew · Staff # · Name, with course count on the right) for capture / print. Course tables end with <b>Remark</b> (last column; stays with Status). Click a PIC cell for one course.</p>
     </div>
   </div>
@@ -1129,7 +1129,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="8.18" aria-label="Page version 8.18">v8.18</div>
+  <div class="page-version" data-version="9.0" aria-label="Page version 9.0">v9.0</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=6"></script>
@@ -1178,6 +1178,8 @@ const ACTIONS_FILE = "team-board-actions.json";
 const ACTIONS_IDB = "hx-team-board";
 const ACTIONS_IDB_STORE = "fs";
 const GH_TOKEN_KEY = "hx:team-board:gh-token";
+const SYNC_KEY_KEY = "hx:team-board:sync-key";
+const SYNC_EDGE_URL = "https://kcoszufshvvpxikpzlue.supabase.co/functions/v1/team-board";
 const GH_REPO = "danson117/danson117.github.io";
 const GH_PATH = "HX/team-board-actions.json";
 const GH_BRANCH = "main";
@@ -1538,6 +1540,12 @@ function closeAccessPop() {
 }
 function getGhToken() {
   return String(lsPeek(GH_TOKEN_KEY) || "").trim();
+}
+function getSyncKey() {
+  return String(lsPeek(SYNC_KEY_KEY) || "").trim();
+}
+function hasRemoteSync() {
+  return !!(getSyncKey() || getGhToken());
 }
 function openAccessPop() {
   const store = loadAccessStore();
@@ -3901,7 +3909,7 @@ function schedulePersistActions() {
   persistTimer = window.setTimeout(() => {
     persistTimer = null;
     persistActionsLocal();
-    setSaveSync(getGhToken() ? "Saved" : "Saved · offline");
+    setSaveSync(hasRemoteSync() ? "Saved" : "Saved · offline");
   }, PERSIST_MS);
   if (pushTimer) window.clearTimeout(pushTimer);
   pushTimer = window.setTimeout(() => {
@@ -3935,6 +3943,49 @@ function ghHeaders() {
     Authorization: "Bearer " + getGhToken(),
     "X-GitHub-Api-Version": "2022-11-28"
   };
+}
+async function pushActionsToEdge() {
+  const key = getSyncKey();
+  if (!key) return false;
+  if (pushBusy) { pushQueued = true; return true; }
+  pushBusy = true;
+  try {
+    do {
+      pushQueued = false;
+      const payload = packActions();
+      actionsFileCache = payload;
+      const putRes = await fetch(SYNC_EDGE_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-hx-sync-key": key
+        },
+        body: JSON.stringify(payload)
+      });
+      if (putRes.status === 401 || putRes.status === 403) {
+        lsRemove(SYNC_KEY_KEY);
+        showPushFail("Sync key was rejected. Status is saved in this browser.");
+        setSaveSync("Saved · offline");
+        return true;
+      }
+      if (!putRes.ok) {
+        showPushFail("Could not sync Status (" + putRes.status + "). Status is saved in this browser.");
+        setSaveSync("Saved · offline");
+        return true;
+      }
+      setSaveSync("Saved · synced");
+    } while (pushQueued);
+  } catch (e) {
+    showPushFail("Could not reach sync server. Status is saved in this browser.");
+    setSaveSync("Saved · offline");
+  } finally {
+    pushBusy = false;
+    if (pushQueued) {
+      pushQueued = false;
+      pushActionsToEdge();
+    }
+  }
+  return true;
 }
 async function pushActionsToGitHub() {
   const token = getGhToken();
@@ -4009,8 +4060,9 @@ async function pushActionsToGitHub() {
     }
   }
 }
-function flushActionsOut() {
+async function flushActionsOut() {
   writeActionsToDisk();
+  if (getSyncKey()) return pushActionsToEdge();
   return pushActionsToGitHub();
 }
 function actionsIdb() {
@@ -4078,8 +4130,32 @@ async function restoreActionsHandle() {
   const ok = await ensureActionsHandlePerm(saved);
   actionsFileHandle = ok;
 }
+async function loadActionsFromEdge() {
+  const key = getSyncKey();
+  if (!key) return null;
+  try {
+    const res = await fetch(SYNC_EDGE_URL, {
+      cache: "no-store",
+      headers: { "x-hx-sync-key": key }
+    });
+    if (res.status === 401 || res.status === 403) {
+      lsRemove(SYNC_KEY_KEY);
+      return null;
+    }
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data && typeof data === "object" ? data : null;
+  } catch (e) {
+    return null;
+  }
+}
 async function loadActionsFileJson() {
   if (actionsFileCache !== undefined) return actionsFileCache;
+  const remote = await loadActionsFromEdge();
+  if (remote) {
+    actionsFileCache = remote;
+    return actionsFileCache;
+  }
   try {
     const url = new URL(ACTIONS_FILE, document.baseURI || location.href);
     const res = await fetch(url.href, { cache: "no-store" });
