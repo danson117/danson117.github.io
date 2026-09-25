@@ -1,0 +1,12 @@
+---
+description: HX / team-board updates must not open a new browser tab or Chrome window
+globs: HX/**
+alwaysApply: false
+---
+
+# HX updates — no new tab
+
+When updating HX pages (including Training One View / `training-team-board.html` / `hx.html#team-board`):
+
+- Do **not** open a new browser tab or a new Chrome window (`Start-Process chrome`, `chrome.exe`, `explorer` on HTML URLs, etc.).
+- The user already keeps HX work pages open. Put the `file:///` or https URL in the reply as a markdown link only; let them refresh the existing tab.

@@ -67,6 +67,16 @@
     margin-left: auto;
   }
   #access-toggle { min-width: 5.6em; }
+  #access-level {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    max-width: 12em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #access-manage { display: none; }
+  html.can-manage #access-manage { display: inline-block; }
   #save-sync {
     font-size: 11px;
     color: var(--muted);
@@ -74,30 +84,134 @@
     min-height: 1.2em;
   }
   html.board-locked .write-zone { display: none !important; }
+  html:not(.board-locked).no-ingest .load.write-zone { display: none !important; }
+  html:not(.board-locked).no-manual #add-course.write-zone { display: none !important; }
   html.board-locked select.course-status:disabled,
   html.board-locked input.course-done:disabled,
   html.board-locked input.course-done-cal:disabled,
   html.board-locked input.course-remark:disabled,
   html.board-locked button.manual-del:disabled,
   html.board-locked [data-ct-del]:disabled,
-  html.board-locked [data-omt-del]:disabled {
+  html.board-locked [data-omt-del]:disabled,
+  html.no-status select.course-status:disabled,
+  html.no-status input.course-done:disabled,
+  html.no-status input.course-done-cal:disabled,
+  html.no-status input.course-remark:disabled,
+  html.no-manual button.manual-del:disabled,
+  html.no-ingest [data-ct-del]:disabled,
+  html.no-ingest [data-omt-del]:disabled {
     opacity: 0.65;
     cursor: not-allowed;
     pointer-events: none;
   }
   .access-card { width: min(480px, 100%); max-height: none; }
   .access-card.ingest-card { width: min(560px, 100%); }
+  .access-card.manage-card {
+    width: min(720px, 100%);
+    max-height: min(85vh, 820px);
+    overflow: auto;
+  }
   .access-card.ingest-card ul { margin: 8px 0 0; padding-left: 1.2em; }
   .access-card.ingest-card li { margin: 0 0 8px; }
   .access-card h4 { margin: 0 0 8px; color: var(--navy); }
   .access-card label { display: block; font-weight: 650; margin: 8px 0 4px; }
-  .access-card input[type="password"] {
+  .access-card input[type="password"],
+  .access-card input[type="text"] {
     width: 100%;
     font: inherit;
     padding: 7px 8px;
     border: 1px solid var(--line);
   }
   .access-err { color: var(--hot); }
+  .manage-perms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin: 6px 0 8px;
+  }
+  .manage-perms label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+    margin: 0;
+  }
+  .manage-levels {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 8px 0 12px;
+  }
+  .manage-levels th,
+  .manage-levels td {
+    border: 1px solid var(--line);
+    padding: 5px 7px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .manage-levels th {
+    background: var(--navy);
+    color: #fff;
+  }
+  .manage-levels .perm-list { color: var(--muted); font-size: 11px; }
+  .manage-levels .row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .manage-add {
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+  .manage-add .toolbar { margin-top: 8px; }
+  .access-card.log-card {
+    width: min(760px, 100%);
+    max-height: min(85vh, 820px);
+    overflow: auto;
+  }
+  .action-log-list {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .action-log-list li {
+    border: 1px solid var(--line);
+    background: #f8fafc;
+    padding: 8px 10px;
+    font-size: 12.5px;
+  }
+  .action-log-list .log-meta {
+    color: var(--muted);
+    font-size: 11.5px;
+    margin: 0 0 4px;
+  }
+  .action-log-list .log-what {
+    margin: 0 0 6px;
+    color: var(--ink);
+  }
+  .action-log-list .log-note {
+    color: var(--muted);
+    font-size: 11.5px;
+    margin: 0 0 6px;
+  }
+  .action-log-list .log-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .action-log-list .log-undone {
+    opacity: 0.72;
+  }
+  .action-log-list .badge-undone {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 650;
+  }
   button {
     font: inherit;
     font-size: 13px;
@@ -182,6 +296,17 @@
   }
   .add-course #manual-exp { color-scheme: light; min-height: 32px; }
   .add-course .note { margin-top: 6px; }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
   .code-suggest-wrap { position: relative; overflow: visible; }
   .code-suggest {
     position: absolute;
@@ -211,9 +336,13 @@
   .code-suggest li:hover { background: var(--navy-soft); }
   .code-suggest .sep { color: var(--muted); }
   button.manual-del {
-    margin-left: 6px;
+    margin: 0;
     padding: 1px 6px;
     font-size: 11px;
+  }
+  .person-course-table td.col-action {
+    text-align: center;
+    white-space: nowrap;
   }
   .board th.sort { cursor: pointer; user-select: none; }
   .board th.sort:hover { background: var(--navy-soft); }
@@ -291,8 +420,149 @@
     color: var(--muted);
   }
   .row-legend span { white-space: nowrap; }
+  .board-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 6px;
+    flex-wrap: wrap;
+  }
+  .board-tools #board-toggle {
+    font: inherit;
+    font-weight: 650;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--navy);
+    cursor: pointer;
+  }
+  .board-tools #board-toggle:hover { background: var(--navy-soft); }
+  .board-tools .board-tools-note { color: var(--muted); font-size: 12px; }
   .board-wrap { overflow: auto; max-height: 62vh; border: 1px solid var(--line); background: var(--card); }
+  .board-wrap.collapsed { max-height: none; overflow: hidden; }
+  .board-wrap.collapsed #board-body { display: none; }
+  .board-wrap.collapsed table.board { min-width: 0; }
   table.board { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 860px; }
+  .manual-auth-pick {
+    margin-top: 8px;
+    border: 1px solid var(--line);
+    background: #f8fafc;
+    padding: 8px 10px;
+  }
+  .manual-auth-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-bottom: 6px;
+    font-size: 12.5px;
+  }
+  .manual-auth-head b { color: var(--navy); }
+  .manual-auth-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+  }
+  .manual-auth-add input {
+    width: 7.5em;
+    font: inherit;
+    padding: 4px 6px;
+    border: 1px solid var(--line);
+  }
+  .manual-auth-add button,
+  .manual-auth-table .col-edit button {
+    font: inherit;
+    font-weight: 700;
+    min-width: 28px;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--navy);
+    cursor: pointer;
+  }
+  .manual-auth-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin: 0 0 6px;
+    font-size: 12.5px;
+  }
+  .manual-auth-filters label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .manual-auth-filters select {
+    font: inherit;
+    font-weight: 500;
+    min-width: 7.5em;
+    padding: 3px 6px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+  }
+  .manual-auth-table-wrap {
+    margin: 0;
+    max-height: 280px;
+    overflow: auto;
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+  table.manual-auth-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 720px;
+  }
+  .manual-auth-table th,
+  .manual-auth-table td {
+    border: 1px solid var(--line);
+    padding: 5px 7px;
+    text-align: left;
+    vertical-align: middle;
+  }
+  .manual-auth-table th {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 650;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .manual-auth-table th.sort {
+    cursor: pointer;
+    user-select: none;
+  }
+  .manual-auth-table th.sort:hover {
+    background: #1e3a5f;
+  }
+  .manual-auth-table th.sort.on::after {
+    content: attr(data-dir);
+    margin-left: 6px;
+    font-size: 11px;
+  }
+  .manual-auth-table td.staff {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .manual-auth-table td.col-edit {
+    width: 3.2em;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .manual-auth-table tbody tr.off td {
+    opacity: 0.45;
+    background: #f3f4f6;
+  }
+  .manual-auth-table tbody tr:nth-child(even):not(.off) td {
+    background: #fafbfc;
+  }
   .board th, .board td { border: 1px solid var(--line); padding: 6px 8px; vertical-align: middle; }
   .board th { background: #f8fafc; color: var(--navy); font-weight: 650; position: sticky; top: 0; z-index: 2; }
   .board th.item, .board td.item { position: sticky; left: 0; background: #fff; z-index: 1; min-width: 280px; text-align: left; }
@@ -419,13 +689,14 @@
     table-layout: fixed;
     border-collapse: collapse;
   }
-  .person-course-table col.col-course { width: 10%; }
-  .person-course-table col.col-cname { width: 24%; }
-  .person-course-table col.col-due { width: 11%; }
-  .person-course-table col.col-remain { width: 10%; }
+  .person-course-table col.col-course { width: 9%; }
+  .person-course-table col.col-cname { width: 22%; }
+  .person-course-table col.col-due { width: 10%; }
+  .person-course-table col.col-remain { width: 9%; }
   .person-course-table col.col-src { width: 10%; }
-  .person-course-table col.col-status { width: 16%; }
-  .person-course-table col.col-remark { width: 19%; }
+  .person-course-table col.col-action { width: 8%; }
+  .person-course-table col.col-status { width: 15%; }
+  .person-course-table col.col-remark { width: 17%; }
   .person-course-table th,
   .person-course-table td {
     overflow-wrap: anywhere;
@@ -556,7 +827,7 @@
   .pop-icon svg { width: 18px; height: 18px; display: block; }
   .pop-icon.ok { background: #dcfce7; border-color: #16a34a; color: #166534; }
   .pop-icon.bad { background: #fee4e2; border-color: #b42318; color: #b42318; }
-  #course-pop-head { margin: 0 96px 10px 0; }
+  #course-pop-head { margin: 0 140px 10px 0; }
   #course-pop-title { margin: 0; font-size: 15px; color: var(--navy); }
   .pop-card.capturing { max-height: none; overflow: visible; }
   .pop-card.capturing .pop-actions { display: none; }
@@ -624,7 +895,10 @@
             <button type="button" data-org="pax">PAX</button>
           </div>
         </div>
-        <button type="button" id="access-toggle" aria-pressed="false" title="Unlock write access">Unlock</button>
+        <button type="button" id="access-toggle" aria-pressed="false" title="Unlock">Unlock</button>
+        <button type="button" id="access-manage" title="Access management">Manage</button>
+        <button type="button" id="action-log-btn" title="Action log">Log</button>
+        <span id="access-level" aria-live="polite"></span>
         <span id="save-sync" aria-live="polite"></span>
       </div>
     </div>
@@ -679,7 +953,11 @@
     </div>
     <div id="ingest-flags" class="ingest-flags" hidden></div>
 
-    <div class="board-wrap">
+    <div class="board-tools">
+      <button type="button" id="board-toggle" aria-expanded="false" aria-controls="board-wrap">Show training items</button>
+      <span class="board-tools-note">PIC grid starts collapsed — Other / Team 1–4 headers only until you open it.</span>
+    </div>
+    <div class="board-wrap collapsed" id="board-wrap">
       <table class="board">
         <thead>
           <tr id="board-head"></tr>
@@ -692,8 +970,8 @@
       <form id="manual-form" lang="en" autocomplete="off">
         <div class="add-course-grid">
           <div>
-            <label for="manual-staff">Staff #</label>
-            <input id="manual-staff" type="text" inputmode="numeric" maxlength="7" placeholder="084096" required>
+            <label for="manual-staff">Staff # / Auth group</label>
+            <input id="manual-staff" type="text" maxlength="16" placeholder="084096 or D0" required>
           </div>
           <div>
             <label for="manual-name">Name</label>
@@ -716,23 +994,48 @@
             <button type="submit" class="primary">Add</button>
           </div>
         </div>
+        <div id="manual-auth-pick" class="manual-auth-pick" hidden>
+          <div class="manual-auth-head">
+            <span id="manual-auth-label"></span>
+            <span class="manual-auth-add">
+              <label class="visually-hidden" for="manual-auth-add-staff">Add staff #</label>
+              <input id="manual-auth-add-staff" type="text" inputmode="numeric" maxlength="7" placeholder="Add staff #">
+              <button type="button" id="manual-auth-add-btn" title="Add CS">+</button>
+            </span>
+          </div>
+          <div id="manual-auth-filters" class="manual-auth-filters" hidden>
+            <label for="manual-auth-ac">Aircraft
+              <select id="manual-auth-ac" title="Filter by Aircraft"></select>
+            </label>
+            <label for="manual-auth-eng">Engine
+              <select id="manual-auth-eng" title="Filter by Engine"></select>
+            </label>
+          </div>
+          <div id="manual-auth-list" class="manual-auth-table-wrap" aria-label="Selected certifying staff"></div>
+        </div>
       </form>
-      <p class="note" id="manual-hint">Type a staff # to fill name / section / team from the Name List. Course code suggests close matches from Course List and the board. This browser only. Source: Manual.</p>
+      <p class="note" id="manual-hint">Type a staff # (Name List autofill) or an Authorization group code such as <b>D0</b> (Operator) to select every matching CS, then +/− edit the list. One course code and one expire date apply to the whole set. This browser only. Source: Manual.</p>
     </div>
     <div id="detail" class="detail hidden"></div>
     <div class="why write-zone" hidden>
       <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. When a GitHub token is already stored in this browser, each change also auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
-      <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Each PIC cell shows <b>98% (xx/yy) 6 left</b> — xx = clear of this item, yy = roster for that tab + team, left = still outstanding. PIC item rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. Table and Details people follow <b>Team 1–4</b> top to bottom, then <b>section + crew</b> (Team n: LTA<i>n</i> then other LTA, then crew). Other / TBD (office sections such as LGC1) sit after Team 4. Click a people-list column to override. Course rows inside one person stay remaining / due order. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. Row colors use remaining days for UAL / CT / Mandatory / Manual: <b>Overdue or will expire</b> (pink) = remaining ≤30 days; <b>Coming due</b> (yellow) = remaining &gt;30 and ≤90 days; remaining &gt;90 has no due-color. <b>Completed</b> wins (whole course row light green). <b>In Progress</b> blues the Status cell only. <b>Table</b> is the people list — click a row for that person’s course card (this browser only). <b>Details</b> stacks the same course card for every visible person (Section + Crew · Staff # · Name, with course count on the right) for capture / print. Course tables end with <b>Remark</b> (last column; stays with Status). Click a PIC cell for one course.</p>
+      <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Each PIC cell shows <b>98% (xx/yy) 6 left</b> — xx = clear of this item, yy = roster for that tab + team, left = still outstanding. The PIC training-item grid starts <b>collapsed</b> (Other / Team 1–4 headers only); use <b>Show training items</b> to expand. Open/closed is remembered in this browser. PIC item rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. Table and Details people follow <b>Team 1–4</b> top to bottom, then <b>section + crew</b> (Team n: LTA<i>n</i> then other LTA, then crew). Other / TBD (office sections such as LGC1) sit after Team 4. Click a people-list column to override. Course rows inside one person stay remaining / due order. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. Row colors use remaining days for UAL / CT / Mandatory / Manual: <b>Overdue or will expire</b> (pink) = remaining ≤30 days; <b>Coming due</b> (yellow) = remaining &gt;30 and ≤90 days; remaining &gt;90 has no due-color. <b>Completed</b> clears that course from the PIC board and from Table / Details. When every course for a person is <b>Completed</b>, their name drops off Details. <b>In Progress</b> blues the Status cell only. <b>Add course</b> accepts a staff # or an Authorization group code (e.g. Operator <b>D0</b>) to select matching CS from the Authorization List, with +/− before one course + expire date for all. <b>Table</b> is the people list — click a row for that person’s course card (this browser only). <b>Details</b> stacks the same course card for every visible person (Section + Crew · Staff # · Name, with course count on the right) for capture / print. Course tables end with <b>Remark</b> (last column; stays with Status). Click a PIC cell for one course.</p>
     </div>
   </div>
   <div id="course-pop" class="pop hidden" hidden>
     <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="course-pop-title">
       <div class="pop-actions">
-        <button type="button" id="course-pop-copy" class="pop-icon" title="Copy layout" aria-label="Copy layout">
+        <button type="button" id="course-pop-copy" class="pop-icon" data-copy-shot title="Copy layout" aria-label="Copy layout">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
-            <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
-            <path d="M4 16.2l4.8-3.8 3 2.4 4.4-4.6L20 15.6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <rect x="9" y="9" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M6 15V6.5A1.5 1.5 0 0 1 7.5 5H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button type="button" id="course-pop-download" class="pop-icon" data-download-shot title="Download" aria-label="Download">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 4v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </button>
         <button type="button" id="course-pop-close">Close</button>
@@ -760,6 +1063,39 @@
       <div class="toolbar">
         <button type="button" class="primary" id="access-ok">OK</button>
         <button type="button" id="access-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div id="manage-pop" class="pop hidden" hidden>
+    <div class="pop-card access-card manage-card" role="dialog" aria-modal="true" aria-labelledby="manage-title">
+      <h4 id="manage-title">Access management</h4>
+      <p class="note">Passwords stay in this browser only (hashed). They are never written into the public GitHub actions file. Owner always keeps full rights.</p>
+      <div id="manage-levels-wrap"></div>
+      <div class="manage-add">
+        <h4 style="font-size:14px;margin:0 0 4px">Add level</h4>
+        <label for="manage-new-name">Name</label>
+        <input id="manage-new-name" type="text" maxlength="40" placeholder="e.g. Staff">
+        <label for="manage-new-pw">Password</label>
+        <input id="manage-new-pw" type="password" autocomplete="new-password">
+        <label for="manage-new-pw2">Confirm password</label>
+        <input id="manage-new-pw2" type="password" autocomplete="new-password">
+        <div class="manage-perms" id="manage-new-perms"></div>
+        <p class="note access-err" id="manage-err" hidden></p>
+        <div class="toolbar">
+          <button type="button" class="primary" id="manage-add-btn">Add level</button>
+          <button type="button" id="manage-close">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="action-log-pop" class="pop hidden" hidden>
+    <div class="pop-card access-card log-card" role="dialog" aria-modal="true" aria-labelledby="action-log-title">
+      <h4 id="action-log-title">Action log</h4>
+      <p class="note">WHO · WHEN · WHAT for board edits. Undo restores that one change when a snapshot is available. Latest 200 entries. No passwords.</p>
+      <ul id="action-log-list" class="action-log-list"></ul>
+      <p class="note" id="action-log-empty" hidden>No actions logged yet.</p>
+      <div class="toolbar" style="margin-top:10px">
+        <button type="button" class="primary" id="action-log-close">Close</button>
       </div>
     </div>
   </div>
@@ -793,9 +1129,10 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="8.9" aria-label="Page version 8.9">v8.9</div>
+  <div class="page-version" data-version="8.18" aria-label="Page version 8.18">v8.18</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
+<script src="authorization-list-data.js?v=6"></script>
 <script>
 hxUnpackRoster();
 
@@ -808,12 +1145,25 @@ const CT_FILES = "hx:team-board:ct-files";
 const OMT_FILES = "hx:team-board:omt-files";
 const CT_CLEARED = "hx:team-board:ct-cleared";
 const OMT_CLEARED = "hx:team-board:omt-cleared";
-const UI = { org: "hx:team-board:org", src: "hx:team-board:src", role: "hx:team-board:role", team: "hx:team-board:team", q: "hx:team-board:q", sortKey: "hx:team-board:sortKey", sortDir: "hx:team-board:sortDir", listView: "hx:team-board:listView" };
+const UI = { org: "hx:team-board:org", src: "hx:team-board:src", role: "hx:team-board:role", team: "hx:team-board:team", q: "hx:team-board:q", sortKey: "hx:team-board:sortKey", sortDir: "hx:team-board:sortDir", listView: "hx:team-board:listView", boardOpen: "hx:team-board:boardOpen" };
 const COURSE_STORE = "hx:course-catalog:rows";
 const COURSE_STATUS = "hx:team-board:course-status";
 const ACCESS_HASH = "hx:team-board:access-hash";
 const ACCESS_UNLOCK = "hx:team-board:unlocked";
+const ACCESS_LEVELS_KEY = "hx:team-board:access-levels";
+const ACCESS_SESSION = "hx:team-board:session-level";
+const ACCESS_PERMS = ["status", "manual", "ingest", "manage"];
+const ACCESS_PERM_LABEL = {
+  status: "Edit Status / Remark / completed date",
+  manual: "Add / remove Manual courses",
+  ingest: "Upload / remove UAL · CT · Mandatory",
+  manage: "Open access management"
+};
+const OWNER_PERMS = ACCESS_PERMS.slice();
 const MANUAL_STORE = "hx:team-board:manual-courses";
+const ACTION_LOG_STORE = "hx:team-board:action-log";
+const ACTION_LOG_MAX = 200;
+const ACTION_LOG_SNAP_MAX = 80000;
 const FLAG_STORE = "hx:team-board:ingest-flags";
 const FLAG_LABEL = {
   "not-on-name-list": "Not on Name List",
@@ -849,7 +1199,8 @@ const UI_KEYS = {
   q: ["hx:team-board:q", "hx-team-board-q", "hx:ct-reminder:q", "hx:ual-cbt:q"],
   sortKey: ["hx:team-board:sortKey", "hx-team-board-sortKey", "hx:ual-cbt:sortKey"],
   sortDir: ["hx:team-board:sortDir", "hx-team-board-sortDir", "hx:ual-cbt:sortDir"],
-  listView: ["hx:team-board:listView"]
+  listView: ["hx:team-board:listView"],
+  boardOpen: ["hx:team-board:boardOpen"]
 };
 const DATE_RE = /^(\d{1,2})-([A-Za-z]{3,9})-(\d{4})$/;
 const EMP_RE = /^v\d{5,}$/i;
@@ -879,7 +1230,13 @@ let dSort = "";
 let dDir = 1;
 let detailPeople = [];
 let listView = "table";
+let boardOpen = false;
 let courseStatus = {};
+let manualAuthPick = null;
+let authIndexCache = null;
+let actionLog = [];
+let actionLogSkip = false;
+let remarkLogBefore = {};
 
 let persistArmed = false;
 let actionsFileHandle = null;
@@ -962,14 +1319,13 @@ window.addEventListener("message", (e) => {
   pendingStore.delete(msg.id);
   fn(msg);
 });
-function isBoardUnlocked() {
-  try { return sessionStorage.getItem(ACCESS_UNLOCK) === "1"; } catch (e) { return false; }
+function newLevelId() {
+  return "lvl-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
 }
-function setBoardUnlocked(on) {
-  try {
-    if (on) sessionStorage.setItem(ACCESS_UNLOCK, "1");
-    else sessionStorage.removeItem(ACCESS_UNLOCK);
-  } catch (e) {}
+function normalizePerms(list, asOwner) {
+  const set = new Set((list || []).filter((p) => ACCESS_PERMS.indexOf(p) >= 0));
+  if (asOwner) ACCESS_PERMS.forEach((p) => set.add(p));
+  return ACCESS_PERMS.filter((p) => set.has(p));
 }
 function readAccessRec() {
   const raw = lsPeek(ACCESS_HASH);
@@ -979,6 +1335,107 @@ function readAccessRec() {
     if (rec && rec.salt && rec.hash) return rec;
   } catch (e) {}
   return null;
+}
+function loadAccessStore() {
+  const raw = lsPeek(ACCESS_LEVELS_KEY);
+  if (raw) {
+    try {
+      const data = JSON.parse(raw);
+      if (data && Array.isArray(data.levels)) {
+        const levels = data.levels.map((lv) => {
+          const owner = !!(lv && (lv.owner || lv.id === "owner"));
+          return {
+            id: String((lv && lv.id) || newLevelId()),
+            name: String((lv && lv.name) || (owner ? "Owner" : "Level")).trim() || (owner ? "Owner" : "Level"),
+            salt: String((lv && lv.salt) || ""),
+            hash: String((lv && lv.hash) || ""),
+            perms: normalizePerms(lv && lv.perms, owner),
+            owner: owner
+          };
+        }).filter((lv) => lv.salt && lv.hash);
+        if (!levels.some((lv) => lv.owner)) {
+          const first = levels[0];
+          if (first) {
+            first.owner = true;
+            first.id = "owner";
+            first.perms = OWNER_PERMS.slice();
+            if (!first.name) first.name = "Owner";
+          }
+        }
+        return { v: 2, levels: levels };
+      }
+    } catch (e) {}
+  }
+  const old = readAccessRec();
+  if (old) {
+    return {
+      v: 2,
+      levels: [{
+        id: "owner",
+        name: "Owner",
+        salt: old.salt,
+        hash: old.hash,
+        perms: OWNER_PERMS.slice(),
+        owner: true
+      }]
+    };
+  }
+  return { v: 2, levels: [] };
+}
+function saveAccessStore(store) {
+  const levels = (store && store.levels ? store.levels : []).map((lv) => ({
+    id: lv.id,
+    name: lv.name,
+    salt: lv.salt,
+    hash: lv.hash,
+    perms: normalizePerms(lv.perms, lv.owner),
+    owner: !!lv.owner
+  }));
+  lsSet(ACCESS_LEVELS_KEY, JSON.stringify({ v: 2, levels: levels }));
+}
+function getOwnerLevel(store) {
+  const data = store || loadAccessStore();
+  return (data.levels || []).find((lv) => lv.owner) || null;
+}
+function getSessionLevelId() {
+  return String(lsPeek(ACCESS_SESSION) || "").trim();
+}
+function setSessionLevelId(id) {
+  if (id) {
+    lsSet(ACCESS_SESSION, id);
+    lsSet(ACCESS_UNLOCK, "1");
+  } else {
+    lsRemove(ACCESS_SESSION);
+    lsRemove(ACCESS_UNLOCK);
+  }
+  try {
+    sessionStorage.removeItem(ACCESS_SESSION);
+    sessionStorage.removeItem(ACCESS_UNLOCK);
+  } catch (e) {}
+}
+function getSessionLevel() {
+  const id = getSessionLevelId();
+  if (!id) return null;
+  const lv = loadAccessStore().levels.find((x) => x.id === id);
+  return lv || null;
+}
+function isBoardUnlocked() {
+  return !!getSessionLevel();
+}
+function setBoardUnlocked(on) {
+  if (!on) setSessionLevelId("");
+}
+function hasPerm(perm) {
+  const lv = getSessionLevel();
+  if (!lv) return false;
+  if (lv.owner) return true;
+  return (lv.perms || []).indexOf(perm) >= 0;
+}
+function requirePerm(perm) {
+  return hasPerm(perm);
+}
+function requireWrite() {
+  return hasPerm("status") || hasPerm("manual") || hasPerm("ingest") || hasPerm("manage");
 }
 function hexBytes(buf) {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -995,35 +1452,331 @@ async function sha256Hex(text) {
 async function hashPassword(pw, salt) {
   return sha256Hex(String(salt || "") + "\n" + String(pw || ""));
 }
+async function findLevelByPassword(pw) {
+  const store = loadAccessStore();
+  for (let i = 0; i < store.levels.length; i++) {
+    const lv = store.levels[i];
+    const got = await hashPassword(pw, lv.salt);
+    if (got === lv.hash) return lv;
+  }
+  return null;
+}
 function applyWriteAccess() {
-  const on = isBoardUnlocked();
-  document.documentElement.classList.toggle("board-locked", !on);
+  const lv = getSessionLevel();
+  const unlocked = !!lv;
+  const canStatus = hasPerm("status");
+  const canManual = hasPerm("manual");
+  const canIngest = hasPerm("ingest");
+  const canManage = hasPerm("manage");
+  document.documentElement.classList.toggle("board-locked", !unlocked);
+  document.documentElement.classList.toggle("no-status", !canStatus);
+  document.documentElement.classList.toggle("no-manual", !canManual);
+  document.documentElement.classList.toggle("no-ingest", !canIngest);
+  document.documentElement.classList.toggle("can-manage", canManage);
   document.querySelectorAll(".write-zone").forEach((el) => {
-    el.hidden = !on;
-    el.setAttribute("aria-hidden", on ? "false" : "true");
+    let show = unlocked;
+    if (el.classList.contains("load")) show = canIngest;
+    else if (el.id === "add-course") show = canManual;
+    else if (el.classList.contains("why")) show = !!(lv && lv.owner);
+    el.hidden = !show;
+    el.setAttribute("aria-hidden", show ? "false" : "true");
   });
   const btn = document.getElementById("access-toggle");
   if (btn) {
-    btn.textContent = on ? "Lock" : "Unlock";
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-    btn.title = on ? "Lock write access" : "Unlock write access";
-    btn.classList.toggle("on", on);
+    btn.textContent = unlocked ? "Lock" : "Unlock";
+    btn.setAttribute("aria-pressed", unlocked ? "true" : "false");
+    btn.title = unlocked ? "Lock (sign out)" : "Unlock with a password";
+    btn.classList.toggle("on", unlocked);
   }
+  const levelEl = document.getElementById("access-level");
+  if (levelEl) levelEl.textContent = unlocked ? (lv.name || "Unlocked") : "";
   [
-    "ual-src", "ual-parse", "ct-csv", "omt-file",
+    "ual-src", "ual-parse", "ct-csv", "omt-file"
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !canIngest;
+  });
+  [
     "manual-staff", "manual-name", "manual-code", "manual-cname", "manual-exp"
   ].forEach((id) => {
     const el = document.getElementById(id);
-    if (el) el.disabled = !on;
+    if (el) el.disabled = !canManual;
   });
   const addBtn = document.querySelector("#manual-form button[type=submit]");
-  if (addBtn) addBtn.disabled = !on;
-  document.querySelectorAll("[data-ct-del], [data-omt-del], .manual-del, select.course-status, input.course-done, input.course-done-cal, input.course-remark").forEach((el) => {
-    el.disabled = !on;
+  if (addBtn) addBtn.disabled = !canManual;
+  const authAdd = document.getElementById("manual-auth-add-btn");
+  if (authAdd) authAdd.disabled = !canManual;
+  const authStaff = document.getElementById("manual-auth-add-staff");
+  if (authStaff) authStaff.disabled = !canManual;
+  document.querySelectorAll("select.course-status, input.course-done, input.course-done-cal, input.course-remark").forEach((el) => {
+    el.disabled = !canStatus;
+  });
+  document.querySelectorAll(".manual-del, [data-auth-toggle]").forEach((el) => {
+    el.disabled = !canManual;
+  });
+  document.querySelectorAll("[data-ct-del], [data-omt-del]").forEach((el) => {
+    el.disabled = !canIngest;
   });
 }
-function requireWrite() {
-  return isBoardUnlocked();
+function accessPop() {
+  return document.getElementById("access-pop");
+}
+function showAccessErr(msg) {
+  const err = document.getElementById("access-err");
+  if (!err) return;
+  err.hidden = !msg;
+  err.textContent = msg || "";
+}
+function closeAccessPop() {
+  const pop = accessPop();
+  if (!pop) return;
+  pop.classList.add("hidden");
+  pop.hidden = true;
+  document.getElementById("access-pw").value = "";
+  document.getElementById("access-pw2").value = "";
+  showAccessErr("");
+}
+function getGhToken() {
+  return String(lsPeek(GH_TOKEN_KEY) || "").trim();
+}
+function openAccessPop() {
+  const store = loadAccessStore();
+  const setting = !store.levels.length;
+  document.getElementById("access-title").textContent = setting ? "Set owner password" : "Unlock";
+  document.getElementById("access-hint").textContent = setting
+    ? "First time on this browser: set the Owner password. Owner has every permission and can open Manage. Stored as a hash in this browser only — not on public GitHub."
+    : "Enter a password for your access level. Owner has full rights; other levels only get the permissions assigned in Manage.";
+  document.getElementById("access-pw2-wrap").hidden = !setting;
+  document.getElementById("access-pw").autocomplete = setting ? "new-password" : "current-password";
+  document.getElementById("access-pw").value = "";
+  document.getElementById("access-pw2").value = "";
+  showAccessErr("");
+  const pop = accessPop();
+  pop.hidden = false;
+  pop.classList.remove("hidden");
+  setTimeout(() => document.getElementById("access-pw").focus(), 0);
+}
+async function submitAccessPop() {
+  const store = loadAccessStore();
+  const pw = document.getElementById("access-pw").value;
+  const pw2 = document.getElementById("access-pw2").value;
+  if (!store.levels.length) {
+    if (!pw) { showAccessErr("Enter a password."); return; }
+    if (pw.length < 4) { showAccessErr("Use at least 4 characters."); return; }
+    if (pw !== pw2) { showAccessErr("The two passwords do not match."); return; }
+    const salt = randomSalt();
+    const hash = await hashPassword(pw, salt);
+    const owner = {
+      id: "owner",
+      name: "Owner",
+      salt: salt,
+      hash: hash,
+      perms: OWNER_PERMS.slice(),
+      owner: true
+    };
+    saveAccessStore({ v: 2, levels: [owner] });
+    setSessionLevelId(owner.id);
+    applyWriteAccess();
+    closeAccessPop();
+    if (getGhToken()) schedulePersistActions();
+    return;
+  }
+  if (!pw) { showAccessErr("Enter the password."); return; }
+  const lv = await findLevelByPassword(pw);
+  if (!lv) { showAccessErr("Wrong password."); return; }
+  setSessionLevelId(lv.id);
+  applyWriteAccess();
+  closeAccessPop();
+  if (getGhToken()) schedulePersistActions();
+}
+function toggleBoardAccess() {
+  if (isBoardUnlocked()) {
+    setSessionLevelId("");
+    applyWriteAccess();
+    return;
+  }
+  openAccessPop();
+}
+function showManageErr(msg) {
+  const err = document.getElementById("manage-err");
+  if (!err) return;
+  err.hidden = !msg;
+  err.textContent = msg || "";
+}
+function closeManagePop() {
+  const pop = document.getElementById("manage-pop");
+  if (!pop) return;
+  pop.classList.add("hidden");
+  pop.hidden = true;
+  showManageErr("");
+}
+function permChecksHtml(prefix, selected, forceManage) {
+  const sel = new Set(selected || []);
+  if (forceManage) sel.add("manage");
+  return ACCESS_PERMS.map((p) => {
+    const locked = forceManage && p === "manage";
+    return "<label><input type=\"checkbox\" data-perm=\"" + p + "\" data-perm-group=\"" + prefix + "\"" +
+      (sel.has(p) ? " checked" : "") + (locked ? " disabled" : "") + "> " + esc(ACCESS_PERM_LABEL[p]) + "</label>";
+  }).join("");
+}
+function readPermChecks(prefix) {
+  const out = [];
+  document.querySelectorAll("[data-perm-group=\"" + prefix + "\"]").forEach((el) => {
+    if (el.checked || el.disabled) out.push(el.getAttribute("data-perm"));
+  });
+  return normalizePerms(out, false);
+}
+function paintManageLevels() {
+  const wrap = document.getElementById("manage-levels-wrap");
+  const newPerms = document.getElementById("manage-new-perms");
+  if (!wrap) return;
+  const store = loadAccessStore();
+  wrap.innerHTML = "<table class=\"manage-levels\"><thead><tr>" +
+    "<th>Name</th><th>Permissions</th><th>Actions</th></tr></thead><tbody>" +
+    store.levels.map((lv) => {
+      const perms = (lv.owner ? OWNER_PERMS : (lv.perms || [])).map((p) => ACCESS_PERM_LABEL[p] || p).join("; ");
+      const actions = lv.owner
+        ? "<button type=\"button\" data-level-pw=\"" + esc(lv.id) + "\">Change password</button>"
+        : "<button type=\"button\" data-level-pw=\"" + esc(lv.id) + "\">Change password</button>" +
+          "<button type=\"button\" data-level-edit=\"" + esc(lv.id) + "\">Edit perms</button>" +
+          "<button type=\"button\" data-level-del=\"" + esc(lv.id) + "\">Remove</button>";
+      return "<tr><td><b>" + esc(lv.name) + "</b>" + (lv.owner ? " <span class=\"note\">(Owner)</span>" : "") +
+        "</td><td class=\"perm-list\">" + esc(perms) + "</td><td class=\"row-actions\">" + actions + "</td></tr>";
+    }).join("") + "</tbody></table>";
+  if (newPerms) newPerms.innerHTML = permChecksHtml("new", ["status"], false);
+}
+function openManagePop() {
+  if (!hasPerm("manage")) return;
+  paintManageLevels();
+  document.getElementById("manage-new-name").value = "";
+  document.getElementById("manage-new-pw").value = "";
+  document.getElementById("manage-new-pw2").value = "";
+  showManageErr("");
+  const pop = document.getElementById("manage-pop");
+  pop.hidden = false;
+  pop.classList.remove("hidden");
+}
+async function addManageLevel() {
+  if (!hasPerm("manage")) return;
+  const name = String(document.getElementById("manage-new-name").value || "").trim();
+  const pw = document.getElementById("manage-new-pw").value;
+  const pw2 = document.getElementById("manage-new-pw2").value;
+  const perms = readPermChecks("new").filter((p) => p !== "manage");
+  if (!name) { showManageErr("Enter a level name."); return; }
+  if (!pw || pw.length < 4) { showManageErr("Password needs at least 4 characters."); return; }
+  if (pw !== pw2) { showManageErr("The two passwords do not match."); return; }
+  const store = loadAccessStore();
+  if (store.levels.some((lv) => lv.name.toLowerCase() === name.toLowerCase())) {
+    showManageErr("That name is already used.");
+    return;
+  }
+  const salt = randomSalt();
+  const hash = await hashPassword(pw, salt);
+  const id = newLevelId();
+  store.levels.push({
+    id: id,
+    name: name,
+    salt: salt,
+    hash: hash,
+    perms: perms,
+    owner: false
+  });
+  saveAccessStore(store);
+  pushActionLog({
+    kind: "level-add",
+    perm: "manage",
+    what: "Added access level \"" + name + "\" · permissions: " +
+      (perms.length ? perms.map((p) => ACCESS_PERM_LABEL[p] || p).join("; ") : "(none)"),
+    before: { id: id },
+    after: { id: id, name: name, perms: perms.slice() },
+    undoable: true
+  });
+  document.getElementById("manage-new-name").value = "";
+  document.getElementById("manage-new-pw").value = "";
+  document.getElementById("manage-new-pw2").value = "";
+  showManageErr("");
+  paintManageLevels();
+}
+async function changeLevelPassword(id) {
+  if (!hasPerm("manage")) return;
+  const store = loadAccessStore();
+  const lv = store.levels.find((x) => x.id === id);
+  if (!lv) return;
+  const pw = window.prompt("New password for " + lv.name + " (min 4 characters):");
+  if (pw == null) return;
+  if (String(pw).length < 4) { showManageErr("Password needs at least 4 characters."); return; }
+  const pw2 = window.prompt("Confirm new password for " + lv.name + ":");
+  if (pw2 == null) return;
+  if (pw !== pw2) { showManageErr("The two passwords do not match."); return; }
+  lv.salt = randomSalt();
+  lv.hash = await hashPassword(pw, lv.salt);
+  saveAccessStore(store);
+  pushActionLog({
+    kind: "level-pw",
+    perm: "manage",
+    what: "Changed password for access level \"" + lv.name + "\"",
+    before: null,
+    after: null,
+    undoable: false,
+    undoNote: "Undo unavailable — passwords are never stored in the log."
+  });
+  showManageErr("");
+  paintManageLevels();
+}
+function editLevelPerms(id) {
+  if (!hasPerm("manage")) return;
+  const store = loadAccessStore();
+  const lv = store.levels.find((x) => x.id === id);
+  if (!lv || lv.owner) return;
+  const cur = new Set(lv.perms || []);
+  const picks = ACCESS_PERMS.filter((p) => p !== "manage").map((p) =>
+    (cur.has(p) ? "[x] " : "[ ] ") + p + " = " + ACCESS_PERM_LABEL[p]
+  ).join("\n");
+  const raw = window.prompt(
+    "Permissions for " + lv.name + " (comma-separated: status, manual, ingest).\nCurrent:\n" + picks,
+    (lv.perms || []).filter((p) => p !== "manage").join(", ")
+  );
+  if (raw == null) return;
+  const beforePerms = (lv.perms || []).filter((p) => p !== "manage").slice();
+  lv.perms = normalizePerms(String(raw).split(/[\s,]+/), false).filter((p) => p !== "manage");
+  saveAccessStore(store);
+  pushActionLog({
+    kind: "level-perms",
+    perm: "manage",
+    what: "Changed permissions for \"" + lv.name + "\" → " +
+      (lv.perms.length ? lv.perms.map((p) => ACCESS_PERM_LABEL[p] || p).join("; ") : "(none)"),
+    before: { id: lv.id, name: lv.name, perms: beforePerms },
+    after: { id: lv.id, name: lv.name, perms: lv.perms.slice() },
+    undoable: true
+  });
+  if (getSessionLevelId() === lv.id) applyWriteAccess();
+  paintManageLevels();
+}
+function removeLevel(id) {
+  if (!hasPerm("manage")) return;
+  const store = loadAccessStore();
+  const lv = store.levels.find((x) => x.id === id);
+  if (!lv || lv.owner) return;
+  if (!window.confirm("Remove access level \"" + lv.name + "\"?")) return;
+  const name = lv.name;
+  const perms = (lv.perms || []).filter((p) => p !== "manage").slice();
+  store.levels = store.levels.filter((x) => x.id !== id);
+  saveAccessStore(store);
+  pushActionLog({
+    kind: "level-remove",
+    perm: "manage",
+    what: "Removed access level \"" + name + "\" · permissions were: " +
+      (perms.length ? perms.map((p) => ACCESS_PERM_LABEL[p] || p).join("; ") : "(none)"),
+    before: null,
+    after: null,
+    undoable: false,
+    undoNote: "Undo unavailable — password was not kept in the log."
+  });
+  if (getSessionLevelId() === id) {
+    setSessionLevelId("");
+    applyWriteAccess();
+  }
+  paintManageLevels();
 }
 function ingestReject(source, issues, extra) {
   const err = new Error("Ingest rejected");
@@ -1103,77 +1856,6 @@ function ualLineIsGroupish(s) {
   if (!t) return false;
   if (STAFF_RE.test(t) || EMP_RE.test(t) || DATE_RE.test(t) || CODE_RE.test(t) || isCodeToken(t)) return true;
   return REMAIN_RE.test(t) && !STAFF_RE.test(t);
-}
-function accessPop() {
-  return document.getElementById("access-pop");
-}
-function showAccessErr(msg) {
-  const err = document.getElementById("access-err");
-  if (!err) return;
-  err.hidden = !msg;
-  err.textContent = msg || "";
-}
-function closeAccessPop() {
-  const pop = accessPop();
-  if (!pop) return;
-  pop.classList.add("hidden");
-  pop.hidden = true;
-  document.getElementById("access-pw").value = "";
-  document.getElementById("access-pw2").value = "";
-  showAccessErr("");
-}
-function getGhToken() {
-  return String(lsPeek(GH_TOKEN_KEY) || "").trim();
-}
-function openAccessPop() {
-  const rec = readAccessRec();
-  const setting = !rec;
-  document.getElementById("access-title").textContent = setting ? "Set write password" : "Unlock";
-  document.getElementById("access-hint").textContent = setting
-    ? "First time on this browser: choose a password. It is stored as a hash, not the password itself."
-    : "Enter the write password for this browser.";
-  document.getElementById("access-pw2-wrap").hidden = !setting;
-  document.getElementById("access-pw").autocomplete = setting ? "new-password" : "current-password";
-  document.getElementById("access-pw").value = "";
-  document.getElementById("access-pw2").value = "";
-  showAccessErr("");
-  const pop = accessPop();
-  pop.hidden = false;
-  pop.classList.remove("hidden");
-  setTimeout(() => document.getElementById("access-pw").focus(), 0);
-}
-async function submitAccessPop() {
-  const rec = readAccessRec();
-  const pw = document.getElementById("access-pw").value;
-  const pw2 = document.getElementById("access-pw2").value;
-  if (!rec) {
-    if (!pw) { showAccessErr("Enter a password."); return; }
-    if (pw.length < 4) { showAccessErr("Use at least 4 characters."); return; }
-    if (pw !== pw2) { showAccessErr("The two passwords do not match."); return; }
-    const salt = randomSalt();
-    const hash = await hashPassword(pw, salt);
-    lsSet(ACCESS_HASH, JSON.stringify({ v: 1, salt: salt, hash: hash }));
-    setBoardUnlocked(true);
-    applyWriteAccess();
-    closeAccessPop();
-    if (getGhToken()) schedulePersistActions();
-    return;
-  }
-  if (!pw) { showAccessErr("Enter the password."); return; }
-  const got = await hashPassword(pw, rec.salt);
-  if (got !== rec.hash) { showAccessErr("Wrong password."); return; }
-  setBoardUnlocked(true);
-  applyWriteAccess();
-  closeAccessPop();
-  if (getGhToken()) schedulePersistActions();
-}
-function toggleBoardAccess() {
-  if (isBoardUnlocked()) {
-    setBoardUnlocked(false);
-    applyWriteAccess();
-    return;
-  }
-  openAccessPop();
 }
 function listStoreKeys() {
   const keys = new Set(Object.keys(parentCache));
@@ -2645,6 +3327,7 @@ function applyQueryToPerson(who, needle) {
   let due = "", remain = "", soonDue = "", soonRemain = "";
   let hot = false, warn = false, ualHot = false, ualWarn = false;
   rows.forEach((row) => {
+    if (courseIsCompleted(who.staff, row)) return;
     if (row.code && courses.indexOf(row.code) < 0) courses.push(row.code);
     if (row.src && srcs.indexOf(row.src) < 0) srcs.push(row.src);
     const band = remainBand(row.remain);
@@ -2667,8 +3350,10 @@ function applyQueryToPerson(who, needle) {
       if (ual) ualHot = true;
     }
   });
+  const openRows = rows.filter((row) => !courseIsCompleted(who.staff, row));
+  if (!openRows.length) return null;
   const next = Object.assign({}, who, {
-    courseRows: rows, courses: courses, srcs: srcs,
+    courseRows: openRows, courses: courses, srcs: srcs,
     overdueRows: overdueRows, soonRows: soonRows,
     overdueCourses: overdueCourses, soonCourses: soonCourses,
     due: due, remain: remain, soonDue: soonDue, soonRemain: soonRemain,
@@ -2694,10 +3379,25 @@ function itemsAll() {
     return it.people.some((p) => personRowMatch(p, it, s));
   });
 }
+function courseIsCompleted(staff, row) {
+  return readCourseStatus(staff, row).status === "Completed";
+}
+function personItemRow(p, item) {
+  return {
+    code: (p && (p.code || (item && item.key))) || "",
+    name: (p && p.cname) || "",
+    src: (item && item.src) || (p && p.src) || "",
+    kind: (p && p.kind) || ""
+  };
+}
+function personCourseStillOut(p, item) {
+  return !courseIsCompleted(p.staff, personItemRow(p, item));
+}
 function cellPeople(item, team) {
   const seen = new Set();
   return item.people.filter((p) => {
     if (p.team !== team) return false;
+    if (!personCourseStillOut(p, item)) return false;
     if (seen.has(p.staff)) return false;
     seen.add(p.staff);
     return true;
@@ -2713,7 +3413,9 @@ function cellStat(item, team, roster) {
 function itemId(it) { return it.src + ":" + it.key; }
 function itemOut(item) {
   const seen = new Set();
-  item.people.forEach((p) => seen.add(p.staff));
+  item.people.forEach((p) => {
+    if (personCourseStillOut(p, item)) seen.add(p.staff);
+  });
   return seen.size;
 }
 function sortItems(items) {
@@ -2743,6 +3445,7 @@ function paintBoard() {
   const outPeople = new Set();
   const hotPeople = new Set();
   items.forEach((it) => it.people.forEach((p) => {
+    if (!personCourseStillOut(p, it)) return;
     if (s && !personRowMatch(p, it, s)) return;
     outPeople.add(p.staff);
     if (p.hot) hotPeople.add(p.staff);
@@ -2831,26 +3534,29 @@ function peopleBundle(pairs) {
       if (arr.some((d) => d.code === row.code && d.due === row.due)) return;
       arr.push(row);
     };
-    if (course && !prev.courses.includes(course)) prev.courses.push(course);
-    addRow(prev.courseRows);
-    const ual = p.kind === "ual" || item.src === "ual";
-    const band = remainBand(p.remain);
-    if (band === "warn") {
-      if (course && !prev.soonCourses.includes(course)) prev.soonCourses.push(course);
-      addRow(prev.soonRows);
-      const next = takeSooner(prev.soonDue, prev.soonRemain, p.due, p.remain);
-      prev.soonDue = next.due;
-      prev.soonRemain = next.remain;
-      prev.warn = true;
-      if (ual) prev.ualWarn = true;
-    } else if (band === "hot") {
-      if (course && !prev.overdueCourses.includes(course)) prev.overdueCourses.push(course);
-      addRow(prev.overdueRows);
-      const next = takeSooner(prev.due, prev.remain, p.due, p.remain);
-      prev.due = next.due;
-      prev.remain = next.remain;
-      prev.hot = true;
-      if (ual) prev.ualHot = true;
+    const done = courseIsCompleted(p.staff, row);
+    if (!done) {
+      if (course && !prev.courses.includes(course)) prev.courses.push(course);
+      addRow(prev.courseRows);
+      const ual = p.kind === "ual" || item.src === "ual";
+      const band = remainBand(p.remain);
+      if (band === "warn") {
+        if (course && !prev.soonCourses.includes(course)) prev.soonCourses.push(course);
+        addRow(prev.soonRows);
+        const next = takeSooner(prev.soonDue, prev.soonRemain, p.due, p.remain);
+        prev.soonDue = next.due;
+        prev.soonRemain = next.remain;
+        prev.warn = true;
+        if (ual) prev.ualWarn = true;
+      } else if (band === "hot") {
+        if (course && !prev.overdueCourses.includes(course)) prev.overdueCourses.push(course);
+        addRow(prev.overdueRows);
+        const next = takeSooner(prev.due, prev.remain, p.due, p.remain);
+        prev.due = next.due;
+        prev.remain = next.remain;
+        prev.hot = true;
+        if (ual) prev.ualHot = true;
+      }
     }
     if ((p.kind === "ual" || item.src === "ual") && p.emp && !prev.emp) prev.emp = p.emp;
     if (p.area && !prev.area) prev.area = p.area;
@@ -2863,7 +3569,8 @@ function peopleBundle(pairs) {
     if (item.src && !prev.srcs.includes(item.src)) prev.srcs.push(item.src);
     map.set(key, prev);
   });
-  return [...map.values()].map((x) => Object.assign(x, { status: statusOf(x) }));
+  return [...map.values()].map((x) => Object.assign(x, { status: statusOf(x) }))
+    .filter((x) => personCourseRows(x).length);
 }
 function paintDetail() {
   const box = document.getElementById("detail");
@@ -2965,7 +3672,7 @@ function paintDetail() {
     "<section class=\"person-card\">" + personCardHeadHtml(x) + personCourseTableHtml(x) + "</section>"
   ).join("") + "</div>";
   box.innerHTML = "<div class=\"detail-head\"><h3>" + esc(label) + " · " + list.length + " people · roster " + rosterN + "</h3>" +
-    "<div class=\"toolbar\"><div class=\"view-toggle\">" + viewBtns + "</div>" + roleBtns + copyIconBtn("detail-copy") + "</div>" +
+    "<div class=\"toolbar\"><div class=\"view-toggle\">" + viewBtns + "</div>" + roleBtns + layoutActionBtns("detail-copy", "detail-download") + "</div>" +
     colorLegend + "</div>" +
     (list.length ? (listView === "cards" ? cardsShot : tableShot) : "<p class=\"note\">No outstanding names.</p>");
   applyWriteAccess();
@@ -3089,9 +3796,10 @@ function readCourseStatus(staff, row) {
 function persistCourseStatus() {
   schedulePersistActions();
 }
-function writeCourseStatus(staff, code, src, rec) {
+function writeCourseStatus(staff, code, src, rec, opts) {
   const k = courseStatusStoreKey(staff, code, src);
   const prev = courseStatus[k] || {};
+  const prevSnap = snapStatusRec(prev);
   const status = COURSE_STATUS_OPTS.indexOf(rec && rec.status) >= 0
     ? rec.status
     : (COURSE_STATUS_OPTS.indexOf(prev.status) >= 0 ? prev.status : "Not Started");
@@ -3107,6 +3815,35 @@ function writeCourseStatus(staff, code, src, rec) {
     courseStatus[k] = out;
   }
   persistCourseStatus();
+  if (opts && opts.skipLog) return;
+  const nextSnap = snapStatusRec(courseStatus[k]);
+  if (JSON.stringify(prevSnap) === JSON.stringify(nextSnap)) return;
+  const touchedRemark = rec && Object.prototype.hasOwnProperty.call(rec, "remark");
+  const touchedStatus = rec && Object.prototype.hasOwnProperty.call(rec, "status");
+  const touchedDone = rec && Object.prototype.hasOwnProperty.call(rec, "done");
+  let kind = "status";
+  let what = "Updated status for staff " + padStaff(staff) + " · " + code;
+  if (touchedRemark && !touchedStatus && !touchedDone) {
+    kind = "remark";
+    what = "Updated remark for staff " + padStaff(staff) + " · " + code +
+      " → " + (remark || "(empty)");
+  } else if (touchedDone && !touchedStatus) {
+    kind = "done";
+    what = "Updated completed date for staff " + padStaff(staff) + " · " + code +
+      " → " + (done || "(empty)");
+  } else {
+    what = "Set status for staff " + padStaff(staff) + " · " + code + " → " + status +
+      (status === "Completed" && done ? " (" + done + ")" : "") +
+      (touchedRemark ? "; remark " + (remark || "(empty)") : "");
+  }
+  pushActionLog({
+    kind: kind,
+    perm: "status",
+    what: what,
+    before: { key: k, staff: padStaff(staff), code: code, src: src, rec: prevSnap },
+    after: { key: k, staff: padStaff(staff), code: code, src: src, rec: nextSnap },
+    undoable: true
+  });
 }
 function recTime(rec) {
   return Date.parse((rec && rec.updated) || "") || 0;
@@ -3143,7 +3880,8 @@ function packActions() {
     v: 1,
     updated: new Date().toISOString(),
     status: courseStatus,
-    manual: manualRows
+    manual: manualRows,
+    log: actionLog
   };
 }
 function setSaveSync(msg) {
@@ -3154,6 +3892,7 @@ function persistActionsLocal() {
   if (!persistArmed) return;
   try { lsSet(COURSE_STATUS, JSON.stringify(courseStatus)); } catch (e) {}
   try { lsSet(MANUAL_STORE, JSON.stringify(manualRows)); } catch (e) {}
+  try { lsSet(ACTION_LOG_STORE, JSON.stringify(actionLog)); } catch (e) {}
 }
 function schedulePersistActions() {
   if (!persistArmed) return;
@@ -3388,30 +4127,782 @@ async function restoreManualCourses() {
   if (got.found && Array.isArray(got.value) && got.value.length) rows = got.value;
   manualRows = rows.map(normManualRow).filter((r) => r.staff && (r.code || r.cname) && r.exp);
 }
+function normActionLogEntry(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const id = String(raw.id || "").trim();
+  const at = String(raw.at || "").trim();
+  const what = String(raw.what || "").trim();
+  if (!id || !at || !what) return null;
+  const perm = ACCESS_PERMS.indexOf(raw.perm) >= 0 ? raw.perm : "status";
+  return {
+    id: id,
+    at: at,
+    who: String(raw.who || "").trim() || "—",
+    what: what,
+    kind: String(raw.kind || "").trim() || "other",
+    targetKind: String(raw.targetKind || "").trim(),
+    perm: perm,
+    undoable: !!raw.undoable,
+    undoNote: String(raw.undoNote || "").trim(),
+    undone: !!raw.undone,
+    undoOf: String(raw.undoOf || "").trim(),
+    before: raw.before == null ? null : raw.before,
+    after: raw.after == null ? null : raw.after
+  };
+}
+async function restoreActionLog() {
+  const file = await loadActionsFileJson();
+  let rows = [];
+  if (SEED_ACTIONS && Array.isArray(SEED_ACTIONS.log)) rows = SEED_ACTIONS.log;
+  if (file && Array.isArray(file.log)) rows = file.log;
+  const got = peekJson(ACTION_LOG_STORE);
+  if (got.found && Array.isArray(got.value)) rows = got.value;
+  actionLog = rows.map(normActionLogEntry).filter(Boolean).slice(0, ACTION_LOG_MAX);
+}
+function actionLogActor() {
+  const lv = getSessionLevel();
+  if (lv && lv.name) return String(lv.name);
+  return "—";
+}
+function fmtActionLogWhen(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso || "—");
+  try {
+    return d.toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  } catch (e) {
+    return d.toISOString();
+  }
+}
+function newActionLogId() {
+  return "log-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+}
+function snapJsonSize(obj) {
+  try { return JSON.stringify(obj || null).length; } catch (e) { return ACTION_LOG_SNAP_MAX + 1; }
+}
+function canSnapAction(before, after) {
+  return snapJsonSize(before) + snapJsonSize(after) <= ACTION_LOG_SNAP_MAX;
+}
+function cloneJson(v) {
+  try { return JSON.parse(JSON.stringify(v)); } catch (e) { return null; }
+}
+function snapStatusRec(rec) {
+  if (!rec || typeof rec !== "object") return null;
+  const status = COURSE_STATUS_OPTS.indexOf(rec.status) >= 0 ? rec.status : "Not Started";
+  const remark = String(rec.remark || "").trim();
+  if (status === "Not Started" && !remark) return null;
+  const out = {
+    status: status,
+    done: status === "Completed" ? parseDoneDate(rec.done || "") : "",
+    updated: String(rec.updated || "")
+  };
+  if (remark) out.remark = remark;
+  return out;
+}
+function pushActionLog(entry) {
+  if (actionLogSkip) return null;
+  const rec = {
+    id: newActionLogId(),
+    at: nowIso(),
+    who: actionLogActor(),
+    what: String(entry && entry.what || "").trim() || "Board change",
+    kind: String(entry && entry.kind || "other"),
+    targetKind: String(entry && entry.targetKind || ""),
+    perm: ACCESS_PERMS.indexOf(entry && entry.perm) >= 0 ? entry.perm : "status",
+    undoable: !!(entry && entry.undoable),
+    undoNote: String(entry && entry.undoNote || "").trim(),
+    undone: false,
+    undoOf: String(entry && entry.undoOf || "").trim(),
+    before: entry && Object.prototype.hasOwnProperty.call(entry, "before") ? entry.before : null,
+    after: entry && Object.prototype.hasOwnProperty.call(entry, "after") ? entry.after : null
+  };
+  actionLog.unshift(rec);
+  if (actionLog.length > ACTION_LOG_MAX) actionLog.length = ACTION_LOG_MAX;
+  schedulePersistActions();
+  const list = document.getElementById("action-log-list");
+  if (list && document.getElementById("action-log-pop") && !document.getElementById("action-log-pop").hidden) {
+    paintActionLogList();
+  }
+  return rec;
+}
+function applyStatusSnap(snap) {
+  if (!snap || !snap.key) return false;
+  const rec = snapStatusRec(snap.rec);
+  if (!rec) delete courseStatus[snap.key];
+  else courseStatus[snap.key] = rec;
+  persistCourseStatus();
+  return true;
+}
+function applyManualRowsSnap(mode, rows) {
+  const list = Array.isArray(rows) ? rows.map(normManualRow).filter((r) => r.id && r.staff) : [];
+  if (mode === "remove") {
+    const ids = new Set(list.map((r) => r.id));
+    manualRows = manualRows.filter((r) => !ids.has(r.id));
+  } else if (mode === "add") {
+    list.forEach((row) => {
+      if (manualRows.some((r) => r.id === row.id)) return;
+      const same = manualRows.some((r) =>
+        r.staff === row.staff &&
+        String(r.code || "").toUpperCase() === String(row.code || "").toUpperCase() &&
+        r.exp === row.exp
+      );
+      if (same) return;
+      manualRows.push(row);
+    });
+  } else return false;
+  persistManualCourses();
+  return true;
+}
+function applyManualWorld(snap) {
+  if (!snap || typeof snap !== "object") return false;
+  if (snap.op === "without") return applyManualRowsSnap("remove", snap.rows);
+  if (snap.op === "with") return applyManualRowsSnap("add", snap.rows || (snap.row ? [snap.row] : []));
+  return false;
+}
+function applyUalSnap(snap) {
+  if (!snap || typeof snap !== "object") return false;
+  const text = String(snap.text || "");
+  const uploadedAt = String(snap.uploadedAt || "");
+  if (!text.trim()) {
+    ualRows = [];
+    ualUploadedAt = "";
+    document.getElementById("ual-src").value = "";
+    document.getElementById("ual-status").textContent = "No UAL email yet.";
+    try { lsRemove(UAL_STORE); } catch (e) {}
+    return true;
+  }
+  ualRows = parseUal(text);
+  ualUploadedAt = uploadedAt;
+  paintUalStatus(text, "UAL · restored");
+  persistUal(text, ualUploadedAt);
+  return true;
+}
+function applyCtFileSnap(mode, snap) {
+  if (!snap || !snap.name) return false;
+  if (mode === "remove") {
+    ctFiles = ctFiles.filter((f) => !(f.name === snap.name && (!snap.kind || f.kind === snap.kind)));
+  } else if (mode === "set") {
+    const rec = {
+      name: snap.name,
+      kind: snap.kind || ctKindOf(snap.name),
+      rows: (snap.rows || []).map((r) => normCtRow(r, snap.kind || ctKindOf(snap.name), snap.name)).filter((r) => r.uid),
+      uploadedAt: snap.uploadedAt || ""
+    };
+    const i = ctFiles.findIndex((f) => f.name === rec.name);
+    if (i >= 0) ctFiles[i] = rec;
+    else ctFiles.push(rec);
+  } else return false;
+  flattenCt();
+  persistCtFiles({ clear: true });
+  if (!ctFiles.length) clearIngestFlags("ct");
+  paintCtFiles();
+  return true;
+}
+function applyCtWorld(snap) {
+  if (!snap || typeof snap !== "object") return false;
+  if (snap.op === "absent") return applyCtFileSnap("remove", { name: snap.name, kind: snap.kind });
+  if (snap.op === "set" && snap.file) return applyCtFileSnap("set", snap.file);
+  return false;
+}
+function applyOmtFileSnap(mode, snap) {
+  if (!snap || !snap.name) return false;
+  if (mode === "remove") {
+    omtFiles = omtFiles.filter((f) => f.name !== snap.name);
+  } else if (mode === "set") {
+    const rec = {
+      name: snap.name,
+      rows: (snap.rows || []).filter((r) => r && r.uid && r.code),
+      uploadedAt: snap.uploadedAt || ""
+    };
+    const i = omtFiles.findIndex((f) => f.name === rec.name);
+    if (i >= 0) omtFiles[i] = rec;
+    else omtFiles.push(rec);
+  } else return false;
+  flattenOmt();
+  persistOmtFiles({ clear: true });
+  if (!omtFiles.length) clearIngestFlags("omt");
+  paintOmtFiles();
+  return true;
+}
+function applyOmtWorld(snap) {
+  if (!snap || typeof snap !== "object") return false;
+  if (snap.op === "absent") return applyOmtFileSnap("remove", { name: snap.name });
+  if (snap.op === "set" && snap.file) return applyOmtFileSnap("set", snap.file);
+  return false;
+}
+function applyLevelPermsSnap(snap) {
+  if (!snap || !snap.id) return false;
+  const store = loadAccessStore();
+  const lv = store.levels.find((x) => x.id === snap.id);
+  if (!lv || lv.owner) return false;
+  lv.perms = normalizePerms(snap.perms || [], false).filter((p) => p !== "manage");
+  saveAccessStore(store);
+  if (getSessionLevelId() === lv.id) applyWriteAccess();
+  return true;
+}
+function applyLevelRemoveSnap(snap) {
+  if (!snap || !snap.id) return false;
+  const store = loadAccessStore();
+  const lv = store.levels.find((x) => x.id === snap.id);
+  if (!lv || lv.owner) return false;
+  store.levels = store.levels.filter((x) => x.id !== snap.id);
+  saveAccessStore(store);
+  if (getSessionLevelId() === snap.id) {
+    setSessionLevelId("");
+    applyWriteAccess();
+  }
+  return true;
+}
+function restoreSnapPayload(kind, snap) {
+  if (!snap || typeof snap !== "object") return false;
+  if (kind === "status" || kind === "remark" || kind === "done") return applyStatusSnap(snap);
+  if (kind === "manual-add" || kind === "manual-remove") return applyManualWorld(snap);
+  if (kind === "ual") return applyUalSnap(snap);
+  if (kind === "ct-add" || kind === "ct-remove") return applyCtWorld(snap);
+  if (kind === "omt-add" || kind === "omt-remove") return applyOmtWorld(snap);
+  if (kind === "level-perms") return applyLevelPermsSnap(snap);
+  if (kind === "level-add") return applyLevelRemoveSnap(snap);
+  return false;
+}
+function canUndoActionEntry(entry) {
+  if (!entry || !entry.undoable || entry.undone) return false;
+  return hasPerm(entry.perm);
+}
+function undoActionLogEntry(id) {
+  const entry = actionLog.find((e) => e.id === id);
+  if (!entry || !canUndoActionEntry(entry)) return false;
+  const kind = entry.kind === "undo" ? (entry.targetKind || "") : entry.kind;
+  if (!kind) return false;
+  actionLogSkip = true;
+  let ok = false;
+  try {
+    ok = restoreSnapPayload(kind, entry.before);
+  } finally {
+    actionLogSkip = false;
+  }
+  if (!ok) return false;
+  entry.undone = true;
+  if (entry.undoOf) {
+    const orig = actionLog.find((e) => e.id === entry.undoOf);
+    if (orig) orig.undone = false;
+  }
+  const redoOk = entry.after != null && canSnapAction(entry.after, entry.before) &&
+    !(kind === "level-add");
+  pushActionLog({
+    kind: "undo",
+    targetKind: kind,
+    perm: entry.perm,
+    what: "Undid: " + entry.what,
+    undoOf: entry.id,
+    before: cloneJson(entry.after),
+    after: cloneJson(entry.before),
+    undoable: redoOk,
+    undoNote: redoOk ? "" : (kind === "level-add" ? "Cannot re-add a password level without the password." : "No snapshot to redo.")
+  });
+  mergeCatalogFromBoard();
+  paint();
+  applyWriteAccess();
+  const managePop = document.getElementById("manage-pop");
+  if (managePop && !managePop.hidden && hasPerm("manage")) paintManageLevels();
+  paintActionLogList();
+  return true;
+}
+function closeActionLogPop() {
+  const pop = document.getElementById("action-log-pop");
+  if (!pop) return;
+  pop.classList.add("hidden");
+  pop.hidden = true;
+}
+function paintActionLogList() {
+  const list = document.getElementById("action-log-list");
+  const empty = document.getElementById("action-log-empty");
+  if (!list) return;
+  if (!actionLog.length) {
+    list.innerHTML = "";
+    if (empty) empty.hidden = false;
+    return;
+  }
+  if (empty) empty.hidden = true;
+  list.innerHTML = actionLog.map((e) => {
+    const can = canUndoActionEntry(e);
+    const note = e.undone
+      ? "<p class=\"log-note\"><span class=\"badge-undone\">Undone</span></p>"
+      : (e.undoNote ? "<p class=\"log-note\">" + esc(e.undoNote) + "</p>" : "");
+    const btn = can
+      ? "<button type=\"button\" data-log-undo=\"" + esc(e.id) + "\">Undo</button>"
+      : (e.undoable && !e.undone && !hasPerm(e.perm)
+        ? "<span class=\"badge-undone\">No permission to undo</span>"
+        : "");
+    return "<li class=\"" + (e.undone ? "log-undone" : "") + "\">" +
+      "<div class=\"log-meta\">" + esc(e.who) + " · " + esc(fmtActionLogWhen(e.at)) + "</div>" +
+      "<p class=\"log-what\">" + esc(e.what) + "</p>" +
+      note +
+      "<div class=\"log-actions\">" + btn + "</div>" +
+      "</li>";
+  }).join("");
+}
+function openActionLogPop() {
+  paintActionLogList();
+  const pop = document.getElementById("action-log-pop");
+  if (!pop) return;
+  pop.hidden = false;
+  pop.classList.remove("hidden");
+}
 function setManualHint(msg) {
   const el = document.getElementById("manual-hint");
   if (el) el.textContent = msg;
+}
+function authFieldLabel(field) {
+  if (field === "op") return "Operator";
+  if (field === "ac") return "Aircraft";
+  if (field === "cat") return "Category";
+  if (field === "eng") return "Engine";
+  if (field === "mod") return "Module ref";
+  return "Authorization";
+}
+function ensureAuthIndex() {
+  if (authIndexCache) return authIndexCache;
+  const empty = { op: new Map(), ac: new Map(), cat: new Map(), eng: new Map(), mod: new Map() };
+  const pack = window.AUTH_PACK;
+  if (!pack || !pack.r || !pack.p || !pack.d) {
+    authIndexCache = empty;
+    return authIndexCache;
+  }
+  const D = pack.d;
+  const people = pack.p.map((p) => {
+    const staff = padStaff(p[0]);
+    if (!rosterHas(staff)) return null;
+    const who = personOf(staff, D.name[p[1]] || "");
+    return { staff: staff, name: who.name || D.name[p[1]] || "" };
+  });
+  function add(bucket, code, person) {
+    const k = String(code || "").trim().toUpperCase();
+    if (!k || !person) return;
+    if (!bucket.has(k)) bucket.set(k, new Map());
+    bucket.get(k).set(person.staff, person);
+  }
+  pack.r.forEach((r) => {
+    const person = people[r[0]];
+    if (!person) return;
+    add(empty.cat, D.cat[r[1]], person);
+    add(empty.op, D.op[r[2]], person);
+    add(empty.ac, D.ac[r[3]], person);
+    add(empty.eng, D.eng[r[4]], person);
+    const mod = String(D.mod[r[5]] || "");
+    const m = mod.match(/\(([A-Za-z0-9]+)\)\s*$/);
+    if (m) add(empty.mod, m[1], person);
+  });
+  const out = { op: new Map(), ac: new Map(), cat: new Map(), eng: new Map(), mod: new Map() };
+  Object.keys(empty).forEach((field) => {
+    empty[field].forEach((map, code) => {
+      out[field].set(code, [...map.values()].sort((a, b) =>
+        String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }) ||
+        String(a.staff).localeCompare(String(b.staff))
+      ));
+    });
+  });
+  authIndexCache = out;
+  return authIndexCache;
+}
+function authPeopleForCode(raw) {
+  const code = String(raw || "").trim().toUpperCase();
+  if (!code || /^\d{5,7}$/.test(code)) return null;
+  const idx = ensureAuthIndex();
+  const order = ["op", "ac", "cat", "eng", "mod"];
+  for (let i = 0; i < order.length; i++) {
+    const field = order[i];
+    const people = idx[field].get(code);
+    if (people && people.length) {
+      return {
+        code: code,
+        field: field,
+        people: people.map((p) => ({ staff: p.staff, name: p.name, on: true }))
+      };
+    }
+  }
+  return { code: code, field: "", people: [] };
+}
+function authRowMatchesCode(row, code, field) {
+  const c = String(code || "").trim().toUpperCase();
+  if (!c || !row) return false;
+  if (field === "op") return String(row.op || "").toUpperCase() === c;
+  if (field === "ac") return String(row.ac || "").toUpperCase() === c;
+  if (field === "cat") return String(row.cat || "").toUpperCase() === c;
+  if (field === "eng") return String(row.eng || "").toUpperCase() === c;
+  if (field === "mod") {
+    const mod = String(row.module || "");
+    const m = mod.match(/\(([A-Za-z0-9]+)\)\s*$/);
+    return !!(m && m[1].toUpperCase() === c);
+  }
+  return String(row.op || "").toUpperCase() === c ||
+    String(row.ac || "").toUpperCase() === c ||
+    String(row.cat || "").toUpperCase() === c ||
+    String(row.eng || "").toUpperCase() === c;
+}
+function collectAuthDetailRows(code, field) {
+  const out = [];
+  const pack = window.AUTH_PACK;
+  const c = String(code || "").trim().toUpperCase();
+  if (!c || !pack || !pack.r || !pack.p || !pack.d) return out;
+  const D = pack.d;
+  pack.r.forEach((r) => {
+    const p = pack.p[r[0]];
+    if (!p) return;
+    const staff = padStaff(p[0]);
+    if (!rosterHas(staff)) return;
+    const who = personOf(staff, D.name[p[1]] || "");
+    const row = {
+      staff: staff,
+      name: who.name || D.name[p[1]] || "",
+      cat: D.cat[r[1]] || "",
+      op: D.op[r[2]] || "",
+      ac: D.ac[r[3]] || "",
+      eng: D.eng[r[4]] || "",
+      module: D.mod[r[5]] || ""
+    };
+    if (!authRowMatchesCode(row, c, field)) return;
+    out.push(row);
+  });
+  out.sort((a, b) =>
+    String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }) ||
+    String(a.staff).localeCompare(String(b.staff)) ||
+    String(a.module).localeCompare(String(b.module), undefined, { sensitivity: "base" })
+  );
+  return out;
+}
+function clearManualAuthPick() {
+  manualAuthPick = null;
+  const box = document.getElementById("manual-auth-pick");
+  if (box) box.hidden = true;
+  const filters = document.getElementById("manual-auth-filters");
+  if (filters) filters.hidden = true;
+  const nameEl = document.getElementById("manual-name");
+  if (nameEl) nameEl.disabled = false;
+}
+function authDetailMatchesFilters(row, acFilter, engFilter) {
+  const ac = String(acFilter || "").trim().toUpperCase();
+  const eng = String(engFilter || "").trim().toUpperCase();
+  if (ac && String(row && row.ac || "").trim().toUpperCase() !== ac) return false;
+  if (eng && String(row && row.eng || "").trim().toUpperCase() !== eng) return false;
+  return true;
+}
+function authPersonVisibleUnderFilters(staff, byStaff, acFilter, engFilter) {
+  const rows = byStaff.get(staff) || [];
+  if (!rows.length) {
+    return !String(acFilter || "").trim() && !String(engFilter || "").trim();
+  }
+  return rows.some((r) => authDetailMatchesFilters(r, acFilter, engFilter));
+}
+function authSortValue(row, key) {
+  if (!row) return "";
+  if (key === "staff") return String(row.staff || "");
+  if (key === "name") return String(row.name || "");
+  if (key === "cat") return String(row.cat || "");
+  if (key === "op") return String(row.op || "");
+  if (key === "ac") return String(row.ac || "");
+  if (key === "eng") return String(row.eng || "");
+  if (key === "module") return String(row.module || "");
+  return "";
+}
+function cmpAuthSort(a, b, key, dir) {
+  const va = authSortValue(a, key);
+  const vb = authSortValue(b, key);
+  let cmp;
+  if (key === "staff") {
+    cmp = (Number(va) || 0) - (Number(vb) || 0) || String(va).localeCompare(String(vb));
+  } else {
+    cmp = String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: "base" });
+  }
+  return dir * cmp;
+}
+function paintManualAuthPick() {
+  const box = document.getElementById("manual-auth-pick");
+  const label = document.getElementById("manual-auth-label");
+  const list = document.getElementById("manual-auth-list");
+  const filtersEl = document.getElementById("manual-auth-filters");
+  const acSel = document.getElementById("manual-auth-ac");
+  const engSel = document.getElementById("manual-auth-eng");
+  const nameEl = document.getElementById("manual-name");
+  if (!box || !label || !list) return;
+  if (!manualAuthPick || !manualAuthPick.people.length) {
+    box.hidden = true;
+    if (filtersEl) filtersEl.hidden = true;
+    if (nameEl) nameEl.disabled = false;
+    return;
+  }
+  if (!manualAuthPick.filterAc) manualAuthPick.filterAc = "";
+  if (!manualAuthPick.filterEng) manualAuthPick.filterEng = "";
+  if (!manualAuthPick.sortKey) manualAuthPick.sortKey = "name";
+  if (!manualAuthPick.sortDir) manualAuthPick.sortDir = 1;
+
+  const detail = collectAuthDetailRows(manualAuthPick.code, manualAuthPick.field);
+  const byStaff = new Map();
+  detail.forEach((r) => {
+    if (!byStaff.has(r.staff)) byStaff.set(r.staff, []);
+    byStaff.get(r.staff).push(r);
+  });
+
+  const acSet = new Set();
+  const engSet = new Set();
+  detail.forEach((r) => {
+    const ac = String(r.ac || "").trim();
+    const eng = String(r.eng || "").trim();
+    if (ac) acSet.add(ac);
+    if (eng) engSet.add(eng);
+  });
+  const acOpts = [...acSet].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+  const engOpts = [...engSet].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+  if (manualAuthPick.filterAc && !acSet.has(manualAuthPick.filterAc)) manualAuthPick.filterAc = "";
+  if (manualAuthPick.filterEng && !engSet.has(manualAuthPick.filterEng)) manualAuthPick.filterEng = "";
+
+  if (acSel) {
+    acSel.innerHTML = "<option value=\"\">All</option>" +
+      acOpts.map((v) => "<option value=\"" + esc(v) + "\"" +
+        (v === manualAuthPick.filterAc ? " selected" : "") + ">" + esc(v) + "</option>").join("");
+  }
+  if (engSel) {
+    engSel.innerHTML = "<option value=\"\">All</option>" +
+      engOpts.map((v) => "<option value=\"" + esc(v) + "\"" +
+        (v === manualAuthPick.filterEng ? " selected" : "") + ">" + esc(v) + "</option>").join("");
+  }
+  if (filtersEl) filtersEl.hidden = false;
+
+  const acFilter = manualAuthPick.filterAc;
+  const engFilter = manualAuthPick.filterEng;
+  const sortKey = manualAuthPick.sortKey;
+  const sortDir = manualAuthPick.sortDir;
+
+  const visiblePeople = manualAuthPick.people.filter((p) =>
+    authPersonVisibleUnderFilters(p.staff, byStaff, acFilter, engFilter)
+  );
+  const willAdd = visiblePeople.filter((p) => p.on);
+  const field = manualAuthPick.field ? authFieldLabel(manualAuthPick.field) + " " : "";
+  label.innerHTML = "<b>" + esc(field + manualAuthPick.code) + "</b> · " + willAdd.length + " of " +
+    visiblePeople.length + " CS selected (edit +/− before Add)";
+
+  const ordered = visiblePeople.slice().sort((a, b) => {
+    const rowsA = (byStaff.get(a.staff) || []).filter((r) => authDetailMatchesFilters(r, acFilter, engFilter));
+    const rowsB = (byStaff.get(b.staff) || []).filter((r) => authDetailMatchesFilters(r, acFilter, engFilter));
+    const ra = rowsA[0] || {
+      staff: a.staff,
+      name: a.name,
+      cat: "",
+      op: manualAuthPick.field === "op" ? manualAuthPick.code : "",
+      ac: "",
+      eng: "",
+      module: ""
+    };
+    const rb = rowsB[0] || {
+      staff: b.staff,
+      name: b.name,
+      cat: "",
+      op: manualAuthPick.field === "op" ? manualAuthPick.code : "",
+      ac: "",
+      eng: "",
+      module: ""
+    };
+    return cmpAuthSort(ra, rb, sortKey, sortDir) ||
+      String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }) ||
+      String(a.staff).localeCompare(String(b.staff));
+  });
+
+  const ath = (labelText, key) => {
+    const on = sortKey === key;
+    return "<th class=\"sort" + (on ? " on" : "") + "\" data-auth-sort=\"" + key + "\"" +
+      (on ? " data-dir=\"" + (sortDir > 0 ? "▲" : "▼") + "\"" : "") + ">" + labelText + "</th>";
+  };
+
+  const body = ordered.map((p) => {
+    const i = manualAuthPick.people.indexOf(p);
+    let rows = (byStaff.get(p.staff) || []).filter((r) => authDetailMatchesFilters(r, acFilter, engFilter));
+    if (!rows.length) {
+      rows = [{
+        staff: p.staff,
+        name: p.name,
+        cat: "",
+        op: manualAuthPick.field === "op" ? manualAuthPick.code : "",
+        ac: "",
+        eng: "",
+        module: ""
+      }];
+    } else {
+      rows = rows.slice().sort((a, b) => cmpAuthSort(a, b, sortKey, sortDir) ||
+        String(a.module).localeCompare(String(b.module), undefined, { sensitivity: "base" }));
+    }
+    return rows.map((r, j) => {
+      const edit = j === 0
+        ? "<button type=\"button\" data-auth-toggle=\"" + i + "\" title=\"" +
+          (p.on ? "Remove" : "Include") + "\">" + (p.on ? "−" : "+") + "</button>"
+        : "";
+      return "<tr class=\"" + (p.on ? "" : "off") + "\">" +
+        "<td class=\"staff\">" + esc(r.staff) + "</td>" +
+        "<td>" + esc(r.name || "") + "</td>" +
+        "<td>" + esc(r.cat || "") + "</td>" +
+        "<td>" + esc(r.op || "") + "</td>" +
+        "<td>" + esc(r.ac || "") + "</td>" +
+        "<td>" + esc(r.eng || "") + "</td>" +
+        "<td>" + esc(r.module || "") + "</td>" +
+        "<td class=\"col-edit\">" + edit + "</td>" +
+        "</tr>";
+    }).join("");
+  }).join("");
+
+  list.innerHTML = "<table class=\"manual-auth-table\"><thead><tr>" +
+    ath("Staff #", "staff") + ath("Name", "name") + ath("Category", "cat") +
+    ath("Operator", "op") + ath("Aircraft", "ac") + ath("Engine", "eng") +
+    ath("Module", "module") +
+    "<th>+/−</th>" +
+    "</tr></thead><tbody>" + body + "</tbody></table>";
+  box.hidden = false;
+  if (nameEl) {
+    nameEl.value = "";
+    nameEl.dataset.autofill = "";
+    nameEl.disabled = true;
+  }
+}
+function setManualAuthPick(pick) {
+  manualAuthPick = pick ? Object.assign({
+    filterAc: "",
+    filterEng: "",
+    sortKey: "name",
+    sortDir: 1
+  }, pick) : null;
+  paintManualAuthPick();
+}
+function authPeopleSelectedForAdd() {
+  if (!manualAuthPick || !manualAuthPick.people.length) return [];
+  const detail = collectAuthDetailRows(manualAuthPick.code, manualAuthPick.field);
+  const byStaff = new Map();
+  detail.forEach((r) => {
+    if (!byStaff.has(r.staff)) byStaff.set(r.staff, []);
+    byStaff.get(r.staff).push(r);
+  });
+  const acFilter = manualAuthPick.filterAc || "";
+  const engFilter = manualAuthPick.filterEng || "";
+  return manualAuthPick.people.filter((p) =>
+    p.on && authPersonVisibleUnderFilters(p.staff, byStaff, acFilter, engFilter)
+  );
 }
 function fillManualFromRoster() {
   const staffEl = document.getElementById("manual-staff");
   const nameEl = document.getElementById("manual-name");
   if (!staffEl || !nameEl) return;
   const raw = String(staffEl.value || "").trim();
-  if (!raw) return;
-  const who = personOf(raw, "");
-  if (who && who.group && who.name) {
-    if (!nameEl.value.trim() || nameEl.dataset.autofill === "1") {
-      nameEl.value = who.name;
-      nameEl.dataset.autofill = "1";
-    }
-    const bits = [who.name];
-    if (who.home) bits.push(who.home);
-    if (who.shift) bits.push(who.shift);
-    if (who.team && who.team !== "other") bits.push(TEAM_LABEL[who.team] || who.team);
-    setManualHint("Name List: " + bits.join(" · "));
-  } else if (/^\d{5,7}$/.test(raw.replace(/\s/g, ""))) {
-    setManualHint("Not on the Name List — Add course will reject.");
+  if (!raw) {
+    clearManualAuthPick();
+    return;
   }
+  if (/^\d{5,7}$/.test(raw.replace(/\s/g, ""))) {
+    clearManualAuthPick();
+    const who = personOf(raw, "");
+    if (who && who.group && who.name) {
+      if (!nameEl.value.trim() || nameEl.dataset.autofill === "1") {
+        nameEl.value = who.name;
+        nameEl.dataset.autofill = "1";
+      }
+      const bits = [who.name];
+      if (who.home) bits.push(who.home);
+      if (who.shift) bits.push(who.shift);
+      if (who.team && who.team !== "other") bits.push(TEAM_LABEL[who.team] || who.team);
+      setManualHint("Name List: " + bits.join(" · "));
+    } else {
+      setManualHint("Not on the Name List — Add course will reject.");
+    }
+    return;
+  }
+  const hit = authPeopleForCode(raw);
+  if (!hit) {
+    clearManualAuthPick();
+    return;
+  }
+  if (!hit.people.length) {
+    clearManualAuthPick();
+    setManualHint("No Authorization CS for code " + hit.code + " on the Name List.");
+    return;
+  }
+  setManualAuthPick(hit);
+  setManualHint(authFieldLabel(hit.field) + " " + hit.code + " · " + hit.people.length +
+    " CS from Authorization List. Edit +/−, then one course code + expire date for all.");
+}
+function addManualAuthStaff() {
+  if (!requirePerm("manual")) return;
+  if (!manualAuthPick) {
+    setManualHint("Enter an Authorization group code first (e.g. D0).");
+    return;
+  }
+  const inp = document.getElementById("manual-auth-add-staff");
+  const raw = String(inp && inp.value || "").trim();
+  if (!/^\d{5,7}$/.test(raw.replace(/\s/g, ""))) {
+    setManualHint("Add staff # must be 5–6 digits.");
+    return;
+  }
+  const staff = padStaff(raw);
+  if (!rosterHas(staff)) {
+    setManualHint("Rejected — " + staff + " is not on the Name List.");
+    return;
+  }
+  const who = personOf(staff, "");
+  const exists = manualAuthPick.people.find((p) => p.staff === staff);
+  if (exists) {
+    exists.on = true;
+    exists.name = who.name || exists.name;
+  } else {
+    manualAuthPick.people.push({ staff: staff, name: who.name || "", on: true });
+    manualAuthPick.people.sort((a, b) =>
+      String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }) ||
+      String(a.staff).localeCompare(String(b.staff))
+    );
+  }
+  if (inp) inp.value = "";
+  paintManualAuthPick();
+  setManualHint("Included " + (who.name || staff) + " in the " + manualAuthPick.code + " set.");
+}
+function readManualCourseFields() {
+  let code = String(document.getElementById("manual-code").value || "").trim();
+  let cname = String(document.getElementById("manual-cname").value || "").trim();
+  if (!code && !cname) {
+    setManualHint("Enter a course code and / or course name.");
+    return null;
+  }
+  if (code && !cname) cname = courseNameFor(code);
+  if (!code) code = cname;
+  const exp = String(document.getElementById("manual-exp").value || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(exp)) {
+    setManualHint("Expire date is required (date only).");
+    return null;
+  }
+  return { code: code, cname: cname, exp: exp };
+}
+function pushManualRow(staff, name, code, cname, exp) {
+  const same = manualRows.some((r) =>
+    r.staff === staff &&
+    String(r.code || "").toUpperCase() === code.toUpperCase() &&
+    r.exp === exp
+  );
+  if (same) return null;
+  const row = { id: newManualId(), staff: staff, name: name, code: code, cname: cname, exp: exp };
+  manualRows.push(row);
+  return row;
+}
+function resetManualFormFields() {
+  document.getElementById("manual-staff").value = "";
+  document.getElementById("manual-name").value = "";
+  document.getElementById("manual-name").dataset.autofill = "";
+  document.getElementById("manual-name").disabled = false;
+  document.getElementById("manual-code").value = "";
+  document.getElementById("manual-cname").value = "";
+  document.getElementById("manual-cname").dataset.autofill = "";
+  document.getElementById("manual-exp").value = "";
+  const addStaff = document.getElementById("manual-auth-add-staff");
+  if (addStaff) addStaff.value = "";
+  hideCodeSuggest();
+  clearManualAuthPick();
 }
 function looseCode(s) {
   let t = String(s || "").toLowerCase().replace(/\s+/g, "");
@@ -3562,10 +5053,54 @@ function fillManualCourseName() {
   }
 }
 function addManualCourse() {
-  if (!requireWrite()) return;
+  if (!requirePerm("manual")) return;
+  const fields = readManualCourseFields();
+  if (!fields) return;
+  const code = fields.code;
+  const cname = fields.cname;
+  const exp = fields.exp;
+  if (manualAuthPick && manualAuthPick.people.length) {
+    const selected = authPeopleSelectedForAdd();
+    if (!selected.length) {
+      setManualHint("Select at least one CS (+/−) before Add — hidden by Aircraft/Engine filter do not add.");
+      return;
+    }
+    const addedRows = [];
+    let skipped = 0;
+    selected.forEach((p) => {
+      if (!rosterHas(p.staff)) { skipped += 1; return; }
+      const who = personOf(p.staff, p.name);
+      const name = String(p.name || who.name || "").trim();
+      if (!name) { skipped += 1; return; }
+      const row = pushManualRow(p.staff, name, code, cname, exp);
+      if (row) addedRows.push(row);
+      else skipped += 1;
+    });
+    if (!addedRows.length) {
+      setManualHint("No new rows — those people already have " + code + " expiring " + exp + ".");
+      return;
+    }
+    if (!srcHas("manual")) srcOn = srcOn.concat(["manual"]);
+    persistManualCourses();
+    pushActionLog({
+      kind: "manual-add",
+      perm: "manual",
+      what: "Added Manual " + code + " (expires " + exp + ") for " + addedRows.length +
+        " CS in auth group " + (manualAuthPick.code || ""),
+      before: { op: "without", rows: cloneJson(addedRows) },
+      after: { op: "with", rows: cloneJson(addedRows) },
+      undoable: true
+    });
+    resetManualFormFields();
+    setManualHint("Added " + code + " · expires " + exp + " for " + addedRows.length + " CS" +
+      (skipped ? " (" + skipped + " skipped)" : "") + ".");
+    mergeCatalogFromBoard();
+    paint();
+    return;
+  }
   const rawStaff = String(document.getElementById("manual-staff").value || "").trim();
   if (!/^\d{5,6}$/.test(rawStaff)) {
-    setManualHint("Staff # must be 5–6 digits.");
+    setManualHint("Staff # must be 5–6 digits, or use an Authorization group code such as D0.");
     return;
   }
   const staff = padStaff(rawStaff);
@@ -3583,49 +5118,42 @@ function addManualCourse() {
     setManualHint("Name is required.");
     return;
   }
-  let code = String(document.getElementById("manual-code").value || "").trim();
-  let cname = String(document.getElementById("manual-cname").value || "").trim();
-  if (!code && !cname) {
-    setManualHint("Enter a course code and / or course name.");
-    return;
-  }
-  if (code && !cname) cname = courseNameFor(code);
-  if (!code) code = cname;
-  const exp = String(document.getElementById("manual-exp").value || "").trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(exp)) {
-    setManualHint("Expire date is required (date only).");
-    return;
-  }
-  const same = manualRows.some((r) =>
-    r.staff === staff &&
-    String(r.code || "").toUpperCase() === code.toUpperCase() &&
-    r.exp === exp
-  );
-  if (same) {
+  const row = pushManualRow(staff, name, code, cname, exp);
+  if (!row) {
     setManualHint("That course is already on this person with the same expire date.");
     return;
   }
-  manualRows.push({ id: newManualId(), staff: staff, name: name, code: code, cname: cname, exp: exp });
   if (!srcHas("manual")) srcOn = srcOn.concat(["manual"]);
   persistManualCourses();
-  document.getElementById("manual-staff").value = "";
-  document.getElementById("manual-name").value = "";
-  document.getElementById("manual-name").dataset.autofill = "";
-  document.getElementById("manual-code").value = "";
-  document.getElementById("manual-cname").value = "";
-  document.getElementById("manual-cname").dataset.autofill = "";
-  document.getElementById("manual-exp").value = "";
-  hideCodeSuggest();
+  pushActionLog({
+    kind: "manual-add",
+    perm: "manual",
+    what: "Added Manual " + code + " for staff " + staff + " · expires " + exp,
+    before: { op: "without", rows: [cloneJson(row)] },
+    after: { op: "with", rows: [cloneJson(row)] },
+    undoable: true
+  });
+  resetManualFormFields();
   setManualHint("Added " + name + " · " + code + " · expires " + exp + ".");
   mergeCatalogFromBoard();
   paint();
 }
 function removeManualCourse(id) {
-  if (!requireWrite()) return;
+  if (!requirePerm("manual")) return;
   const i = manualRows.findIndex((r) => r.id === id);
   if (i < 0) return;
+  const removed = cloneJson(manualRows[i]);
   manualRows.splice(i, 1);
   persistManualCourses();
+  pushActionLog({
+    kind: "manual-remove",
+    perm: "manual",
+    what: "Removed Manual " + (removed.code || "") + " for staff " + (removed.staff || "") +
+      " · expires " + (removed.exp || ""),
+    before: { op: "with", rows: [removed] },
+    after: { op: "without", rows: [removed] },
+    undoable: true
+  });
   setManualHint("Removed the Manual course.");
   closeCoursePop();
   paint();
@@ -3661,21 +5189,49 @@ function courseRemarkCellHtml(who, row) {
     "</td>";
 }
 function applyCourseRemarkEvent(e) {
-  if (!requireWrite()) return;
+  if (!requirePerm("status")) return;
   const el = e.target.closest("input.course-remark");
   if (!el) return;
+  const staff = el.dataset.staff;
+  const code = el.dataset.code;
+  const src = el.dataset.src;
+  const k = courseStatusStoreKey(staff, code, src);
+  if (e.type === "focusin") {
+    remarkLogBefore[k] = snapStatusRec(courseStatus[k]);
+    return;
+  }
   const remark = e.type === "change" ? String(el.value || "").trim() : el.value;
   if (e.type === "change") el.value = remark;
-  writeCourseStatus(el.dataset.staff, el.dataset.code, el.dataset.src, { remark: remark });
+  if (e.type === "change") {
+    const prevSnap = Object.prototype.hasOwnProperty.call(remarkLogBefore, k)
+      ? remarkLogBefore[k]
+      : snapStatusRec(courseStatus[k]);
+    delete remarkLogBefore[k];
+    writeCourseStatus(staff, code, src, { remark: remark }, { skipLog: true });
+    const nextSnap = snapStatusRec(courseStatus[k]);
+    if (JSON.stringify(prevSnap) !== JSON.stringify(nextSnap)) {
+      pushActionLog({
+        kind: "remark",
+        perm: "status",
+        what: "Updated remark for staff " + padStaff(staff) + " · " + code +
+          " → " + (remark || "(empty)"),
+        before: { key: k, staff: padStaff(staff), code: code, src: src, rec: prevSnap },
+        after: { key: k, staff: padStaff(staff), code: code, src: src, rec: nextSnap },
+        undoable: true
+      });
+    }
+  } else {
+    writeCourseStatus(staff, code, src, { remark: remark }, { skipLog: true });
+  }
   document.querySelectorAll("input.course-remark").forEach((other) => {
     if (other === el) return;
-    if (other.dataset.staff === el.dataset.staff && other.dataset.code === el.dataset.code && other.dataset.src === el.dataset.src) {
+    if (other.dataset.staff === staff && other.dataset.code === code && other.dataset.src === src) {
       other.value = e.type === "change" ? remark : el.value;
     }
   });
 }
 function applyCourseStatusEvent(e) {
-  if (!requireWrite()) return;
+  if (!requirePerm("status")) return;
   const sel = e.target.closest("select.course-status");
   const date = e.target.closest("input.course-done");
   const cal = e.target.closest("input.course-done-cal");
@@ -3688,6 +5244,8 @@ function applyCourseStatusEvent(e) {
   const doneEl = cell && cell.querySelector("input.course-done");
   const calEl = cell && cell.querySelector("input.course-done-cal");
   const wrap = cell && cell.querySelector(".course-done-wrap");
+  const pop = document.getElementById("course-pop");
+  const popWasOpen = pop && !pop.hidden;
   if (sel) {
     const status = sel.value;
     let done = "";
@@ -3704,15 +5262,17 @@ function applyCourseStatusEvent(e) {
       done = todayDoneIso();
     }
     writeCourseStatus(staff, code, src, { status: status, done: done });
-    setCourseRowCompleted(el, status);
-    syncCourseStatusUi(staff, code, src, status, done);
-    return;
+  } else {
+    const iso = parseDoneDate(cal ? cal.value : date.value);
+    paintCompletedDate(doneEl, calEl, iso);
+    writeCourseStatus(staff, code, src, { status: "Completed", done: iso });
   }
-  const iso = parseDoneDate(cal ? cal.value : date.value);
-  paintCompletedDate(doneEl, calEl, iso);
-  writeCourseStatus(staff, code, src, { status: "Completed", done: iso });
-  setCourseRowCompleted(el, "Completed");
-  syncCourseStatusUi(staff, code, src, "Completed", iso);
+  paint();
+  if (popWasOpen) {
+    const who = detailPeople.find((x) => padStaff(x.staff) === padStaff(staff));
+    if (who) openCoursePop(who.staff);
+    else closeCoursePop();
+  }
 }
 function setCourseRowCompleted(el, status) {
   const tr = el && el.closest("tr");
@@ -3729,8 +5289,8 @@ function personCourseTableHtml(who) {
   const sorted = rows.slice().sort((a, b) => (Number(a.remain) || 0) - (Number(b.remain) || 0) || String(a.code).localeCompare(String(b.code)));
   if (!sorted.length) return "<p class=\"note\">No courses.</p>";
   return "<table class=\"person-course-table\"><colgroup>" +
-    "<col class=\"col-course\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-remark\">" +
-    "</colgroup><thead><tr><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th>Remark</th></tr></thead><tbody>" +
+    "<col class=\"col-course\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-remark\"><col class=\"col-action\">" +
+    "</colgroup><thead><tr><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
     sorted.map((r) => {
       const n = remainNum(r.remain);
       const rec = readCourseStatus(who.staff, r);
@@ -3746,14 +5306,16 @@ function personCourseTableHtml(who) {
         const klass = [extra || "", t.trim() ? "" : "blank"].filter(Boolean).join(" ");
         return "<td" + (klass ? " class=\"" + klass + "\"" : "") + ">" + esc(t) + "</td>";
       };
-      const srcTd = "<td>" + esc(srcLabel(r)) +
+      const srcTd = "<td>" + esc(srcLabel(r)) + "</td>";
+      const actionTd = "<td class=\"col-action\">" +
         ((r.src === "manual" || r.kind === "manual") && r.mid
-          ? " <button type=\"button\" class=\"manual-del\" data-manual-del=\"" + esc(r.mid) + "\">Remove</button>"
+          ? "<button type=\"button\" class=\"manual-del\" data-manual-del=\"" + esc(r.mid) + "\">Remove</button>"
           : "") +
         "</td>";
       return "<tr class=\"" + cls + "\">" +
         "<td>" + esc(r.code || "") + flagChip(flagReasons) + "</td>" +
-        td(displayCourseName(r.code, r.name)) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") + srcTd + courseStatusCellHtml(who, r) + courseRemarkCellHtml(who, r) + "</tr>";
+        td(displayCourseName(r.code, r.name)) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") +
+        srcTd + courseStatusCellHtml(who, r) + courseRemarkCellHtml(who, r) + actionTd + "</tr>";
     }).join("") + "</tbody></table>";
 }
 function closeCoursePop() {
@@ -3761,32 +5323,57 @@ function closeCoursePop() {
   pop.classList.add("hidden");
   pop.hidden = true;
 }
+function copyLayoutSvg() {
+  return "<svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\">" +
+    "<rect x=\"9\" y=\"9\" width=\"11\" height=\"11\" rx=\"1.5\" stroke=\"currentColor\" stroke-width=\"1.8\"/>" +
+    "<path d=\"M6 15V6.5A1.5 1.5 0 0 1 7.5 5H16\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"/>" +
+    "</svg>";
+}
+function downloadLayoutSvg() {
+  return "<svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\">" +
+    "<path d=\"M12 4v10\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"/>" +
+    "<path d=\"M8 11l4 4 4-4\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" +
+    "<path d=\"M5 19h14\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"/>" +
+    "</svg>";
+}
 function copyIconBtn(id) {
   return "<button type=\"button\" id=\"" + id + "\" class=\"pop-icon\" data-copy-shot title=\"Copy layout\" aria-label=\"Copy layout\">" +
-    "<svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\">" +
-    "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\" stroke=\"currentColor\" stroke-width=\"1.8\"/>" +
-    "<circle cx=\"9\" cy=\"10\" r=\"1.5\" fill=\"currentColor\"/>" +
-    "<path d=\"M4 16.2l4.8-3.8 3 2.4 4.4-4.6L20 15.6\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/>" +
-    "</svg></button>";
+    copyLayoutSvg() + "</button>";
+}
+function downloadIconBtn(id) {
+  return "<button type=\"button\" id=\"" + id + "\" class=\"pop-icon\" data-download-shot title=\"Download\" aria-label=\"Download\">" +
+    downloadLayoutSvg() + "</button>";
+}
+function layoutActionBtns(copyId, downloadId) {
+  return copyIconBtn(copyId) + downloadIconBtn(downloadId);
 }
 function copyBtnOf(btn) {
   if (!btn) return document.getElementById("course-pop-copy");
   return typeof btn === "string" ? document.getElementById(btn) : btn;
 }
+function isDownloadActionBtn(el) {
+  return !!(el && el.hasAttribute && el.hasAttribute("data-download-shot"));
+}
 function resetCopyBtn(btn) {
   const el = copyBtnOf(btn);
   if (!el) return;
   el.classList.remove("ok", "bad");
-  el.title = "Copy layout";
-  el.setAttribute("aria-label", "Copy layout");
+  const label = isDownloadActionBtn(el) ? "Download" : "Copy layout";
+  el.title = label;
+  el.setAttribute("aria-label", label);
 }
-function markCopyBtn(ok, btn) {
+function markCopyBtn(ok, btn, note) {
   const el = copyBtnOf(btn);
   if (!el) return;
   el.classList.remove("ok", "bad");
   el.classList.add(ok ? "ok" : "bad");
-  el.title = ok ? "Image copied" : "Copy failed";
-  el.setAttribute("aria-label", el.title);
+  const dl = isDownloadActionBtn(el);
+  let title;
+  if (!ok) title = dl ? "Download failed" : "Copy failed";
+  else if (note === "download-fallback") title = "Downloaded";
+  else title = dl ? "Downloaded" : "Image copied";
+  el.title = title;
+  el.setAttribute("aria-label", title);
   clearTimeout(el._copyT);
   el._copyT = setTimeout(() => resetCopyBtn(el), 1600);
 }
@@ -3894,6 +5481,18 @@ function closeCopyFailPop() {
   pop.classList.add("hidden");
   pop.hidden = true;
 }
+function showCopyDownloadNotice() {
+  const pop = document.getElementById("copy-fail-pop");
+  const title = document.getElementById("copy-fail-title");
+  const lead = document.getElementById("copy-fail-lead");
+  const list = document.getElementById("copy-fail-list");
+  if (!pop || !title || !lead || !list) return;
+  title.textContent = "Downloaded instead";
+  lead.textContent = "Clipboard is blocked on this local page, so the image was downloaded instead.";
+  list.innerHTML = "";
+  pop.hidden = false;
+  pop.classList.remove("hidden");
+}
 function showCopyFail(err, size) {
   const classified = classifyCopyError(err, size);
   const pop = document.getElementById("copy-fail-pop");
@@ -3992,45 +5591,37 @@ function drawNodeToCanvas(root, widthCap) {
   }
   return canvas;
 }
-function downloadPngBlob(blob) {
+function downloadPngBlob(blob, filename) {
   const a = document.createElement("a");
   const url = URL.createObjectURL(blob);
   a.href = url;
-  a.download = "training-team-board.png";
+  a.download = filename || "training-one-view.png";
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
-async function writeImageBlob(blob, size) {
+async function writeClipboardBlob(blob) {
   if (!blob) throw copyLayoutFail("unknown", "No image", "The browser did not produce a PNG image.");
-  if (navigator.clipboard && window.ClipboardItem) {
-    try {
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-      return "clipboard";
-    } catch (e) {
-      try {
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": Promise.resolve(blob) })]);
-        return "clipboard";
-      } catch (e2) {
-        try {
-          downloadPngBlob(blob);
-          return "download";
-        } catch (e3) {
-          throw clipboardCopyFail(String((e2 && e2.message) || (e && e.message) || e2 || e));
-        }
-      }
-    }
-  }
-  try {
-    downloadPngBlob(blob);
-    return "download";
-  } catch (e) {
+  if (!(navigator.clipboard && window.ClipboardItem)) {
     throw clipboardCopyFail("Clipboard API not available");
   }
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    return "clipboard";
+  } catch (e) {
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": Promise.resolve(blob) })]);
+      return "clipboard";
+    } catch (e2) {
+      throw clipboardCopyFail(String((e2 && e2.message) || (e && e.message) || e2 || e));
+    }
+  }
 }
-async function copyNodeAsImage(shot, frame, btn) {
+async function captureNodeAsImage(shot, frame, btn, mode, filename) {
   if (!shot) return;
+  const wantDownload = mode === "download";
+  const saveName = filename || "training-one-view.png";
   const prevScroll = frame ? frame.scrollTop : 0;
   const prevStyle = {
     width: shot.style.width,
@@ -4053,8 +5644,24 @@ async function copyNodeAsImage(shot, frame, btn) {
     size = nodeCaptureSize(shot, widthCap);
     const canvas = drawNodeToCanvas(shot, widthCap);
     const blob = await new Promise((res, rej) => canvas.toBlob((b) => b ? res(b) : rej(new Error("blob")), "image/png"));
-    await writeImageBlob(blob, size);
-    markCopyBtn(true, btn);
+    if (wantDownload) {
+      downloadPngBlob(blob, saveName);
+      markCopyBtn(true, btn);
+    } else {
+      try {
+        await writeClipboardBlob(blob);
+        markCopyBtn(true, btn);
+      } catch (clipErr) {
+        const classified = classifyCopyError(clipErr, size);
+        if (classified.kind === "clipboard" || location.protocol === "file:") {
+          downloadPngBlob(blob, saveName);
+          markCopyBtn(true, btn, "download-fallback");
+          showCopyDownloadNotice();
+        } else {
+          throw clipErr;
+        }
+      }
+    }
   } catch (e) {
     markCopyBtn(false, btn);
     showCopyFail(e, size);
@@ -4068,18 +5675,42 @@ async function copyNodeAsImage(shot, frame, btn) {
     }
   }
 }
+function copyNodeAsImage(shot, frame, btn, filename) {
+  return captureNodeAsImage(shot, frame, btn, "copy", filename);
+}
+function downloadNodeAsImage(shot, frame, btn, filename) {
+  return captureNodeAsImage(shot, frame, btn, "download", filename);
+}
 function copyCoursePopImage() {
   return copyNodeAsImage(
     document.getElementById("course-pop-shot"),
     document.querySelector("#course-pop .pop-card"),
-    document.getElementById("course-pop-copy")
+    document.getElementById("course-pop-copy"),
+    "training-course.png"
+  );
+}
+function downloadCoursePopImage() {
+  return downloadNodeAsImage(
+    document.getElementById("course-pop-shot"),
+    document.querySelector("#course-pop .pop-card"),
+    document.getElementById("course-pop-download"),
+    "training-course.png"
   );
 }
 function copyDetailImage(btn) {
   return copyNodeAsImage(
     document.getElementById("detail-shot"),
     document.getElementById("detail"),
-    btn || document.getElementById("detail-copy")
+    btn || document.getElementById("detail-copy"),
+    "training-details.png"
+  );
+}
+function downloadDetailImage(btn) {
+  return downloadNodeAsImage(
+    document.getElementById("detail-shot"),
+    document.getElementById("detail"),
+    btn || document.getElementById("detail-download"),
+    "training-details.png"
   );
 }
 function openCoursePop(staff) {
@@ -4093,6 +5724,7 @@ function openCoursePop(staff) {
   if (count) count.textContent = personCourseCountLabel(who);
   body.innerHTML = personCourseTableHtml(who);
   resetCopyBtn("course-pop-copy");
+  resetCopyBtn("course-pop-download");
   pop.hidden = false;
   pop.classList.remove("hidden");
   applyWriteAccess();
@@ -4106,9 +5738,25 @@ function paint() {
   lsSet(UI.sortKey, sortKey);
   lsSet(UI.sortDir, String(sortDir));
   lsSet(UI.listView, listView);
+  lsSet(UI.boardOpen, boardOpen ? "1" : "0");
+  applyBoardOpenUi();
   paintBoard();
   paintDetail();
   paintIngestFlags();
+}
+function applyBoardOpenUi() {
+  const wrap = document.getElementById("board-wrap");
+  const btn = document.getElementById("board-toggle");
+  if (wrap) wrap.classList.toggle("collapsed", !boardOpen);
+  if (btn) {
+    btn.setAttribute("aria-expanded", boardOpen ? "true" : "false");
+    btn.textContent = boardOpen ? "Hide training items" : "Show training items";
+  }
+}
+function setBoardOpen(open) {
+  boardOpen = !!open;
+  lsSet(UI.boardOpen, boardOpen ? "1" : "0");
+  applyBoardOpenUi();
 }
 
 function paintUalStatus(text, label) {
@@ -4133,18 +5781,32 @@ function applyUal(text, label, doPersist) {
   return true;
 }
 function setUal(text, label) {
-  if (!requireWrite()) return;
+  if (!requirePerm("ingest")) return;
   text = String(text || "");
   if (!text.trim()) {
     applyUal(text, label, false);
     return;
   }
+  const beforeText = String(document.getElementById("ual-src").value || "");
+  const beforeAt = ualUploadedAt || "";
+  const beforeSnap = { text: beforeText, uploadedAt: beforeAt };
   try {
     ualRows = parseUalStrict(text);
     clearIngestFlags("ual");
     ualUploadedAt = nowIso();
     paintUalStatus(text, label);
     persistUal(text, ualUploadedAt);
+    const afterSnap = { text: text, uploadedAt: ualUploadedAt };
+    const undoable = canSnapAction(beforeSnap, afterSnap);
+    pushActionLog({
+      kind: "ual",
+      perm: "ingest",
+      what: "Uploaded UAL email · " + ualRows.length + " LMOCG course rows",
+      before: undoable ? beforeSnap : null,
+      after: undoable ? afterSnap : null,
+      undoable: undoable,
+      undoNote: undoable ? "" : "Undo unavailable — UAL snapshot too large."
+    });
     mergeCatalogFromBoard();
     paint();
   } catch (err) {
@@ -4156,6 +5818,17 @@ function setUal(text, label) {
         ualUploadedAt = nowIso();
         paintUalStatus(text, (label || "UAL") + " · override");
         persistUal(text, ualUploadedAt);
+        const afterSnap = { text: text, uploadedAt: ualUploadedAt };
+        const undoable = canSnapAction(beforeSnap, afterSnap);
+        pushActionLog({
+          kind: "ual",
+          perm: "ingest",
+          what: "Uploaded UAL email (override) · " + ualRows.length + " LMOCG course rows",
+          before: undoable ? beforeSnap : null,
+          after: undoable ? afterSnap : null,
+          undoable: undoable,
+          undoNote: undoable ? "" : "Undo unavailable — UAL snapshot too large."
+        });
         mergeCatalogFromBoard();
         paint();
       };
@@ -4180,25 +5853,66 @@ function normCtRow(r, kind, file) {
     file: file || r.file || ""
   };
 }
+function cloneCtFileRec(f) {
+  if (!f) return null;
+  return cloneJson({
+    name: f.name,
+    kind: f.kind,
+    rows: f.rows || [],
+    uploadedAt: f.uploadedAt || ""
+  });
+}
 function addCtFile(name, rows, kind) {
-  if (!requireWrite()) return;
+  if (!requirePerm("ingest")) return;
   kind = kind || ctKindOf(name);
+  const prev = ctFiles.find((f) => f.name === name);
+  const prevClone = cloneCtFileRec(prev);
   const rec = { name, kind, rows: (rows || []).map((r) => normCtRow(r, kind, name)).filter((r) => r.uid), uploadedAt: nowIso() };
   const i = ctFiles.findIndex((f) => f.name === name);
   if (i >= 0) ctFiles[i] = rec;
   else ctFiles.push(rec);
   flattenCt();
   persistCtFiles();
+  const nextClone = cloneCtFileRec(rec);
+  const before = prevClone
+    ? { op: "set", file: prevClone }
+    : { op: "absent", name: name, kind: kind };
+  const after = { op: "set", file: nextClone };
+  const undoable = canSnapAction(before, after);
+  pushActionLog({
+    kind: "ct-add",
+    perm: "ingest",
+    what: (prevClone ? "Replaced" : "Uploaded") + " CT file " + name + " · " + (rec.rows || []).length + " rows",
+    before: undoable ? before : null,
+    after: undoable ? after : null,
+    undoable: undoable,
+    undoNote: undoable ? "" : "Undo unavailable — CT file snapshot too large."
+  });
   paintCtFiles();
   mergeCatalogFromBoard();
   paint();
 }
 function removeCtFile(i) {
-  if (!requireWrite()) return;
+  if (!requirePerm("ingest")) return;
+  const prev = ctFiles[i];
+  if (!prev) return;
+  const prevClone = cloneCtFileRec(prev);
   ctFiles.splice(i, 1);
   flattenCt();
   persistCtFiles({ clear: true });
   if (!ctFiles.length) clearIngestFlags("ct");
+  const before = { op: "set", file: prevClone };
+  const after = { op: "absent", name: prev.name, kind: prev.kind };
+  const undoable = canSnapAction(before, after);
+  pushActionLog({
+    kind: "ct-remove",
+    perm: "ingest",
+    what: "Removed CT file " + prev.name,
+    before: undoable ? before : null,
+    after: undoable ? after : null,
+    undoable: undoable,
+    undoNote: undoable ? "" : "Undo unavailable — CT file snapshot too large."
+  });
   paintCtFiles();
   paint();
 }
@@ -4225,7 +5939,7 @@ document.querySelectorAll("[data-src]").forEach((b) => {
   });
 });
 document.getElementById("detail").addEventListener("click", (e) => {
-  if (e.target.closest("[data-copy-shot]")) return;
+  if (e.target.closest("[data-copy-shot]") || e.target.closest("[data-download-shot]")) return;
   const view = e.target.closest("[data-list-view]");
   if (view) {
     listView = view.dataset.listView === "cards" ? "cards" : "table";
@@ -4278,6 +5992,12 @@ document.getElementById("detail").addEventListener("click", (e) => {
     copyDetailImage(copy);
     return;
   }
+  const dl = e.target.closest("[data-download-shot]");
+  if (dl) {
+    e.stopPropagation();
+    downloadDetailImage(dl);
+    return;
+  }
   if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]")) return;
   const del = e.target.closest("[data-manual-del]");
   if (del) {
@@ -4303,6 +6023,10 @@ document.getElementById("course-pop-copy").addEventListener("click", (e) => {
   e.stopPropagation();
   copyCoursePopImage();
 });
+document.getElementById("course-pop-download").addEventListener("click", (e) => {
+  e.stopPropagation();
+  downloadCoursePopImage();
+});
 document.getElementById("course-pop-close").addEventListener("click", closeCoursePop);
 document.getElementById("course-pop").addEventListener("click", (e) => {
   const del = e.target.closest("[data-manual-del]");
@@ -4320,6 +6044,45 @@ document.getElementById("manual-form").addEventListener("submit", (e) => {
 });
 document.getElementById("manual-staff").addEventListener("input", fillManualFromRoster);
 document.getElementById("manual-staff").addEventListener("blur", fillManualFromRoster);
+document.getElementById("board-toggle").addEventListener("click", () => setBoardOpen(!boardOpen));
+document.getElementById("manual-auth-pick").addEventListener("click", (e) => {
+  const sortTh = e.target.closest("[data-auth-sort]");
+  if (sortTh && manualAuthPick) {
+    const key = sortTh.getAttribute("data-auth-sort");
+    if (key) {
+      if (manualAuthPick.sortKey === key) manualAuthPick.sortDir *= -1;
+      else {
+        manualAuthPick.sortKey = key;
+        manualAuthPick.sortDir = 1;
+      }
+      paintManualAuthPick();
+    }
+    return;
+  }
+  const btn = e.target.closest("[data-auth-toggle]");
+  if (!btn || !manualAuthPick) return;
+  const i = Number(btn.getAttribute("data-auth-toggle"));
+  if (!Number.isFinite(i) || !manualAuthPick.people[i]) return;
+  manualAuthPick.people[i].on = !manualAuthPick.people[i].on;
+  paintManualAuthPick();
+});
+document.getElementById("manual-auth-ac").addEventListener("change", () => {
+  if (!manualAuthPick) return;
+  manualAuthPick.filterAc = String(document.getElementById("manual-auth-ac").value || "");
+  paintManualAuthPick();
+});
+document.getElementById("manual-auth-eng").addEventListener("change", () => {
+  if (!manualAuthPick) return;
+  manualAuthPick.filterEng = String(document.getElementById("manual-auth-eng").value || "");
+  paintManualAuthPick();
+});
+document.getElementById("manual-auth-add-btn").addEventListener("click", addManualAuthStaff);
+document.getElementById("manual-auth-add-staff").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addManualAuthStaff();
+  }
+});
 document.getElementById("manual-name").addEventListener("input", () => {
   document.getElementById("manual-name").dataset.autofill = "";
 });
@@ -4379,6 +6142,8 @@ document.getElementById("detail").addEventListener("input", applyCourseRemarkEve
 document.getElementById("course-pop").addEventListener("input", applyCourseRemarkEvent);
 document.getElementById("detail").addEventListener("change", applyCourseRemarkEvent);
 document.getElementById("course-pop").addEventListener("change", applyCourseRemarkEvent);
+document.getElementById("detail").addEventListener("focusin", applyCourseRemarkEvent);
+document.getElementById("course-pop").addEventListener("focusin", applyCourseRemarkEvent);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     const list = document.getElementById("code-suggest");
@@ -4401,6 +6166,11 @@ document.addEventListener("keydown", (e) => {
       closeAccessPop();
       return;
     }
+    const manage = document.getElementById("manage-pop");
+    if (manage && !manage.hidden) {
+      closeManagePop();
+      return;
+    }
     const pushFail = document.getElementById("push-fail-pop");
     if (pushFail && !pushFail.hidden) {
       closePushFailPop();
@@ -4410,6 +6180,16 @@ document.addEventListener("keydown", (e) => {
   }
 });
 document.getElementById("access-toggle").addEventListener("click", toggleBoardAccess);
+document.getElementById("access-manage").addEventListener("click", openManagePop);
+document.getElementById("action-log-btn").addEventListener("click", openActionLogPop);
+document.getElementById("action-log-close").addEventListener("click", closeActionLogPop);
+document.getElementById("action-log-pop").addEventListener("click", (e) => {
+  if (e.target.id === "action-log-pop") closeActionLogPop();
+  const undo = e.target.closest("[data-log-undo]");
+  if (undo) {
+    undoActionLogEntry(undo.getAttribute("data-log-undo"));
+  }
+});
 document.getElementById("access-ok").addEventListener("click", () => { submitAccessPop(); });
 document.getElementById("access-cancel").addEventListener("click", closeAccessPop);
 document.getElementById("access-pop").addEventListener("click", (e) => {
@@ -4420,6 +6200,17 @@ document.getElementById("access-pw").addEventListener("keydown", (e) => {
 });
 document.getElementById("access-pw2").addEventListener("keydown", (e) => {
   if (e.key === "Enter") { e.preventDefault(); submitAccessPop(); }
+});
+document.getElementById("manage-close").addEventListener("click", closeManagePop);
+document.getElementById("manage-add-btn").addEventListener("click", () => { addManageLevel(); });
+document.getElementById("manage-pop").addEventListener("click", (e) => {
+  if (e.target.id === "manage-pop") closeManagePop();
+  const del = e.target.closest("[data-level-del]");
+  if (del) { removeLevel(del.getAttribute("data-level-del")); return; }
+  const pw = e.target.closest("[data-level-pw]");
+  if (pw) { changeLevelPassword(pw.getAttribute("data-level-pw")); return; }
+  const ed = e.target.closest("[data-level-edit]");
+  if (ed) { editLevelPerms(ed.getAttribute("data-level-edit")); return; }
 });
 document.getElementById("push-fail-ok").addEventListener("click", closePushFailPop);
 document.getElementById("push-fail-pop").addEventListener("click", (e) => {
@@ -4454,7 +6245,7 @@ function isCsvFile(f) {
   return name.endsWith(".csv") || type === "text/csv" || type === "application/vnd.ms-excel" || type === "text/plain";
 }
 function ingestCtFiles(fileList) {
-  if (!requireWrite()) return;
+  if (!requirePerm("ingest")) return;
   const picked = [...(fileList || [])];
   const files = picked.filter(isCsvFile);
   if (!files.length) {
@@ -4510,7 +6301,7 @@ document.getElementById("ct-csv").addEventListener("change", (e) => {
     e.preventDefault();
     e.stopPropagation();
     drop.classList.remove("on");
-    if (!requireWrite()) return;
+    if (!requirePerm("ingest")) return;
     ingestCtFiles(e.dataTransfer && e.dataTransfer.files);
   });
   document.addEventListener("dragover", (e) => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
@@ -4639,24 +6430,64 @@ function paintOmtFiles() {
   ).join("");
   applyWriteAccess();
 }
+function cloneOmtFileRec(f) {
+  if (!f) return null;
+  return cloneJson({
+    name: f.name,
+    rows: f.rows || [],
+    uploadedAt: f.uploadedAt || ""
+  });
+}
 function addOmtFile(name, rows) {
-  if (!requireWrite()) return;
+  if (!requirePerm("ingest")) return;
+  const prev = omtFiles.find((f) => f.name === name);
+  const prevClone = cloneOmtFileRec(prev);
   const rec = { name, rows: (rows || []).filter((r) => r.uid && r.code), uploadedAt: nowIso() };
   const i = omtFiles.findIndex((f) => f.name === name);
   if (i >= 0) omtFiles[i] = rec;
   else omtFiles.push(rec);
   flattenOmt();
   persistOmtFiles();
+  const nextClone = cloneOmtFileRec(rec);
+  const before = prevClone
+    ? { op: "set", file: prevClone }
+    : { op: "absent", name: name };
+  const after = { op: "set", file: nextClone };
+  const undoable = canSnapAction(before, after);
+  pushActionLog({
+    kind: "omt-add",
+    perm: "ingest",
+    what: (prevClone ? "Replaced" : "Uploaded") + " Mandatory file " + name + " · " + (rec.rows || []).length + " rows",
+    before: undoable ? before : null,
+    after: undoable ? after : null,
+    undoable: undoable,
+    undoNote: undoable ? "" : "Undo unavailable — Mandatory file snapshot too large."
+  });
   paintOmtFiles();
   mergeCatalogFromBoard();
   paint();
 }
 function removeOmtFile(i) {
-  if (!requireWrite()) return;
+  if (!requirePerm("ingest")) return;
+  const prev = omtFiles[i];
+  if (!prev) return;
+  const prevClone = cloneOmtFileRec(prev);
   omtFiles.splice(i, 1);
   flattenOmt();
   persistOmtFiles({ clear: true });
   if (!omtFiles.length) clearIngestFlags("omt");
+  const before = { op: "set", file: prevClone };
+  const after = { op: "absent", name: prev.name };
+  const undoable = canSnapAction(before, after);
+  pushActionLog({
+    kind: "omt-remove",
+    perm: "ingest",
+    what: "Removed Mandatory file " + prev.name,
+    before: undoable ? before : null,
+    after: undoable ? after : null,
+    undoable: undoable,
+    undoNote: undoable ? "" : "Undo unavailable — Mandatory file snapshot too large."
+  });
   paintOmtFiles();
   paint();
 }
@@ -4665,7 +6496,7 @@ function isOmtFile(f) {
   return name.endsWith(".csv") || name.endsWith(".xlsx");
 }
 function ingestOmtFiles(fileList) {
-  if (!requireWrite()) return;
+  if (!requirePerm("ingest")) return;
   const picked = [...(fileList || [])];
   const files = picked.filter(isOmtFile);
   if (!files.length) {
@@ -4732,7 +6563,7 @@ document.getElementById("omt-files").addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     drop.classList.remove("on");
-    if (!requireWrite()) return;
+    if (!requirePerm("ingest")) return;
     ingestOmtFiles(e.dataTransfer && e.dataTransfer.files);
   });
 })();
@@ -4782,6 +6613,11 @@ function restoreUi() {
   if (sortKey === "out") sortDir = -1;
   const savedView = firstFilled(UI_KEYS.listView);
   if (savedView === "cards" || savedView === "table") listView = savedView;
+  const savedBoard = firstFilled(UI_KEYS.boardOpen);
+  if (savedBoard === "1") boardOpen = true;
+  else if (savedBoard === "0") boardOpen = false;
+  else boardOpen = false;
+  applyBoardOpenUi();
 }
 function restoreUal() {
   const savedUal = firstFilled(UAL_KEYS);
@@ -4877,14 +6713,38 @@ function migratePersisted() {
   if (omtFiles.length) persistOmtFiles();
   persistActionsLocal();
 }
+function migrateAccessLevels() {
+  if (!lsPeek(ACCESS_LEVELS_KEY) && readAccessRec()) {
+    saveAccessStore(loadAccessStore());
+  }
+  try {
+    const ssId = String(sessionStorage.getItem(ACCESS_SESSION) || "").trim();
+    const ssOn = sessionStorage.getItem(ACCESS_UNLOCK) === "1";
+    if (!lsPeek(ACCESS_SESSION) && (ssId || ssOn)) {
+      let id = ssId;
+      if (!id) {
+        const owner = getOwnerLevel();
+        id = owner ? owner.id : "";
+      }
+      if (id && loadAccessStore().levels.some((lv) => lv.id === id)) {
+        lsSet(ACCESS_SESSION, id);
+        lsSet(ACCESS_UNLOCK, "1");
+      }
+    }
+    sessionStorage.removeItem(ACCESS_SESSION);
+    sessionStorage.removeItem(ACCESS_UNLOCK);
+  } catch (e) {}
+}
 (async function init() {
   try {
     PEOPLE.forEach((p) => byStaff.set(padStaff(p.staff), p));
     await prefetchParentStore();
+    migrateAccessLevels();
     restoreUi();
     await restoreActionsHandle();
     await restoreCourseStatus();
     await restoreManualCourses();
+    await restoreActionLog();
     restoreUal();
     restoreCt();
     restoreOmt();
