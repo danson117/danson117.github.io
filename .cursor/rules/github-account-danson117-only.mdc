@@ -1,11 +1,13 @@
 ---
-description: GitHub ops only as user danson117 — never 0421ALPHA or any other account
+description: GitHub ops only as user danson117 / danson.mj@gmail.com — never 0421alpha
 alwaysApply: true
 ---
 
 # GitHub account lock — danson117 only
 
-GitHub operations may use **ONLY** the GitHub user `danson117`. Never use any other GitHub account, especially `0421ALPHA` / `0421alpha`.
+GitHub operations may use **ONLY** the GitHub user `danson117` / email `danson.mj@gmail.com`. Never use any other GitHub account, especially `0421ALPHA` / `0421alpha`.
+
+**Email split:** Cursor account email `0421alpha@gmail.com` is **NOT** the GitHub account. Never use `0421alpha`, `0421ALPHA`, or `0421alpha@gmail.com` as the GitHub author, `gh` login, remotes, or Vercel Git author. Commits / `gh` / remotes / Vercel Git author = `danson117` / `danson.mj@gmail.com` only.
 
 This is an **account lock** (User Rule + every project). Different from `github-sync.mdc` (Pages SSOT / pull-then-push for this repo only).
 
@@ -21,11 +23,16 @@ Before `gh`, `git push`, `git remote`, repo create, or Vercel GitHub import: che
 ## Forbidden
 
 - Never create or push repos under another user or org
-- Never switch to, log in as, or reuse credentials for `0421ALPHA` or any other account
+- Never switch to, log in as, or reuse credentials for `0421ALPHA` / `0421alpha` or any other account
+- Never set Git author to `0421alpha@gmail.com`
+
+## Life OS author (per command only)
+
+In `C:\Cursor\life-os` only: set author per command with `git -c user.name=danson117 -c user.email=danson.mj@gmail.com`. Do **not** run `git config` (global or local). Do not amend or rewrite already-pushed commits. Do not force-push.
 
 ## Allowed target example
 
-- Life OS private repo, if created: **`danson117/life-os` only**
+- Life OS private repo: **`danson117/life-os` only**
 
 ## Unchanged safety
 
