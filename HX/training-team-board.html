@@ -1193,8 +1193,8 @@
       <form id="manual-form" lang="en" autocomplete="off">
         <div class="add-course-grid">
           <div class="typeahead-wrap">
-            <label for="manual-staff">Staff # / Auth group</label>
-            <input id="manual-staff" type="text" maxlength="16" placeholder="236051 or KE" required autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="staff-suggest" aria-expanded="false">
+            <label for="manual-staff">Staff # / Group</label>
+            <input id="manual-staff" type="text" maxlength="16" placeholder="" required autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="staff-suggest" aria-expanded="false">
             <ul id="staff-suggest" class="typeahead" hidden role="listbox" aria-label="Staff and auth group suggestions"></ul>
           </div>
           <div class="typeahead-wrap">
@@ -1255,7 +1255,7 @@
           <div id="manual-auth-list" class="manual-auth-table-wrap" aria-label="Selected certifying staff"></div>
         </div>
       </form>
-      <p class="note" id="manual-hint">Type a staff # (Name List autofill) or an Authorization group code such as <b>KE</b> (Operator) to select every matching CS, then +/− edit the list. One course code and one expire date apply to the whole set. This browser only. Source: Manual.</p>
+      <p class="note" id="manual-hint" hidden></p>
     </div>
 
     <div class="stats">
@@ -1412,7 +1412,7 @@
       <p id="brs-pop-sign-note" class="note">Materials only here. To mark Seen or Sign, use the Sign / Seen button on the outstanding row (staff PIN), or open the Briefing &amp; Read &amp; Sign page.</p>
       <ul id="brs-pop-files" class="brs-files"></ul>
       <div class="brs-actions">
-        <a id="brs-pop-brs" href="briefing-read-sign.html?v=2.4">Open Briefing &amp; Read &amp; Sign</a>
+        <a id="brs-pop-brs" href="briefing-read-sign.html?v=2.6">Open Briefing &amp; Read &amp; Sign</a>
         <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.3">Open record</a>
         <button type="button" id="brs-pop-close">Close</button>
       </div>
@@ -1470,7 +1470,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="11.9" aria-label="Page version 11.9">v11.9</div>
+  <div class="page-version" data-version="12.1" aria-label="Page version 12.1">v12.1</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -5741,7 +5741,10 @@ function openActionLogPop() {
 }
 function setManualHint(msg) {
   const el = document.getElementById("manual-hint");
-  if (el) el.textContent = msg;
+  if (!el) return;
+  const t = msg || "";
+  el.textContent = t;
+  el.hidden = !t;
 }
 function authFieldLabel(field) {
   if (field === "op") return "Operator";
@@ -5749,7 +5752,114 @@ function authFieldLabel(field) {
   if (field === "cat") return "Category";
   if (field === "eng") return "Engine";
   if (field === "mod") return "Module ref";
+  if (field === "section") return "Section";
   return "Authorization";
+}
+let opAirlineNameCache = null;
+function titleCaseWords(s) {
+  return String(s || "").toLowerCase().replace(/\b([a-z])/g, (m, c) => c.toUpperCase());
+}
+/** Airline full names from AUTH_PACK module titles (last slash segment) for Operator codes. */
+function ensureOpAirlineNames() {
+  if (opAirlineNameCache) return opAirlineNameCache;
+  opAirlineNameCache = {};
+  const pack = window.AUTH_PACK;
+  if (!pack || !pack.d || !pack.r || !Array.isArray(pack.d.op) || !Array.isArray(pack.d.mod)) return opAirlineNameCache;
+  const ops = pack.d.op;
+  const mods = pack.d.mod;
+  const tallies = {};
+  pack.r.forEach((r) => {
+    const op = ops[r[2]];
+    const mod = mods[r[5]];
+    if (!op || !mod) return;
+    const parts = String(mod).split("/").map((p) => p.trim()).filter(Boolean);
+    let name = parts.length ? parts[parts.length - 1] : "";
+    name = name.replace(/\s*\(LM\)\s*$/i, "").trim();
+    if (!name) return;
+    const key = String(op).trim().toUpperCase();
+    if (!tallies[key]) tallies[key] = {};
+    tallies[key][name] = (tallies[key][name] || 0) + 1;
+  });
+  Object.keys(tallies).forEach((op) => {
+    let best = "";
+    let n = 0;
+    Object.keys(tallies[op]).forEach((name) => {
+      if (tallies[op][name] > n) { n = tallies[op][name]; best = name; }
+    });
+    if (best) opAirlineNameCache[op] = best;
+  });
+  return opAirlineNameCache;
+}
+function airlineNameForOp(code) {
+  const raw = ensureOpAirlineNames()[String(code || "").trim().toUpperCase()] || "";
+  return raw ? titleCaseWords(raw) : "";
+}
+function sectionHomeOf(p) {
+  return String((p && (p.home || p.section)) || "").trim().toUpperCase();
+}
+function listSectionGroupCodes() {
+  const exact = {};
+  const families = {};
+  byStaff.forEach((p) => {
+    const home = sectionHomeOf(p);
+    if (!home) return;
+    if (!exact[home]) exact[home] = 0;
+    exact[home] += 1;
+    const m = home.match(/^([A-Z]+)\d/i);
+    if (m) {
+      const fam = m[1].toUpperCase();
+      if (!families[fam]) families[fam] = true;
+    }
+  });
+  const out = [];
+  Object.keys(exact).sort().forEach((code) => {
+    out.push({ code: code, field: "section", kind: "exact", n: exact[code] });
+  });
+  Object.keys(families).sort().forEach((fam) => {
+    if (exact[fam]) return;
+    let n = 0;
+    byStaff.forEach((p) => {
+      const home = sectionHomeOf(p);
+      if (home === fam || (home.indexOf(fam) === 0 && /^\d/.test(home.slice(fam.length)))) n += 1;
+    });
+    if (n) out.push({ code: fam, field: "section", kind: "family", n: n });
+  });
+  return out;
+}
+function sectionPeopleForCode(raw) {
+  const code = String(raw || "").trim().toUpperCase();
+  if (!code || /^\d{5,7}$/.test(code)) return null;
+  const people = [];
+  let exact = false;
+  byStaff.forEach((p) => {
+    const home = sectionHomeOf(p);
+    if (!home) return;
+    if (home === code) {
+      exact = true;
+      people.push({ staff: p.staff, name: p.name || "", on: true });
+    }
+  });
+  if (exact) return { code: code, field: "section", kind: "exact", people: people };
+  if (!/^[A-Z]+$/i.test(code)) return null;
+  byStaff.forEach((p) => {
+    const home = sectionHomeOf(p);
+    if (!home) return;
+    if (home === code || (home.indexOf(code) === 0 && /^\d/.test(home.slice(code.length)))) {
+      people.push({ staff: p.staff, name: p.name || "", on: true });
+    }
+  });
+  if (!people.length) return null;
+  return { code: code, field: "section", kind: "family", people: people };
+}
+function resolvePeopleGroup(raw) {
+  const code = String(raw || "").trim().toUpperCase();
+  if (!code || /^\d{5,7}$/.test(code)) return null;
+  const auth = authPeopleForCode(code);
+  if (auth && auth.people && auth.people.length) return auth;
+  const sec = sectionPeopleForCode(code);
+  if (sec && sec.people && sec.people.length) return sec;
+  if (auth && auth.field) return auth;
+  return sec || auth || null;
 }
 function ensureAuthIndex() {
   if (authIndexCache) return authIndexCache;
@@ -5956,7 +6066,7 @@ function paintManualAuthPick() {
       engOpts.map((v) => "<option value=\"" + esc(v) + "\"" +
         (v === manualAuthPick.filterEng ? " selected" : "") + ">" + esc(v) + "</option>").join("");
   }
-  if (filtersEl) filtersEl.hidden = false;
+  if (filtersEl) filtersEl.hidden = !(acOpts.length || engOpts.length);
 
   const acFilter = manualAuthPick.filterAc;
   const engFilter = manualAuthPick.filterEng;
@@ -5967,8 +6077,11 @@ function paintManualAuthPick() {
     authPersonVisibleUnderFilters(p.staff, byStaff, acFilter, engFilter)
   );
   const willAdd = visiblePeople.filter((p) => p.on);
+  const air = manualAuthPick.field === "op" ? airlineNameForOp(manualAuthPick.code) : "";
   const field = manualAuthPick.field ? authFieldLabel(manualAuthPick.field) + " " : "";
-  label.innerHTML = "<b>" + esc(field + manualAuthPick.code) + "</b> · " + willAdd.length + " of " +
+  label.innerHTML = "<b>" + esc(field + manualAuthPick.code) + "</b>" +
+    (air ? " (" + esc(air) + ")" : "") +
+    " · " + willAdd.length + " of " +
     visiblePeople.length + " CS selected (edit +/− before Add)";
 
   const ordered = visiblePeople.slice().sort((a, b) => {
@@ -6101,24 +6214,29 @@ function fillManualFromRoster() {
     }
     return;
   }
-  const hit = authPeopleForCode(raw);
+  const hit = resolvePeopleGroup(raw);
   if (!hit) {
     clearManualAuthPick();
     return;
   }
   if (!hit.people.length) {
     clearManualAuthPick();
-    setManualHint("No Authorization CS for code " + hit.code + " on the Name List.");
+    const kind = hit.field === "section" ? "section" : "Authorization group";
+    setManualHint("No Name List people for " + kind + " " + hit.code + ".");
     return;
   }
   setManualAuthPick(hit);
-  setManualHint(authFieldLabel(hit.field) + " " + hit.code + " · " + hit.people.length +
-    " CS from Authorization List. Edit +/−, then one course code + expire date for all.");
+  const air = hit.field === "op" ? airlineNameForOp(hit.code) : "";
+  setManualHint(authFieldLabel(hit.field) + " " + hit.code +
+    (air ? " (" + air + ")" : "") +
+    " · " + hit.people.length +
+    " CS from " + (hit.field === "section" ? "Name List section" : "Authorization List") +
+    ". Edit +/−, then one course code + expire date for all.");
 }
 function addManualAuthStaff() {
   if (!requirePerm("manual")) return;
   if (!manualAuthPick) {
-    setManualHint("Enter an Authorization group code first (e.g. KE).");
+    setManualHint("Enter an Authorization group code first.");
     return;
   }
   const inp = document.getElementById("manual-auth-add-staff");
@@ -6673,7 +6791,7 @@ function addManualCourse() {
   }
   const rawStaff = String(document.getElementById("manual-staff").value || "").trim();
   if (!/^\d{5,6}$/.test(rawStaff)) {
-    setManualHint("Staff # must be 5–6 digits, or use an Authorization group code such as KE.");
+    setManualHint("Staff # must be 5–6 digits, or enter an Authorization group code.");
     return;
   }
   const staff = padStaff(rawStaff);
@@ -7676,7 +7794,7 @@ function openBrsPop(itemId, staff) {
     return "<li><a href=\"" + esc(m.href || "#") + "\" target=\"_blank\" rel=\"noopener\">" + esc(label) + "</a></li>";
   }).join("") : "<li>No materials on this item.</li>";
   const brsLink = document.getElementById("brs-pop-brs");
-  if (brsLink) brsLink.href = "briefing-read-sign.html?v=2.4#item=" + encodeURIComponent(it.id);
+  if (brsLink) brsLink.href = "briefing-read-sign.html?v=2.6#item=" + encodeURIComponent(it.id);
   document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.3&item=" + encodeURIComponent(it.id);
   pop.hidden = false;
 }

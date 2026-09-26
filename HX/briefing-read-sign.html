@@ -160,7 +160,8 @@
   }
   .mat-drop .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
   .mat-drop input[type="file"] { display: none; }
-  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; justify-content: space-between; align-items: center; }
+  .row-actions .add { margin-left: auto; }
   .page-version {
     position: fixed; right: 12px; bottom: 8px;
     font-size: 11px; color: #6d7c82;
@@ -718,7 +719,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="2.4">v2.4</div>
+  <div class="page-version" data-version="2.6">v2.6</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -757,6 +758,7 @@
   var adminWired = false;
   var openItemId = "";
   var peopleAuthPick = null;
+  var draftItem = null;
   var authIndexCache = null;
   var EYE_SHOW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>';
   var EYE_HIDE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.3 2.3 2 3.6l3.1 3.1C3.4 8.1 2.2 9.6 1.5 10.8a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19c2 0 3.8-.6 5.3-1.5l3.1 3.1 1.3-1.3zm7.4 11.5A2.9 2.9 0 0 1 8.2 11l2.5 2.5zm1.3-6.5c.3 0 .6 0 .9.1l-1.7 1.7A3.5 3.5 0 0 0 8.5 13l-1.7 1.7A5.5 5.5 0 0 1 12 7.3zm8.6 3.5c-.5.8-1.4 2-2.7 3.1l1.4 1.4c1.5-1.3 2.6-2.8 3.2-3.7a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5c-.9 0-1.7.1-2.5.3l1.6 1.6c.3 0 .6-.1.9-.1 3.7 0 6.8 2.8 8.1 4.5z"/></svg>';
@@ -882,7 +884,8 @@
     (doc.items || []).forEach(function (it) { rememberIssuedCode(it && it.code); });
     return map;
   }
-  function nextItemCode(type) {
+  /** Next free BF/RS number from confirmed issued ledger only. Does not write issued. */
+  function peekNextItemCode(type) {
     var prefix = itemCodePrefix(type);
     var ym = ymStamp();
     var key = prefix + ym;
@@ -893,15 +896,46 @@
       showMsgPop({ mode: "alert", title: "No number", lines: [key, "99 used"] });
       return "";
     }
-    map[key] = next;
     return key + String(next).padStart(2, "0");
   }
-  function assignItemCode(it, type) {
-    if (!it) return "";
-    var code = nextItemCode(type || it.type);
-    if (!code) return "";
-    it.code = code;
-    return code;
+  /** Reserve a confirmed number in issued (never reuse after this). */
+  function consumeIssuedCode(code) {
+    rememberIssuedCode(code);
+  }
+  function codeAlreadyIssued(code) {
+    var p = parseItemCode(code);
+    if (!p || !p.seq) return true;
+    rebuildIssuedFromItems();
+    var map = ensureIssuedMap();
+    var max = parseInt(map[p.prefix + p.ym], 10) || 0;
+    return p.seq <= max;
+  }
+  function isDraftItem(it) {
+    return !!(draftItem && it && draftItem.id === it.id);
+  }
+  function discardDraft() {
+    if (!draftItem) return;
+    if (adminEditId === draftItem.id) adminEditId = "";
+    draftItem = null;
+  }
+  function confirmDraft(id) {
+    if (!draftItem || draftItem.id !== id) return;
+    var code = String(draftItem.code || "").trim();
+    if (!code || codeAlreadyIssued(code)) {
+      code = peekNextItemCode(draftItem.type);
+      if (!code) return;
+      draftItem.code = code;
+    }
+    consumeIssuedCode(code);
+    var it = draftItem;
+    draftItem = null;
+    doc.items.unshift(it);
+    adminEditId = it.id;
+    filter = "all";
+    save();
+    render();
+    renderAdminEditor();
+    paintAdminStatus("Item " + code + " added.");
   }
   function paintDash() {
     var briefOut = 0;
@@ -1054,7 +1088,128 @@
     if (field === "cat") return "Category";
     if (field === "eng") return "Engine";
     if (field === "mod") return "Module ref";
+    if (field === "section") return "Section";
     return "Authorization";
+  }
+  var opAirlineNameCache = null;
+  function titleCaseWords(s) {
+    return String(s || "").toLowerCase().replace(/\b([a-z])/g, function (m, c) { return c.toUpperCase(); });
+  }
+  /** Airline full names from AUTH_PACK module titles (last slash segment) for Operator codes — not a separate invented list. */
+  function ensureOpAirlineNames() {
+    if (opAirlineNameCache) return opAirlineNameCache;
+    opAirlineNameCache = {};
+    var pack = window.AUTH_PACK;
+    if (!pack || !pack.d || !pack.r || !Array.isArray(pack.d.op) || !Array.isArray(pack.d.mod)) return opAirlineNameCache;
+    var ops = pack.d.op;
+    var mods = pack.d.mod;
+    var tallies = {};
+    pack.r.forEach(function (r) {
+      var op = ops[r[2]];
+      var mod = mods[r[5]];
+      if (!op || !mod) return;
+      var parts = String(mod).split("/").map(function (p) { return p.trim(); }).filter(Boolean);
+      var name = parts.length ? parts[parts.length - 1] : "";
+      name = name.replace(/\s*\(LM\)\s*$/i, "").trim();
+      if (!name) return;
+      var key = String(op).trim().toUpperCase();
+      if (!tallies[key]) tallies[key] = {};
+      tallies[key][name] = (tallies[key][name] || 0) + 1;
+    });
+    Object.keys(tallies).forEach(function (op) {
+      var best = "";
+      var n = 0;
+      Object.keys(tallies[op]).forEach(function (name) {
+        if (tallies[op][name] > n) { n = tallies[op][name]; best = name; }
+      });
+      if (best) opAirlineNameCache[op] = best;
+    });
+    return opAirlineNameCache;
+  }
+  function airlineNameForOp(code) {
+    var map = ensureOpAirlineNames();
+    var raw = map[String(code || "").trim().toUpperCase()] || "";
+    return raw ? titleCaseWords(raw) : "";
+  }
+  function groupSuggestLabel(g) {
+    var bits = [g.code];
+    if (g.field === "op") {
+      var air = airlineNameForOp(g.code);
+      if (air) bits.push(air);
+    }
+    bits.push(authFieldLabel(g.field));
+    bits.push(g.n + " CS");
+    return bits[0] + " — " + bits.slice(1).join(" · ");
+  }
+  function sectionHomeOf(p) {
+    return String((p && (p.section || p.home)) || "").trim().toUpperCase();
+  }
+  function listSectionGroupCodes() {
+    var exact = {};
+    var families = {};
+    roster.forEach(function (p) {
+      var home = sectionHomeOf(p);
+      if (!home) return;
+      if (!exact[home]) exact[home] = [];
+      exact[home].push(p);
+      var m = home.match(/^([A-Z]+)\d/i);
+      if (m) {
+        var fam = m[1].toUpperCase();
+        if (!families[fam]) families[fam] = {};
+        families[fam][home] = true;
+      }
+    });
+    var out = [];
+    Object.keys(exact).sort().forEach(function (code) {
+      out.push({ code: code, field: "section", kind: "exact", n: exact[code].length });
+    });
+    Object.keys(families).sort().forEach(function (fam) {
+      if (exact[fam]) return;
+      var n = 0;
+      roster.forEach(function (p) {
+        var home = sectionHomeOf(p);
+        if (home === fam || (home.indexOf(fam) === 0 && /^\d/.test(home.slice(fam.length)))) n += 1;
+      });
+      if (n) out.push({ code: fam, field: "section", kind: "family", n: n });
+    });
+    return out;
+  }
+  function sectionPeopleForCode(raw) {
+    var code = String(raw || "").trim().toUpperCase();
+    if (!code || /^\d{5,7}$/.test(code)) return null;
+    var people = [];
+    var exact = false;
+    roster.forEach(function (p) {
+      var home = sectionHomeOf(p);
+      if (!home) return;
+      if (home === code) {
+        exact = true;
+        people.push({ staff: p.staff, name: p.name, on: true });
+      }
+    });
+    if (exact) {
+      return { code: code, field: "section", kind: "exact", people: people };
+    }
+    if (!/^[A-Z]+$/i.test(code)) return null;
+    roster.forEach(function (p) {
+      var home = sectionHomeOf(p);
+      if (!home) return;
+      if (home === code || (home.indexOf(code) === 0 && /^\d/.test(home.slice(code.length)))) {
+        people.push({ staff: p.staff, name: p.name, on: true });
+      }
+    });
+    if (!people.length) return null;
+    return { code: code, field: "section", kind: "family", people: people };
+  }
+  function resolvePeopleGroup(raw) {
+    var code = String(raw || "").trim().toUpperCase();
+    if (!code || /^\d{5,7}$/.test(code)) return null;
+    var auth = authPeopleForCode(code);
+    if (auth && auth.people && auth.people.length) return auth;
+    var sec = sectionPeopleForCode(code);
+    if (sec && sec.people && sec.people.length) return sec;
+    if (auth && auth.field) return auth;
+    return sec || auth || null;
   }
   function ensureAuthIndex() {
     if (authIndexCache) return authIndexCache;
@@ -1132,7 +1287,10 @@
   }
   function setPeopleHint(itemId, text) {
     var el = document.querySelector('#brs-admin [data-people-hint="' + itemId + '"]');
-    if (el) el.innerHTML = text || "";
+    if (!el) return;
+    var t = text || "";
+    el.innerHTML = t;
+    el.hidden = !t;
   }
   function clearPeopleAuthPick() {
     peopleAuthPick = null;
@@ -1149,7 +1307,10 @@
     box.hidden = false;
     var onCount = peopleAuthPick.people.filter(function (p) { return p.on; }).length;
     if (label) {
-      label.textContent = authFieldLabel(peopleAuthPick.field) + " " + peopleAuthPick.code +
+      var air = peopleAuthPick.field === "op" ? airlineNameForOp(peopleAuthPick.code) : "";
+      var head = authFieldLabel(peopleAuthPick.field) + " " + peopleAuthPick.code +
+        (air ? " (" + air + ")" : "");
+      label.textContent = head +
         " · " + onCount + " / " + peopleAuthPick.people.length + " selected (Name List only)";
     }
     list.innerHTML = peopleAuthPick.people.map(function (p) {
@@ -1162,7 +1323,8 @@
   function setPeopleAuthPick(itemId, hit) {
     if (!hit || !hit.people || !hit.people.length) {
       clearPeopleAuthPick();
-      setPeopleHint(itemId, "No Authorization CS for code " + esc(hit && hit.code || "") + " on the Name List.");
+      var kind = hit && hit.field === "section" ? "section" : "Authorization group";
+      setPeopleHint(itemId, "No Name List people for " + kind + " " + esc(hit && hit.code || "") + ".");
       return;
     }
     peopleAuthPick = {
@@ -1172,7 +1334,9 @@
       people: hit.people.map(function (p) { return { staff: p.staff, name: p.name, on: true }; })
     };
     paintPeopleAuthPick();
-    setPeopleHint(itemId, authFieldLabel(hit.field) + " <b>" + esc(hit.code) + "</b> · edit +/−, then Add selected.");
+    var air = hit.field === "op" ? airlineNameForOp(hit.code) : "";
+    setPeopleHint(itemId, authFieldLabel(hit.field) + " <b>" + esc(hit.code) + "</b>" +
+      (air ? " (" + esc(air) + ")" : "") + " · edit +/−, then Add selected.");
   }
   function addSelectedAuthPeople(itemId) {
     if (!peopleAuthPick || peopleAuthPick.itemId !== itemId) return;
@@ -1230,6 +1394,7 @@
     }
     if (!isEditUnlocked()) {
       adminEditId = "";
+      discardDraft();
       pinSetStaff = {};
     }
     syncAdminDom();
@@ -1276,10 +1441,11 @@
   }
   function createItem(type) {
     if (!isEditUnlocked()) return;
+    discardDraft();
     var kind = type === "briefing" ? "briefing" : "read-sign";
-    var code = nextItemCode(kind);
+    var code = peekNextItemCode(kind);
     if (!code) return;
-    var it = {
+    draftItem = {
       id: uid("brs"),
       code: code,
       type: kind,
@@ -1287,13 +1453,10 @@
       materials: [],
       people: []
     };
-    doc.items.unshift(it);
-    adminEditId = it.id;
+    adminEditId = draftItem.id;
     filter = "all";
-    save();
-    render();
     renderAdminEditor();
-    paintAdminStatus("Item " + code + ". Set Type if needed.");
+    paintAdminStatus("Preview " + code + ". Confirm with Add item.");
   }
   function wireAdminOnce() {
     if (adminWired) return;
@@ -1317,7 +1480,7 @@
     if (sug) {
       var authCode = sug.getAttribute("data-pick-auth");
       if (authCode) {
-        var hit = authPeopleForCode(authCode);
+        var hit = resolvePeopleGroup(authCode);
         setPeopleAuthPick(sug.getAttribute("data-item"), hit);
         var findEl = document.querySelector('#brs-admin [data-find="' + sug.getAttribute("data-item") + '"]');
         if (findEl) findEl.value = authCode;
@@ -1335,7 +1498,7 @@
     }
     if (btn && btn.dataset.authClear) {
       clearPeopleAuthPick();
-      setPeopleHint(btn.dataset.authClear, "Type a staff # or name for the Name List popup, or an Authorization group code such as <b>KE</b>. Name List people only.");
+      setPeopleHint(btn.dataset.authClear, "");
       return;
     }
     if (btn && btn.dataset.authToggle) {
@@ -1359,15 +1522,21 @@
     if (btn.id === "btn-new") { createItem("read-sign"); return; }
     if (btn.id === "vault-refresh") { refreshVault(); return; }
     if (btn.dataset.adminEdit) {
+      if (draftItem && btn.dataset.adminEdit !== draftItem.id) discardDraft();
       adminEditId = btn.dataset.adminEdit;
       renderAdminEditor();
       paintAdminStatus("Editing item.");
       return;
     }
     if (btn.dataset.adminClose) {
+      if (draftItem && adminEditId === draftItem.id) discardDraft();
       adminEditId = "";
       renderAdminEditor();
       paintAdminStatus("");
+      return;
+    }
+    if (btn.dataset.confirmItem) {
+      confirmDraft(btn.dataset.confirmItem);
       return;
     }
     if (btn.dataset.addLink) {
@@ -1384,22 +1553,35 @@
       if (it.type === nextType) return;
       var wantPrefix = itemCodePrefix(nextType);
       var cur = parseItemCode(it.code);
+      var draft = isDraftItem(it);
       if (!cur || cur.prefix !== wantPrefix) {
-        var fresh = nextItemCode(nextType);
+        var fresh = peekNextItemCode(nextType);
         if (!fresh) return;
         it.code = fresh;
+        if (!draft) consumeIssuedCode(fresh);
       }
       it.type = nextType;
-      save();
-      render();
+      if (!draft) {
+        save();
+        render();
+      }
       renderAdminEditor();
-      paintAdminStatus("Item " + (it.code || "") + ".");
+      paintAdminStatus(draft
+        ? ("Preview " + (it.code || "") + ". Confirm with Add item.")
+        : ("Item " + (it.code || "") + "."));
       return;
     }
     if (btn.dataset.delItem) {
       var delId = btn.dataset.delItem;
       var delIt = itemById(delId);
+      var delDraft = isDraftItem(delIt);
       var delCode = delIt && delIt.code ? String(delIt.code) : "";
+      if (delDraft) {
+        discardDraft();
+        renderAdminEditor();
+        paintAdminStatus("Draft discarded. Number not reserved.");
+        return;
+      }
       showMsgPop({
         mode: "confirm",
         title: "Delete item",
@@ -1493,7 +1675,7 @@
       renderAdminEditor();
       return;
     }
-    var hit = authPeopleForCode(q);
+    var hit = resolvePeopleGroup(q);
     if (hit) {
       setPeopleAuthPick(itemId, hit);
       return;
@@ -1575,6 +1757,7 @@
     }
   }
   function editorHtml(it) {
+    var draft = isDraftItem(it);
     var mats = (it.materials || []).map(function (m) {
       var open = m.href ? "<a href=\"" + esc(m.href) + "\" target=\"_blank\" rel=\"noopener\">Open</a>" : "";
       return "<li><span class=\"who\"><b>" + esc(kindLabel(m.kind)) + "</b> · " + esc(m.name || "Material") + "</span>" +
@@ -1589,13 +1772,24 @@
         " <span class=\"muted\">" + esc(p.section || "") + " · " + done + "</span></span>" +
         clear + "<button type=\"button\" class=\"danger\" data-del-person=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
     }).join("") || "<li class=\"muted\">No people yet. Search the Name List.</li>";
+    var numTitle = draft
+      ? "Preview only until Add item. Not reserved yet."
+      : "Auto-issued. Cannot edit.";
+    var headLabel = draft ? "New item (not confirmed)" : "Edit item";
+    var actions =
+      "<div class=\"admin-section row-actions\">" +
+        "<button type=\"button\" class=\"danger\" data-del-item=\"" + esc(it.id) + "\">Delete item</button>" +
+        (draft
+          ? "<button type=\"button\" class=\"add\" data-confirm-item=\"" + esc(it.id) + "\">Add item</button>"
+          : "") +
+      "</div>";
     return "<div class=\"admin-editor\" id=\"admin-editor\">" +
       "<div class=\"admin-section\">" +
-        "<div class=\"bar\"><h3 style=\"margin:0;flex:1\">Edit item</h3>" +
+        "<div class=\"bar\"><h3 style=\"margin:0;flex:1\">" + headLabel + "</h3>" +
           "<button type=\"button\" class=\"quiet\" data-admin-close=\"1\">Close editor</button></div>" +
         "<div class=\"card-top\">" +
           "<div><label>Item number</label>" +
-            "<input type=\"text\" value=\"" + esc(it.code || "—") + "\" readonly disabled title=\"Auto-issued. Cannot edit.\"></div>" +
+            "<input type=\"text\" value=\"" + esc(it.code || "—") + "\" readonly disabled title=\"" + esc(numTitle) + "\"></div>" +
           "<div><label>Type</label><div class=\"seg\">" +
             "<button type=\"button\" data-type=\"briefing\" data-item=\"" + esc(it.id) + "\"" + (it.type !== "read-sign" ? " class=\"on\"" : "") + ">Briefing</button>" +
             "<button type=\"button\" data-type=\"read-sign\" data-item=\"" + esc(it.id) + "\"" + (it.type === "read-sign" ? " class=\"on\"" : "") + ">Read &amp; Sign</button>" +
@@ -1619,12 +1813,12 @@
       "<div class=\"admin-section\">" +
         "<h2>People</h2>" +
         "<div class=\"people-add\">" +
-          "<label for=\"find-" + esc(it.id) + "\">Staff # / Auth group</label>" +
+          "<label for=\"find-" + esc(it.id) + "\">Staff # / Group</label>" +
           "<div class=\"suggest\">" +
-            "<input id=\"find-" + esc(it.id) + "\" type=\"text\" data-find=\"" + esc(it.id) + "\" placeholder=\"236051 or KE\" autocomplete=\"off\" spellcheck=\"false\" maxlength=\"16\">" +
+            "<input id=\"find-" + esc(it.id) + "\" type=\"text\" data-find=\"" + esc(it.id) + "\" placeholder=\"\" autocomplete=\"off\" spellcheck=\"false\" maxlength=\"16\">" +
             "<ul data-suggest=\"" + esc(it.id) + "\" hidden role=\"listbox\"></ul>" +
           "</div>" +
-          "<p class=\"note\" data-people-hint=\"" + esc(it.id) + "\">Type a staff # or name for the Name List popup, or an Authorization group code such as <b>KE</b>. Name List people only.</p>" +
+          "<p class=\"note\" data-people-hint=\"" + esc(it.id) + "\" hidden></p>" +
           "<div class=\"auth-pick\" data-auth-pick=\"" + esc(it.id) + "\" hidden>" +
             "<div class=\"auth-pick-head\">" +
               "<span data-auth-label=\"" + esc(it.id) + "\"></span>" +
@@ -1636,9 +1830,8 @@
         "</div>" +
         "<ul class=\"clean people\">" + people + "</ul>" +
       "</div>" +
-      "<div class=\"admin-section row-actions\">" +
-        "<button type=\"button\" class=\"danger\" data-del-item=\"" + esc(it.id) + "\">Delete item</button>" +
-      "</div></div>";
+      actions +
+    "</div>";
   }
   function renderAdminEditor() {
     var wrap = document.getElementById("admin-editor-wrap");
@@ -1655,9 +1848,13 @@
         "<span class=\"pick-title\">" + esc(title) + "</span>" +
         "<span class=\"pick-frac\">" + da.done + " / " + da.assigned + "</span>" +
         "</button>";
-    }).join("") || "<span class=\"muted\">No items yet. Use New, then set Type.</span>";
+    }).join("") || "<span class=\"muted\">No items yet. Use New, then Add item to confirm.</span>";
     var ed = "";
-    var it = adminEditId ? itemById(adminEditId) : null;
+    var it = null;
+    if (adminEditId) {
+      if (draftItem && draftItem.id === adminEditId) it = draftItem;
+      else it = itemById(adminEditId);
+    }
     if (it) ed = editorHtml(it);
     wrap.innerHTML =
       "<div class=\"admin-pick\">" +
@@ -1806,6 +2003,7 @@
   }
 
   function itemById(id) {
+    if (draftItem && draftItem.id === id) return draftItem;
     for (var i = 0; i < doc.items.length; i++) if (doc.items[i].id === id) return doc.items[i];
     return null;
   }
@@ -2069,12 +2267,26 @@
     var lines = [];
     var nq = needle.toLowerCase();
     if (!/^\d/.test(needle)) {
-      listAuthGroupCodes().filter(function (g) {
-        return g.code.toLowerCase().indexOf(nq) >= 0;
-      }).slice(0, 6).forEach(function (g) {
+      var groupHits = [];
+      listAuthGroupCodes().forEach(function (g) {
+        if (g.code.toLowerCase().indexOf(nq) >= 0) groupHits.push(g);
+      });
+      listSectionGroupCodes().forEach(function (g) {
+        if (g.code.toLowerCase().indexOf(nq) < 0) return;
+        if (groupHits.some(function (x) { return x.code === g.code; })) return;
+        groupHits.push(g);
+      });
+      groupHits.sort(function (a, b) {
+        return a.code.length - b.code.length || a.code.localeCompare(b.code);
+      }).slice(0, 8).forEach(function (g) {
+        var mid = "";
+        if (g.field === "op") {
+          var air = airlineNameForOp(g.code);
+          if (air) mid = esc(air) + " · ";
+        }
         lines.push("<li data-pick-auth=\"" + esc(g.code) + "\" data-item=\"" + esc(itemId) + "\">" +
-          esc(g.code) + " <span class=\"sep\">—</span> " + esc(authFieldLabel(g.field)) +
-          " · " + g.n + " CS</li>");
+          esc(g.code) + " <span class=\"sep\">—</span> " + mid +
+          esc(authFieldLabel(g.field)) + " · " + g.n + " CS</li>");
       });
     }
     roster.filter(function (p) {
@@ -2243,6 +2455,7 @@
     if (!e || (e.key !== GATE_ROLE_KEY && e.key !== GATE_PW_KEY)) return;
     hubRole = readStoredGateRole();
     if (!isEditUnlocked()) {
+      discardDraft();
       adminEditId = "";
       pinSetStaff = {};
       if (window.HxSharedSync) window.HxSharedSync.setPassword("");
