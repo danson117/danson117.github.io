@@ -297,20 +297,83 @@
   .add-course #manual-exp { color-scheme: light; min-height: 32px; }
   .add-course .exp-wrap {
     position: relative;
-    display: flex;
-    align-items: stretch;
-    gap: 0;
+    display: block;
   }
-  .add-course .exp-wrap #manual-exp { flex: 1 1 auto; width: 100%; }
-  .add-course .exp-wrap #manual-exp-pick {
+  .add-course .exp-wrap #manual-exp { display: block; width: 100%; }
+  .add-course .exp-cal {
     position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-    border: 0;
-    padding: 0;
-    margin: 0;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 30;
+    width: min(17.5em, calc(100vw - 32px));
+    padding: 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(28, 36, 48, 0.14);
+    color: var(--ink);
+  }
+  .add-course .exp-cal[hidden] { display: none !important; }
+  .add-course .exp-cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .add-course .exp-cal-head button {
+    font: inherit;
+    min-width: 1.8em;
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+  }
+  .add-course .exp-cal-title {
+    font-weight: 650;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .add-course .exp-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    text-align: center;
+  }
+  .add-course .exp-cal-dow {
+    font-size: 11px;
+    font-weight: 650;
+    color: var(--muted, #5b6572);
+    padding: 2px 0;
+  }
+  .add-course .exp-cal-day {
+    font: inherit;
+    padding: 5px 0;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    min-height: 1.8em;
+  }
+  .add-course .exp-cal-day:hover { background: #eef3f8; }
+  .add-course .exp-cal-day.muted { color: #9aa3ad; }
+  .add-course .exp-cal-day.selected {
+    background: var(--navy, #1c3a5f);
+    color: #fff;
+  }
+  .add-course .exp-cal-day.today:not(.selected) {
+    border-color: var(--navy, #1c3a5f);
+  }
+  .add-course .exp-cal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .add-course .exp-cal-actions button {
+    font: inherit;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+    cursor: pointer;
   }
   .add-course .note { margin-top: 6px; }
   .visually-hidden {
@@ -1006,8 +1069,20 @@
           <div>
             <label for="manual-exp">Expire date</label>
             <div class="exp-wrap" id="manual-exp-wrap">
-              <input id="manual-exp" type="text" lang="en" inputmode="numeric" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" maxlength="10" title="YYYY-MM-DD — type digits or pick from calendar" autocomplete="off" required>
-              <input id="manual-exp-pick" type="date" lang="en" tabindex="-1" aria-label="Pick expire date">
+              <input id="manual-exp" type="text" lang="en" inputmode="numeric" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" maxlength="10" title="YYYY-MM-DD — type digits or pick from calendar" autocomplete="off" required aria-haspopup="dialog" aria-controls="manual-exp-cal" aria-expanded="false">
+              <div id="manual-exp-cal" class="exp-cal" hidden role="dialog" aria-label="Expire date calendar">
+                <div class="exp-cal-head">
+                  <button type="button" id="manual-exp-prev" aria-label="Previous month">‹</button>
+                  <span class="exp-cal-title" id="manual-exp-title"></span>
+                  <button type="button" id="manual-exp-next" aria-label="Next month">›</button>
+                </div>
+                <div class="exp-cal-grid" id="manual-exp-dows" aria-hidden="true"></div>
+                <div class="exp-cal-grid" id="manual-exp-days" role="grid" aria-label="Days"></div>
+                <div class="exp-cal-actions">
+                  <button type="button" id="manual-exp-clear">Clear</button>
+                  <button type="button" id="manual-exp-today">Today</button>
+                </div>
+              </div>
             </div>
           </div>
           <div>
@@ -1149,7 +1224,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="9.3" aria-label="Page version 9.3">v9.3</div>
+  <div class="page-version" data-version="9.4" aria-label="Page version 9.4">v9.4</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=6"></script>
@@ -5179,8 +5254,6 @@ function resetManualFormFields() {
   document.getElementById("manual-cname").value = "";
   document.getElementById("manual-cname").dataset.autofill = "";
   document.getElementById("manual-exp").value = "";
-  const pick = document.getElementById("manual-exp-pick");
-  if (pick) pick.value = "";
   const addStaff = document.getElementById("manual-auth-add-staff");
   if (addStaff) addStaff.value = "";
   hideCodeSuggest();
@@ -7024,17 +7097,112 @@ function formatExpireTyping(raw) {
   if (d.length <= 6) return d.slice(0, 4) + "-" + d.slice(4);
   return d.slice(0, 4) + "-" + d.slice(4, 6) + "-" + d.slice(6);
 }
-function syncExpirePickFromText() {
-  const textEl = document.getElementById("manual-exp");
-  const pick = document.getElementById("manual-exp-pick");
-  if (!textEl || !pick) return;
-  const v = String(textEl.value || "").trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) pick.value = v;
+function parseExpireIsoParts(raw) {
+  const m = String(raw || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  if (!validYmd(y, mo, d)) return null;
+  return { y: y, m: mo, d: d };
+}
+function expireIsoFromParts(y, m, d) {
+  return String(y) + "-" + pad2(m) + "-" + pad2(d);
 }
 function wireExpireDateField() {
   const textEl = document.getElementById("manual-exp");
-  const pick = document.getElementById("manual-exp-pick");
-  if (!textEl || !pick) return;
+  const wrap = document.getElementById("manual-exp-wrap");
+  const cal = document.getElementById("manual-exp-cal");
+  const titleEl = document.getElementById("manual-exp-title");
+  const daysEl = document.getElementById("manual-exp-days");
+  const dowsEl = document.getElementById("manual-exp-dows");
+  const prevBtn = document.getElementById("manual-exp-prev");
+  const nextBtn = document.getElementById("manual-exp-next");
+  const clearBtn = document.getElementById("manual-exp-clear");
+  const todayBtn = document.getElementById("manual-exp-today");
+  if (!textEl || !wrap || !cal || !titleEl || !daysEl || !dowsEl) return;
+
+  const MONTHS = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+  const DOWS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  let viewY = new Date().getFullYear();
+  let viewM = new Date().getMonth() + 1;
+  let open = false;
+
+  dowsEl.innerHTML = DOWS.map((d) => "<span class=\"exp-cal-dow\">" + d + "</span>").join("");
+
+  function setExpanded(on) {
+    textEl.setAttribute("aria-expanded", on ? "true" : "false");
+  }
+  function closeCal() {
+    if (!open) return;
+    open = false;
+    cal.hidden = true;
+    setExpanded(false);
+  }
+  function openCal() {
+    const parts = parseExpireIsoParts(textEl.value);
+    if (parts) {
+      viewY = parts.y;
+      viewM = parts.m;
+    } else {
+      const now = new Date();
+      viewY = now.getFullYear();
+      viewM = now.getMonth() + 1;
+    }
+    renderCal();
+    open = true;
+    cal.hidden = false;
+    setExpanded(true);
+  }
+  function setExpireValue(iso) {
+    textEl.value = iso || "";
+    try {
+      textEl.focus();
+      const n = textEl.value.length;
+      textEl.setSelectionRange(n, n);
+    } catch (e) {}
+    renderCal();
+  }
+  function renderCal() {
+    titleEl.textContent = MONTHS[viewM - 1] + " " + viewY;
+    const selected = parseExpireIsoParts(textEl.value);
+    const today = new Date();
+    const ty = today.getFullYear();
+    const tm = today.getMonth() + 1;
+    const td = today.getDate();
+    const firstDow = new Date(viewY, viewM - 1, 1).getDay();
+    const daysInMonth = new Date(viewY, viewM, 0).getDate();
+    const prevDays = new Date(viewY, viewM - 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < 42; i++) {
+      let y = viewY;
+      let m = viewM;
+      let d;
+      let muted = false;
+      if (i < firstDow) {
+        d = prevDays - firstDow + 1 + i;
+        m = viewM - 1;
+        if (m < 1) { m = 12; y -= 1; }
+        muted = true;
+      } else if (i >= firstDow + daysInMonth) {
+        d = i - firstDow - daysInMonth + 1;
+        m = viewM + 1;
+        if (m > 12) { m = 1; y += 1; }
+        muted = true;
+      } else {
+        d = i - firstDow + 1;
+      }
+      const iso = expireIsoFromParts(y, m, d);
+      const cls = ["exp-cal-day"];
+      if (muted) cls.push("muted");
+      if (selected && selected.y === y && selected.m === m && selected.d === d) cls.push("selected");
+      if (y === ty && m === tm && d === td) cls.push("today");
+      cells.push("<button type=\"button\" class=\"" + cls.join(" ") + "\" data-iso=\"" + iso + "\" aria-label=\"" + iso + "\">" + d + "</button>");
+    }
+    daysEl.innerHTML = cells.join("");
+  }
+
   textEl.addEventListener("input", () => {
     const start = textEl.selectionStart;
     const before = textEl.value;
@@ -7047,17 +7215,59 @@ function wireExpireDateField() {
         textEl.setSelectionRange(pos, pos);
       } catch (e) {}
     }
-    syncExpirePickFromText();
-  });
-  pick.addEventListener("change", () => {
-    const v = String(pick.value || "").trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) textEl.value = v;
+    const parts = parseExpireIsoParts(textEl.value);
+    if (parts) {
+      viewY = parts.y;
+      viewM = parts.m;
+    }
+    if (open) renderCal();
   });
   textEl.addEventListener("click", () => {
-    syncExpirePickFromText();
-    try {
-      if (typeof pick.showPicker === "function") pick.showPicker();
-    } catch (e) {}
+    if (!open) openCal();
+  });
+  textEl.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape") closeCal();
+  });
+  prevBtn.addEventListener("mousedown", (ev) => ev.preventDefault());
+  nextBtn.addEventListener("mousedown", (ev) => ev.preventDefault());
+  clearBtn.addEventListener("mousedown", (ev) => ev.preventDefault());
+  todayBtn.addEventListener("mousedown", (ev) => ev.preventDefault());
+  daysEl.addEventListener("mousedown", (ev) => {
+    if (ev.target && ev.target.closest && ev.target.closest(".exp-cal-day")) ev.preventDefault();
+  });
+  prevBtn.addEventListener("click", () => {
+    viewM -= 1;
+    if (viewM < 1) { viewM = 12; viewY -= 1; }
+    renderCal();
+  });
+  nextBtn.addEventListener("click", () => {
+    viewM += 1;
+    if (viewM > 12) { viewM = 1; viewY += 1; }
+    renderCal();
+  });
+  clearBtn.addEventListener("click", () => {
+    setExpireValue("");
+  });
+  todayBtn.addEventListener("click", () => {
+    const now = new Date();
+    viewY = now.getFullYear();
+    viewM = now.getMonth() + 1;
+    setExpireValue(expireIsoFromParts(viewY, viewM, now.getDate()));
+  });
+  daysEl.addEventListener("click", (ev) => {
+    const btn = ev.target && ev.target.closest ? ev.target.closest(".exp-cal-day") : null;
+    if (!btn) return;
+    const iso = String(btn.getAttribute("data-iso") || "");
+    const parts = parseExpireIsoParts(iso);
+    if (!parts) return;
+    viewY = parts.y;
+    viewM = parts.m;
+    setExpireValue(iso);
+  });
+  document.addEventListener("mousedown", (ev) => {
+    if (!open) return;
+    if (wrap.contains(ev.target)) return;
+    closeCal();
   });
 }
 function applyHubGate(msg) {
