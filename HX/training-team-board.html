@@ -1129,7 +1129,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="9.0" aria-label="Page version 9.0">v9.0</div>
+  <div class="page-version" data-version="9.1" aria-label="Page version 9.1">v9.1</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=6"></script>
@@ -4194,13 +4194,39 @@ function normManualRow(r) {
 function persistManualCourses() {
   schedulePersistActions();
 }
+function manualRowKey(r) {
+  const n = normManualRow(r);
+  if (n.id) return "id:" + n.id;
+  return "sc:" + n.staff + "|" + String(n.code || "").toUpperCase() + "|" + n.exp;
+}
+function mergeManualLists() {
+  const byKey = new Map();
+  for (let i = 0; i < arguments.length; i++) {
+    const list = arguments[i];
+    if (!Array.isArray(list)) continue;
+    list.forEach((raw) => {
+      const n = normManualRow(raw);
+      if (!n.staff || !(n.code || n.cname) || !n.exp) return;
+      const k = manualRowKey(n);
+      if (!byKey.has(k)) byKey.set(k, n);
+    });
+  }
+  return Array.from(byKey.values());
+}
 async function restoreManualCourses() {
   const file = await loadActionsFileJson();
-  let rows = [];
-  if (SEED_ACTIONS && Array.isArray(SEED_ACTIONS.manual)) rows = SEED_ACTIONS.manual;
-  if (file && Array.isArray(file.manual) && file.manual.length) rows = file.manual;
+  const seed = SEED_ACTIONS && Array.isArray(SEED_ACTIONS.manual) ? SEED_ACTIONS.manual : [];
+  const disk = file && Array.isArray(file.manual) ? file.manual : [];
   const got = peekJson(MANUAL_STORE);
-  if (got.found && Array.isArray(got.value) && got.value.length) rows = got.value;
+  const local = got.found && Array.isArray(got.value) ? got.value : [];
+  let rows;
+  if (getSyncKey()) {
+    rows = mergeManualLists(seed, disk, local);
+  } else {
+    rows = seed.slice();
+    if (disk.length) rows = disk;
+    if (local.length) rows = local;
+  }
   manualRows = rows.map(normManualRow).filter((r) => r.staff && (r.code || r.cname) && r.exp);
 }
 function normActionLogEntry(raw) {
@@ -6828,6 +6854,10 @@ function migrateAccessLevels() {
     persistArmed = true;
     migratePersisted();
     mergeCatalogFromBoard();
+    if (getSyncKey()) {
+      persistActionsLocal();
+      flushActionsOut();
+    }
     paint();
     applyWriteAccess();
   } catch (e) {
