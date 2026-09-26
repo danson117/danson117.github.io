@@ -1255,7 +1255,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="10.6" aria-label="Page version 10.6">v10.6</div>
+  <div class="page-version" data-version="10.7" aria-label="Page version 10.7">v10.7</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=6"></script>
@@ -4106,6 +4106,9 @@ function normalizeStatusRec(rec) {
   if (remark) out.remark = remark;
   return out;
 }
+function isSharedMetaStatusKey(k) {
+  return String(k || "").indexOf("__hx_shared__/") === 0;
+}
 function markStatusDirty(key, baseV, deleted) {
   const k = String(key || "");
   if (!k) return;
@@ -4168,6 +4171,7 @@ function applyServerPayload(data, opts) {
   const remoteStatus = data.status && typeof data.status === "object" ? data.status : {};
   const nextStatus = {};
   Object.keys(remoteStatus).forEach((k) => {
+    if (isSharedMetaStatusKey(k)) return;
     const rec = normalizeStatusRec(remoteStatus[k]);
     if (rec) nextStatus[k] = rec;
   });
@@ -4379,6 +4383,7 @@ function mergeStatusMaps() {
     const src = arguments[i];
     if (!src || typeof src !== "object" || Array.isArray(src)) continue;
     Object.keys(src).forEach((k) => {
+      if (isSharedMetaStatusKey(k)) return;
       const rec = normalizeStatusRec(src[k]);
       if (!rec) return;
       const prev = out[k];

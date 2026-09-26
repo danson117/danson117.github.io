@@ -141,13 +141,16 @@
       </ul>
     </div>
 
-    <h2 id="shared-data">3. 共用紀錄 → Supabase</h2>
+    <h2 id="shared-data">3. 共用紀錄 → Supabase（已實作）</h2>
     <div class="card">
-      <p>以前冇 Supabase，設置同紀錄只留各機 browser。而家起：</p>
+      <p><span class="key">已實作</span>：同一個網站、任何裝置（電腦／iPad／另一部機）見到<strong>同一效果</strong>。設置、文字、學習進度、課程表等共用紀錄寫入 locked Supabase（經 Edge <code>team-board</code> 保留位 <code>__hx_shared__/…</code>），由 Vercel 頁讀寫。唔會清 Training One View 嘅 Status／Manual／UAL／CT／Mandatory。</p>
       <ul>
-        <li><span class="key">同一個網站、任何裝置</span>（電腦／iPad／另一部機）要見到<strong>同一效果</strong>。設置、文字、學習進度、課程表等共用紀錄 → 寫入 Supabase，由 Vercel 頁讀寫。</li>
-        <li>包：Alpha_Learn、Karson_Learn、Course List，以及其他本來只寫 <code>localStorage</code>／IndexedDB 嘅共用狀態。</li>
-        <li><strong>例外：HX／Training One View</strong>——有權限閘。訪客 view-only；解鎖先有 edit／admin。公開側欄同額外動作由 admin 控。權限唔同，畫面動作可以唔同；但板面資料（Status／上傳檔等）仍經 locked Edge 同步，唔靠各機私貨。</li>
+        <li><strong>Course List</strong>（<code>course-catalog.html</code>）：課程列同步。</li>
+        <li><strong>Alpha_Learn／Karson_Learn</strong>：詞庫、學生檔、練習進度同步（錄音等大檔可留本機）。</li>
+        <li>開頁先拉雲端；本機有貨而伺服器空 → 上傳一次；之後以伺服器為準。空裝置唔會洗伺服器。</li>
+        <li>寫入要用 HX Unlock 密碼（同閘；存在本機 <code>hx:hub:gate-pw</code>）。讀公開 GET，唔使密碼。各裝置至少 Unlock 一次先可以上傳。</li>
+        <li>純 UI（字體、暗色、上次開邊頁）可留本機。</li>
+        <li><strong>例外：HX／Training One View</strong>——有權限閘。訪客 view-only；解鎖先有 edit／admin。板面資料仍經 locked Edge 同步。</li>
         <li>唔寫 <code>hx_test</code>。唔把 service role／密碼寫入 HTML。</li>
       </ul>
     </div>
@@ -220,7 +223,7 @@
     <h2 id="pages">8. 其他 HX 頁</h2>
     <div class="card">
       <ul>
-        <li><b>Course List</b>（<code>#courses</code>）：Name／Code／Type／Interval 等。Course <strong>冇 Expiry</strong>。Code unique。共用紀錄應入 Supabase（唔再只留 browser）。</li>
+        <li><b>Course List</b>（<code>#courses</code>）：Name／Code／Type／Interval 等。Course <strong>冇 Expiry</strong>。Code unique。共用紀錄<strong>已入</strong> Supabase（<code>__hx_shared__/course-catalog</code>）。</li>
         <li><b>Future section codes</b>（<code>#sections</code>）：將來 LT family；未出街唔好覆蓋現有 section。唔要 TEAM 數字；唔要 duplicate。</li>
         <li><b>Authorization List</b>／<b>License Records</b>：CSV DEPT 只參考；顯示 Section／Team 跟 Name List。唔喺 Name List 嘅人唔上表。</li>
         <li>大名單 packed lossless：<code>ocg-pax-data.js</code>。改 version 唔好清已載入訓練檔。</li>
@@ -250,6 +253,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#fth-rewrite</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="4.0">v4.0</div>
+  <div class="page-version" data-version="4.1">v4.1</div>
 </body>
 </html>

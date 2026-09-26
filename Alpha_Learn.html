@@ -1,10 +1,10 @@
-<!-- Ver.3.2 -->
+<!-- Ver.3.3 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="3.2">
+  <meta name="app-version" content="3.3">
   <title>Alpha_Learn</title>
   <style>
     :root {
@@ -77,7 +77,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.3.2</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.3.3</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -128,7 +128,7 @@
     </div>
   </div>
   <iframe id="app-frame" title="學習內容"></iframe>
-  <div class="version-badge" id="version-badge">Ver.3.2</div>
+  <div class="version-badge" id="version-badge">Ver.3.3</div>
   <script>
   const APP_VERSION = "3.2";
   const PAGES = {
@@ -643,7 +643,8 @@
       " text = input.value.trim();\n    if (!text) return;\n    const notes = loadCustomNotes();\n    notes.push({ id: Date.now(), text, ts: Date.now() });\n    saveCustomNotes(notes);\n    input.value = \"\";\n    renderCustomNotes();\n    updateNotebookCount();\n  }\n\n  function deleteCustomNote(id) {\n    showConfirm(\"確定要刪除這條筆記嗎？\", () => {\n      const notes = loadCustomNotes().filter((n) => n.id !== id);\n      saveCustomNotes(notes);\n      renderCustomNotes();\n      updateNotebookCount();\n    });\n  }\n\n  function renderCustomNotes() {\n    const list = document.getElementById(\"customNoteList\");\n    if (!list) return;\n    const notes = loadCustomNotes();\n    if (!notes.length) {\n      list.innerHTML =\n        '<li class=\"notebook-empty\">你還沒有加入自訂筆記。可在上方輸入好句或寫作提示。</li>';\n      return;\n    }\n    list.innerHTML = notes\n      .slice()\n      .reverse()\n      .map(\n        (n) => `\n      <li class=\"notebook-item notebook-item-custom\">\n        <div class=\"notebook-item-body\">${escapeHtml(n.text)}</div>\n        <span class=\"notebook-item-source\">自行加入</span>\n        <button type=\"button\" class=\"notebook-delete\" data-id=\"${n.id}\" title=\"刪除\">×</button>\n      </li>`,\n      )\n      .join(\"\");\n    list.querySelectorAll(\".notebook-delete\").forEach((btn) => {\n      btn.addEventListener(\"click\", () =>\n        deleteCustomNote(Number(btn.dataset.id)),\n      );\n    });\n  }\n\n  function renderNotebookHighlights() {\n    const list = document.getElementById(\"articleHighlightsList\");\n    if (!list) return;\n    const map = loadHighlightMap();\n    const entries = Object.entries(map)\n      .map(([key, val]) => ({\n        key,\n        ...(typeof val === \"object\" ? val : { text: val }),\n      }))\n      .filter((e) => e.text)\n      .sort((a, b) => (b.ts || 0) - (a.ts || 0));\n\n    if (!entries.length) {\n      list.inner" +
       "HTML =\n        '<li class=\"notebook-empty\">還沒有標記任何文句。展開範文後，點擊句子即可加入。</li>';\n      return;\n    }\n\n    list.innerHTML = entries\n      .map(\n        (e) => `\n      <li class=\"notebook-item notebook-item-article\">\n        <div class=\"notebook-item-body\">${escapeHtml(e.text)}</div>\n        <span class=\"notebook-item-source\">來自：${escapeHtml(e.category ? e.category + \" · \" : \"\")}${escapeHtml(e.topic || \"範文\")}</span>\n        <button type=\"button\" class=\"notebook-goto\" data-key=\"${escapeHtml(e.key)}\" title=\"跳至原文\">↗</button>\n      </li>`,\n      )\n      .join(\"\");\n\n    list.querySelectorAll(\".notebook-goto\").forEach((btn) => {\n      btn.addEventListener(\"click\", () => gotoPhrase(btn.dataset.key));\n    });\n  }\n\n  function gotoPhrase(key) {\n    const el = document.querySelector(`.user-phrase[data-key=\"${key}\"]`);\n    if (!el) {\n      showConfirm(\"找不到原文（可能已更新頁面）。是否移除此筆記？\", () => {\n        const map = loadHighlightMap();\n        delete map[key];\n        saveHighlightMap(map);\n        renderNotebookHighlights();\n        updateNotebookCount();\n      });\n      return;\n    }\n    const details = el.closest(\"details\");\n    if (details) details.open = true;\n    setTimeout(() => {\n      el.scrollIntoView({ behavior: \"smooth\", block: \"center\" });\n      el.classList.add(\"user-flash\");\n      setTimeout(() => el.classList.remove(\"user-flash\"), 1500);\n    }, 200);\n  }\n\n  function updateNotebookCount() {\n    const badge = document.getElementById(\"notebookCountBadge\");\n    if (!badge) return;\n    const n = Object.keys(loadHighlightMap()).length + loadCustomNotes().length;\n    badge.textContent = n > 0 ? String(n) : \"\";\n    badge.style.display = n > 0 ? \"inline-flex\" : \"none\";\n  }\n\n  function exportNotebook() {\n    const map = loadHighlightMap();\n    const notes = loadCustomNotes();\n    let out = \"【小" +
       "五六作文 · 我的重點筆記本】\\n\\n\";\n    out += \"── 來自範文的標記 ──\\n\";\n    Object.values(map).forEach((v) => {\n      const item = typeof v === \"object\" ? v : { text: v };\n      out += `· ${item.text}${item.topic ? \" （\" + item.topic + \"）\" : \"\"}\\n`;\n    });\n    out += \"\\n── 自訂筆記 ──\\n\";\n    notes.forEach((n) => {\n      out += `· ${n.text}\\n`;\n    });\n    navigator.clipboard\n      ?.writeText(out)\n      .then(() => alert(\"已複製到剪貼簿，可貼到 Word 或筆記 App。\"))\n      .catch(() => {\n        prompt(\"請複製以下內容：\", out);\n      });\n  }\n\n  function escapeHtml(s) {\n    return String(s)\n      .replace(/&/g, \"&amp;\")\n      .replace(/</g, \"&lt;\")\n      .replace(/>/g, \"&gt;\")\n      .replace(/\"/g, \"&quot;\");\n  }\n\n  function onPhraseClick(e) {\n    const el = e.target.closest(\".user-phrase\");\n    if (el) {\n      e.preventDefault();\n      togglePhrase(el);\n    }\n  }\n\n  function init() {\n    injectHintBars();\n    wrapEssayParagraphs();\n    applySavedHighlights();\n    renderCustomNotes();\n    renderNotebookHighlights();\n    updateNotebookCount();\n\n    document.addEventListener(\"click\", onPhraseClick);\n\n    document\n      .getElementById(\"addNoteBtn\")\n      ?.addEventListener(\"click\", addCustomNote);\n    document\n      .getElementById(\"customNoteInput\")\n      ?.addEventListener(\"keydown\", (e) => {\n        if (e.key === \"Enter\") addCustomNote();\n      });\n    document\n      .getElementById(\"exportNotebookBtn\")\n      ?.addEventListener(\"click\", exportNotebook);\n    document\n      .getElementById(\"clearAllMarksBtn\")\n      ?.addEventListener(\"click\", clearAllUserMarks);\n    document.getElementById(\"userConfirmYes\")?.addEventListener(\"click\", () => {\n      const cb = confirmCallback;\n      closeConfirm();\n      if (cb) cb();\n    });\n    document\n      .getElementById(\"userConfirmNo\")\n      ?.addEventListener(\"click\", closeConfir" +
-      "m);\n    document\n      .getElementById(\"userOverlay\")\n      ?.addEventListener(\"click\", closeConfirm);\n\n    /* 展開範文後確保已包裝（details 延遲載入無需，但動態 open 時重試） */\n    document.querySelectorAll(\"details\").forEach((d) => {\n      d.addEventListener(\"toggle\", () => {\n        if (d.open) {\n          wrapEssayParagraphs();\n          applySavedHighlights();\n        }\n      });\n    });\n  }\n\n  if (document.readyState === \"loading\") {\n    document.addEventListener(\"DOMContentLoaded\", init);\n  } else {\n    init();\n  }\n})();\n\n<\/script>\n    <script>\n/**\n * 範文閱讀次數（localStorage）\n * 每篇範文可手動「睇完 +1」，記錄已讀次數\n */\n(function () {\n  const STORAGE_KEY = \"p56_essay_read_count_v1\";\n\n  const safeStorage = {\n    _memory: {},\n    isAvailable: (function () {\n      try {\n        const t = \"__p56_read_test__\";\n        localStorage.setItem(t, t);\n        localStorage.removeItem(t);\n        return true;\n      } catch (e) {\n        return false;\n      }\n    })(),\n    getItem(key) {\n      if (this.isAvailable) return localStorage.getItem(key);\n      return this._memory[key] || null;\n    },\n    setItem(key, value) {\n      if (this.isAvailable) {\n        try {\n          localStorage.setItem(key, value);\n        } catch (e) {\n          console.warn(\"Read count storage error\", e);\n        }\n      } else {\n        this._memory[key] = value;\n      }\n    },\n  };\n\n  function loadCounts() {\n    try {\n      const raw = safeStorage.getItem(STORAGE_KEY);\n      return raw ? JSON.parse(raw) : {};\n    } catch (e) {\n      return {};\n    }\n  }\n\n  function saveCounts(map) {\n    safeStorage.setItem(STORAGE_KEY, JSON.stringify(map));\n  }\n\n  function getEssayId(li) {\n    const cat = li.closest(\"[id^='cat-']\");\n    const catId = cat?.id || \"unknown\";\n    const strong = li.querySelector(\"strong\");\n    const title = strong\n      ? strong." +
+      "m);\n    document\n      .getElementById(\"userOverlay\")\n      ?.addEventListener(\"click\", closeConfirm);\n\n    /* 展開範文後確保已包裝（details 延遲載入無需，但動態 open 時重試） */\n    document.querySelectorAll(\"details\").forEach((d) => {\n      d.addEventListener(\"toggle\", () => {\n        if (d.open) {\n          wrapEssayParagraphs();\n          applySavedHighlights();\n        }\n      });\n    });\n  }\n\n  if (document.readyState === \"loading\") {\n    document.addEventListener(\"DOMContentLoaded\", init);\n  } else {\n    init();\n  }\n})();\n\n<\/script>\n      <script src="HX/hx-shared-sync.js?v=1.0"></script>
+<script>\n/**\n * 範文閱讀次數（localStorage）\n * 每篇範文可手動「睇完 +1」，記錄已讀次數\n */\n(function () {\n  const STORAGE_KEY = \"p56_essay_read_count_v1\";\n\n  const safeStorage = {\n    _memory: {},\n    isAvailable: (function () {\n      try {\n        const t = \"__p56_read_test__\";\n        localStorage.setItem(t, t);\n        localStorage.removeItem(t);\n        return true;\n      } catch (e) {\n        return false;\n      }\n    })(),\n    getItem(key) {\n      if (this.isAvailable) return localStorage.getItem(key);\n      return this._memory[key] || null;\n    },\n    setItem(key, value) {\n      if (this.isAvailable) {\n        try {\n          localStorage.setItem(key, value);\n        } catch (e) {\n          console.warn(\"Read count storage error\", e);\n        }\n      } else {\n        this._memory[key] = value;\n      }\n    },\n  };\n\n  function loadCounts() {\n    try {\n      const raw = safeStorage.getItem(STORAGE_KEY);\n      return raw ? JSON.parse(raw) : {};\n    } catch (e) {\n      return {};\n    }\n  }\n\n  function saveCounts(map) {\n    safeStorage.setItem(STORAGE_KEY, JSON.stringify(map));\n  }\n\n  function getEssayId(li) {\n    const cat = li.closest(\"[id^='cat-']\");\n    const catId = cat?.id || \"unknown\";\n    const strong = li.querySelector(\"strong\");\n    const title = strong\n      ? strong." +
       "textContent.replace(/\\s+/g, \" \").trim()\n      : \"未知題目\";\n    return catId + \"::\" + title;\n  }\n\n  function formatCount(n) {\n    return n > 0 ? \"已讀 \" + n + \" 次\" : \"未讀\";\n  }\n\n  function updateUiForEssay(essayId, count) {\n    document\n      .querySelectorAll('[data-essay-id=\"' + essayId + '\"]')\n      .forEach((el) => {\n        if (el.classList.contains(\"essay-read-badge\")) {\n          el.textContent = formatCount(count);\n          el.classList.toggle(\"essay-read-badge--active\", count > 0);\n        }\n        const num = el.querySelector(\".essay-read-num\");\n        if (num) num.textContent = String(count);\n      });\n  }\n\n  function incrementRead(essayId) {\n    const map = loadCounts();\n    const next = (map[essayId] || 0) + 1;\n    map[essayId] = next;\n    saveCounts(map);\n    updateUiForEssay(essayId, next);\n    flashEssay(essayId);\n    return next;\n  }\n\n  function resetRead(essayId) {\n    const map = loadCounts();\n    delete map[essayId];\n    saveCounts(map);\n    updateUiForEssay(essayId, 0);\n  }\n\n  function flashEssay(essayId) {\n    document\n      .querySelectorAll('[data-essay-id=\"' + essayId + '\"].essay-read-badge')\n      .forEach((badge) => {\n        badge.classList.add(\"essay-read-flash\");\n        setTimeout(() => badge.classList.remove(\"essay-read-flash\"), 600);\n      });\n  }\n\n  function injectReadUi() {\n    const counts = loadCounts();\n    const essayLis = [];\n\n    document\n      .querySelectorAll(\".essay-body, .essay-body-arg\")\n      .forEach((body) => {\n        const li = body.closest(\"li\");\n        if (!li || li.dataset.readCountInit) return;\n        li.dataset.readCountInit = \"1\";\n        essayLis.push(li);\n      });\n\n    essayLis.forEach((li) => {\n      const essayId = getEssayId(li);\n      const count = counts[essayId] || 0;\n      const strong = li.querySelector(" +
       "\"strong\");\n      if (strong && !li.querySelector(\".essay-read-badge\")) {\n        const badge = document.createElement(\"span\");\n        badge.className = \"essay-read-badge\";\n        badge.dataset.essayId = essayId;\n        badge.textContent = formatCount(count);\n        badge.classList.toggle(\"essay-read-badge--active\", count > 0);\n        badge.title = \"本篇範文累計閱讀次數\";\n        strong.insertAdjacentElement(\"afterend\", badge);\n      }\n\n      const body = li.querySelector(\".essay-body, .essay-body-arg\");\n      if (body && !body.querySelector(\".essay-read-bar\")) {\n        const bar = document.createElement(\"div\");\n        bar.className = \"essay-read-bar\";\n        bar.dataset.essayId = essayId;\n        bar.innerHTML =\n          '<span class=\"essay-read-count-text\">本篇已睇 <strong class=\"essay-read-num\">' +\n          count +\n          \"</strong> 次</span>\" +\n          '<span class=\"essay-read-actions\">' +\n          '<button type=\"button\" class=\"btn-read-done\">✓ 睇完 +1</button>' +\n          '<button type=\"button\" class=\"btn-read-reset\" title=\"重設本篇次數\">重設</button>' +\n          \"</span>\";\n\n        bar.querySelector(\".btn-read-done\").addEventListener(\"click\", () => {\n          incrementRead(essayId);\n        });\n        bar.querySelector(\".btn-read-reset\").addEventListener(\"click\", () => {\n          const current = loadCounts()[essayId] || 0;\n          if (current <= 0) return;\n          if (\n            confirm(\n              \"重設「\" +\n                (strong?.textContent.trim() || \"本篇\") +\n                \"」的閱讀次數？\",\n            )\n          ) {\n            resetRead(essayId);\n          }\n        });\n        body.appendChild(bar);\n      }\n    });\n  }\n\n  function init() {\n    injectReadUi();\n  }\n\n  if (document.readyState === \"loading\") {\n    document.addEventListener(\"DOMContentLoaded\", init" +
       ");\n  } else {\n    init();\n  }\n\n  window.p56ReadCount = {\n    getAll: loadCounts,\n    resetAll: function () {\n      if (confirm(\"重設全部範文的閱讀次數？\")) {\n        saveCounts({});\n        document.querySelectorAll(\".essay-read-badge\").forEach((el) => {\n          const id = el.dataset.essayId;\n          if (id) updateUiForEssay(id, 0);\n        });\n      }\n    },\n  };\n})();\n\n<\/script>\n  </body>\n</html>\n"
@@ -1199,12 +1200,140 @@
     btn.addEventListener('click', () => loadPage(btn.dataset.page));
   });
 
+
+  const SHARED_DOC = 'alpha-learn';
+  const CLOUD_SKIP_KEYS = new Set(['alpha-hub-last-page', 'essay-font', 'essay-dark']);
+  let cloudReady = false;
+  let suppressCloudPush = false;
+
+  function cloudKeysFromLocal() {
+    const data = {};
+    PROGRESS_KEYS.forEach((k) => {
+      if (CLOUD_SKIP_KEYS.has(k)) return;
+      const v = localStorage.getItem(k);
+      if (v !== null) data[k] = v;
+    });
+    return data;
+  }
+
+  function stripFlashcardAudio(dbExport) {
+    if (!dbExport) return { name: FLASH_DB_NAME, records: [] };
+    function scrub(value) {
+      if (value && typeof value === 'object' && value.__alphaBackupType === 'Blob') return null;
+      if (value && typeof value === 'object' && value.__karsonBackupType === 'Blob') return null;
+      if (Array.isArray(value)) return value.map(scrub).filter((x) => x !== null);
+      if (value && typeof value === 'object') {
+        const out = {};
+        Object.keys(value).forEach((k) => {
+          if (k === 'audioBlob' || k === 'audioUrl') return;
+          const v = scrub(value[k]);
+          if (v !== null) out[k] = v;
+        });
+        return out;
+      }
+      return value;
+    }
+    return {
+      name: dbExport.name || FLASH_DB_NAME,
+      store: dbExport.store,
+      records: scrub(dbExport.records || [])
+    };
+  }
+
+  async function packCloudDoc() {
+    await flushFlashcard();
+    const flash = stripFlashcardAudio(await exportFlashcardDb());
+    return {
+      v: 1,
+      updated: new Date().toISOString(),
+      app: 'Alpha_Learn',
+      keys: cloudKeysFromLocal(),
+      flashcardDb: flash
+    };
+  }
+
+  function localCloudEmpty(doc) {
+    if (!doc) return true;
+    const keys = doc.keys || {};
+    const hasKeys = Object.keys(keys).some((k) => String(keys[k] || '').length > 0);
+    const hasDb = doc.flashcardDb && Array.isArray(doc.flashcardDb.records) && doc.flashcardDb.records.length > 0;
+    return !(hasKeys || hasDb);
+  }
+
+  async function applyCloudDoc(doc) {
+    if (!doc || typeof doc !== 'object') return;
+    suppressCloudPush = true;
+    try {
+      const keys = doc.keys || {};
+      Object.keys(keys).forEach((k) => {
+        if (!PROGRESS_KEYS.includes(k) || CLOUD_SKIP_KEYS.has(k)) return;
+        if (typeof keys[k] === 'string') localStorage.setItem(k, keys[k]);
+      });
+      if (doc.flashcardDb) await restoreFlashcardDb(doc.flashcardDb);
+    } finally {
+      setTimeout(() => { suppressCloudPush = false; }, 100);
+    }
+  }
+
+  const scheduleCloudPush = (window.HxSharedSync && window.HxSharedSync.schedule)
+    ? window.HxSharedSync.schedule(async () => {
+        if (!cloudReady || suppressCloudPush || !window.HxSharedSync) return;
+        if (!window.HxSharedSync.getPassword()) {
+          if (statusEl) statusEl.textContent = '本機已存。開 HX Unlock 一次即可跨裝置同步。';
+          return;
+        }
+        try {
+          await window.HxSharedSync.pushDoc(SHARED_DOC, await packCloudDoc());
+          if (statusEl) statusEl.textContent = '已同步到 Supabase（各裝置同一進度）。';
+        } catch (e) {
+          if (statusEl) statusEl.textContent = '本機已存；雲端稍後再同步。';
+        }
+      }, 1500)
+    : function () {};
+
+  async function syncCloudOnBoot() {
+    if (!window.HxSharedSync) return;
+    const result = await window.HxSharedSync.syncDoc(SHARED_DOC, {
+      getLocal: () => packCloudDoc(),
+      localEmpty: localCloudEmpty,
+      applyRemote: async (doc) => {
+        await applyCloudDoc(doc);
+        refreshStatus();
+      },
+      onStatus: (s) => {
+        if (!statusEl) return;
+        if (s === 'need-password') statusEl.textContent = '已載入本機進度。開 HX Unlock 一次即可上傳／跨裝置同步。';
+        else if (s === 'uploaded') statusEl.textContent = '已把本機進度上傳到 Supabase。';
+        else if (s === 'synced') statusEl.textContent = '已從 Supabase 同步最新進度。';
+        else if (s === 'offline') statusEl.textContent = '雲端暫未能連線；使用本機進度。';
+        else if (s === 'empty') statusEl.textContent = '尚未有共用進度。';
+      }
+    });
+    cloudReady = true;
+    if (result && result.reason === 'need-password') {
+      // keep local; user can unlock HX later
+    }
+    // Watch localStorage writes for progress keys
+    try {
+      const rawSet = localStorage.setItem.bind(localStorage);
+      localStorage.setItem = function (k, v) {
+        rawSet(k, v);
+        if (PROGRESS_KEYS.includes(k) && !CLOUD_SKIP_KEYS.has(k)) scheduleCloudPush();
+      };
+    } catch (e) {}
+    setInterval(() => { if (cloudReady) scheduleCloudPush(); }, 20000);
+    return result;
+  }
+
   let startId = META[0].id;
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && (PAGES[saved] || EXTERNAL_PAGES[saved])) startId = saved;
   } catch (e) {}
-  loadPage(startId);
+  (async function bootSharedSync() {
+    try { await syncCloudOnBoot(); } catch (e) {}
+    loadPage(startId);
+  })();
   </script>
 </body>
 </html>

@@ -144,10 +144,14 @@
     <option value="annual"></option>
     <option value="one-time"></option>
   </datalist>
-  <div class="page-version" data-version="1.4" aria-label="Page version 1.4">v1.4</div>
+  <div class="page-version" data-version="1.5" aria-label="Page version 1.5">v1.5</div>
+<script src="hx-shared-sync.js?v=1.0"></script>
 <script>
 const COURSE_STORE = "hx:course-catalog:rows";
 const UI_Q = "hx:course-catalog:q";
+const SHARED_DOC = "course-catalog";
+let cloudReady = false;
+let suppressCloudPush = false;
 const UAL_KEYS = ["hx-ual-cbt-mail", "hx:ual-cbt:mail", "hx:ual-cbt:text", "hx:team-board:ual", "hx:team-board:ual-mail", "hx-team-board-ual", "hx-team-board-mail"];
 const CT_FILE_KEYS = ["hx:team-board:ct-files", "hx-team-board-ct-files", "hx:ct-reminder:files", "hx-ct-files"];
 const OMT_FILE_KEYS = ["hx:team-board:omt-files", "hx-team-board-omt-files", "hx:team-board:omt", "hx-omt-files"];
@@ -278,12 +282,60 @@ function normRow(r) {
 }
 function persist() {
   try { lsSet(COURSE_STORE, JSON.stringify(rows.map(normRow))); } catch (e) {}
+  scheduleCloudPush();
 }
 function loadSaved() {
   const got = peekJson(COURSE_STORE);
   if (Array.isArray(got.value)) rows = got.value.map(normRow);
   else rows = [];
   if (Array.isArray(got.value) && got.value.some((r) => r && Object.prototype.hasOwnProperty.call(r, "expiry"))) persist();
+}
+function packCourseDoc() {
+  return {
+    v: 1,
+    updated: new Date().toISOString(),
+    app: "course-catalog",
+    rows: rows.map(normRow)
+  };
+}
+function applyCourseDoc(doc) {
+  if (!doc || !Array.isArray(doc.rows)) return;
+  suppressCloudPush = true;
+  rows = doc.rows.map(normRow);
+  try { lsSet(COURSE_STORE, JSON.stringify(rows)); } catch (e) {}
+  window.setTimeout(() => { suppressCloudPush = false; }, 50);
+}
+const scheduleCloudPush = (window.HxSharedSync && window.HxSharedSync.schedule)
+  ? window.HxSharedSync.schedule(async () => {
+      if (!cloudReady || suppressCloudPush) return;
+      if (!(window.HxSharedSync && window.HxSharedSync.getPassword())) return;
+      try {
+        await window.HxSharedSync.pushDoc(SHARED_DOC, packCourseDoc());
+        paintStatus("Course List synced.");
+      } catch (e) {
+        if (e && e.code === "need-password") return;
+        paintStatus("Course List saved here; cloud sync pending.");
+      }
+    }, 1200)
+  : function () {};
+async function syncCoursesFromCloud() {
+  if (!window.HxSharedSync) return;
+  const result = await window.HxSharedSync.syncDoc(SHARED_DOC, {
+    getLocal: () => packCourseDoc(),
+    localEmpty: (doc) => !(doc && Array.isArray(doc.rows) && doc.rows.length),
+    applyRemote: (doc) => {
+      applyCourseDoc(doc);
+      paint();
+    },
+    onStatus: (s) => {
+      if (s === "need-password") paintStatus("Course List loaded locally. Unlock HX once to sync across devices.");
+      else if (s === "uploaded") paintStatus("Uploaded local Course List to Supabase.");
+      else if (s === "synced") paintStatus("Course List synced from Supabase.");
+      else if (s === "offline") paintStatus("Cloud unreachable; using this browser copy.");
+    }
+  });
+  cloudReady = true;
+  return result;
 }
 function remember(map, code, extra) {
   const raw = String(code || "").trim();
@@ -447,14 +499,18 @@ window.addEventListener("storage", (e) => {
 (async function init() {
   await prefetchParentStore();
   loadSaved();
+  await syncCoursesFromCloud();
   const added = seedFromBoard();
+  if (added) {
+    persist();
+  }
   const savedQ = lsPeek(UI_Q);
   if (savedQ != null) {
     q = savedQ;
     document.getElementById("q").value = q;
   }
   paint();
-  if (added) paintStatus("Seeded " + added + " code" + (added === 1 ? "" : "s") + " from board files already in this browser.");
+  if (added) paintStatus("Seeded " + added + " code" + (added === 1 ? "" : "s") + " from board files; syncing to Supabase when unlocked.");
   document.documentElement.classList.add("hx-ready");
 })();
 </script>
