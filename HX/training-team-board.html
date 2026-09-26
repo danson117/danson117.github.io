@@ -1292,7 +1292,7 @@
     </div>
     <div id="detail" class="detail hidden"></div>
     <div class="why write-zone" hidden>
-      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. After Unlock with the hub password, each change also syncs immediately through a locked server path (no per-browser sync-key paste). <b>UAL CBT email</b>, <b>CT Reminder</b> CSV (more than one file is OK), and <b>Mandatory</b> xlsx/CSV uploads sync the same way — every open board sees them via the ~5s poll (view and edit). Open boards poll that path about every 5 seconds so other windows update without refresh. Else, when a GitHub token is stored, each change auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Anon cannot write staff Status. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
+      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. After Unlock with the hub password, each change also syncs immediately through a locked server path (no per-browser sync-key paste). <b>UAL CBT email</b>, <b>CT Reminder</b> CSV (more than one file is OK), and <b>Mandatory</b> xlsx/CSV uploads sync the same way — every open board sees them via the ~5s poll (view and edit). Open boards poll that path about every 5 seconds so other windows update without refresh. Else, when a GitHub token is stored, each change auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Anon cannot write staff Status. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. <b>Course List</b> is stored on its own — loading CT / Mandatory / UAL does not delete or replace those records. Code-only CSV rows take the course name from Course List. Same code with a different name (or same name with a different code) pops up to choose Course List vs CSV — no silent overwrite. Matching pairs use the stored Course List name. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
       <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Each PIC cell shows <b>98% (xx/yy) 6 left</b> — xx = clear of this item, yy = roster for that tab + team, left = still outstanding. The PIC training-item grid starts <b>collapsed</b> (Other / Team 1–4 headers only); use <b>Show training items</b> to expand. Open/closed is remembered in this browser. PIC item rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. Table and Details people follow <b>Team 1–4</b> top to bottom, then <b>section + crew</b> (Team n: LTA<i>n</i> then other LTA, then crew). Other / TBD (office sections such as LGC1) sit after Team 4. Click a people-list column to override. Course rows inside one person stay remaining / due order. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. Row colors use remaining days for UAL / CT / Mandatory / Manual: <b>Overdue or will expire</b> (pink) = remaining ≤30 days; <b>Coming due</b> (yellow) = remaining &gt;30 and ≤90 days; remaining &gt;90 has no due-color. <b>Completed</b> clears that course from the PIC board and from Table / Details. When every course for a person is <b>Completed</b>, their name drops off Details. <b>In Progress</b> blues the Status cell only. <b>Add course</b> accepts a staff # or an Authorization group code (e.g. Operator <b>D0</b>) to select matching CS from the Authorization List, with +/− before one course + expire date for all. <b>Table</b> is the people list — click a row for that person’s course card (this browser only). <b>Details</b> stacks the same course card for every visible person (Section + Crew · Staff # · Name, with course count on the right) for capture / print. Course tables end with <b>Remark</b> (last column; stays with Status). Click a PIC cell for one course.</p>
     </div>
   </div>
@@ -1468,7 +1468,18 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="12.3" aria-label="Page version 12.3">v12.3</div>
+  <div id="course-clash-pop" class="pop hidden" hidden>
+    <div class="pop-card access-card ingest-card" role="dialog" aria-modal="true" aria-labelledby="course-clash-title">
+      <h4 id="course-clash-title">Course List mismatch</h4>
+      <p class="note" id="course-clash-lead">CSV course code or name does not match the stored Course List. Choose which to use. The file still loads. Course List is not overwritten unless you pick CSV.</p>
+      <ul id="course-clash-list"></ul>
+      <div class="toolbar">
+        <button type="button" class="primary" id="course-clash-apply">Apply choices</button>
+        <button type="button" id="course-clash-keep-all">Keep Course List for all</button>
+      </div>
+    </div>
+  </div>
+  <div class="page-version" data-version="12.4" aria-label="Page version 12.3">v12.4</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -2459,6 +2470,18 @@ function saveCatalogRows(rows) {
 function blankCourse(code) {
   return { code: String(code || "").trim(), name: "", type: "", award: "", issued: "", desc: "", interval: "" };
 }
+function normCourseName(s) {
+  return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+function meaningfulCourseName(code, name) {
+  const n = String(name || "").trim();
+  if (!n) return "";
+  if (normCode(n) === normCode(code)) return "";
+  return n;
+}
+function namesMatchCourse(a, b) {
+  return normCourseName(a) === normCourseName(b) && !!normCourseName(a);
+}
 function pickCommonName(names) {
   const counts = new Map();
   let first = "";
@@ -2474,7 +2497,7 @@ function pickCommonName(names) {
   });
   return best || first;
 }
-function courseNameFor(code) {
+function catalogNameForCode(code) {
   const k = normCode(code);
   if (!k) return "";
   const cat = loadCatalogRows();
@@ -2485,11 +2508,21 @@ function courseNameFor(code) {
       break;
     }
   }
+  return "";
+}
+function courseNameFor(code, csvName) {
+  const k = normCode(code);
+  if (!k) return meaningfulCourseName(code, csvName);
+  const catName = catalogNameForCode(code);
+  if (catName) return catName;
+  const own = meaningfulCourseName(code, csvName);
+  if (own) return own;
   const names = [];
   function take(n) {
-    const t = String(n || "").trim();
-    if (t && normCode(t) !== k) names.push(t);
+    const t = meaningfulCourseName(code, n);
+    if (t) names.push(t);
   }
+  take(csvName);
   ctRows.forEach((r) => {
     if (normCode(r.code) !== k) return;
     take(r.cname);
@@ -2504,12 +2537,14 @@ function courseNameFor(code) {
     if (normCode(r.code) !== k) return;
     take(r.cname);
   });
+  manualRows.forEach((r) => {
+    if (normCode(r.code) !== k) return;
+    take(r.cname);
+  });
   return pickCommonName(names);
 }
 function omtCourseName(r) {
-  const own = String((r && r.cname) || "").trim();
-  if (own && normCode(own) !== normCode(r.code)) return own;
-  return courseNameFor(r && r.code);
+  return courseNameFor(r && r.code, r && r.cname);
 }
 function rememberSeen(map, code, extra) {
   const raw = String(code || "").trim();
@@ -2524,22 +2559,23 @@ function rememberSeen(map, code, extra) {
     });
   }
 }
+/** Additive only: never remove Course List rows; never overwrite a non-empty field with a different CSV value. */
 function mergeCatalogFromBoard() {
   const seen = new Map();
   ualRows.forEach((r) => rememberSeen(seen, r.code, {
-    name: (r.cname && normCode(r.cname) !== normCode(r.code)) ? r.cname : ""
+    name: meaningfulCourseName(r.code, r.cname)
   }));
   ctRows.forEach((r) => rememberSeen(seen, r.code, {
-    name: r.cname || r.award || r.desc || "",
+    name: meaningfulCourseName(r.code, r.cname) || meaningfulCourseName(r.code, r.award) || meaningfulCourseName(r.code, r.desc) || "",
     award: r.award || "",
     issued: r.issued || "",
     desc: r.desc || ""
   }));
   omtRows.forEach((r) => rememberSeen(seen, r.code, {
-    name: (r.cname && normCode(r.cname) !== normCode(r.code)) ? r.cname : ""
+    name: meaningfulCourseName(r.code, r.cname)
   }));
   manualRows.forEach((r) => rememberSeen(seen, r.code, {
-    name: (r.cname && normCode(r.cname) !== normCode(r.code)) ? r.cname : ""
+    name: meaningfulCourseName(r.code, r.cname)
   }));
   if (!seen.size) return;
   const rows = loadCatalogRows();
@@ -2573,6 +2609,172 @@ function mergeCatalogFromBoard() {
     }
   });
   if (changed) saveCatalogRows(rows);
+}
+function coursePairsFromRows(rows, kind) {
+  const map = new Map();
+  (rows || []).forEach((r) => {
+    if (!r) return;
+    const code = String(r.code || "").trim();
+    if (!code) return;
+    let name = meaningfulCourseName(code, r.cname);
+    if (!name && kind === "ct") {
+      /* Clash check uses Certification Name only — Award / Description are separate CT columns. */
+      name = "";
+    }
+    const key = normCode(code) + "\0" + normCourseName(name);
+    if (!map.has(key)) map.set(key, { code: code, name: name });
+  });
+  return Array.from(map.values());
+}
+function findCourseClashes(pairs) {
+  const cat = loadCatalogRows();
+  const byCode = new Map();
+  const byName = new Map();
+  cat.forEach((r) => {
+    const c = normCode(r.code);
+    const n = normCourseName(r.name);
+    if (c && !byCode.has(c)) byCode.set(c, r);
+    if (n && !byName.has(n)) byName.set(n, r);
+  });
+  const clashes = [];
+  const seen = new Set();
+  (pairs || []).forEach((p) => {
+    const code = String((p && p.code) || "").trim();
+    const name = String((p && p.name) || "").trim();
+    const ck = normCode(code);
+    const nk = normCourseName(name);
+    if (!ck || !nk) return;
+    if (byCode.has(ck)) {
+      const cur = byCode.get(ck);
+      const curName = String(cur.name || "").trim();
+      if (curName && !namesMatchCourse(curName, name)) {
+        const id = "code:" + ck;
+        if (!seen.has(id)) {
+          seen.add(id);
+          clashes.push({
+            id: id,
+            kind: "code-name",
+            catalogCode: String(cur.code || "").trim(),
+            catalogName: curName,
+            csvCode: code,
+            csvName: name
+          });
+        }
+      }
+    }
+    if (byName.has(nk)) {
+      const cur = byName.get(nk);
+      if (normCode(cur.code) !== ck) {
+        const id = "name:" + nk;
+        if (!seen.has(id)) {
+          seen.add(id);
+          clashes.push({
+            id: id,
+            kind: "name-code",
+            catalogCode: String(cur.code || "").trim(),
+            catalogName: String(cur.name || "").trim(),
+            csvCode: code,
+            csvName: name
+          });
+        }
+      }
+    }
+  });
+  return clashes;
+}
+let pendingCourseClashResolve = null;
+function closeCourseClashPop(choices) {
+  const pop = document.getElementById("course-clash-pop");
+  if (pop) {
+    pop.classList.add("hidden");
+    pop.hidden = true;
+  }
+  const fn = pendingCourseClashResolve;
+  pendingCourseClashResolve = null;
+  if (fn) fn(choices || {});
+}
+function showCourseClashPop(clashes) {
+  return new Promise((resolve) => {
+    if (!clashes || !clashes.length) {
+      resolve({});
+      return;
+    }
+    const pop = document.getElementById("course-clash-pop");
+    const list = document.getElementById("course-clash-list");
+    if (!pop || !list) {
+      resolve({});
+      return;
+    }
+    pendingCourseClashResolve = resolve;
+    list.innerHTML = clashes.map((c) => {
+      const kindLabel = c.kind === "name-code"
+        ? "Same name, different code"
+        : "Same code, different name";
+      const rid = "clash-" + esc(c.id).replace(/[^a-zA-Z0-9_-]/g, "_");
+      return "<li data-clash-id=\"" + esc(c.id) + "\">" +
+        "<strong>" + esc(kindLabel) + "</strong><br>" +
+        "Course List: <code>" + esc(c.catalogCode) + "</code> · " + esc(c.catalogName) + "<br>" +
+        "CSV: <code>" + esc(c.csvCode) + "</code> · " + esc(c.csvName) + "<br>" +
+        "<label style=\"display:inline-block;margin:6px 12px 0 0;font-weight:600\">" +
+        "<input type=\"radio\" name=\"" + rid + "\" value=\"catalog\" checked> Use Course List</label>" +
+        "<label style=\"display:inline-block;margin:6px 0 0;font-weight:600\">" +
+        "<input type=\"radio\" name=\"" + rid + "\" value=\"csv\"> Use CSV</label>" +
+        "</li>";
+    }).join("");
+    pop.hidden = false;
+    pop.classList.remove("hidden");
+  });
+}
+function readCourseClashChoices(clashes) {
+  const out = {};
+  const items = document.querySelectorAll("#course-clash-list li[data-clash-id]");
+  const byId = new Map();
+  items.forEach((li) => byId.set(li.getAttribute("data-clash-id"), li));
+  (clashes || []).forEach((c) => {
+    const li = byId.get(c.id);
+    const checked = li && li.querySelector('input[type="radio"]:checked');
+    out[c.id] = (checked && checked.value === "csv") ? "csv" : "catalog";
+  });
+  return out;
+}
+function applyCourseClashChoices(clashes, choices) {
+  const rows = loadCatalogRows();
+  let changed = false;
+  (clashes || []).forEach((c) => {
+    if ((choices && choices[c.id]) !== "csv") return;
+    if (c.kind === "code-name") {
+      const k = normCode(c.csvCode || c.catalogCode);
+      const row = rows.find((r) => normCode(r.code) === k);
+      if (row && c.csvName) {
+        row.name = c.csvName;
+        changed = true;
+      }
+    } else if (c.kind === "name-code") {
+      const nk = normCourseName(c.csvName || c.catalogName);
+      const row = rows.find((r) => normCourseName(r.name) === nk);
+      const csvK = normCode(c.csvCode);
+      if (!row || !csvK) return;
+      const taken = rows.some((r) => r !== row && normCode(r.code) === csvK);
+      if (!taken) {
+        row.code = c.csvCode;
+        if (c.csvName) row.name = c.csvName;
+        changed = true;
+      } else {
+        const byCode = rows.find((r) => normCode(r.code) === csvK);
+        if (byCode && c.csvName) {
+          byCode.name = c.csvName;
+          changed = true;
+        }
+      }
+    }
+  });
+  if (changed) saveCatalogRows(rows);
+}
+async function resolveIncomingCourseClashes(pairs) {
+  const clashes = findCourseClashes(pairs);
+  if (!clashes.length) return;
+  const choices = await showCourseClashPop(clashes);
+  applyCourseClashChoices(clashes, choices);
 }
 function esc(s) {
   return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -3640,7 +3842,8 @@ function ctItems() {
     const who = personOf(r.uid || r.staff, r.name);
     if (!orgOk(who.group) || !roleOk(who.home)) return;
     const key = r.code || r.cname || "CT";
-    if (!map.has(key)) map.set(key, { src: "ct", key, title: itemDisplayTitle(key, r.cname), people: [] });
+    const looked = courseNameFor(key, r.cname || r.award || r.desc);
+    if (!map.has(key)) map.set(key, { src: "ct", key, title: itemDisplayTitle(key, looked), people: [] });
     const remain = remainFromDue(r.exp);
     map.get(key).people.push({
       staff: who.staff,
@@ -3654,7 +3857,7 @@ function ctItems() {
       code: r.code || key,
       due: r.exp || "",
       remain,
-      cname: r.cname || "",
+      cname: looked || r.cname || "",
       kind: r.kind || "other",
       extra: (r.kind === "dueSoon" ? "due soon · " : r.kind === "overdue" ? "overdue · " : "") + (r.exp || ""),
       hot: remainBand(remain) === "hot"
@@ -7536,8 +7739,10 @@ function setUal(text, label) {
       undoable: undoable,
       undoNote: undoable ? "" : "Undo unavailable — UAL snapshot too large."
     });
-    mergeCatalogFromBoard();
-    paint();
+    resolveIncomingCourseClashes(coursePairsFromRows(ualRows, "ual")).then(() => {
+      mergeCatalogFromBoard();
+      paint();
+    });
   } catch (err) {
     const e = asIngestReject("ual", err);
     if (e.overrideRows) {
@@ -7558,8 +7763,10 @@ function setUal(text, label) {
           undoable: undoable,
           undoNote: undoable ? "" : "Undo unavailable — UAL snapshot too large."
         });
-        mergeCatalogFromBoard();
-        paint();
+        resolveIncomingCourseClashes(coursePairsFromRows(ualRows, "ual")).then(() => {
+          mergeCatalogFromBoard();
+          paint();
+        });
       };
     }
     showIngestReject(e);
@@ -7618,8 +7825,10 @@ function addCtFile(name, rows, kind) {
     undoNote: undoable ? "" : "Undo unavailable — CT file snapshot too large."
   });
   paintCtFiles();
-  mergeCatalogFromBoard();
-  paint();
+  return resolveIncomingCourseClashes(coursePairsFromRows(rec.rows, "ct")).then(() => {
+    mergeCatalogFromBoard();
+    paint();
+  });
 }
 function removeCtFile(i) {
   if (!requirePerm("ingest")) return;
@@ -8336,8 +8545,10 @@ function addOmtFile(name, rows) {
     undoNote: undoable ? "" : "Undo unavailable — Mandatory file snapshot too large."
   });
   paintOmtFiles();
-  mergeCatalogFromBoard();
-  paint();
+  return resolveIncomingCourseClashes(coursePairsFromRows(rec.rows, "omt")).then(() => {
+    mergeCatalogFromBoard();
+    paint();
+  });
 }
 function removeOmtFile(i) {
   if (!requirePerm("ingest")) return;

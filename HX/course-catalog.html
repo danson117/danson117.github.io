@@ -104,7 +104,7 @@
 <body>
   <div class="page">
     <h1>Course List</h1>
-    <p class="subtitle">Course master data in this browser · Name / Code / Type (Online / Classroom) / Interval.</p>
+    <p class="subtitle">Course master data in this browser · independent of CSV ingest · Name / Code / Type (Online / Classroom) / Interval.</p>
     <div class="stats">
       <div class="stat"><b id="n-all">0</b><span>Courses</span></div>
       <div class="stat"><b id="n-named">0</b><span>With a name</span></div>
@@ -134,7 +134,8 @@
     </div>
     <div class="why">
       <p>This page stores course master data <b>in this browser</b> (same idea as OCG Name List). <b>Code</b> is the unique key. <b>Type</b> is Online or Classroom; leave blank until you set it. <b>Name</b> is the course / certification name.</p>
-      <p>Award, Issued By, and Description are course-level fields. <b>Interval</b> is how often the course is done (e.g. 12 months, 24 months, annual). Courses do not have an expiry date — staff due / expire dates stay on CT / UAL / Mandatory. Training One View reads this list: a name typed here fills Mandatory rows that only have a Course Code.</p>
+      <p><b>Course List is independent</b> of Training One View CSV ingest. Loading CT Reminder, Mandatory, or UAL does <b>not</b> delete or replace these rows. New codes from the board only <b>add</b> or fill empty fields. If a CSV has the same code with a different name (or the same name with a different code), Training One View asks which to use — it does not silently overwrite this list. Code-only CSV rows use the <b>Name</b> typed here.</p>
+      <p><b>Award</b> is carried from the CT Reminder CSV column headed Award (stored beside Issued By and Description). This page does not define what Award means in LMS terms — it keeps the field as imported. <b>Interval</b> is how often the course is done (e.g. 12 months, 24 months, annual). Courses do not have an expiry date — staff due / expire dates stay on CT / UAL / Mandatory.</p>
     </div>
   </div>
   <datalist id="interval-hints">
@@ -144,7 +145,7 @@
     <option value="annual"></option>
     <option value="one-time"></option>
   </datalist>
-  <div class="page-version" data-version="1.6" aria-label="Page version 1.6">v1.6</div>
+  <div class="page-version" data-version="1.7" aria-label="Page version 1.6">v1.7</div>
 <script src="hx-shared-sync.js?v=1.0"></script>
 <script>
 const COURSE_STORE = "hx:course-catalog:rows";
