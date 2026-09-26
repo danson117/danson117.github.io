@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- Briefing & Read & Sign **v1.7**：頁面改成 Training One View 風格摘要（一行一項＋ done/assigned；撳開 detail）。Admin 區塊喺頂（只 edit unlock 入 DOM）：create／edit／delete＋PIN vault。Training One View **v11.3**：未完成 Briefing／Read & Sign 行可直接 Sign／Seen（同一 Edge PIN）；Status 仍只 Complete／Not started。`hx.html` **v10.91**、`hx-rules` **v4.7**。GitHub 後備。冇加用戶取消嘅額外 TOV 功能。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - Training One View **v11.2**：Briefing／Read & Sign Status 改純文字 badge（**Complete**／**Not started**，跟 BRS ack；無 In Progress、無下拉）。欄序改為 Status → Reference → Remark。UAL／CT／Mandatory／Manual 仍用可改 Status 下拉。`hx.html` **v10.90**、`hx-rules` **v4.6**。GitHub 後備。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）

@@ -119,9 +119,137 @@
     font-size: 11px; color: #6d7c82;
   }
   .empty { color: var(--muted); padding: 8px 0; }
-  .vault { margin-top: 28px; border-top: 2px solid var(--teal-bright); padding-top: 16px; }
-  .vault h2 { color: var(--teal-deep); font-size: 15px; text-transform: none; letter-spacing: 0; }
-  .vault .note { color: var(--muted); font-size: 13px; margin: 0 0 12px; max-width: 720px; }
+  .admin-block {
+    background: var(--card);
+    border: 2px solid var(--teal);
+    border-left: 6px solid var(--teal-deep);
+    padding: 14px 16px 16px;
+    margin: 0 0 16px;
+  }
+  .admin-block > h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--teal-deep);
+    font-weight: 700;
+  }
+  .admin-block > .note {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 760px;
+  }
+  .admin-block .vault {
+    margin-top: 18px;
+    border-top: 2px solid var(--teal-bright);
+    padding-top: 14px;
+  }
+  .admin-block .vault h3 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: var(--teal-deep);
+    font-weight: 700;
+  }
+  .admin-block .vault .note { color: var(--muted); font-size: 13px; margin: 0 0 12px; max-width: 720px; }
+  .admin-editor {
+    background: #f7fbfc;
+    border: 1px solid var(--line);
+    padding: 12px 14px 14px;
+    margin: 0 0 12px;
+  }
+  .admin-editor h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--teal-deep);
+  }
+  .type-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid var(--teal);
+    color: var(--teal-deep);
+    background: #eef8f9;
+  }
+  .brs-board {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+  .brs-board th {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--teal-deep);
+    background: #e8f4f6;
+    border-bottom: 1px solid var(--line);
+    padding: 8px 10px;
+  }
+  .brs-board td {
+    border-bottom: 1px solid #e6edf1;
+    padding: 8px 10px;
+    vertical-align: top;
+  }
+  .brs-board tr.sum-row {
+    cursor: pointer;
+  }
+  .brs-board tr.sum-row:hover td { background: #f4fafb; }
+  .brs-board tr.sum-row.is-open td { background: #e8f4f6; }
+  .brs-board tr.sum-row.is-done td { background: var(--ok-bg); }
+  .brs-board tr.sum-row.is-out td { background: var(--out-bg); }
+  .brs-board tr.sum-row.is-open.is-done td,
+  .brs-board tr.sum-row.is-open.is-out td { background: #e8f4f6; }
+  .brs-board .frac {
+    font-weight: 700;
+    color: var(--teal-deep);
+    white-space: nowrap;
+  }
+  .brs-board .chev {
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .brs-board tr.detail-row td {
+    background: #f7fbfc;
+    padding: 12px 12px 14px;
+  }
+  .brs-board tr.detail-row[hidden] { display: none; }
+  .detail-mats, .detail-people {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 10px;
+    background: #fff;
+    border: 1px solid var(--line);
+  }
+  .detail-mats th, .detail-people th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--teal-deep);
+    background: #eef8f9;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .detail-mats td, .detail-people td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #e6edf1;
+    font-size: 13px;
+  }
+  .detail-block-title {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
   .badge {
     display: inline-block;
     font-size: 11px;
@@ -277,10 +405,10 @@
 </head>
 <body>
   <div class="page">
+    <div id="admin-slot"></div>
     <h1>Briefing &amp; Read &amp; Sign</h1>
-    <p class="sub">Attach one or more Word, Excel, or PDF materials, choose the people, then record who has seen or signed with their 6-digit staff PIN. When everyone is done the item turns green. Anyone still open stays outstanding on Training One View (Material link only — status is not changed there). The printable record for the selected item (or the KE sample) stays on this same page below.</p>
+    <p class="sub">Summary of Briefings and Read &amp; Sign only (Training One View style). Each row shows done / assigned. Click a row to open detail — who is done or not, Section, and materials. Sign with that person’s 6-digit PIN here or on Training One View; outstanding people stay on Training One View until Complete. Create / edit / delete and the PIN vault are in Admin (HX edit unlock only). Printable record stays below.</p>
     <div class="bar">
-      <button type="button" class="primary" id="btn-new">New item</button>
       <div class="seg" role="group" aria-label="Show">
         <button type="button" id="flt-all" class="on">All</button>
         <button type="button" id="flt-out">Outstanding</button>
@@ -314,16 +442,6 @@
       <div class="record-frame-wrap">
         <iframe id="record-frame" title="Briefing and Read and Sign printable record" src="ke-read-sign-record.html?v=1.3"></iframe>
       </div>
-    </section>
-
-    <section class="vault" id="pin-vault">
-      <h2>Admin PIN vault</h2>
-      <p class="note">Shows Name List people as <b>Custom PIN set</b> or <b>Still default</b> (staff number until first change). Admins never see a PIN or hash. The only action is Remove / reset, which deletes the custom PIN so the next sign uses the staff number again and then forces a new 6-digit PIN. Requires the HX Unlock admin password.</p>
-      <div class="bar">
-        <button type="button" id="vault-refresh">Refresh list</button>
-        <span class="status" id="vault-status"></span>
-      </div>
-      <ul class="clean" id="vault-list"><li class="muted">Click Refresh list after Unlock with the admin password.</li></ul>
     </section>
   </div>
 
@@ -370,7 +488,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="1.5">v1.5</div>
+  <div class="page-version" data-version="1.7">v1.7</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -400,6 +518,12 @@
   var pinCtx = null;
   var pinSetStaff = {};
   var pinBusy = false;
+  var GATE_ROLE_KEY = "hx:hub:gate-role";
+  var GATE_PW_KEY = "hx:hub:gate-pw";
+  var hubRole = "view";
+  var adminEditId = "";
+  var adminWired = false;
+  var openItemId = "";
   var EYE_SHOW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>';
   var EYE_HIDE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.3 2.3 2 3.6l3.1 3.1C3.4 8.1 2.2 9.6 1.5 10.8a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19c2 0 3.8-.6 5.3-1.5l3.1 3.1 1.3-1.3zm7.4 11.5A2.9 2.9 0 0 1 8.2 11l2.5 2.5zm1.3-6.5c.3 0 .6 0 .9.1l-1.7 1.7A3.5 3.5 0 0 0 8.5 13l-1.7 1.7A5.5 5.5 0 0 1 12 7.3zm8.6 3.5c-.5.8-1.4 2-2.7 3.1l1.4 1.4c1.5-1.3 2.6-2.8 3.2-3.7a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5c-.9 0-1.7.1-2.5.3l1.6 1.6c.3 0 .6-.1.9-.1 3.7 0 6.8 2.8 8.1 4.5z"/></svg>';
 
@@ -572,6 +696,7 @@
     doc.items = remote.items;
     writeLocal();
     render();
+    renderAdminEditor();
     setTimeout(function () { suppress = false; }, 60);
   }
 
@@ -590,38 +715,233 @@
     return "File";
   }
 
-  function render() {
-    document.getElementById("flt-all").classList.toggle("on", filter === "all");
-    document.getElementById("flt-out").classList.toggle("on", filter === "out");
-    document.getElementById("flt-done").classList.toggle("on", filter === "done");
-    paintDash();
-    var items = doc.items.filter(function (it) {
-      var ph = phase(it);
-      if (filter === "out") return ph === "out";
-      if (filter === "done") return ph === "done";
-      return true;
-    });
-    if (!items.length) {
-      document.getElementById("list").innerHTML = "<p class=\"empty\">No items in this view. Use New item to add a briefing or a read &amp; sign.</p>";
-      return;
-    }
-    document.getElementById("list").innerHTML = items.map(cardHtml).join("");
-    var hash = (location.hash || "").replace(/^#item=/, "");
-    if (hash) {
-      var node = document.getElementById("item-" + hash);
-      if (node) node.scrollIntoView({ block: "start" });
+  function normalizeGateRole(r) {
+    r = String(r || "view").toLowerCase();
+    if (r === "edit" || r === "admin") return r;
+    return "view";
+  }
+  function readStoredGateRole() {
+    try {
+      return normalizeGateRole(localStorage.getItem(GATE_ROLE_KEY) || "view");
+    } catch (e) {
+      return "view";
     }
   }
-
-  function cardHtml(it) {
-    var ph = phase(it);
-    var cls = ph === "done" ? " is-done" : ph === "out" ? " is-out" : "";
-    var n = (it.people || []).length;
-    var left = leftCount(it);
-    var prog = !n ? "No people selected yet."
-      : left === 0 ? "Complete · " + n + " acknowledged"
-      : "Outstanding · " + left + " of " + n + " still open";
-    var verb = it.type === "read-sign" ? "Sign" : "Seen";
+  function isEditUnlocked() {
+    return hubRole === "edit" || hubRole === "admin";
+  }
+  function applyHubGate(msg) {
+    var role = normalizeGateRole(msg && msg.role);
+    var pw = msg && Object.prototype.hasOwnProperty.call(msg, "password")
+      ? String(msg.password || "")
+      : null;
+    hubRole = role;
+    if (window.HxSharedSync) {
+      if (role === "view") window.HxSharedSync.setPassword("");
+      else if (pw != null && pw) window.HxSharedSync.setPassword(pw);
+    }
+    if (!isEditUnlocked()) {
+      adminEditId = "";
+      pinSetStaff = {};
+    }
+    syncAdminDom();
+    render();
+  }
+  function syncAdminDom() {
+    var slot = document.getElementById("admin-slot");
+    if (!slot) return;
+    if (!isEditUnlocked()) {
+      slot.innerHTML = "";
+      adminWired = false;
+      return;
+    }
+    if (!document.getElementById("brs-admin")) {
+      slot.innerHTML =
+        "<section class=\"admin-block\" id=\"brs-admin\" aria-label=\"Admin\">" +
+          "<h2>Admin</h2>" +
+          "<p class=\"note\">Visible only while this browser has HX <b>edit</b> unlock (same hub Unlock — no second password). Create or edit Briefings and Read &amp; Sign (Name List people only), delete items, clear acknowledgements, and manage the PIN vault. PINs and hashes are never shown.</p>" +
+          "<div class=\"bar\">" +
+            "<button type=\"button\" class=\"primary\" id=\"btn-new-briefing\">New Briefing</button>" +
+            "<button type=\"button\" class=\"primary\" id=\"btn-new-rs\">New Read &amp; Sign</button>" +
+            "<span class=\"status\" id=\"admin-status\"></span>" +
+          "</div>" +
+          "<div id=\"admin-editor-wrap\"></div>" +
+          "<div class=\"vault\" id=\"pin-vault\">" +
+            "<h3>Admin PIN vault</h3>" +
+            "<p class=\"note\">Shows Name List people as <b>Custom PIN set</b> or <b>Still default</b> (staff number until first change). Admins never see a PIN or hash. The only action is Remove / reset, which deletes the custom PIN so the next sign uses the staff number again and then forces a new 6-digit PIN.</p>" +
+            "<div class=\"bar\">" +
+              "<button type=\"button\" id=\"vault-refresh\">Refresh list</button>" +
+              "<span class=\"status\" id=\"vault-status\"></span>" +
+            "</div>" +
+            "<ul class=\"clean\" id=\"vault-list\"><li class=\"muted\">Click Refresh list after edit unlock.</li></ul>" +
+          "</div>" +
+        "</section>";
+      wireAdminOnce();
+    }
+    renderAdminEditor();
+  }
+  function paintAdminStatus(t) {
+    var el = document.getElementById("admin-status");
+    if (el) el.textContent = t || "";
+  }
+  function createItem(type) {
+    if (!isEditUnlocked()) return;
+    var it = {
+      id: uid("brs"),
+      type: type === "read-sign" ? "read-sign" : "briefing",
+      title: "",
+      materials: [],
+      people: []
+    };
+    doc.items.unshift(it);
+    adminEditId = it.id;
+    filter = "all";
+    save();
+    render();
+    renderAdminEditor();
+    paintAdminStatus("Editing new " + (it.type === "read-sign" ? "Read & Sign" : "Briefing") + ".");
+  }
+  function wireAdminOnce() {
+    if (adminWired) return;
+    var root = document.getElementById("brs-admin");
+    if (!root) return;
+    adminWired = true;
+    root.addEventListener("click", onAdminClick);
+    root.addEventListener("input", onAdminInput);
+    root.addEventListener("change", onAdminChange);
+    root.addEventListener("keydown", onAdminKeydown);
+  }
+  function onAdminClick(e) {
+    if (!isEditUnlocked()) return;
+    var btn = e.target.closest ? e.target.closest("button") : null;
+    var sug = e.target.closest ? e.target.closest("[data-pick]") : null;
+    if (sug) {
+      addPerson(sug.getAttribute("data-item"), sug.getAttribute("data-pick"));
+      renderAdminEditor();
+      return;
+    }
+    if (!btn) return;
+    if (btn.id === "btn-new-briefing") { createItem("briefing"); return; }
+    if (btn.id === "btn-new-rs") { createItem("read-sign"); return; }
+    if (btn.id === "vault-refresh") { refreshVault(); return; }
+    if (btn.dataset.adminEdit) {
+      adminEditId = btn.dataset.adminEdit;
+      renderAdminEditor();
+      paintAdminStatus("Editing item.");
+      return;
+    }
+    if (btn.dataset.adminClose) {
+      adminEditId = "";
+      renderAdminEditor();
+      paintAdminStatus("");
+      return;
+    }
+    if (btn.dataset.addLink) {
+      var box = document.querySelector('#brs-admin [data-link="' + btn.dataset.addLink + '"]');
+      addLink(btn.dataset.addLink, box ? box.value : "");
+      if (box) box.value = "";
+      renderAdminEditor();
+      return;
+    }
+    if (btn.dataset.type) {
+      var it = itemById(btn.dataset.item);
+      if (!it) return;
+      it.type = btn.dataset.type;
+      save();
+      render();
+      renderAdminEditor();
+      return;
+    }
+    if (btn.dataset.delItem) {
+      if (!window.confirm("Delete this briefing / read & sign item?")) return;
+      doc.items = doc.items.filter(function (x) { return x.id !== btn.dataset.delItem; });
+      if (adminEditId === btn.dataset.delItem) adminEditId = "";
+      save();
+      render();
+      renderAdminEditor();
+      return;
+    }
+    if (btn.dataset.delMat) {
+      var itm = itemById(btn.dataset.item);
+      if (!itm) return;
+      itm.materials = (itm.materials || []).filter(function (m) { return m.id !== btn.dataset.delMat; });
+      save();
+      render();
+      renderAdminEditor();
+      return;
+    }
+    if (btn.dataset.clear) {
+      acknowledgeClear(btn.dataset.item, btn.dataset.clear);
+      renderAdminEditor();
+      return;
+    }
+    if (btn.dataset.delPerson) {
+      var itp = itemById(btn.dataset.item);
+      if (!itp) return;
+      itp.people = (itp.people || []).filter(function (p) { return p.staff !== btn.dataset.delPerson; });
+      save();
+      render();
+      renderAdminEditor();
+      return;
+    }
+    var resetBtn = e.target.closest ? e.target.closest("[data-pin-reset]") : null;
+    if (resetBtn) {
+      onVaultReset(resetBtn);
+    }
+  }
+  function onAdminInput(e) {
+    if (!isEditUnlocked()) return;
+    var t = e.target;
+    if (t.dataset && t.dataset.title) {
+      var it = itemById(t.dataset.title);
+      if (!it) return;
+      it.title = t.value;
+      save();
+      return;
+    }
+    if (t.dataset && t.dataset.find) {
+      suggestFor = t.dataset.find;
+      showSuggest(t.dataset.find, t.value, true);
+    }
+  }
+  function onAdminChange(e) {
+    if (!isEditUnlocked()) return;
+    var t = e.target;
+    if (!t.dataset || !t.dataset.file) return;
+    var file = t.files && t.files[0];
+    t.value = "";
+    if (!file) return;
+    addFile(t.dataset.file, file).then(function () { renderAdminEditor(); });
+  }
+  function onAdminKeydown(e) {
+    if (!isEditUnlocked()) return;
+    var t = e.target;
+    if (!t.dataset || !t.dataset.link || e.key !== "Enter") return;
+    e.preventDefault();
+    addLink(t.dataset.link, t.value);
+    t.value = "";
+    renderAdminEditor();
+  }
+  async function onVaultReset(btn) {
+    var staff = pad(btn.getAttribute("data-pin-reset"));
+    if (!staff) return;
+    if (!window.confirm("Reset PIN for staff " + staff + "? Next sign will use the staff number, then force a new 6-digit PIN. The current PIN is never shown.")) return;
+    try {
+      if (!(await ensureAdminPassword())) return;
+      await window.HxSharedSync.pinAdminReset(staff);
+      pinSetStaff[staff] = false;
+      delete pinSetStaff[staff];
+      renderVaultList();
+      paintVaultStatus("Reset done for " + staff + ".");
+    } catch (err) {
+      if (err && err.code === "unauthorized") {
+        paintVaultStatus("HX edit unlock password required.");
+        return;
+      }
+      paintVaultStatus(String((err && err.message) || err || "Reset failed."));
+    }
+  }
+  function editorHtml(it) {
     var mats = (it.materials || []).map(function (m) {
       var open = m.href ? "<a href=\"" + esc(m.href) + "\" target=\"_blank\" rel=\"noopener\">Open</a>" : "";
       return "<li><span class=\"who\"><b>" + esc(kindLabel(m.kind)) + "</b> · " + esc(m.name || "Material") + "</span>" +
@@ -629,14 +949,16 @@
     }).join("") || "<li class=\"muted\">No materials yet.</li>";
     var people = (it.people || []).map(function (p) {
       var done = p.ack ? (p.ack === "signed" ? "Signed" : "Seen") + (p.ackAt ? " · " + p.ackAt : "") : "Outstanding";
-      var act = p.ack
+      var clear = p.ack
         ? "<button type=\"button\" data-clear=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Clear</button>"
-        : "<button type=\"button\" data-ack=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">" + verb + "</button>";
+        : "";
       return "<li><span class=\"who\"><b>" + esc(p.staff) + "</b> " + esc(p.name || "") +
         " <span class=\"muted\">" + esc(p.section || "") + " · " + done + "</span></span>" +
-        act + "<button type=\"button\" data-del-person=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
+        clear + "<button type=\"button\" data-del-person=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
     }).join("") || "<li class=\"muted\">No people yet. Search the Name List.</li>";
-    return "<article class=\"card" + cls + "\" id=\"item-" + esc(it.id) + "\">" +
+    return "<div class=\"admin-editor\" id=\"admin-editor\">" +
+      "<div class=\"bar\"><h3 style=\"margin:0;flex:1\">Edit item</h3>" +
+        "<button type=\"button\" data-admin-close=\"1\">Close editor</button></div>" +
       "<div class=\"card-top\">" +
         "<div><label>Type</label><div class=\"seg\">" +
           "<button type=\"button\" data-type=\"briefing\" data-item=\"" + esc(it.id) + "\"" + (it.type !== "read-sign" ? " class=\"on\"" : "") + ">Briefing</button>" +
@@ -645,7 +967,6 @@
         "<div class=\"grow\"><label for=\"title-" + esc(it.id) + "\">Title</label>" +
           "<input id=\"title-" + esc(it.id) + "\" type=\"text\" data-title=\"" + esc(it.id) + "\" value=\"" + esc(it.title || "") + "\" placeholder=\"Course or notice name\"></div>" +
       "</div>" +
-      "<p class=\"progress\">" + esc(prog) + "</p>" +
       "<h2>Materials</h2><ul class=\"clean\">" + mats + "</ul>" +
       "<div class=\"mat-add\">" +
         "<div><label>Kind</label><select data-kind=\"" + esc(it.id) + "\">" +
@@ -661,9 +982,128 @@
         "<ul data-suggest=\"" + esc(it.id) + "\" hidden></ul></div>" +
       "<ul class=\"clean people\">" + people + "</ul>" +
       "<div class=\"row-actions\">" +
-        "<button type=\"button\" class=\"primary\" data-open-record=\"" + esc(it.id) + "\">Open record</button>" +
         "<button type=\"button\" data-del-item=\"" + esc(it.id) + "\">Delete item</button>" +
-      "</div></article>";
+      "</div></div>";
+  }
+  function renderAdminEditor() {
+    var wrap = document.getElementById("admin-editor-wrap");
+    if (!wrap || !isEditUnlocked()) return;
+    var pick = doc.items.map(function (it) {
+      var on = it.id === adminEditId ? " class=\"on\"" : "";
+      return "<button type=\"button\" data-admin-edit=\"" + esc(it.id) + "\"" + on + ">" +
+        esc(it.type === "read-sign" ? "R&S" : "Brief") + " · " + esc(itemLabel(it)) + "</button>";
+    }).join("") || "<span class=\"muted\">No items yet. Use New Briefing or New Read &amp; Sign.</span>";
+    var ed = "";
+    var it = adminEditId ? itemById(adminEditId) : null;
+    if (it) ed = editorHtml(it);
+    wrap.innerHTML = "<div class=\"bar\" style=\"margin-bottom:10px\"><span class=\"muted\" style=\"margin-right:6px\">Edit existing:</span>" + pick + "</div>" + ed;
+  }
+
+  function render() {
+    document.getElementById("flt-all").classList.toggle("on", filter === "all");
+    document.getElementById("flt-out").classList.toggle("on", filter === "out");
+    document.getElementById("flt-done").classList.toggle("on", filter === "done");
+    paintDash();
+    var hash = (location.hash || "").replace(/^#item=/, "");
+    if (hash && !openItemId) openItemId = hash;
+    var items = doc.items.filter(function (it) {
+      var ph = phase(it);
+      if (filter === "out") return ph === "out";
+      if (filter === "done") return ph === "done";
+      return true;
+    });
+    if (!items.length) {
+      document.getElementById("list").innerHTML = "<p class=\"empty\">No items in this view.</p>";
+      return;
+    }
+    var body = items.map(summaryPairHtml).join("");
+    document.getElementById("list").innerHTML =
+      "<table class=\"brs-board\" aria-label=\"Briefing and Read and Sign summary\">" +
+        "<thead><tr><th>Type</th><th>Item</th><th>Progress</th><th></th></tr></thead>" +
+        "<tbody>" + body + "</tbody></table>";
+    if (openItemId) {
+      var node = document.getElementById("item-" + openItemId);
+      if (node) node.scrollIntoView({ block: "nearest" });
+    }
+  }
+
+  function doneAssigned(it) {
+    var n = (it.people || []).length;
+    var left = leftCount(it);
+    return { done: Math.max(0, n - left), assigned: n, left: left };
+  }
+
+  function detailPeopleTable(it) {
+    var verb = it.type === "read-sign" ? "Sign" : "Seen";
+    var rows = (it.people || []).slice().sort(function (a, b) {
+      var sa = String((byStaff[pad(a.staff)] && byStaff[pad(a.staff)].section) || a.section || "");
+      var sb = String((byStaff[pad(b.staff)] && byStaff[pad(b.staff)].section) || b.section || "");
+      return sa.localeCompare(sb) || String(a.name || "").localeCompare(String(b.name || "")) ||
+        String(a.staff).localeCompare(String(b.staff));
+    });
+    if (!rows.length) return "<p class=\"muted\">No people on this item yet.</p>";
+    return "<table class=\"detail-people\"><thead><tr>" +
+      "<th>Section</th><th>Staff #</th><th>Name</th><th>Status</th><th></th></tr></thead><tbody>" +
+      rows.map(function (p) {
+        var staff = pad(p.staff);
+        var sec = (byStaff[staff] && byStaff[staff].section) || p.section || "";
+        var name = (byStaff[staff] && byStaff[staff].name) || p.name || "";
+        var done = !!p.ack;
+        var st = done
+          ? ((p.ack === "signed" ? "Complete · Signed" : "Complete · Seen") + (p.ackAt ? " · " + p.ackAt : ""))
+          : "Not started";
+        var act = done
+          ? ""
+          : "<button type=\"button\" data-ack=\"" + esc(staff) + "\" data-item=\"" + esc(it.id) + "\">" + verb + "</button>";
+        return "<tr" + (done ? " class=\"is-done\"" : "") + ">" +
+          "<td>" + esc(sec) + "</td><td>" + esc(staff) + "</td><td>" + esc(name) + "</td>" +
+          "<td>" + esc(st) + "</td><td>" + act + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }
+
+  function detailMatsTable(it) {
+    var matLabel = it.type === "read-sign" ? "Read & Sign material" : "Briefing material";
+    var mats = it.materials || [];
+    if (!mats.length) return "<p class=\"muted\">No materials yet.</p>";
+    return "<table class=\"detail-mats\"><thead><tr><th>Kind</th><th>" + esc(matLabel) + "</th><th></th></tr></thead><tbody>" +
+      mats.map(function (m) {
+        var open = m.href ? "<a href=\"" + esc(m.href) + "\" target=\"_blank\" rel=\"noopener\">Open</a>" : "";
+        return "<tr><td>" + esc(kindLabel(m.kind)) + "</td><td>" + esc(m.name || "Material") + "</td><td>" + open + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }
+
+  function summaryPairHtml(it) {
+    var ph = phase(it);
+    var frac = doneAssigned(it);
+    var typeLabel = it.type === "read-sign" ? "Read &amp; Sign" : "Briefing";
+    var open = openItemId === it.id;
+    var sumCls = "sum-row" + (ph === "done" ? " is-done" : ph === "out" ? " is-out" : "") + (open ? " is-open" : "");
+    var progressText = frac.assigned
+      ? (frac.done + " / " + frac.assigned)
+      : "0 / 0";
+    var progressNote = !frac.assigned
+      ? "No people assigned"
+      : (frac.left === 0 ? "Complete" : (frac.left + " outstanding"));
+    var adminBtn = isEditUnlocked()
+      ? "<button type=\"button\" data-admin-goto=\"" + esc(it.id) + "\">Edit in Admin</button>"
+      : "";
+    var detail =
+      "<tr class=\"detail-row\"" + (open ? "" : " hidden") + " id=\"detail-" + esc(it.id) + "\">" +
+        "<td colspan=\"4\">" +
+          "<p class=\"detail-block-title\">Materials</p>" + detailMatsTable(it) +
+          "<p class=\"detail-block-title\">People</p>" + detailPeopleTable(it) +
+          "<div class=\"detail-actions\">" +
+            "<button type=\"button\" class=\"primary\" data-open-record=\"" + esc(it.id) + "\">Open record</button>" +
+            adminBtn +
+          "</div>" +
+        "</td>" +
+      "</tr>";
+    return "<tr class=\"" + sumCls + "\" id=\"item-" + esc(it.id) + "\" data-toggle-item=\"" + esc(it.id) + "\" aria-expanded=\"" + (open ? "true" : "false") + "\">" +
+      "<td><span class=\"type-badge\">" + typeLabel + "</span></td>" +
+      "<td><b>" + esc(itemLabel(it)) + "</b></td>" +
+      "<td><span class=\"frac\">" + esc(progressText) + "</span> <span class=\"muted\">" + esc(progressNote) + "</span></td>" +
+      "<td class=\"chev\">" + (open ? "Hide ▴" : "Open ▾") + "</td>" +
+      "</tr>" + detail;
   }
 
   var RECORD_FILE = "ke-read-sign-record.html?v=1.3";
@@ -763,6 +1203,7 @@
     p.ackAt = today();
     save();
     render();
+    renderAdminEditor();
   }
   async function submitPinFlow() {
     if (!pinCtx || !window.HxSharedSync) {
@@ -859,18 +1300,6 @@
     }
   }
 
-  document.getElementById("btn-new").onclick = function () {
-    doc.items.unshift({
-      id: uid("brs"),
-      type: "briefing",
-      title: "",
-      materials: [],
-      people: []
-    });
-    filter = "all";
-    save();
-    render();
-  };
   document.getElementById("flt-all").onclick = function () { filter = "all"; render(); };
   document.getElementById("flt-out").onclick = function () { filter = "out"; render(); };
   document.getElementById("flt-done").onclick = function () { filter = "done"; render(); };
@@ -887,90 +1316,39 @@
     if (node) node.scrollIntoView({ block: "start", behavior: "smooth" });
   });
 
-  document.getElementById("list").addEventListener("input", function (e) {
-    var t = e.target;
-    if (t.dataset.title) {
-      var it = itemById(t.dataset.title);
-      if (!it) return;
-      it.title = t.value;
-      save();
-      return;
-    }
-    if (t.dataset.find) {
-      suggestFor = t.dataset.find;
-      showSuggest(t.dataset.find, t.value);
-    }
-  });
-  document.getElementById("list").addEventListener("change", function (e) {
-    var t = e.target;
-    if (!t.dataset || !t.dataset.file) return;
-    var file = t.files && t.files[0];
-    t.value = "";
-    if (!file) return;
-    addFile(t.dataset.file, file);
-  });
-  document.getElementById("list").addEventListener("keydown", function (e) {
-    var t = e.target;
-    if (!t.dataset || !t.dataset.link || e.key !== "Enter") return;
-    e.preventDefault();
-    addLink(t.dataset.link, t.value);
-    t.value = "";
-  });
   document.getElementById("list").addEventListener("click", function (e) {
-    var btn = e.target.closest ? e.target.closest("button") : null;
-    var sug = e.target.closest ? e.target.closest("[data-pick]") : null;
-    if (sug) {
-      addPerson(sug.getAttribute("data-item"), sug.getAttribute("data-pick"));
+    var btn = e.target.closest ? e.target.closest("button, a") : null;
+    var toggle = e.target.closest ? e.target.closest("[data-toggle-item]") : null;
+    if (btn) {
+      if (btn.dataset.openRecord) {
+        e.preventDefault();
+        loadRecord(btn.dataset.openRecord, true);
+        return;
+      }
+      if (btn.dataset.ack) {
+        e.preventDefault();
+        e.stopPropagation();
+        openPinPop(btn.dataset.item, btn.dataset.ack);
+        return;
+      }
+      if (btn.dataset.adminGoto) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isEditUnlocked()) return;
+        adminEditId = btn.dataset.adminGoto;
+        syncAdminDom();
+        var admin = document.getElementById("brs-admin");
+        if (admin) admin.scrollIntoView({ block: "start", behavior: "smooth" });
+        paintAdminStatus("Editing from summary detail.");
+        return;
+      }
       return;
     }
-    if (!btn) return;
-    var id = btn.getAttribute("data-item") || btn.getAttribute("data-del-item");
-    if (btn.dataset.addLink) {
-      var box = document.querySelector('[data-link="' + btn.dataset.addLink + '"]');
-      addLink(btn.dataset.addLink, box ? box.value : "");
-      if (box) box.value = "";
-      return;
-    }
-    if (btn.dataset.type) {
-      var it = itemById(btn.dataset.item);
-      if (!it) return;
-      it.type = btn.dataset.type;
-      save();
-      render();
-      return;
-    }
-    if (btn.dataset.delItem) {
-      if (!window.confirm("Delete this briefing / read & sign item?")) return;
-      doc.items = doc.items.filter(function (x) { return x.id !== btn.dataset.delItem; });
-      save();
-      render();
-      return;
-    }
-    if (btn.dataset.delMat) {
-      var itm = itemById(btn.dataset.item);
-      if (!itm) return;
-      itm.materials = (itm.materials || []).filter(function (m) { return m.id !== btn.dataset.delMat; });
-      save();
-      render();
-      return;
-    }
-    if (btn.dataset.openRecord) {
-      loadRecord(btn.dataset.openRecord, true);
-      return;
-    }
-    if (btn.dataset.ack) {
-      openPinPop(btn.dataset.item, btn.dataset.ack);
-      return;
-    }
-    if (btn.dataset.clear) {
-      acknowledgeClear(btn.dataset.item, btn.dataset.clear);
-      return;
-    }
-    if (btn.dataset.delPerson) {
-      var itp = itemById(btn.dataset.item);
-      if (!itp) return;
-      itp.people = (itp.people || []).filter(function (p) { return p.staff !== btn.dataset.delPerson; });
-      save();
+    if (toggle) {
+      var id = toggle.getAttribute("data-toggle-item");
+      openItemId = openItemId === id ? "" : id;
+      if (openItemId) location.hash = "item=" + openItemId;
+      else if (/^#item=/.test(location.hash || "")) history.replaceState(null, "", location.pathname + location.search);
       render();
     }
   });
@@ -1001,7 +1379,8 @@
   });
 
   function showSuggest(itemId, q) {
-    var ul = document.querySelector('[data-suggest="' + itemId + '"]');
+    var ul = document.querySelector('#brs-admin [data-suggest="' + itemId + '"]') ||
+      document.querySelector('[data-suggest="' + itemId + '"]');
     if (!ul) return;
     var needle = String(q || "").trim().toLowerCase();
     if (needle.length < 1) { ul.hidden = true; ul.innerHTML = ""; return; }
@@ -1020,6 +1399,7 @@
     }).join("");
   }
   function addPerson(itemId, staff) {
+    if (!isEditUnlocked()) return;
     var it = itemById(itemId);
     var who = byStaff[pad(staff)];
     if (!it || !who) {
@@ -1033,6 +1413,7 @@
     render();
   }
   function acknowledgeClear(itemId, staff) {
+    if (!isEditUnlocked()) return;
     var it = itemById(itemId);
     if (!it) return;
     var p = (it.people || []).filter(function (x) { return x.staff === staff; })[0];
@@ -1043,6 +1424,7 @@
     render();
   }
   function addLink(itemId, href) {
+    if (!isEditUnlocked()) return;
     var url = String(href || "").trim();
     if (!url) return;
     var it = itemById(itemId);
@@ -1053,27 +1435,33 @@
     render();
   }
   function addFile(itemId, file) {
+    if (!isEditUnlocked()) return Promise.resolve();
     var kind = kindOfFile(file.name);
-    var sel = document.querySelector('[data-kind="' + itemId + '"]');
+    var sel = document.querySelector('#brs-admin [data-kind="' + itemId + '"]') ||
+      document.querySelector('[data-kind="' + itemId + '"]');
     if (sel && sel.value !== "link") kind = sel.value;
     if (!kind || kind === "link") {
       window.alert("This file was not added. Choose Word, Excel, or PDF.");
-      return;
+      return Promise.resolve();
     }
     if (file.size > 900000) {
       window.alert("This file was not added. It is over 900 KB. Paste a link instead.");
-      return;
+      return Promise.resolve();
     }
-    var reader = new FileReader();
-    reader.onload = function () {
-      var it = itemById(itemId);
-      if (!it) return;
-      it.materials = it.materials || [];
-      it.materials.push({ id: uid("mat"), name: file.name, kind: kind, href: String(reader.result || "") });
-      save();
-      render();
-    };
-    reader.readAsDataURL(file);
+    return new Promise(function (resolve) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var it = itemById(itemId);
+        if (!it) { resolve(); return; }
+        it.materials = it.materials || [];
+        it.materials.push({ id: uid("mat"), name: file.name, kind: kind, href: String(reader.result || "") });
+        save();
+        render();
+        resolve();
+      };
+      reader.onerror = function () { resolve(); };
+      reader.readAsDataURL(file);
+    });
   }
 
   function paintVaultStatus(t) {
@@ -1082,7 +1470,7 @@
   }
   function renderVaultList() {
     var ul = document.getElementById("vault-list");
-    if (!ul) return;
+    if (!ul || !isEditUnlocked()) return;
     var rows = roster.slice().sort(function (a, b) {
       return a.staff.localeCompare(b.staff) || a.name.localeCompare(b.name);
     });
@@ -1104,23 +1492,27 @@
   }
   async function ensureAdminPassword() {
     if (!window.HxSharedSync) return false;
-    if (!window.HxSharedSync.getPassword()) {
-      var ok = await window.HxSharedSync.promptPassword(
-        "Enter the HX Unlock admin password to manage PIN resets (PINs and hashes are never shown)."
-      );
-      if (!ok) return false;
+    if (!isEditUnlocked()) {
+      paintVaultStatus("HX edit unlock required.");
+      return false;
     }
-    return true;
+    if (window.HxSharedSync.getPassword()) return true;
+    try {
+      var stored = localStorage.getItem(GATE_PW_KEY);
+      if (stored) {
+        window.HxSharedSync.setPassword(stored);
+        return true;
+      }
+    } catch (e) {}
+    paintVaultStatus("Unlock HX (edit) on the hub first. No second password on this page.");
+    return false;
   }
   async function refreshVault() {
     if (!window.HxSharedSync) {
       paintVaultStatus("PIN service unavailable.");
       return;
     }
-    if (!(await ensureAdminPassword())) {
-      paintVaultStatus("Admin password required.");
-      return;
-    }
+    if (!(await ensureAdminPassword())) return;
     paintVaultStatus("Loading…");
     try {
       var data = await window.HxSharedSync.pinAdminList();
@@ -1131,36 +1523,49 @@
     } catch (e) {
       if (e && e.code === "unauthorized") {
         window.HxSharedSync.setPassword("");
-        paintVaultStatus("Admin password required (edit password is not enough).");
+        paintVaultStatus("HX unlock password rejected.");
         return;
       }
       paintVaultStatus(String((e && e.message) || e || "Failed to load vault."));
     }
   }
-  document.getElementById("vault-refresh").onclick = function () { refreshVault(); };
-  document.getElementById("vault-list").addEventListener("click", async function (e) {
-    var btn = e.target.closest ? e.target.closest("[data-pin-reset]") : null;
-    if (!btn) return;
-    var staff = pad(btn.getAttribute("data-pin-reset"));
-    if (!staff) return;
-    if (!window.confirm("Reset PIN for staff " + staff + "? Next sign will use the staff number, then force a new 6-digit PIN. The current PIN is never shown.")) return;
-    try {
-      if (!(await ensureAdminPassword())) return;
-      await window.HxSharedSync.pinAdminReset(staff);
-      pinSetStaff[staff] = false;
-      delete pinSetStaff[staff];
-      renderVaultList();
-      paintVaultStatus("Reset done for " + staff + ".");
-    } catch (err) {
-      if (err && err.code === "unauthorized") {
-        paintVaultStatus("Admin password required.");
-        return;
-      }
-      paintVaultStatus(String((err && err.message) || err || "Reset failed."));
+
+  hubRole = readStoredGateRole();
+  try {
+    if (window.HxSharedSync && isEditUnlocked()) {
+      var pw0 = localStorage.getItem(GATE_PW_KEY);
+      if (pw0) window.HxSharedSync.setPassword(pw0);
     }
+  } catch (e) {}
+  window.addEventListener("message", function (e) {
+    var msg = e.data || {};
+    if (!msg || typeof msg !== "object") return;
+    if (msg.type === "hx-gate") applyHubGate(msg);
   });
+  window.addEventListener("storage", function (e) {
+    if (!e || (e.key !== GATE_ROLE_KEY && e.key !== GATE_PW_KEY)) return;
+    hubRole = readStoredGateRole();
+    if (!isEditUnlocked()) {
+      adminEditId = "";
+      pinSetStaff = {};
+      if (window.HxSharedSync) window.HxSharedSync.setPassword("");
+    } else if (window.HxSharedSync) {
+      try {
+        var pw = localStorage.getItem(GATE_PW_KEY);
+        if (pw) window.HxSharedSync.setPassword(pw);
+      } catch (err) {}
+    }
+    syncAdminDom();
+    render();
+  });
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "hx-gate-request" }, "*");
+    }
+  } catch (e) {}
 
   loadLocal();
+  syncAdminDom();
   render();
   paintRecordStatus();
   if (/^#record/i.test(location.hash || "") || /[?&]record=1(?:&|$)/.test(location.search || "")) {
@@ -1179,7 +1584,7 @@
       else if (s === "synced") paintStatus("Synced from the shared list.");
       else if (s === "offline") paintStatus("Cloud unreachable. Using this browser copy.");
     }
-  }).then(function () { cloudReady = true; });
+  }).then(function () { cloudReady = true; renderAdminEditor(); });
 })();
   </script>
 </body>

@@ -210,7 +210,8 @@
         <li>而家起 UAL／CT／Mandatory 上載全機同步。舊「ignore」只係唔好特登帶舊檔。</li>
         <li>Mandatory 只留 Name List（OCG）staff。Course 缺名時跟 Course List／CT／UAL。</li>
         <li><span class="key">新 · Briefing &amp; Read &amp; Sign 合併</span>：hub 只留一個主題 <code>#brs</code>（板面＋printable record 同一頁）。舊 hash <code>#ke-rs</code> 自動 alias 去 <code>#brs</code>。獨立檔 <code>briefing-read-sign.html</code>／<code>ke-read-sign-record.html</code>（含 <code>?item=</code>）仍然可用。頁頂 dashboard：Briefings not complete、Read &amp; Sign not complete、Outstanding people（只列未做完嘅 Name List 人＋所屬 item）；全部完成＝綠。</li>
-        <li><span class="key">新 · Briefing &amp; Read &amp; Sign</span>（<code>#brs</code>）：可附多過一份 Word／Excel／PDF／連結。揀 Name List 嘅人。Seen（briefing）或 Sign（read &amp; sign）要喺 Briefing &amp; Read &amp; Sign 頁用每人員工 6 位 PIN 先算完成（首次預設＝staff #，之後強制改成唔同嘅 6 位；錯 PIN 唔簽）。Admin PIN vault 只顯示 set／still-default，可 Remove／reset，永遠唔顯示 PIN／hash。PIN salted hash 只喺 locked Supabase <code>hx_private.brs_staff_pin</code>（經 Edge <code>team-board</code> <code>/pin/*</code>），唔入 git／HANDOVER／localStorage dump／共用 BRS doc。全部完成變綠；仲有人未做＝outstanding，出現喺 Training One View。Training One View 嘅 Briefing／Read &amp; Sign Status 顯示純文字 <b>Complete</b>／<b>Not started</b>（跟 BRS ack，無 In Progress、無下拉／disabled select、唔寫 Status）；欄序 Status → Reference → Remark；Reference／Material 只開材料，彈窗提示去 Briefing &amp; Read &amp; Sign 頁簽名。Printable record 嵌喺同一頁（亦可開獨立 <code>ke-read-sign-record.html</code>）。</li>
+        <li><span class="key">新 · BRS 摘要板（似 Training One View）</span>：<code>#brs</code> 只係 Briefing + Read &amp; Sign。每項一行摘要（code／title）＋完成分數 <b>done / assigned</b>；預設收埋，撳一行先開 detail（人完成／未完成＋Section＋材料）。Admin 區塊喺頁頂，只喺 HX <b>edit unlock</b>（<code>hx:hub:gate-role</code>／gate-pw）先入 DOM；create／edit／delete item 同 PIN vault（reset only，唔顯示 PIN／hash）都喺度。View-only 唔見到 Admin。</li>
+        <li><span class="key">新 · Briefing &amp; Read &amp; Sign · PIN 可喺兩頁簽</span>：Seen／Sign 用每人員工 6 位 PIN（首次預設＝staff #，之後強制改成唔同嘅 6 位；錯 PIN 唔簽；eye／6 位 auto-check／Confirm）。可喺 <b>Briefing &amp; Read &amp; Sign</b> 頁或 <b>Training One View</b> 未完成行嘅 Sign／Seen 掣簽；簽完＝Complete，outstanding 消失。Status 仍只顯示 <b>Complete</b>／<b>Not started</b>（無 In Progress、無下拉、唔寫 Status 欄）。欄序 Status → Reference → Remark；Reference／Material 開材料。Admin PIN vault 只 set／still-default + Remove／reset。Hash 只喺 locked <code>hx_private.brs_staff_pin</code>（Edge <code>/pin/*</code>）。Printable record 嵌同一頁。</li>
       </ul>
       <h3>Ingest</h3>
       <ul>
@@ -254,6 +255,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#fth-rewrite</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="4.6">v4.6</div>
+  <div class="page-version" data-version="4.7">v4.7</div>
 </body>
 </html>
