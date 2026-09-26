@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- Training One View layout：三個 ingest 卡（UAL／CT／Mandatory）列闊改為內容區約 2/3（右留空）；**Add course** 銅棕 admin-block 移到三卡正下方、全闊。TOV **v11.9**、`hx.html` **v10.99**。GitHub 後備。冇改 ingest／Status／PIN。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - Admin 銅棕／沙色擴到全 HX admin 區：BRS 「Edit existing」改直向摘要行＋按鈕分色（Delete 紅）；Training One View ingest／Add course 加 `.admin-block`；hub Permissions 面板同色；`hx-rules` 紅字改為全站 admin。BRS **v2.4**、TOV **v11.8**、`hx-rules` **v5.0**、`hx.html` **v10.98**。GitHub 後備。冇改 PIN／item number／Name List。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
