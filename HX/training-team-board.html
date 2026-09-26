@@ -1144,7 +1144,7 @@
     </div>
     <div id="detail" class="detail hidden"></div>
     <div class="why write-zone" hidden>
-      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. After Unlock with the hub password, each change also syncs immediately through a locked server path (no per-browser sync-key paste). Open boards poll that path about every 5 seconds so other windows update without refresh. Else, when a GitHub token is stored, each change auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Anon cannot write staff Status. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
+      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. After Unlock with the hub password, each change also syncs immediately through a locked server path (no per-browser sync-key paste). <b>UAL CBT email</b>, <b>CT Reminder</b> CSV (more than one file is OK), and <b>Mandatory</b> xlsx/CSV uploads sync the same way — every open board sees them via the ~5s poll (view and edit). Open boards poll that path about every 5 seconds so other windows update without refresh. Else, when a GitHub token is stored, each change auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Anon cannot write staff Status. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
       <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Each PIC cell shows <b>98% (xx/yy) 6 left</b> — xx = clear of this item, yy = roster for that tab + team, left = still outstanding. The PIC training-item grid starts <b>collapsed</b> (Other / Team 1–4 headers only); use <b>Show training items</b> to expand. Open/closed is remembered in this browser. PIC item rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. Table and Details people follow <b>Team 1–4</b> top to bottom, then <b>section + crew</b> (Team n: LTA<i>n</i> then other LTA, then crew). Other / TBD (office sections such as LGC1) sit after Team 4. Click a people-list column to override. Course rows inside one person stay remaining / due order. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. Row colors use remaining days for UAL / CT / Mandatory / Manual: <b>Overdue or will expire</b> (pink) = remaining ≤30 days; <b>Coming due</b> (yellow) = remaining &gt;30 and ≤90 days; remaining &gt;90 has no due-color. <b>Completed</b> clears that course from the PIC board and from Table / Details. When every course for a person is <b>Completed</b>, their name drops off Details. <b>In Progress</b> blues the Status cell only. <b>Add course</b> accepts a staff # or an Authorization group code (e.g. Operator <b>D0</b>) to select matching CS from the Authorization List, with +/− before one course + expire date for all. <b>Table</b> is the people list — click a row for that person’s course card (this browser only). <b>Details</b> stacks the same course card for every visible person (Section + Crew · Staff # · Name, with course count on the right) for capture / print. Course tables end with <b>Remark</b> (last column; stays with Status). Click a PIC cell for one course.</p>
     </div>
   </div>
@@ -1255,7 +1255,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="9.6" aria-label="Page version 9.6">v9.6</div>
+  <div class="page-version" data-version="10.6" aria-label="Page version 10.6">v10.6</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=6"></script>
@@ -1316,6 +1316,12 @@ let syncPollTimer = null;
 let syncPollBusy = false;
 let lastRemoteActionsSig = "";
 let suppressRemoteMerge = false;
+let suppressIngestPush = false;
+let dirtyIngest = false;
+let ingestPushTimer = null;
+let ingestPushBusy = false;
+let ingestPushQueued = false;
+let lastRemoteIngestHadContent = false;
 let dirtyStatusKeys = new Set();
 let dirtyManualIds = new Set();
 let pendingStatusDeletes = [];
@@ -1711,13 +1717,59 @@ function edgeAuthHeaders(extra) {
   }
   return h;
 }
+function ingestMetaSig(data) {
+  if (!data || typeof data !== "object") return "";
+  try {
+    const ual = data.ual && typeof data.ual === "object" ? data.ual : null;
+    return JSON.stringify({
+      ualAt: ual ? String(ual.uploadedAt || "") : "",
+      ualLen: ual && ual.text ? String(ual.text).length : 0,
+      ct: (Array.isArray(data.ctFiles) ? data.ctFiles : []).map((f) => [
+        String(f.name || ""),
+        String(f.uploadedAt || ""),
+        Array.isArray(f.rows) ? f.rows.length : 0
+      ]),
+      omt: (Array.isArray(data.omtFiles) ? data.omtFiles : []).map((f) => [
+        String(f.name || ""),
+        String(f.uploadedAt || ""),
+        Array.isArray(f.rows) ? f.rows.length : 0
+      ])
+    });
+  } catch (e) {
+    return "";
+  }
+}
+function localIngestSnapshot() {
+  const text = String((document.getElementById("ual-src") || {}).value || "");
+  return {
+    ual: text.trim() ? { text: text, uploadedAt: ualUploadedAt || "" } : null,
+    ctFiles: ctFiles,
+    omtFiles: omtFiles
+  };
+}
+function ingestHasContent(data) {
+  const sig = ingestMetaSig(data);
+  return !!(sig && sig !== ingestMetaSig({ ual: null, ctFiles: [], omtFiles: [] }));
+}
+function ingestNewestAt(data) {
+  let max = 0;
+  const bump = (iso) => {
+    const t = Date.parse(String(iso || "")) || 0;
+    if (t > max) max = t;
+  };
+  if (data && data.ual) bump(data.ual.uploadedAt);
+  (data && Array.isArray(data.ctFiles) ? data.ctFiles : []).forEach((f) => bump(f && f.uploadedAt));
+  (data && Array.isArray(data.omtFiles) ? data.omtFiles : []).forEach((f) => bump(f && f.uploadedAt));
+  return max;
+}
 function actionsPayloadSig(data) {
   if (!data || typeof data !== "object") return "";
   try {
     return JSON.stringify({
       status: data.status || {},
       manual: data.manual || [],
-      updated: data.updated || ""
+      updated: data.updated || "",
+      ingest: ingestMetaSig(data)
     });
   } catch (e) {
     return "";
@@ -2131,6 +2183,7 @@ function persistUal(text, uploadedAt) {
   const rec = { text: String(text || "") };
   if (uploadedAt) rec.uploadedAt = uploadedAt;
   try { lsSet(UAL_STORE, JSON.stringify(rec)); } catch (e) {}
+  if (persistArmed && !suppressIngestPush) schedulePushIngest();
 }
 function srcHas(k) { return srcOn.indexOf(k) >= 0; }
 function srcIsAll() { return SRC_ALL.every(srcHas); }
@@ -3306,6 +3359,7 @@ function persistCtFiles(opts) {
     if (clear && persistArmed) {
       lsSet(CT_FILES, "[]");
       lsSet(CT_CLEARED, "1");
+      if (!suppressIngestPush) schedulePushIngest();
     }
     return;
   }
@@ -3317,6 +3371,7 @@ function persistCtFiles(opts) {
     })));
   } catch (e) {}
   lsSet(CT_CLEARED, "0");
+  if (persistArmed && !suppressIngestPush) schedulePushIngest();
 }
 function paintCtFiles() {
   const n = ctRows.length;
@@ -4138,6 +4193,185 @@ function applyServerPayload(data, opts) {
   lastRemoteActionsSig = actionsPayloadSig(data);
   if (!keepDirty) clearDirtyAll();
   persistActionsLocal();
+  applyServerIngest(data, { keepDirty: dirtyIngest });
+}
+function packIngestForEdge() {
+  const snap = localIngestSnapshot();
+  return {
+    _ingest: true,
+    v: 1,
+    ual: snap.ual,
+    ctFiles: (snap.ctFiles || []).map((f) => {
+      const rec = { name: f.name, kind: f.kind, rows: f.rows || [] };
+      if (f.uploadedAt) rec.uploadedAt = f.uploadedAt;
+      return rec;
+    }),
+    omtFiles: (snap.omtFiles || []).map((f) => {
+      const rec = { name: f.name, rows: f.rows || [] };
+      if (f.uploadedAt) rec.uploadedAt = f.uploadedAt;
+      return rec;
+    })
+  };
+}
+function applyServerIngest(data, opts) {
+  if (!data || typeof data !== "object") return false;
+  if (!(Object.prototype.hasOwnProperty.call(data, "ual") ||
+        Object.prototype.hasOwnProperty.call(data, "ctFiles") ||
+        Object.prototype.hasOwnProperty.call(data, "omtFiles"))) {
+    return false;
+  }
+  if (opts && opts.keepDirty && dirtyIngest) return false;
+  const remoteHas = ingestHasContent(data);
+  const localSnap = localIngestSnapshot();
+  const localHas = ingestHasContent(localSnap);
+  if (!remoteHas && localHas && !lastRemoteIngestHadContent && !(opts && opts.allowEmpty)) {
+    return false;
+  }
+  const nextSig = ingestMetaSig(data);
+  const curSig = ingestMetaSig(localSnap);
+  if (nextSig && nextSig === curSig) {
+    lastRemoteIngestHadContent = remoteHas;
+    return false;
+  }
+  suppressIngestPush = true;
+  try {
+    if (Object.prototype.hasOwnProperty.call(data, "ual")) {
+      const ual = data.ual;
+      if (!ual || !String(ual.text || "").trim()) {
+        applyUalSnap({ text: "", uploadedAt: "" });
+      } else {
+        applyUalSnap({
+          text: String(ual.text || ""),
+          uploadedAt: String(ual.uploadedAt || "")
+        });
+      }
+    }
+    if (Object.prototype.hasOwnProperty.call(data, "ctFiles")) {
+      const list = Array.isArray(data.ctFiles) ? data.ctFiles : [];
+      ctFiles = list.map(mapCtFile).filter((f) => f.rows.length);
+      flattenCt();
+      if (ctFiles.length) persistCtFiles();
+      else {
+        try { lsSet(CT_FILES, "[]"); } catch (e) {}
+        lsSet(CT_CLEARED, "1");
+      }
+      paintCtFiles();
+    }
+    if (Object.prototype.hasOwnProperty.call(data, "omtFiles")) {
+      const list = Array.isArray(data.omtFiles) ? data.omtFiles : [];
+      omtFiles = list.map(mapOmtFile).filter((f) => f.rows.length);
+      flattenOmt();
+      if (omtFiles.length) persistOmtFiles();
+      else {
+        try { lsSet(OMT_FILES, "[]"); } catch (e) {}
+        lsSet(OMT_CLEARED, "1");
+      }
+      paintOmtFiles();
+    }
+    dirtyIngest = false;
+    lastRemoteIngestHadContent = remoteHas;
+    mergeCatalogFromBoard();
+    return true;
+  } finally {
+    window.setTimeout(() => { suppressIngestPush = false; }, 120);
+  }
+}
+function schedulePushIngest() {
+  if (!persistArmed || suppressIngestPush) return;
+  if (!(getBoardPassword() || getSyncKey())) return;
+  if (!canRemoteWrite()) return;
+  dirtyIngest = true;
+  setSaveSync("Saving…");
+  if (ingestPushTimer) window.clearTimeout(ingestPushTimer);
+  ingestPushTimer = window.setTimeout(() => {
+    ingestPushTimer = null;
+    pushIngestToEdge();
+  }, PUSH_MS);
+}
+async function pushIngestToEdge() {
+  if (!canRemoteWrite()) return false;
+  const headers = edgeAuthHeaders({ "Content-Type": "application/json" });
+  if (!headers["x-hx-board-password"] && !headers["x-hx-sync-key"]) return false;
+  if (ingestPushBusy) { ingestPushQueued = true; return true; }
+  ingestPushBusy = true;
+  setSaveSync("Saving…");
+  try {
+    do {
+      ingestPushQueued = false;
+      suppressRemoteMerge = true;
+      const putRes = await fetch(SYNC_EDGE_URL, {
+        method: "PUT",
+        headers: headers,
+        body: JSON.stringify(packIngestForEdge())
+      });
+      const body = await putRes.json().catch(() => ({}));
+      if (putRes.status === 401 || putRes.status === 403) {
+        if (!getBoardPassword()) lsRemove(SYNC_KEY_KEY);
+        showPushFail("Sync was rejected. Uploads are saved in this browser.");
+        setSaveSync("Saved");
+        return true;
+      }
+      if (!putRes.ok) {
+        showPushFail("Could not sync uploads (" + putRes.status + "). Saved in this browser.");
+        setSaveSync("Saved");
+        return true;
+      }
+      dirtyIngest = false;
+      if (body && body.payload) {
+        lastRemoteActionsSig = actionsPayloadSig(body.payload);
+        actionsFileCache = body.payload;
+        lastRemoteIngestHadContent = ingestHasContent(body.payload);
+      } else {
+        lastRemoteIngestHadContent = ingestHasContent(localIngestSnapshot());
+      }
+      setSaveSync("Saved");
+    } while (ingestPushQueued);
+  } catch (e) {
+    showPushFail("Could not reach sync server. Uploads are saved in this browser.");
+    setSaveSync("Saved");
+  } finally {
+    ingestPushBusy = false;
+    window.setTimeout(() => { suppressRemoteMerge = false; }, 800);
+    if (ingestPushQueued) {
+      ingestPushQueued = false;
+      pushIngestToEdge();
+    }
+  }
+  return true;
+}
+async function syncIngestWithRemote() {
+  const remote = await loadActionsFromEdge();
+  if (!remote) return;
+  lastRemoteActionsSig = actionsPayloadSig(remote);
+  lastRemoteIngestHadContent = ingestHasContent(remote);
+  const localSnap = localIngestSnapshot();
+  const remoteHas = lastRemoteIngestHadContent;
+  const localHas = ingestHasContent(localSnap);
+  const canWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
+  if (!remoteHas && localHas && canWrite) {
+    await pushIngestToEdge();
+    lastRemoteIngestHadContent = ingestHasContent(localIngestSnapshot());
+    return;
+  }
+  if (remoteHas && !localHas) {
+    applyServerIngest(remote, {});
+    paint();
+    return;
+  }
+  if (remoteHas && localHas) {
+    const localSig = ingestMetaSig(localSnap);
+    const remoteSig = ingestMetaSig(remote);
+    if (localSig === remoteSig) return;
+    const remoteAt = ingestNewestAt(remote);
+    const localAt = ingestNewestAt(localSnap);
+    if (canWrite && localAt > remoteAt) {
+      await pushIngestToEdge();
+      lastRemoteIngestHadContent = true;
+    } else {
+      applyServerIngest(remote, {});
+      paint();
+    }
+  }
 }
 function mergeStatusMaps() {
   const out = {};
@@ -7186,6 +7420,7 @@ function persistOmtFiles(opts) {
     if (clear && persistArmed) {
       lsSet(OMT_FILES, "[]");
       lsSet(OMT_CLEARED, "1");
+      if (!suppressIngestPush) schedulePushIngest();
     }
     return;
   }
@@ -7197,6 +7432,7 @@ function persistOmtFiles(opts) {
     })));
   } catch (e) {}
   lsSet(OMT_CLEARED, "0");
+  if (persistArmed && !suppressIngestPush) schedulePushIngest();
 }
 function paintOmtFiles() {
   const n = omtRows.length;
@@ -7700,6 +7936,7 @@ function wireExpireDateField() {
 }
 function applyHubGate(msg) {
   if (!msg || typeof msg !== "object") return;
+  const prevCanWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
   hubGate = {
     role: String(msg.role || "view").toLowerCase() || "view",
     password: String(msg.password || ""),
@@ -7742,9 +7979,13 @@ function applyHubGate(msg) {
   if (!wantIngest) {
     document.documentElement.classList.add("no-ingest");
   }
+  const nowCanWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
+  if (nowCanWrite && !prevCanWrite && persistArmed) {
+    syncIngestWithRemote();
+  }
 }
 async function pollRemoteActions() {
-  if (syncPollBusy || suppressRemoteMerge || pushBusy) return;
+  if (syncPollBusy || suppressRemoteMerge || pushBusy || ingestPushBusy) return;
   syncPollBusy = true;
   try {
     const remote = await loadActionsFromEdge();
@@ -7806,7 +8047,10 @@ window.addEventListener("message", (e) => {
     });
     if (getBoardPassword() || getSyncKey()) {
       persistActionsLocal();
+      await syncIngestWithRemote();
       flushActionsOut();
+    } else {
+      await syncIngestWithRemote();
     }
     startSyncPoll();
     paint();
