@@ -223,6 +223,80 @@
     return true;
   }
 
+  function padStaffPin(v) {
+    var d = String(v || "").replace(/\D/g, "");
+    if (!d) return "";
+    return d.length < 6 ? d.padStart(6, "0") : d.slice(-6);
+  }
+
+  async function pinCheck(staff, pin) {
+    var res = await fetch(EDGE_URL + "/pin/check", {
+      method: "POST",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ staff: padStaffPin(staff), pin: String(pin || "").replace(/\D/g, "") }),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error((data && data.error) || ("pin-check " + res.status));
+    return { ok: !!(data && data.ok), mustChange: !!(data && data.mustChange) };
+  }
+
+  async function pinSet(staff, currentPin, newPin) {
+    var res = await fetch(EDGE_URL + "/pin/set", {
+      method: "POST",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        staff: padStaffPin(staff),
+        currentPin: String(currentPin || "").replace(/\D/g, ""),
+        newPin: String(newPin || "").replace(/\D/g, ""),
+      }),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok || !(data && data.ok)) {
+      var err = new Error((data && data.error) || "pin-set failed");
+      err.code = (data && data.error) || "failed";
+      throw err;
+    }
+    return { ok: true };
+  }
+
+  async function pinAdminList() {
+    var res = await fetch(EDGE_URL + "/pin/admin-list", {
+      cache: "no-store",
+      headers: authHeaders(),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (res.status === 401 || res.status === 403) {
+      var e401 = new Error("unauthorized");
+      e401.code = "unauthorized";
+      throw e401;
+    }
+    if (!res.ok) throw new Error((data && data.error) || ("pin-admin-list " + res.status));
+    return { set: Array.isArray(data && data.set) ? data.set.map(String) : [] };
+  }
+
+  async function pinAdminReset(staff) {
+    var res = await fetch(EDGE_URL + "/pin/admin-reset", {
+      method: "POST",
+      cache: "no-store",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ staff: padStaffPin(staff) }),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (res.status === 401 || res.status === 403) {
+      var e401 = new Error("unauthorized");
+      e401.code = "unauthorized";
+      throw e401;
+    }
+    if (!res.ok || !(data && data.ok)) {
+      var err = new Error((data && data.error) || "pin-reset failed");
+      err.code = (data && data.error) || "failed";
+      throw err;
+    }
+    return { ok: true };
+  }
+
   global.HxSharedSync = {
     EDGE_URL: EDGE_URL,
     META_PREFIX: META_PREFIX,
@@ -237,5 +311,10 @@
     syncDoc: syncDoc,
     docHasContent: docHasContent,
     schedule: schedule,
+    padStaffPin: padStaffPin,
+    pinCheck: pinCheck,
+    pinSet: pinSet,
+    pinAdminList: pinAdminList,
+    pinAdminReset: pinAdminReset,
   };
 })(typeof window !== "undefined" ? window : globalThis);

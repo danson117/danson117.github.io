@@ -1298,18 +1298,19 @@
     <div class="brs-card" role="dialog" aria-labelledby="brs-pop-title">
       <h3 id="brs-pop-title"></h3>
       <p id="brs-pop-type" class="note"></p>
+      <p id="brs-pop-sign-note" class="note">To mark Seen or Sign, open the Briefing &amp; Read &amp; Sign page and use the staff PIN. This popup only opens materials.</p>
       <ul id="brs-pop-files" class="brs-files"></ul>
       <div class="brs-actions">
-        <button type="button" id="brs-pop-ack">Seen</button>
+        <a id="brs-pop-brs" href="briefing-read-sign.html?v=1.2">Open Briefing &amp; Read &amp; Sign</a>
         <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.2">Open record</a>
         <button type="button" id="brs-pop-close">Close</button>
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="11.0" aria-label="Page version 11.0">v11.0</div>
+  <div class="page-version" data-version="11.1" aria-label="Page version 11.1">v11.1</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
-<script src="hx-shared-sync.js?v=1.0"></script>
+<script src="hx-shared-sync.js?v=1.1"></script>
 <script src="authorization-list-data.js?v=6"></script>
 <script>
 hxUnpackRoster();
@@ -3757,7 +3758,15 @@ function personItemRow(p, item) {
     kind: (p && p.kind) || ""
   };
 }
+function isBrsCourseRow(row) {
+  if (!row) return false;
+  const src = courseSrcKey(row);
+  return src === "brief" || src === "rs" || row.kind === "brief" || row.kind === "rs";
+}
 function personCourseStillOut(p, item) {
+  // Briefing / Read & Sign outstanding follows shared BRS ack only (not Status dropdown).
+  if (item && (item.src === "brief" || item.src === "rs")) return true;
+  if (p && (p.kind === "brief" || p.kind === "rs")) return true;
   return !courseIsCompleted(p.staff, personItemRow(p, item));
 }
 function cellPeople(item, team) {
@@ -4179,6 +4188,13 @@ function writeCourseStatus(staff, code, src, rec, opts) {
   const k = courseStatusStoreKey(staff, code, src);
   const prev = courseStatus[k] || {};
   const prevSnap = snapStatusRec(prev);
+  // Never persist Status from Training One View for Briefing / Read & Sign rows.
+  if ((src === "brief" || src === "rs") && rec && Object.prototype.hasOwnProperty.call(rec, "status")) {
+    return;
+  }
+  if ((src === "brief" || src === "rs") && rec && Object.prototype.hasOwnProperty.call(rec, "done")) {
+    return;
+  }
   const status = COURSE_STATUS_OPTS.indexOf(rec && rec.status) >= 0
     ? rec.status
     : (COURSE_STATUS_OPTS.indexOf(prev.status) >= 0 ? prev.status : "Not Started");
@@ -6293,19 +6309,23 @@ function courseStatusCellHtml(who, row) {
   const staff = esc(padStaff(who.staff));
   const code = esc(courseCodeKey(row));
   const src = esc(courseSrcKey(row));
+  const brsLock = isBrsCourseRow(row);
   const opts = COURSE_STATUS_OPTS.map((opt) =>
     "<option value=\"" + esc(opt) + "\"" + (rec.status === opt ? " selected" : "") + ">" + esc(opt) + "</option>"
   ).join("");
   const display = rec.status === "Completed" && rec.done ? fmtDoneDisplay(rec.done) : "";
   const doneVal = display ? " value=\"" + esc(display) + "\"" : "";
   const calVal = rec.status === "Completed" && rec.done ? " value=\"" + esc(rec.done) + "\"" : "";
-  const doneHidden = rec.status === "Completed" ? "" : " hidden";
+  const doneHidden = rec.status === "Completed" && !brsLock ? "" : " hidden";
+  const lockAttr = brsLock
+    ? " disabled title=\"Sign on the Briefing & Read & Sign page. Status is not changed here.\""
+    : "";
   return "<td class=\"col-status\">" +
     "<div class=\"course-status-cell\">" +
-    "<select class=\"course-status\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Status\">" + opts + "</select>" +
+    "<select class=\"course-status\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Status\"" + lockAttr + ">" + opts + "</select>" +
     "<div class=\"course-done-wrap\"" + doneHidden + ">" +
-    "<input type=\"text\" class=\"course-done\" lang=\"en\" inputmode=\"numeric\" placeholder=\"DD-MM-YY\" pattern=\"\\d{2}-\\d{2}-\\d{2}\" maxlength=\"10\" title=\"DD-MM-YY\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Completed date\"" + doneVal + ">" +
-    "<input type=\"date\" class=\"course-done-cal\" lang=\"en\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Pick completed date\" title=\"Pick date\"" + calVal + ">" +
+    "<input type=\"text\" class=\"course-done\" lang=\"en\" inputmode=\"numeric\" placeholder=\"DD-MM-YY\" pattern=\"\\d{2}-\\d{2}-\\d{2}\" maxlength=\"10\" title=\"DD-MM-YY\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Completed date\"" + (brsLock ? " disabled" : "") + doneVal + ">" +
+    "<input type=\"date\" class=\"course-done-cal\" lang=\"en\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Pick completed date\" title=\"Pick date\"" + (brsLock ? " disabled" : "") + calVal + ">" +
     "</div></div></td>";
 }
 function courseRemarkCellHtml(who, row) {
@@ -6370,6 +6390,13 @@ function applyCourseStatusEvent(e) {
   const staff = el.dataset.staff;
   const code = el.dataset.code;
   const src = el.dataset.src;
+  if (src === "brief" || src === "rs") {
+    e.preventDefault();
+    e.stopPropagation();
+    window.alert("Status for Briefing / Read & Sign changes only after signing on the Briefing & Read & Sign page.");
+    paint();
+    return;
+  }
   const cell = el.closest(".course-status-cell");
   const doneEl = cell && cell.querySelector("input.course-done");
   const calEl = cell && cell.querySelector("input.course-done-cal");
@@ -7199,8 +7226,8 @@ function openBrsPop(itemId, staff) {
     const label = (m.kind === "word" ? "Word" : m.kind === "excel" ? "Excel" : m.kind === "pdf" ? "PDF" : "Link") + " · " + (m.name || "Material");
     return "<li><a href=\"" + esc(m.href || "#") + "\" target=\"_blank\" rel=\"noopener\">" + esc(label) + "</a></li>";
   }).join("") : "<li>No materials on this item.</li>";
-  const ack = document.getElementById("brs-pop-ack");
-  ack.textContent = it.type === "read-sign" ? "Sign" : "Seen";
+  const brsLink = document.getElementById("brs-pop-brs");
+  if (brsLink) brsLink.href = "briefing-read-sign.html?v=1.2#item=" + encodeURIComponent(it.id);
   document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.2&item=" + encodeURIComponent(it.id);
   pop.hidden = false;
 }
@@ -7208,26 +7235,7 @@ function closeBrsPop() {
   const pop = document.getElementById("brs-pop");
   if (pop) pop.hidden = true;
 }
-function ackBrsFromPop() {
-  const pop = document.getElementById("brs-pop");
-  if (!pop) return;
-  const stored = readBrsDoc();
-  const it = (stored.items || []).find((x) => x && x.id === pop.dataset.item);
-  if (!it) return;
-  const staff = padStaff(pop.dataset.staff);
-  const person = (it.people || []).find((p) => padStaff(p.staff) === staff);
-  if (!person) return;
-  person.ack = it.type === "read-sign" ? "signed" : "seen";
-  person.ackAt = brsToday();
-  const payload = writeBrsDoc(stored);
-  closeBrsPop();
-  paint();
-  if (window.HxSharedSync && window.HxSharedSync.getPassword()) {
-    window.HxSharedSync.pushDoc("briefing-read-sign", payload).catch(() => {});
-  }
-}
 document.getElementById("brs-pop-close").addEventListener("click", closeBrsPop);
-document.getElementById("brs-pop-ack").addEventListener("click", ackBrsFromPop);
 document.getElementById("brs-pop").addEventListener("click", (e) => {
   if (e.target.id === "brs-pop") closeBrsPop();
 });

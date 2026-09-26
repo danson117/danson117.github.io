@@ -209,7 +209,7 @@
       <ul>
         <li>而家起 UAL／CT／Mandatory 上載全機同步。舊「ignore」只係唔好特登帶舊檔。</li>
         <li>Mandatory 只留 Name List（OCG）staff。Course 缺名時跟 Course List／CT／UAL。</li>
-        <li><span class="key">新 · Briefing &amp; Read &amp; Sign</span>（<code>#brs</code>）：可附多過一份 Word／Excel／PDF／連結。揀 Name List 嘅人。Seen（briefing）或 Sign（read &amp; sign）先算完成。全部完成變綠；仲有人未做＝outstanding，出現喺 Training One View。Course 右邊 <b>Reference / Material</b> 開材料，並可喺度 Seen／Sign。紀錄頁係 <b>Briefing &amp; Read &amp; Sign Record</b>（<code>#ke-rs</code>），完成未完成都可以開。</li>
+        <li><span class="key">新 · Briefing &amp; Read &amp; Sign</span>（<code>#brs</code>）：可附多過一份 Word／Excel／PDF／連結。揀 Name List 嘅人。Seen（briefing）或 Sign（read &amp; sign）要喺 Briefing &amp; Read &amp; Sign 頁用每人員工 6 位 PIN 先算完成（首次預設＝staff #，之後強制改成唔同嘅 6 位；錯 PIN 唔簽）。Admin PIN vault 只顯示 set／still-default，可 Remove／reset，永遠唔顯示 PIN／hash。PIN salted hash 只喺 locked Supabase <code>hx_private.brs_staff_pin</code>（經 Edge <code>team-board</code> <code>/pin/*</code>），唔入 git／HANDOVER／localStorage dump／共用 BRS doc。全部完成變綠；仲有人未做＝outstanding，出現喺 Training One View。Training One View 嘅 Briefing／Read &amp; Sign <b>Status 下拉唔可改</b>（唔寫 Status）；Reference／Material 只開材料，彈窗提示去 Briefing &amp; Read &amp; Sign 頁簽名。紀錄頁係 <b>Briefing &amp; Read &amp; Sign Record</b>（<code>#ke-rs</code>）。</li>
       </ul>
       <h3>Ingest</h3>
       <ul>
@@ -253,6 +253,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#fth-rewrite</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="4.3">v4.3</div>
+  <div class="page-version" data-version="4.4">v4.4</div>
 </body>
 </html>
