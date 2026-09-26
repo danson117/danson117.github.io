@@ -220,6 +220,36 @@
         border-color: var(--line);
         margin-right: 8px;
       }
+      .bar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .bar-actions button {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--side);
+        padding: 4px 10px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .bar-actions button.on {
+        background: var(--side);
+        color: #fff;
+        border-color: var(--side);
+      }
+      .bar-actions button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      #gate-role {
+        font-weight: 650;
+        color: var(--ink);
+        min-width: 3.2em;
+      }
       iframe {
         flex: 1;
         width: 100%;
@@ -235,6 +265,107 @@
         bottom: 8px;
         font-size: 11px;
         color: var(--side-dim);
+      }
+      .pop {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 28, 40, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 40;
+        padding: 16px;
+      }
+      .pop.hidden,
+      .pop[hidden] {
+        display: none !important;
+      }
+      .pop-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        max-width: 520px;
+        width: 100%;
+        max-height: min(88vh, 720px);
+        overflow: auto;
+        padding: 16px 18px 14px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+      }
+      .pop-card.wide {
+        max-width: 640px;
+      }
+      .pop-card h2 {
+        margin: 0 0 6px;
+        font-size: 16px;
+        color: var(--side);
+      }
+      .pop-card p.hint {
+        margin: 0 0 12px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      .pop-card label {
+        display: block;
+        font-size: 12px;
+        margin: 0 0 4px;
+        color: var(--ink);
+      }
+      .pop-card input[type="password"] {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        font: inherit;
+        margin-bottom: 10px;
+      }
+      .pop-card .err {
+        color: #9b1c1c;
+        font-size: 12px;
+        margin: 0 0 8px;
+      }
+      .pop-card .err[hidden] {
+        display: none !important;
+      }
+      .pop-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 12px;
+      }
+      .pop-actions button {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--side);
+        padding: 6px 12px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .pop-actions button.primary {
+        background: var(--side);
+        color: #fff;
+        border-color: var(--side);
+      }
+      .gate-grid {
+        display: grid;
+        gap: 6px;
+        margin: 0 0 14px;
+      }
+      .gate-grid label {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.35;
+      }
+      .gate-grid label input {
+        margin-top: 2px;
+      }
+      .gate-section-title {
+        font-size: 13px;
+        font-weight: 650;
+        color: var(--side);
+        margin: 4px 0 8px;
       }
       @media (max-width: 720px) {
         body {
@@ -275,13 +406,18 @@
           </button>
           <span id="now">Authorization Training Process</span>
         </span>
-        <a
-          id="solo"
-          href="authorization-training-process.html"
-          target="_blank"
-          rel="noopener"
-          >Open this page</a
-        >
+        <div class="bar-actions">
+          <span id="gate-role" title="Current access">view</span>
+          <button type="button" id="gate-unlock">Unlock</button>
+          <button type="button" id="gate-perms" hidden>Permissions</button>
+          <a
+            id="solo"
+            href="authorization-training-process.html"
+            target="_blank"
+            rel="noopener"
+            >Open this page</a
+          >
+        </div>
       </div>
       <iframe
         id="frame"
@@ -289,7 +425,43 @@
         allow="clipboard-write; downloads"
       ></iframe>
     </main>
-    <div class="page-version" data-version="8.39">v8.39</div>
+
+    <div id="gate-unlock-pop" class="pop hidden" hidden>
+      <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="gate-unlock-title">
+        <h2 id="gate-unlock-title">Unlock</h2>
+        <p class="hint" id="gate-unlock-hint">
+          Enter the board password for edit access. Access stays in this browser until you click Lock.
+        </p>
+        <label for="gate-pw">Password</label>
+        <input id="gate-pw" type="password" autocomplete="current-password" />
+        <p class="err" id="gate-unlock-err" hidden></p>
+        <div class="pop-actions">
+          <button type="button" id="gate-unlock-cancel">Cancel</button>
+          <button type="button" class="primary" id="gate-unlock-ok">Unlock</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="gate-perms-pop" class="pop hidden" hidden>
+      <div class="pop-card wide" role="dialog" aria-modal="true" aria-labelledby="gate-perms-title">
+        <h2 id="gate-perms-title">Permissions</h2>
+        <p class="hint">
+          Public visitors stay on role <b>view</b> (read-only). Choose which left-sidebar pages they see,
+          and which extra actions an unlocked editor may do. Saved on the locked server for every browser.
+        </p>
+        <div class="gate-section-title">Pages visible to the public (view)</div>
+        <div class="gate-grid" id="gate-pages"></div>
+        <div class="gate-section-title">Extra actions for unlocked editors</div>
+        <div class="gate-grid" id="gate-actions"></div>
+        <p class="err" id="gate-perms-err" hidden></p>
+        <div class="pop-actions">
+          <button type="button" id="gate-perms-cancel">Cancel</button>
+          <button type="button" class="primary" id="gate-perms-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-version" data-version="9.39">v9.39</div>
     <script>
       const TOPICS = [
         {
@@ -342,9 +514,9 @@
         },
         {
           id: "team-board",
-          file: "training-team-board.html?v=9.1",
+          file: "training-team-board.html?v=9.3",
           title: "Training One View",
-          blurb: "UAL / CT / Mandatory / Manual · immediate sync",
+          blurb: "UAL / CT / Mandatory / Manual · live sync",
         },
         {
           id: "courses",
@@ -378,11 +550,38 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=3.40",
+          file: "hx-rules.html?v=3.50",
           title: "HX 規矩",
           blurb: "跨機對齊 · 紅字＝新加",
         },
       ];
+
+      const ALL_TOPIC_IDS = TOPICS.map((t) => t.id);
+      const EDIT_ACTION_DEFS = [
+        {
+          id: "team-board-status",
+          label: "Training One View — edit Status / Remark / completed date",
+        },
+        {
+          id: "team-board-manual",
+          label: "Training One View — Add / remove Manual courses",
+        },
+        {
+          id: "team-board-ingest",
+          label: "Training One View — upload / remove UAL · CT · Mandatory",
+        },
+      ];
+      const GATE_EDGE =
+        "https://kcoszufshvvpxikpzlue.supabase.co/functions/v1/team-board";
+      const GATE_ROLE_KEY = "hx:hub:gate-role";
+      const GATE_PW_KEY = "hx:hub:gate-pw";
+      const GATE_CFG_KEY = "hx:hub:gate-cfg";
+
+      const DEFAULT_GATE = {
+        publicPages: ALL_TOPIC_IDS.slice(),
+        editActions: EDIT_ACTION_DEFS.map((a) => a.id),
+        auth: { hasAdmin: false, hasEdit: false },
+      };
 
       const box = document.getElementById("topics");
       const frame = document.getElementById("frame");
@@ -390,6 +589,13 @@
       const solo = document.getElementById("solo");
       const fold = document.getElementById("fold");
       const foldBar = document.getElementById("fold-bar");
+      const gateRoleEl = document.getElementById("gate-role");
+      const gateUnlockBtn = document.getElementById("gate-unlock");
+      const gatePermsBtn = document.getElementById("gate-perms");
+
+      let gateCfg = loadCachedGate();
+      let gateRole = normalizeRole(lsGet(GATE_ROLE_KEY) || "view");
+      let gatePassword = lsGet(GATE_PW_KEY) || "";
 
       function lsGet(key) {
         try {
@@ -403,6 +609,11 @@
           localStorage.setItem(key, value);
         } catch (e) {}
       }
+      function lsRemove(key) {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {}
+      }
       function lsGetAny(keys, fallback) {
         for (let i = 0; i < keys.length; i++) {
           const v = lsGet(keys[i]);
@@ -410,10 +621,123 @@
         }
         return fallback;
       }
+      function normalizeRole(r) {
+        r = String(r || "view").toLowerCase();
+        if (r === "admin" || r === "edit") return r;
+        return "view";
+      }
+      function loadCachedGate() {
+        try {
+          const raw = lsGet(GATE_CFG_KEY);
+          if (!raw) return Object.assign({}, DEFAULT_GATE);
+          const o = JSON.parse(raw);
+          if (!o || typeof o !== "object") return Object.assign({}, DEFAULT_GATE);
+          return normalizeGate(o);
+        } catch (e) {
+          return Object.assign({}, DEFAULT_GATE);
+        }
+      }
+      function normalizeGate(o) {
+        const pages = Array.isArray(o.publicPages)
+          ? o.publicPages.map(String).filter((id) => ALL_TOPIC_IDS.indexOf(id) >= 0)
+          : DEFAULT_GATE.publicPages.slice();
+        const actions = Array.isArray(o.editActions)
+          ? o.editActions
+              .map(String)
+              .filter((id) => EDIT_ACTION_DEFS.some((a) => a.id === id))
+          : DEFAULT_GATE.editActions.slice();
+        return {
+          publicPages: pages.length ? pages : DEFAULT_GATE.publicPages.slice(),
+          editActions: actions,
+          auth: o.auth && typeof o.auth === "object" ? o.auth : { hasAdmin: false, hasEdit: false },
+        };
+      }
+      function cacheGate(cfg) {
+        gateCfg = normalizeGate(cfg || DEFAULT_GATE);
+        try {
+          lsSet(GATE_CFG_KEY, JSON.stringify(gateCfg));
+        } catch (e) {}
+      }
+      function isUnlocked() {
+        return gateRole === "edit" || gateRole === "admin";
+      }
+      function hasEditAction(id) {
+        if (gateRole === "admin") return true;
+        if (gateRole !== "edit") return false;
+        return (gateCfg.editActions || []).indexOf(id) >= 0;
+      }
+      function visibleTopicIds() {
+        if (isUnlocked()) return ALL_TOPIC_IDS.slice();
+        const set = new Set(gateCfg.publicPages || []);
+        return ALL_TOPIC_IDS.filter((id) => set.has(id));
+      }
+      function applyGateChrome() {
+        gateRoleEl.textContent = gateRole;
+        gateUnlockBtn.textContent = isUnlocked() ? "Lock" : "Unlock";
+        gateUnlockBtn.classList.toggle("on", isUnlocked());
+        gateUnlockBtn.title = isUnlocked()
+          ? "Lock (return to read-only view)"
+          : "Unlock with password";
+        gatePermsBtn.hidden = gateRole !== "admin";
+        notifyFrameGate();
+      }
+      function setGateSession(role, password) {
+        gateRole = normalizeRole(role);
+        if (gateRole === "view") {
+          gatePassword = "";
+          lsRemove(GATE_ROLE_KEY);
+          lsRemove(GATE_PW_KEY);
+        } else {
+          gatePassword = String(password || "");
+          lsSet(GATE_ROLE_KEY, gateRole);
+          if (gatePassword) lsSet(GATE_PW_KEY, gatePassword);
+          else lsRemove(GATE_PW_KEY);
+        }
+        applyGateChrome();
+        renderTopics();
+        const list = orderedTopics();
+        const cur = location.hash.replace(/^#/, "");
+        if (!list.some((t) => t.id === cur)) show(list[0] && list[0].id);
+        else paintOn();
+      }
+      function gateHeaders() {
+        const h = { "Content-Type": "application/json" };
+        if (gatePassword) h["x-hx-board-password"] = gatePassword;
+        return h;
+      }
+      function notifyFrameGate() {
+        try {
+          if (!frame.contentWindow) return;
+          frame.contentWindow.postMessage(
+            {
+              type: "hx-gate",
+              role: gateRole,
+              password: isUnlocked() ? gatePassword : "",
+              editActions: gateCfg.editActions || [],
+              publicPages: gateCfg.publicPages || [],
+            },
+            "*",
+          );
+        } catch (e) {}
+      }
+
+      async function fetchGatePublic() {
+        try {
+          const res = await fetch(GATE_EDGE + "/gate/public", { cache: "no-store" });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data && typeof data === "object") cacheGate(data);
+        } catch (e) {}
+      }
+
       window.addEventListener("message", (e) => {
         if (e.source !== frame.contentWindow) return;
         const msg = e.data || {};
         if (!msg || typeof msg !== "object") return;
+        if (msg.type === "hx-gate-request") {
+          notifyFrameGate();
+          return;
+        }
         if (msg.type === "hx-store-get") {
           const values = {};
           (msg.keys || []).forEach((k) => {
@@ -462,6 +786,8 @@
           } catch (err) {}
         }
       });
+      frame.addEventListener("load", () => notifyFrameGate());
+
       function setNav(open) {
         document.body.classList.toggle("nav-off", !open);
         fold.setAttribute("aria-expanded", open ? "true" : "false");
@@ -479,14 +805,12 @@
       function loadOrder() {
         let ids = [];
         try {
-          ids = JSON.parse(
-            lsGetAny(["hx:hub:order", "hx-order"], "[]") || "[]",
-          );
+          ids = JSON.parse(lsGetAny(["hx:hub:order", "hx-order"], "[]") || "[]");
         } catch (e) {}
-        const known = new Set(TOPICS.map((t) => t.id));
+        const known = new Set(ALL_TOPIC_IDS);
         ids = ids.filter((id) => known.has(id));
-        TOPICS.forEach((t) => {
-          if (!ids.includes(t.id)) ids.push(t.id);
+        ALL_TOPIC_IDS.forEach((id) => {
+          if (!ids.includes(id)) ids.push(id);
         });
         return ids;
       }
@@ -502,7 +826,7 @@
             lsGetAny(["hx:hub:pins", "hx-pins", "hx-stars"], "[]") || "[]",
           );
         } catch (e) {}
-        const known = new Set(TOPICS.map((t) => t.id));
+        const known = new Set(ALL_TOPIC_IDS);
         return ids.filter((id) => known.has(id));
       }
       function savePins(ids) {
@@ -531,9 +855,10 @@
       function orderedTopics() {
         const order = loadOrder();
         const pins = new Set(loadPins());
+        const allow = new Set(visibleTopicIds());
         const pick = (pred) =>
           order
-            .filter(pred)
+            .filter((id) => allow.has(id) && pred(id))
             .map((id) => TOPICS.find((t) => t.id === id))
             .filter(Boolean);
         return pick((id) => pins.has(id)).concat(pick((id) => !pins.has(id)));
@@ -542,6 +867,11 @@
       function show(id) {
         id = TOPIC_ALIAS[id] || id;
         const list = orderedTopics();
+        if (!list.length) {
+          now.textContent = "No pages available";
+          frame.removeAttribute("src");
+          return;
+        }
         const known = new Set(list.map((x) => x.id));
         const saved = TOPIC_ALIAS[loadTopic()] || loadTopic();
         const pick =
@@ -613,13 +943,207 @@
         });
       }
 
-      renderTopics();
-      const start = location.hash.replace(/^#/, "") || loadTopic();
-      show(start);
-      window.addEventListener("hashchange", () =>
-        show(location.hash.replace(/^#/, "")),
-      );
-      document.documentElement.classList.add("hx-ready");
+      function showPop(id, on) {
+        const pop = document.getElementById(id);
+        if (!pop) return;
+        if (on) {
+          pop.hidden = false;
+          pop.classList.remove("hidden");
+        } else {
+          pop.hidden = true;
+          pop.classList.add("hidden");
+        }
+      }
+      function setUnlockErr(msg) {
+        const err = document.getElementById("gate-unlock-err");
+        if (!err) return;
+        err.hidden = !msg;
+        err.textContent = msg || "";
+      }
+      function setPermsErr(msg) {
+        const err = document.getElementById("gate-perms-err");
+        if (!err) return;
+        err.hidden = !msg;
+        err.textContent = msg || "";
+      }
+
+      function openUnlockPop() {
+        setUnlockErr("");
+        document.getElementById("gate-pw").value = "";
+        const needBootstrap = !(gateCfg.auth && (gateCfg.auth.hasAdmin || gateCfg.auth.hasEdit));
+        document.getElementById("gate-unlock-title").textContent = needBootstrap
+          ? "Set manager password"
+          : "Unlock";
+        document.getElementById("gate-unlock-hint").textContent = needBootstrap
+          ? "First time: set the manager password (same password you already use for Training One View manage). It is stored only on the locked server — not in this page. Later visitors unlock with that password."
+          : "Enter the password for edit access. Access stays in this browser until you click Lock.";
+        showPop("gate-unlock-pop", true);
+        setTimeout(() => document.getElementById("gate-pw").focus(), 0);
+      }
+
+      async function submitUnlock() {
+        const pw = String(document.getElementById("gate-pw").value || "");
+        if (!pw) {
+          setUnlockErr("Enter the password.");
+          return;
+        }
+        const needBootstrap = !(gateCfg.auth && (gateCfg.auth.hasAdmin || gateCfg.auth.hasEdit));
+        try {
+          if (needBootstrap) {
+            if (pw.length < 4) {
+              setUnlockErr("Use at least 4 characters.");
+              return;
+            }
+            const res = await fetch(GATE_EDGE + "/gate/bootstrap", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ password: pw }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              setUnlockErr((data && data.error) || "Could not set password.");
+              return;
+            }
+            if (data.gate) cacheGate(data.gate);
+            setGateSession(data.role || "admin", pw);
+            showPop("gate-unlock-pop", false);
+            return;
+          }
+          const res = await fetch(GATE_EDGE + "/gate/unlock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password: pw }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.role || data.role === "view") {
+            setUnlockErr("Wrong password.");
+            return;
+          }
+          if (data.gate) cacheGate(data.gate);
+          setGateSession(data.role, pw);
+          showPop("gate-unlock-pop", false);
+        } catch (e) {
+          setUnlockErr("Could not reach the server.");
+        }
+      }
+
+      gateUnlockBtn.addEventListener("click", () => {
+        if (isUnlocked()) {
+          setGateSession("view", "");
+          return;
+        }
+        openUnlockPop();
+      });
+      document.getElementById("gate-unlock-cancel").addEventListener("click", () => {
+        showPop("gate-unlock-pop", false);
+      });
+      document.getElementById("gate-unlock-ok").addEventListener("click", submitUnlock);
+      document.getElementById("gate-pw").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          submitUnlock();
+        }
+      });
+
+      function paintPermsForm() {
+        const pages = document.getElementById("gate-pages");
+        const actions = document.getElementById("gate-actions");
+        const pub = new Set(gateCfg.publicPages || []);
+        const acts = new Set(gateCfg.editActions || []);
+        pages.innerHTML = TOPICS.map((t) => {
+          return (
+            "<label><input type=\"checkbox\" data-page=\"" +
+            t.id +
+            "\"" +
+            (pub.has(t.id) ? " checked" : "") +
+            "> " +
+            t.title +
+            "</label>"
+          );
+        }).join("");
+        actions.innerHTML = EDIT_ACTION_DEFS.map((a) => {
+          return (
+            "<label><input type=\"checkbox\" data-action=\"" +
+            a.id +
+            "\"" +
+            (acts.has(a.id) ? " checked" : "") +
+            "> " +
+            a.label +
+            "</label>"
+          );
+        }).join("");
+      }
+
+      gatePermsBtn.addEventListener("click", () => {
+        setPermsErr("");
+        paintPermsForm();
+        showPop("gate-perms-pop", true);
+      });
+      document.getElementById("gate-perms-cancel").addEventListener("click", () => {
+        showPop("gate-perms-pop", false);
+      });
+      document.getElementById("gate-perms-save").addEventListener("click", async () => {
+        if (gateRole !== "admin" || !gatePassword) {
+          setPermsErr("Admin unlock required.");
+          return;
+        }
+        const publicPages = [];
+        document.querySelectorAll("#gate-pages [data-page]").forEach((el) => {
+          if (el.checked) publicPages.push(el.getAttribute("data-page"));
+        });
+        const editActions = [];
+        document.querySelectorAll("#gate-actions [data-action]").forEach((el) => {
+          if (el.checked) editActions.push(el.getAttribute("data-action"));
+        });
+        try {
+          const res = await fetch(GATE_EDGE + "/gate", {
+            method: "PUT",
+            headers: gateHeaders(),
+            body: JSON.stringify({ publicPages, editActions }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            setPermsErr((data && data.error) || "Could not save.");
+            return;
+          }
+          cacheGate(data);
+          applyGateChrome();
+          renderTopics();
+          showPop("gate-perms-pop", false);
+        } catch (e) {
+          setPermsErr("Could not reach the server.");
+        }
+      });
+
+      (async function init() {
+        await fetchGatePublic();
+        if (gateRole !== "view" && gatePassword) {
+          try {
+            const res = await fetch(GATE_EDGE + "/gate/unlock", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ password: gatePassword }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.role || data.role === "view") {
+              setGateSession("view", "");
+            } else {
+              if (data.gate) cacheGate(data.gate);
+              setGateSession(data.role, gatePassword);
+            }
+          } catch (e) {
+            /* keep cached session offline */
+          }
+        }
+        applyGateChrome();
+        renderTopics();
+        const start = location.hash.replace(/^#/, "") || loadTopic();
+        show(start);
+        window.addEventListener("hashchange", () =>
+          show(location.hash.replace(/^#/, "")),
+        );
+        document.documentElement.classList.add("hx-ready");
+      })();
     </script>
   </body>
 </html>

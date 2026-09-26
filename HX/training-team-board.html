@@ -295,6 +295,23 @@
     border: 1px solid var(--line);
   }
   .add-course #manual-exp { color-scheme: light; min-height: 32px; }
+  .add-course .exp-wrap {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .add-course .exp-wrap #manual-exp { flex: 1 1 auto; width: 100%; }
+  .add-course .exp-wrap #manual-exp-pick {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
   .add-course .note { margin-top: 6px; }
   .visually-hidden {
     position: absolute;
@@ -988,7 +1005,10 @@
           </div>
           <div>
             <label for="manual-exp">Expire date</label>
-            <input id="manual-exp" type="text" lang="en" inputmode="numeric" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" maxlength="10" title="YYYY-MM-DD" required>
+            <div class="exp-wrap" id="manual-exp-wrap">
+              <input id="manual-exp" type="text" lang="en" inputmode="numeric" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" maxlength="10" title="YYYY-MM-DD — type digits or pick from calendar" autocomplete="off" required>
+              <input id="manual-exp-pick" type="date" lang="en" tabindex="-1" aria-label="Pick expire date">
+            </div>
           </div>
           <div>
             <button type="submit" class="primary">Add</button>
@@ -1018,7 +1038,7 @@
     </div>
     <div id="detail" class="detail hidden"></div>
     <div class="why write-zone" hidden>
-      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. When a Team Board sync key is stored in this browser (<code>hx:team-board:sync-key</code>), each change also syncs immediately through a locked server path (every computer with the same key). Else, when a GitHub token is stored, each change auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. The sync key is never embedded in this page; paste it once per browser. Anon cannot read or write staff Status. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
+      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. After Unlock with the hub password, each change also syncs immediately through a locked server path (no per-browser sync-key paste). Open boards poll that path about every 5 seconds so other windows update without refresh. Else, when a GitHub token is stored, each change auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Anon cannot write staff Status. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
       <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Each PIC cell shows <b>98% (xx/yy) 6 left</b> — xx = clear of this item, yy = roster for that tab + team, left = still outstanding. The PIC training-item grid starts <b>collapsed</b> (Other / Team 1–4 headers only); use <b>Show training items</b> to expand. Open/closed is remembered in this browser. PIC item rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. Table and Details people follow <b>Team 1–4</b> top to bottom, then <b>section + crew</b> (Team n: LTA<i>n</i> then other LTA, then crew). Other / TBD (office sections such as LGC1) sit after Team 4. Click a people-list column to override. Course rows inside one person stay remaining / due order. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. Row colors use remaining days for UAL / CT / Mandatory / Manual: <b>Overdue or will expire</b> (pink) = remaining ≤30 days; <b>Coming due</b> (yellow) = remaining &gt;30 and ≤90 days; remaining &gt;90 has no due-color. <b>Completed</b> clears that course from the PIC board and from Table / Details. When every course for a person is <b>Completed</b>, their name drops off Details. <b>In Progress</b> blues the Status cell only. <b>Add course</b> accepts a staff # or an Authorization group code (e.g. Operator <b>D0</b>) to select matching CS from the Authorization List, with +/− before one course + expire date for all. <b>Table</b> is the people list — click a row for that person’s course card (this browser only). <b>Details</b> stacks the same course card for every visible person (Section + Crew · Staff # · Name, with course count on the right) for capture / print. Course tables end with <b>Remark</b> (last column; stays with Status). Click a PIC cell for one course.</p>
     </div>
   </div>
@@ -1129,7 +1149,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="9.1" aria-label="Page version 9.1">v9.1</div>
+  <div class="page-version" data-version="9.3" aria-label="Page version 9.3">v9.3</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=6"></script>
@@ -1179,9 +1199,23 @@ const ACTIONS_IDB = "hx-team-board";
 const ACTIONS_IDB_STORE = "fs";
 const GH_TOKEN_KEY = "hx:team-board:gh-token";
 const SYNC_KEY_KEY = "hx:team-board:sync-key";
+const BOARD_PW_KEY = "hx:hub:gate-pw";
+const BOARD_ROLE_KEY = "hx:hub:gate-role";
 const SYNC_EDGE_URL = "https://kcoszufshvvpxikpzlue.supabase.co/functions/v1/team-board";
+const SYNC_POLL_MS = 5000;
 const GH_REPO = "danson117/danson117.github.io";
 const GH_PATH = "HX/team-board-actions.json";
+let hubGate = { role: "view", password: "", editActions: [] };
+let syncPollTimer = null;
+let syncPollBusy = false;
+let lastRemoteActionsSig = "";
+let suppressRemoteMerge = false;
+let dirtyStatusKeys = new Set();
+let dirtyManualIds = new Set();
+let pendingStatusDeletes = [];
+let pendingManualDeletes = [];
+let updatedClearTimer = null;
+const CONFLICT_MSG = "Someone else just changed this. Your edit was not accepted. The row was restored to the server version.";
 const GH_BRANCH = "main";
 const PERSIST_MS = 800;
 const PUSH_MS = 1500;
@@ -1544,8 +1578,44 @@ function getGhToken() {
 function getSyncKey() {
   return String(lsPeek(SYNC_KEY_KEY) || "").trim();
 }
+function getBoardPassword() {
+  if (hubGate.password) return String(hubGate.password);
+  return String(lsPeek(BOARD_PW_KEY) || "").trim();
+}
+function getBoardRole() {
+  if (hubGate.role) return hubGate.role;
+  return String(lsPeek(BOARD_ROLE_KEY) || "view").trim().toLowerCase() || "view";
+}
+function canRemoteWrite() {
+  const role = getBoardRole();
+  if (role === "admin") return true;
+  if (role === "edit") return true;
+  return !!getSyncKey();
+}
 function hasRemoteSync() {
-  return !!(getSyncKey() || getGhToken());
+  return !!(getBoardPassword() || getSyncKey() || getGhToken());
+}
+function edgeAuthHeaders(extra) {
+  const h = Object.assign({}, extra || {});
+  const pw = getBoardPassword();
+  if (pw) h["x-hx-board-password"] = pw;
+  else {
+    const key = getSyncKey();
+    if (key) h["x-hx-sync-key"] = key;
+  }
+  return h;
+}
+function actionsPayloadSig(data) {
+  if (!data || typeof data !== "object") return "";
+  try {
+    return JSON.stringify({
+      status: data.status || {},
+      manual: data.manual || [],
+      updated: data.updated || ""
+    });
+  } catch (e) {
+    return "";
+  }
 }
 function openAccessPop() {
   const store = loadAccessStore();
@@ -1586,7 +1656,7 @@ async function submitAccessPop() {
     setSessionLevelId(owner.id);
     applyWriteAccess();
     closeAccessPop();
-    if (getGhToken()) schedulePersistActions();
+    if (hasRemoteSync()) schedulePersistActions();
     return;
   }
   if (!pw) { showAccessErr("Enter the password."); return; }
@@ -1595,7 +1665,7 @@ async function submitAccessPop() {
   setSessionLevelId(lv.id);
   applyWriteAccess();
   closeAccessPop();
-  if (getGhToken()) schedulePersistActions();
+  if (hasRemoteSync()) schedulePersistActions();
 }
 function toggleBoardAccess() {
   if (isBoardUnlocked()) {
@@ -3816,11 +3886,16 @@ function writeCourseStatus(staff, code, src, rec, opts) {
   const remark = rec && Object.prototype.hasOwnProperty.call(rec, "remark")
     ? String(rec.remark || "").trim()
     : String(prev.remark || "").trim();
-  if (status === "Not Started" && !remark) delete courseStatus[k];
-  else {
-    const out = { status: status, done: done, updated: new Date().toISOString() };
+  if (status === "Not Started" && !remark) {
+    const baseV = Math.max(0, parseInt(prev.v, 10) || 0);
+    delete courseStatus[k];
+    markStatusDirty(k, baseV, true);
+  } else {
+    const baseV = Math.max(0, parseInt(prev.v, 10) || 0);
+    const out = { status: status, done: done, updated: new Date().toISOString(), v: baseV };
     if (remark) out.remark = remark;
     courseStatus[k] = out;
+    markStatusDirty(k, baseV, false);
   }
   persistCourseStatus();
   if (opts && opts.skipLog) return;
@@ -3864,10 +3939,99 @@ function normalizeStatusRec(rec) {
   const out = {
     status: status,
     done: status === "Completed" ? parseDoneDate(rec.done || "") : "",
-    updated: String(rec.updated || "")
+    updated: String(rec.updated || ""),
+    v: Math.max(0, parseInt(rec.v, 10) || 0)
   };
   if (remark) out.remark = remark;
   return out;
+}
+function markStatusDirty(key, baseV, deleted) {
+  const k = String(key || "");
+  if (!k) return;
+  if (deleted) {
+    dirtyStatusKeys.delete(k);
+    pendingStatusDeletes = pendingStatusDeletes.filter((x) => x.key !== k);
+    pendingStatusDeletes.push({ key: k, baseV: Math.max(0, parseInt(baseV, 10) || 0) });
+  } else {
+    pendingStatusDeletes = pendingStatusDeletes.filter((x) => x.key !== k);
+    dirtyStatusKeys.add(k);
+  }
+}
+function markManualDirty(id, baseV, deleted) {
+  const mid = String(id || "");
+  if (!mid) return;
+  if (deleted) {
+    dirtyManualIds.delete(mid);
+    pendingManualDeletes = pendingManualDeletes.filter((x) => x.id !== mid);
+    pendingManualDeletes.push({ id: mid, baseV: Math.max(0, parseInt(baseV, 10) || 0) });
+  } else {
+    pendingManualDeletes = pendingManualDeletes.filter((x) => x.id !== mid);
+    dirtyManualIds.add(mid);
+  }
+}
+function clearDirtyAll() {
+  dirtyStatusKeys = new Set();
+  dirtyManualIds = new Set();
+  pendingStatusDeletes = [];
+  pendingManualDeletes = [];
+}
+function packActionsForEdge() {
+  const status = {};
+  dirtyStatusKeys.forEach((k) => {
+    const rec = normalizeStatusRec(courseStatus[k]);
+    if (!rec) return;
+    status[k] = Object.assign({}, rec, { baseV: rec.v || 0 });
+  });
+  const manual = [];
+  dirtyManualIds.forEach((id) => {
+    const row = manualRows.find((r) => String(r.id || "") === id);
+    if (!row) return;
+    const n = normManualRow(row);
+    n.v = Math.max(0, parseInt(row.v, 10) || 0);
+    n.baseV = n.v;
+    manual.push(n);
+  });
+  return {
+    v: 1,
+    updated: new Date().toISOString(),
+    status: status,
+    manual: manual,
+    _statusDeleted: pendingStatusDeletes.slice(),
+    _manualDeleted: pendingManualDeletes.slice(),
+    log: actionLog
+  };
+}
+function applyServerPayload(data, opts) {
+  if (!data || typeof data !== "object") return;
+  const keepDirty = !!(opts && opts.keepDirty);
+  const remoteStatus = data.status && typeof data.status === "object" ? data.status : {};
+  const nextStatus = {};
+  Object.keys(remoteStatus).forEach((k) => {
+    const rec = normalizeStatusRec(remoteStatus[k]);
+    if (rec) nextStatus[k] = rec;
+  });
+  if (keepDirty) {
+    dirtyStatusKeys.forEach((k) => {
+      if (courseStatus[k]) nextStatus[k] = courseStatus[k];
+      else delete nextStatus[k];
+    });
+  }
+  courseStatus = nextStatus;
+  const remoteManual = Array.isArray(data.manual) ? data.manual.map(normManualRow) : [];
+  if (keepDirty && dirtyManualIds.size) {
+    const byId = new Map(remoteManual.map((r) => [r.id, r]));
+    dirtyManualIds.forEach((id) => {
+      const local = manualRows.find((r) => String(r.id || "") === id);
+      if (local) byId.set(id, normManualRow(local));
+    });
+    manualRows = Array.from(byId.values()).filter((r) => r.staff && (r.code || r.cname) && r.exp);
+  } else {
+    manualRows = remoteManual.filter((r) => r.staff && (r.code || r.cname) && r.exp);
+  }
+  actionsFileCache = data;
+  lastRemoteActionsSig = actionsPayloadSig(data);
+  if (!keepDirty) clearDirtyAll();
+  persistActionsLocal();
 }
 function mergeStatusMaps() {
   const out = {};
@@ -3909,7 +4073,7 @@ function schedulePersistActions() {
   persistTimer = window.setTimeout(() => {
     persistTimer = null;
     persistActionsLocal();
-    setSaveSync(hasRemoteSync() ? "Saved" : "Saved · offline");
+    setSaveSync("Saved");
   }, PERSIST_MS);
   if (pushTimer) window.clearTimeout(pushTimer);
   pushTimer = window.setTimeout(() => {
@@ -3945,41 +4109,55 @@ function ghHeaders() {
   };
 }
 async function pushActionsToEdge() {
-  const key = getSyncKey();
-  if (!key) return false;
+  if (!canRemoteWrite()) return false;
+  const headers = edgeAuthHeaders({ "Content-Type": "application/json" });
+  if (!headers["x-hx-board-password"] && !headers["x-hx-sync-key"]) return false;
+  if (!dirtyStatusKeys.size && !dirtyManualIds.size && !pendingStatusDeletes.length && !pendingManualDeletes.length) {
+    setSaveSync("Saved");
+    return true;
+  }
   if (pushBusy) { pushQueued = true; return true; }
   pushBusy = true;
+  setSaveSync("Saving…");
   try {
     do {
       pushQueued = false;
-      const payload = packActions();
-      actionsFileCache = payload;
+      const payload = packActionsForEdge();
+      suppressRemoteMerge = true;
       const putRes = await fetch(SYNC_EDGE_URL, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-hx-sync-key": key
-        },
+        headers: headers,
         body: JSON.stringify(payload)
       });
+      const body = await putRes.json().catch(() => ({}));
       if (putRes.status === 401 || putRes.status === 403) {
-        lsRemove(SYNC_KEY_KEY);
-        showPushFail("Sync key was rejected. Status is saved in this browser.");
-        setSaveSync("Saved · offline");
+        if (!getBoardPassword()) lsRemove(SYNC_KEY_KEY);
+        showPushFail("Sync was rejected. Status is saved in this browser.");
+        setSaveSync("Saved");
+        return true;
+      }
+      if (putRes.status === 409 || (body && body.conflict)) {
+        if (body && body.payload) applyServerPayload(body.payload, { keepDirty: false });
+        showPushFail(CONFLICT_MSG);
+        setSaveSync("Saved");
+        paint();
         return true;
       }
       if (!putRes.ok) {
         showPushFail("Could not sync Status (" + putRes.status + "). Status is saved in this browser.");
-        setSaveSync("Saved · offline");
+        setSaveSync("Saved");
         return true;
       }
-      setSaveSync("Saved · synced");
+      if (body && body.payload) applyServerPayload(body.payload, { keepDirty: false });
+      else clearDirtyAll();
+      setSaveSync("Saved");
     } while (pushQueued);
   } catch (e) {
     showPushFail("Could not reach sync server. Status is saved in this browser.");
-    setSaveSync("Saved · offline");
+    setSaveSync("Saved");
   } finally {
     pushBusy = false;
+    window.setTimeout(() => { suppressRemoteMerge = false; }, 800);
     if (pushQueued) {
       pushQueued = false;
       pushActionsToEdge();
@@ -4062,7 +4240,7 @@ async function pushActionsToGitHub() {
 }
 async function flushActionsOut() {
   writeActionsToDisk();
-  if (getSyncKey()) return pushActionsToEdge();
+  if (getBoardPassword() || getSyncKey()) return pushActionsToEdge();
   return pushActionsToGitHub();
 }
 function actionsIdb() {
@@ -4131,15 +4309,13 @@ async function restoreActionsHandle() {
   actionsFileHandle = ok;
 }
 async function loadActionsFromEdge() {
-  const key = getSyncKey();
-  if (!key) return null;
   try {
     const res = await fetch(SYNC_EDGE_URL, {
       cache: "no-store",
-      headers: { "x-hx-sync-key": key }
+      headers: edgeAuthHeaders()
     });
     if (res.status === 401 || res.status === 403) {
-      lsRemove(SYNC_KEY_KEY);
+      if (!getBoardPassword()) lsRemove(SYNC_KEY_KEY);
       return null;
     }
     if (!res.ok) return null;
@@ -4180,7 +4356,7 @@ function newManualId() {
   return "m-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
 }
 function normManualRow(r) {
-  if (!r || typeof r !== "object") return { id: "", staff: "", name: "", code: "", cname: "", exp: "" };
+  if (!r || typeof r !== "object") return { id: "", staff: "", name: "", code: "", cname: "", exp: "", v: 0 };
   const exp = String(r.exp || r.expire || r.due || "").trim();
   return {
     id: String(r.id || "").trim() || newManualId(),
@@ -4188,7 +4364,8 @@ function normManualRow(r) {
     name: String(r.name || "").trim(),
     code: String(r.code || "").trim(),
     cname: String(r.cname || "").trim(),
-    exp: exp
+    exp: exp,
+    v: Math.max(0, parseInt(r.v, 10) || 0)
   };
 }
 function persistManualCourses() {
@@ -4220,7 +4397,7 @@ async function restoreManualCourses() {
   const got = peekJson(MANUAL_STORE);
   const local = got.found && Array.isArray(got.value) ? got.value : [];
   let rows;
-  if (getSyncKey()) {
+  if (getBoardPassword() || getSyncKey()) {
     rows = mergeManualLists(seed, disk, local);
   } else {
     rows = seed.slice();
@@ -4988,8 +5165,9 @@ function pushManualRow(staff, name, code, cname, exp) {
     r.exp === exp
   );
   if (same) return null;
-  const row = { id: newManualId(), staff: staff, name: name, code: code, cname: cname, exp: exp };
+  const row = { id: newManualId(), staff: staff, name: name, code: code, cname: cname, exp: exp, v: 0 };
   manualRows.push(row);
+  markManualDirty(row.id, 0, false);
   return row;
 }
 function resetManualFormFields() {
@@ -5001,6 +5179,8 @@ function resetManualFormFields() {
   document.getElementById("manual-cname").value = "";
   document.getElementById("manual-cname").dataset.autofill = "";
   document.getElementById("manual-exp").value = "";
+  const pick = document.getElementById("manual-exp-pick");
+  if (pick) pick.value = "";
   const addStaff = document.getElementById("manual-auth-add-staff");
   if (addStaff) addStaff.value = "";
   hideCodeSuggest();
@@ -5246,6 +5426,7 @@ function removeManualCourse(id) {
   if (i < 0) return;
   const removed = cloneJson(manualRows[i]);
   manualRows.splice(i, 1);
+  markManualDirty(removed.id, removed.v, true);
   persistManualCourses();
   pushActionLog({
     kind: "manual-remove",
@@ -6837,6 +7018,126 @@ function migrateAccessLevels() {
     sessionStorage.removeItem(ACCESS_UNLOCK);
   } catch (e) {}
 }
+function formatExpireTyping(raw) {
+  const d = String(raw || "").replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 4) return d;
+  if (d.length <= 6) return d.slice(0, 4) + "-" + d.slice(4);
+  return d.slice(0, 4) + "-" + d.slice(4, 6) + "-" + d.slice(6);
+}
+function syncExpirePickFromText() {
+  const textEl = document.getElementById("manual-exp");
+  const pick = document.getElementById("manual-exp-pick");
+  if (!textEl || !pick) return;
+  const v = String(textEl.value || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) pick.value = v;
+}
+function wireExpireDateField() {
+  const textEl = document.getElementById("manual-exp");
+  const pick = document.getElementById("manual-exp-pick");
+  if (!textEl || !pick) return;
+  textEl.addEventListener("input", () => {
+    const start = textEl.selectionStart;
+    const before = textEl.value;
+    const next = formatExpireTyping(before);
+    if (next !== before) {
+      textEl.value = next;
+      try {
+        const diff = next.length - before.length;
+        const pos = Math.max(0, (start || next.length) + diff);
+        textEl.setSelectionRange(pos, pos);
+      } catch (e) {}
+    }
+    syncExpirePickFromText();
+  });
+  pick.addEventListener("change", () => {
+    const v = String(pick.value || "").trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) textEl.value = v;
+  });
+  textEl.addEventListener("click", () => {
+    syncExpirePickFromText();
+    try {
+      if (typeof pick.showPicker === "function") pick.showPicker();
+    } catch (e) {}
+  });
+}
+function applyHubGate(msg) {
+  if (!msg || typeof msg !== "object") return;
+  hubGate = {
+    role: String(msg.role || "view").toLowerCase() || "view",
+    password: String(msg.password || ""),
+    editActions: Array.isArray(msg.editActions) ? msg.editActions.map(String) : []
+  };
+  const role = hubGate.role;
+  if (role === "view") {
+    setSessionLevelId("");
+    applyWriteAccess();
+    return;
+  }
+  const wantStatus = role === "admin" || hubGate.editActions.indexOf("team-board-status") >= 0;
+  const wantManual = role === "admin" || hubGate.editActions.indexOf("team-board-manual") >= 0;
+  const wantIngest = role === "admin" || hubGate.editActions.indexOf("team-board-ingest") >= 0;
+  const wantManage = role === "admin";
+  if (!isBoardUnlocked()) {
+    const owner = getOwnerLevel();
+    if (owner) setSessionLevelId(owner.id);
+    else {
+      const store = loadAccessStore();
+      if (store.levels[0]) setSessionLevelId(store.levels[0].id);
+    }
+  }
+  const lv = getSessionLevel();
+  if (lv && !lv.owner) {
+    const perms = [];
+    if (wantStatus) perms.push("status");
+    if (wantManual) perms.push("manual");
+    if (wantIngest) perms.push("ingest");
+    if (wantManage) perms.push("manage");
+    lv.perms = perms;
+  }
+  applyWriteAccess();
+  if (!wantStatus) {
+    document.documentElement.classList.add("no-status");
+  }
+  if (!wantManual) {
+    document.documentElement.classList.add("no-manual");
+  }
+  if (!wantIngest) {
+    document.documentElement.classList.add("no-ingest");
+  }
+}
+async function pollRemoteActions() {
+  if (syncPollBusy || suppressRemoteMerge || pushBusy) return;
+  syncPollBusy = true;
+  try {
+    const remote = await loadActionsFromEdge();
+    if (!remote) return;
+    const sig = actionsPayloadSig(remote);
+    if (!sig || sig === lastRemoteActionsSig) return;
+    setSaveSync("Updating…");
+    applyServerPayload(remote, {
+      keepDirty: !!(dirtyStatusKeys.size || dirtyManualIds.size || pendingStatusDeletes.length || pendingManualDeletes.length)
+    });
+    paint();
+    setSaveSync("Updated");
+    if (updatedClearTimer) window.clearTimeout(updatedClearTimer);
+    updatedClearTimer = window.setTimeout(() => {
+      if ((document.getElementById("save-sync") || {}).textContent === "Updated") setSaveSync("");
+    }, 1600);
+  } catch (e) {
+  } finally {
+    syncPollBusy = false;
+  }
+}
+function startSyncPoll() {
+  if (syncPollTimer) window.clearInterval(syncPollTimer);
+  syncPollTimer = window.setInterval(pollRemoteActions, SYNC_POLL_MS);
+  pollRemoteActions();
+}
+window.addEventListener("message", (e) => {
+  const msg = e.data || {};
+  if (!msg || typeof msg !== "object") return;
+  if (msg.type === "hx-gate") applyHubGate(msg);
+});
 (async function init() {
   try {
     PEOPLE.forEach((p) => byStaff.set(padStaff(p.staff), p));
@@ -6854,10 +7155,22 @@ function migrateAccessLevels() {
     persistArmed = true;
     migratePersisted();
     mergeCatalogFromBoard();
-    if (getSyncKey()) {
+    wireExpireDateField();
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: "hx-gate-request" }, "*");
+      }
+    } catch (e) {}
+    applyHubGate({
+      role: getBoardRole(),
+      password: getBoardPassword(),
+      editActions: hubGate.editActions || []
+    });
+    if (getBoardPassword() || getSyncKey()) {
       persistActionsLocal();
       flushActionsOut();
     }
+    startSyncPoll();
     paint();
     applyWriteAccess();
   } catch (e) {
