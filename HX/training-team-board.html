@@ -795,17 +795,24 @@
     border-collapse: collapse;
   }
   .person-course-table col.col-course { width: 9%; }
-  .person-course-table col.col-cname { width: 22%; }
+  .person-course-table col.col-ref { width: 8%; }
+  .person-course-table col.col-cname { width: 18%; }
   .person-course-table col.col-due { width: 10%; }
   .person-course-table col.col-remain { width: 9%; }
   .person-course-table col.col-src { width: 10%; }
   .person-course-table col.col-action { width: 8%; }
-  .person-course-table col.col-status { width: 15%; }
-  .person-course-table col.col-remark { width: 17%; }
+  .person-course-table col.col-status { width: 13%; }
+  .person-course-table col.col-remark { width: 15%; }
   .person-course-table th,
   .person-course-table td {
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+  .person-course-table th.col-ref,
+  .person-course-table td.col-ref {
+    overflow-wrap: normal;
+    word-break: normal;
+    white-space: nowrap;
   }
   .course-status-cell {
     display: flex;
@@ -1299,7 +1306,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="10.9" aria-label="Page version 10.9">v10.9</div>
+  <div class="page-version" data-version="11.0" aria-label="Page version 11.0">v11.0</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.0"></script>
@@ -6413,7 +6420,7 @@ function personCourseTableHtml(who) {
   if (!sorted.length) return "<p class=\"note\">No courses.</p>";
   return "<table class=\"person-course-table\"><colgroup>" +
     "<col class=\"col-course\"><col class=\"col-ref\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-remark\"><col class=\"col-action\">" +
-    "</colgroup><thead><tr><th>Course</th><th>Reference</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
+    "</colgroup><thead><tr><th>Course</th><th class=\"col-ref\">Reference</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
     sorted.map((r) => {
       const n = remainNum(r.remain);
       const rec = readCourseStatus(who.staff, r);
