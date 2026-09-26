@@ -1356,7 +1356,7 @@
       <p id="brs-pop-sign-note" class="note">Materials only here. To mark Seen or Sign, use the Sign / Seen button on the outstanding row (staff PIN), or open the Briefing &amp; Read &amp; Sign page.</p>
       <ul id="brs-pop-files" class="brs-files"></ul>
       <div class="brs-actions">
-        <a id="brs-pop-brs" href="briefing-read-sign.html?v=1.9">Open Briefing &amp; Read &amp; Sign</a>
+        <a id="brs-pop-brs" href="briefing-read-sign.html?v=2.0">Open Briefing &amp; Read &amp; Sign</a>
         <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.3">Open record</a>
         <button type="button" id="brs-pop-close">Close</button>
       </div>
@@ -1414,7 +1414,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="11.4" aria-label="Page version 11.4">v11.4</div>
+  <div class="page-version" data-version="11.5" aria-label="Page version 11.5">v11.5</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -7600,7 +7600,7 @@ function openBrsPop(itemId, staff) {
     return "<li><a href=\"" + esc(m.href || "#") + "\" target=\"_blank\" rel=\"noopener\">" + esc(label) + "</a></li>";
   }).join("") : "<li>No materials on this item.</li>";
   const brsLink = document.getElementById("brs-pop-brs");
-  if (brsLink) brsLink.href = "briefing-read-sign.html?v=1.9#item=" + encodeURIComponent(it.id);
+  if (brsLink) brsLink.href = "briefing-read-sign.html?v=2.0#item=" + encodeURIComponent(it.id);
   document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.3&item=" + encodeURIComponent(it.id);
   pop.hidden = false;
 }
@@ -8677,20 +8677,28 @@ window.addEventListener("message", (e) => {
       password: getBoardPassword(),
       editActions: hubGate.editActions || []
     });
-    if (getBoardPassword() || getSyncKey()) {
-      persistActionsLocal();
-      await syncIngestWithRemote();
-      flushActionsOut();
-    } else {
-      await syncIngestWithRemote();
+    // First paint from local data — do not wait on Edge / PIN / remote round-trips.
+    paint();
+    applyWriteAccess();
+    document.documentElement.classList.add("hx-ready");
+    try {
+      if (getBoardPassword() || getSyncKey()) {
+        persistActionsLocal();
+        await syncIngestWithRemote();
+        flushActionsOut();
+      } else {
+        await syncIngestWithRemote();
+      }
+    } catch (syncErr) {
+      try { console.error(syncErr); } catch (e2) {}
     }
     startSyncPoll();
     paint();
     applyWriteAccess();
   } catch (e) {
     try { console.error(e); } catch (e2) {}
+    document.documentElement.classList.add("hx-ready");
   }
-  document.documentElement.classList.add("hx-ready");
 })();
 window.addEventListener("storage", (e) => {
   if (e.key === COURSE_STORE) paint();

@@ -112,6 +112,27 @@
   }
   .suggest li { padding: 6px 8px; cursor: pointer; }
   .suggest li:hover { background: #f4f8f9; }
+  .suggest li .sep { color: var(--muted); }
+  .people-add { margin: 0 0 10px; max-width: 560px; }
+  .people-add > label { display: block; font-weight: 650; margin-bottom: 4px; }
+  .people-add .note { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+  .auth-pick {
+    margin: 10px 0 0;
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 10px 12px;
+  }
+  .auth-pick[hidden] { display: none !important; }
+  .auth-pick-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .auth-pick-head span { flex: 1 1 180px; font-size: 13px; color: var(--teal-deep); font-weight: 650; }
+  .auth-pick ul.clean { max-height: 220px; overflow: auto; margin: 0; }
+  .auth-pick li.off { opacity: 0.45; }
   .mat-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
   .mat-drop {
     border: 2px dashed var(--teal);
@@ -526,10 +547,11 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="1.9">v1.9</div>
+  <div class="page-version" data-version="2.0">v2.0</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
+  <script src="authorization-list-data.js?v=6"></script>
   <script>
 (function () {
   "use strict";
@@ -563,6 +585,8 @@
   var adminEditId = "";
   var adminWired = false;
   var openItemId = "";
+  var peopleAuthPick = null;
+  var authIndexCache = null;
   var EYE_SHOW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>';
   var EYE_HIDE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.3 2.3 2 3.6l3.1 3.1C3.4 8.1 2.2 9.6 1.5 10.8a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19c2 0 3.8-.6 5.3-1.5l3.1 3.1 1.3-1.3zm7.4 11.5A2.9 2.9 0 0 1 8.2 11l2.5 2.5zm1.3-6.5c.3 0 .6 0 .9.1l-1.7 1.7A3.5 3.5 0 0 0 8.5 13l-1.7 1.7A5.5 5.5 0 0 1 12 7.3zm8.6 3.5c-.5.8-1.4 2-2.7 3.1l1.4 1.4c1.5-1.3 2.6-2.8 3.2-3.7a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5c-.9 0-1.7.1-2.5.3l1.6 1.6c.3 0 .6-.1.9-.1 3.7 0 6.8 2.8 8.1 4.5z"/></svg>';
 
@@ -787,6 +811,160 @@
     if (k === "link") return "Link";
     return "File";
   }
+  function authFieldLabel(field) {
+    if (field === "op") return "Operator";
+    if (field === "ac") return "Aircraft";
+    if (field === "cat") return "Category";
+    if (field === "eng") return "Engine";
+    if (field === "mod") return "Module ref";
+    return "Authorization";
+  }
+  function ensureAuthIndex() {
+    if (authIndexCache) return authIndexCache;
+    var empty = { op: new Map(), ac: new Map(), cat: new Map(), eng: new Map(), mod: new Map() };
+    var pack = window.AUTH_PACK;
+    if (!pack || !pack.r || !pack.p || !pack.d) {
+      authIndexCache = empty;
+      return authIndexCache;
+    }
+    var D = pack.d;
+    var people = pack.p.map(function (p) {
+      var staff = pad(p[0]);
+      var who = byStaff[staff];
+      if (!who) return null;
+      return { staff: staff, name: who.name || D.name[p[1]] || "" };
+    });
+    function add(bucket, code, person) {
+      var k = String(code || "").trim().toUpperCase();
+      if (!k || !person) return;
+      if (!bucket.has(k)) bucket.set(k, new Map());
+      bucket.get(k).set(person.staff, person);
+    }
+    pack.r.forEach(function (r) {
+      var person = people[r[0]];
+      if (!person) return;
+      add(empty.cat, D.cat[r[1]], person);
+      add(empty.op, D.op[r[2]], person);
+      add(empty.ac, D.ac[r[3]], person);
+      add(empty.eng, D.eng[r[4]], person);
+      var mod = String(D.mod[r[5]] || "");
+      var m = mod.match(/\(([A-Za-z0-9]+)\)\s*$/);
+      if (m) add(empty.mod, m[1], person);
+    });
+    var out = { op: new Map(), ac: new Map(), cat: new Map(), eng: new Map(), mod: new Map() };
+    Object.keys(empty).forEach(function (field) {
+      empty[field].forEach(function (map, code) {
+        out[field].set(code, Array.from(map.values()).sort(function (a, b) {
+          return String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }) ||
+            String(a.staff).localeCompare(String(b.staff));
+        }));
+      });
+    });
+    authIndexCache = out;
+    return authIndexCache;
+  }
+  function authPeopleForCode(raw) {
+    var code = String(raw || "").trim().toUpperCase();
+    if (!code || /^\d{5,7}$/.test(code)) return null;
+    var idx = ensureAuthIndex();
+    var order = ["op", "ac", "cat", "eng", "mod"];
+    for (var i = 0; i < order.length; i++) {
+      var field = order[i];
+      var people = idx[field].get(code);
+      if (people && people.length) {
+        return {
+          code: code,
+          field: field,
+          people: people.map(function (p) { return { staff: p.staff, name: p.name, on: true }; })
+        };
+      }
+    }
+    return { code: code, field: "", people: [] };
+  }
+  function listAuthGroupCodes() {
+    var idx = ensureAuthIndex();
+    var seen = new Map();
+    ["op", "ac", "cat", "eng", "mod"].forEach(function (field) {
+      idx[field].forEach(function (people, code) {
+        var c = String(code || "").trim().toUpperCase();
+        if (!c || seen.has(c)) return;
+        seen.set(c, { code: c, field: field, n: (people || []).length });
+      });
+    });
+    return Array.from(seen.values());
+  }
+  function setPeopleHint(itemId, text) {
+    var el = document.querySelector('#brs-admin [data-people-hint="' + itemId + '"]');
+    if (el) el.innerHTML = text || "";
+  }
+  function clearPeopleAuthPick() {
+    peopleAuthPick = null;
+    var box = document.querySelector("#brs-admin [data-auth-pick]");
+    if (box) box.hidden = true;
+  }
+  function paintPeopleAuthPick() {
+    if (!peopleAuthPick || !isEditUnlocked()) return;
+    var itemId = peopleAuthPick.itemId;
+    var box = document.querySelector('#brs-admin [data-auth-pick="' + itemId + '"]');
+    var label = document.querySelector('#brs-admin [data-auth-label="' + itemId + '"]');
+    var list = document.querySelector('#brs-admin [data-auth-list="' + itemId + '"]');
+    if (!box || !list) return;
+    box.hidden = false;
+    var onCount = peopleAuthPick.people.filter(function (p) { return p.on; }).length;
+    if (label) {
+      label.textContent = authFieldLabel(peopleAuthPick.field) + " " + peopleAuthPick.code +
+        " · " + onCount + " / " + peopleAuthPick.people.length + " selected (Name List only)";
+    }
+    list.innerHTML = peopleAuthPick.people.map(function (p) {
+      return "<li class=\"" + (p.on ? "" : "off") + "\"><span class=\"who\"><b>" + esc(p.staff) + "</b> " +
+        esc(p.name || "") + "</span>" +
+        "<button type=\"button\" data-auth-toggle=\"" + esc(p.staff) + "\" data-item=\"" + esc(itemId) + "\">" +
+        (p.on ? "−" : "+") + "</button></li>";
+    }).join("") || "<li class=\"muted\">No Name List people in this group.</li>";
+  }
+  function setPeopleAuthPick(itemId, hit) {
+    if (!hit || !hit.people || !hit.people.length) {
+      clearPeopleAuthPick();
+      setPeopleHint(itemId, "No Authorization CS for code " + esc(hit && hit.code || "") + " on the Name List.");
+      return;
+    }
+    peopleAuthPick = {
+      itemId: itemId,
+      code: hit.code,
+      field: hit.field,
+      people: hit.people.map(function (p) { return { staff: p.staff, name: p.name, on: true }; })
+    };
+    paintPeopleAuthPick();
+    setPeopleHint(itemId, authFieldLabel(hit.field) + " <b>" + esc(hit.code) + "</b> · edit +/−, then Add selected.");
+  }
+  function addSelectedAuthPeople(itemId) {
+    if (!peopleAuthPick || peopleAuthPick.itemId !== itemId) return;
+    var it = itemById(itemId);
+    if (!it) return;
+    var have = {};
+    (it.people || []).forEach(function (p) { have[p.staff] = true; });
+    var added = 0;
+    var skipped = 0;
+    peopleAuthPick.people.forEach(function (p) {
+      if (!p.on) return;
+      var who = byStaff[pad(p.staff)];
+      if (!who) { skipped += 1; return; }
+      if (have[who.staff]) { skipped += 1; return; }
+      it.people = it.people || [];
+      it.people.push({ staff: who.staff, name: who.name, section: who.section, team: who.team, ack: "", ackAt: "" });
+      have[who.staff] = true;
+      added += 1;
+    });
+    if (!added) {
+      showMsgPop({ mode: "alert", title: "Not added", lines: ["Already on item", "or none selected"] });
+      return;
+    }
+    save();
+    render();
+    clearPeopleAuthPick();
+    renderAdminEditor();
+    setPeopleHint(itemId, "Added " + added + (skipped ? " (" + skipped + " skipped)" : "") + ".");
+  }
 
   function normalizeGateRole(r) {
     r = String(r || "view").toLowerCase();
@@ -891,11 +1069,39 @@
   function onAdminClick(e) {
     if (!isEditUnlocked()) return;
     var btn = e.target.closest ? e.target.closest("button") : null;
-    var sug = e.target.closest ? e.target.closest("[data-pick]") : null;
+    var sug = e.target.closest ? e.target.closest("[data-pick], [data-pick-auth]") : null;
     var drop = e.target.closest ? e.target.closest("[data-mat-drop]") : null;
     if (sug) {
+      var authCode = sug.getAttribute("data-pick-auth");
+      if (authCode) {
+        var hit = authPeopleForCode(authCode);
+        setPeopleAuthPick(sug.getAttribute("data-item"), hit);
+        var findEl = document.querySelector('#brs-admin [data-find="' + sug.getAttribute("data-item") + '"]');
+        if (findEl) findEl.value = authCode;
+        var ulHide = document.querySelector('#brs-admin [data-suggest="' + sug.getAttribute("data-item") + '"]');
+        if (ulHide) { ulHide.hidden = true; ulHide.innerHTML = ""; }
+        return;
+      }
       addPerson(sug.getAttribute("data-item"), sug.getAttribute("data-pick"));
       renderAdminEditor();
+      return;
+    }
+    if (btn && btn.dataset.authAddAll) {
+      addSelectedAuthPeople(btn.dataset.authAddAll);
+      return;
+    }
+    if (btn && btn.dataset.authClear) {
+      clearPeopleAuthPick();
+      setPeopleHint(btn.dataset.authClear, "Type a staff # or name for the Name List popup, or an Authorization group code such as <b>D0</b>. Name List people only.");
+      return;
+    }
+    if (btn && btn.dataset.authToggle) {
+      if (peopleAuthPick && peopleAuthPick.itemId === btn.dataset.item) {
+        peopleAuthPick.people.forEach(function (p) {
+          if (p.staff === btn.dataset.authToggle) p.on = !p.on;
+        });
+        paintPeopleAuthPick();
+      }
       return;
     }
     if (drop && (!btn || !btn.dataset.addLink)) {
@@ -1008,11 +1214,31 @@
   function onAdminKeydown(e) {
     if (!isEditUnlocked()) return;
     var t = e.target;
+    if (t.dataset && t.dataset.find && e.key === "Enter") {
+      e.preventDefault();
+      tryAddFromFind(t.dataset.find, t.value);
+      return;
+    }
     if (!t.dataset || !t.dataset.link || e.key !== "Enter") return;
     e.preventDefault();
     addLink(t.dataset.link, t.value);
     t.value = "";
     renderAdminEditor();
+  }
+  function tryAddFromFind(itemId, raw) {
+    var q = String(raw || "").trim();
+    if (!q) return;
+    if (/^\d{5,7}$/.test(q.replace(/\s/g, ""))) {
+      addPerson(itemId, q);
+      renderAdminEditor();
+      return;
+    }
+    var hit = authPeopleForCode(q);
+    if (hit) {
+      setPeopleAuthPick(itemId, hit);
+      return;
+    }
+    showMsgPop({ mode: "alert", title: "Not added", lines: ["Not on Name List"] });
   }
   function matDropZone(el) {
     return el && el.closest ? el.closest("[data-mat-drop]") : null;
@@ -1125,9 +1351,22 @@
         "<div><label>&nbsp;</label><button type=\"button\" data-add-link=\"" + esc(it.id) + "\">Add link</button></div>" +
       "</div>" +
       "<h2>People</h2>" +
-      "<div class=\"suggest\"><label>Name List</label>" +
-        "<input type=\"text\" data-find=\"" + esc(it.id) + "\" placeholder=\"Staff # or name\" autocomplete=\"off\">" +
-        "<ul data-suggest=\"" + esc(it.id) + "\" hidden></ul></div>" +
+      "<div class=\"people-add\">" +
+        "<label for=\"find-" + esc(it.id) + "\">Staff # / Auth group</label>" +
+        "<div class=\"suggest\">" +
+          "<input id=\"find-" + esc(it.id) + "\" type=\"text\" data-find=\"" + esc(it.id) + "\" placeholder=\"084096 or D0\" autocomplete=\"off\" spellcheck=\"false\" maxlength=\"16\">" +
+          "<ul data-suggest=\"" + esc(it.id) + "\" hidden role=\"listbox\"></ul>" +
+        "</div>" +
+        "<p class=\"note\" data-people-hint=\"" + esc(it.id) + "\">Type a staff # or name for the Name List popup, or an Authorization group code such as <b>D0</b>. Name List people only.</p>" +
+        "<div class=\"auth-pick\" data-auth-pick=\"" + esc(it.id) + "\" hidden>" +
+          "<div class=\"auth-pick-head\">" +
+            "<span data-auth-label=\"" + esc(it.id) + "\"></span>" +
+            "<button type=\"button\" class=\"primary\" data-auth-add-all=\"" + esc(it.id) + "\">Add selected</button>" +
+            "<button type=\"button\" data-auth-clear=\"" + esc(it.id) + "\">Clear</button>" +
+          "</div>" +
+          "<ul class=\"clean\" data-auth-list=\"" + esc(it.id) + "\"></ul>" +
+        "</div>" +
+      "</div>" +
       "<ul class=\"clean people\">" + people + "</ul>" +
       "<div class=\"row-actions\">" +
         "<button type=\"button\" data-del-item=\"" + esc(it.id) + "\">Delete item</button>" +
@@ -1145,6 +1384,8 @@
     var it = adminEditId ? itemById(adminEditId) : null;
     if (it) ed = editorHtml(it);
     wrap.innerHTML = "<div class=\"bar\" style=\"margin-bottom:10px\"><span class=\"muted\" style=\"margin-right:6px\">Edit existing:</span>" + pick + "</div>" + ed;
+    if (peopleAuthPick && peopleAuthPick.itemId === adminEditId) paintPeopleAuthPick();
+    else if (peopleAuthPick && peopleAuthPick.itemId !== adminEditId) clearPeopleAuthPick();
   }
 
   function render() {
@@ -1538,21 +1779,32 @@
     var ul = document.querySelector('#brs-admin [data-suggest="' + itemId + '"]') ||
       document.querySelector('[data-suggest="' + itemId + '"]');
     if (!ul) return;
-    var needle = String(q || "").trim().toLowerCase();
+    var needle = String(q || "").trim();
     if (needle.length < 1) { ul.hidden = true; ul.innerHTML = ""; return; }
     var it = itemById(itemId);
     var have = {};
     (it && it.people || []).forEach(function (p) { have[p.staff] = true; });
-    var hits = roster.filter(function (p) {
+    var lines = [];
+    var nq = needle.toLowerCase();
+    if (!/^\d/.test(needle)) {
+      listAuthGroupCodes().filter(function (g) {
+        return g.code.toLowerCase().indexOf(nq) >= 0;
+      }).slice(0, 6).forEach(function (g) {
+        lines.push("<li data-pick-auth=\"" + esc(g.code) + "\" data-item=\"" + esc(itemId) + "\">" +
+          esc(g.code) + " <span class=\"sep\">—</span> " + esc(authFieldLabel(g.field)) +
+          " · " + g.n + " CS</li>");
+      });
+    }
+    roster.filter(function (p) {
       if (have[p.staff]) return false;
-      return p.staff.indexOf(needle) >= 0 || p.name.toLowerCase().indexOf(needle) >= 0;
-    }).slice(0, 8);
-    if (!hits.length) { ul.hidden = true; ul.innerHTML = ""; return; }
+      return p.staff.indexOf(nq) >= 0 || p.name.toLowerCase().indexOf(nq) >= 0;
+    }).slice(0, 8).forEach(function (p) {
+      lines.push("<li data-pick=\"" + esc(p.staff) + "\" data-item=\"" + esc(itemId) + "\">" +
+        esc(p.staff) + " · " + esc(p.name) + " · " + esc(p.section) + "</li>");
+    });
+    if (!lines.length) { ul.hidden = true; ul.innerHTML = ""; return; }
     ul.hidden = false;
-    ul.innerHTML = hits.map(function (p) {
-      return "<li data-pick=\"" + esc(p.staff) + "\" data-item=\"" + esc(itemId) + "\">" +
-        esc(p.staff) + " · " + esc(p.name) + " · " + esc(p.section) + "</li>";
-    }).join("");
+    ul.innerHTML = lines.join("");
   }
   function addPerson(itemId, staff) {
     if (!isEditUnlocked()) return;
