@@ -1,22 +1,24 @@
 ---
-description: Read and update the shared handover log before and after GitHub, Supabase, or Vercel work
+description: Read and update the shared handover log before and after every shared change
 alwaysApply: true
 ---
 
 # Handover log
 
-Shared log for both computers: `HANDOVER.md` at the root of `danson117/danson117.github.io`. It covers HX, Life OS, Alpha_Learn, Karson_Learn, and any other work that the other computer must know about. Visible rule: `HX/hx-rules.html` (red handover item).
+Shared log (both computers): `HANDOVER.md` at the root of `danson117/danson117.github.io` on **GitHub**. Not local-only. Not in Supabase. Covers HX, Life OS, Alpha_Learn, Karson_Learn, and any work the other computer must know. Visible rule: `HX/hx-rules.html` §1.
 
 ## Before editing
 
-Read `HANDOVER.md` first when the task touches this repo, Life OS, Supabase (`life_os` / `hx_private`), or Vercel.
+Read `HANDOVER.md` first. If the other computer logged work this PC does not have yet: pull GitHub `main` first; for Supabase / Vercel follow the log. Do not guess. Do not overwrite with an older local file.
 
-If the log shows the other computer changed something this machine does not have yet: pull GitHub `main` first, and for Supabase or Vercel data follow the log. Do not guess. Do not overwrite GitHub or Supabase with an older local file.
+## After every change
 
-## After editing
+In the **same turn**, append key points to `HANDOVER.md` (date, which computer, what changed, where: GitHub / Supabase / Vercel), then commit and push. The user may switch to the other computer at any time; that machine must know what was done so it does not fall out of sync.
 
-If the work changed this machine, Supabase, or Vercel in a way the other computer must follow: append one entry to `HANDOVER.md` in the same turn, then commit and push it with any rule-page bump. No force-push. No secrets, `.env`, `*.db`, or tokens. Do not write Supabase public table `hx_test`.
+No force-push. No secrets. Do not write Supabase public table `hx_test`. Do not put staff-level training detail in the public log.
 
-Each entry starts with the date and the computer role. Read the role from `C:\Cursor_Work\MACHINE.md` on this PC only. That file is not in git. If it is missing, ask once which computer this is. Do not put "this PC is the company computer" into a synced user rule.
+Computer role: `C:\Cursor_Work\MACHINE.md` on this PC only (do not commit). If missing, ask once which computer this is. Never store "this PC is the company computer" in a synced user rule.
 
-Do not copy staff-level training detail into `HANDOVER.md`. Point at Supabase or the live page instead.
+## Live vs backup
+
+Live site = **Vercel**. Data = **Supabase**. GitHub HTML = **backup only** (Pages need not stay current). Shared settings/records that should look the same on every device go to Supabase. Exception: HX permission gate (e.g. Training One View) — view vs edit may differ by unlock; board data still syncs via locked Edge.
