@@ -16,7 +16,7 @@ alwaysApply: true
 - **暗號 bye / 收工：** 用戶收工返屋企。即刻 `commit + push` 所有本機應上 GitHub 嘅野，**包 Status / actions**（`HX/team-board-actions.json`）。唔 force；唔 push 秘密。Status 只喺 browser 而未 auto-push 嘅要講清楚。唔開新 Chrome。
 - HTML 右下角 version：細改 +0.1，大改 +1.0；改完**必改**右下角
 - After an HX update, **do not open a new browser / Chrome**. Tell the user the **page version number(s)** in the chat. The user will **manually refresh** the tab they already have.
-- **English-only pages:** `hx.html#links` / `#flow` / `#training` / `#auth-list` / `#lic-records` / `#audit` / `#team-board` / `#courses` / `#sections` / `#ocg-pax` and those HTML files must be English UI. Staff Chinese names stay. Not this rule: `#docs` / `#tooling` / `#fth-rewrite` / `#scratch` / `#rules`.
+- **English-only pages:** `hx.html#links` / `#flow` / `#training` / `#auth-list` / `#lic-records` / `#audit` / `#team-board` / `#courses` / `#sections` / `#ocg-pax` / `#brs` / `#ke-rs` and those HTML files must be English UI. Staff Chinese names stay. Not this rule: `#docs` / `#tooling` / `#fth-rewrite` / `#scratch` / `#rules`.
 - 改完 HX **唔好開新 browser / Chrome**。喺對話講 **version 號** 就得；用戶自己 refresh 已開嘅 tab。
 - 跨機額外規矩：`HX/hx-rules.html`（紅字＝新加，另一部機要對齊）
 

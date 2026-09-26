@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Briefing &amp; Read &amp; Sign</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #5b6775;
+    --line: #d7dee6;
+    --bg: #eef1f4;
+    --card: #fff;
+    --teal: #00778b;
+    --teal-deep: #015260;
+    --ok: #1b7f4e;
+    --ok-bg: #f3faf6;
+    --out: #9a3412;
+    --out-bg: #fff7ed;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .page { max-width: 1100px; margin: 0 auto; padding: 22px 18px 72px; }
+  h1 { margin: 0 0 4px; font-size: 22px; color: var(--teal-deep); }
+  .sub { margin: 0 0 16px; color: var(--muted); max-width: 720px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
+  button, .btn {
+    font: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid #c5d0d8;
+    padding: 6px 11px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  button.primary, a.primary { background: var(--teal); color: #fff; border-color: var(--teal); }
+  button.on { background: var(--teal-deep); color: #fff; border-color: var(--teal-deep); }
+  button:hover { border-color: var(--teal); }
+  .status { margin-left: auto; color: var(--muted); font-size: 12px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 14px 16px 16px;
+    margin: 0 0 14px;
+  }
+  .card.is-done { background: var(--ok-bg); border-color: #b7dfc8; }
+  .card.is-out { background: var(--out-bg); border-color: #f0d7c4; }
+  .card-top { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; }
+  .grow { flex: 1 1 220px; min-width: 0; }
+  label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--teal-deep); margin: 0 0 3px; }
+  input[type="text"], input[type="url"], select {
+    width: 100%;
+    font: inherit;
+    color: var(--ink);
+    border: 1px solid #c5d0d8;
+    background: #fff;
+    padding: 6px 8px;
+  }
+  .seg { display: inline-flex; border: 1px solid #c5d0d8; background: #fff; }
+  .seg button { border: 0; }
+  .seg button + button { border-left: 1px solid #c5d0d8; }
+  h2 { margin: 16px 0 8px; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .progress { margin: 10px 0 0; font-size: 13px; font-weight: 650; }
+  .card.is-done .progress { color: var(--ok); }
+  .card.is-out .progress { color: var(--out); }
+  ul.clean { list-style: none; margin: 0; padding: 0; }
+  ul.clean li {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #e6edf1;
+  }
+  ul.clean li:last-child { border-bottom: 0; }
+  .muted { color: var(--muted); }
+  .people { max-height: 280px; overflow: auto; }
+  .who { flex: 1; min-width: 0; }
+  .who b { font-weight: 650; }
+  .suggest {
+    position: relative;
+  }
+  .suggest ul {
+    position: absolute;
+    z-index: 5;
+    left: 0; right: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #c5d0d8;
+    max-height: 220px;
+    overflow: auto;
+  }
+  .suggest li { padding: 6px 8px; cursor: pointer; }
+  .suggest li:hover { background: #f4f8f9; }
+  .mat-add { display: grid; grid-template-columns: 120px 1fr auto; gap: 8px; align-items: end; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .page-version {
+    position: fixed; right: 12px; bottom: 8px;
+    font-size: 11px; color: #6d7c82;
+  }
+  .empty { color: var(--muted); padding: 8px 0; }
+  @media (max-width: 720px) {
+    .mat-add { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>Briefing &amp; Read &amp; Sign</h1>
+    <p class="sub">Attach one or more Word, Excel, or PDF materials, choose the people, then record who has seen or signed. When everyone is done the item turns green. Anyone still open stays outstanding on Training One View, with a Material link beside the course.</p>
+    <div class="bar">
+      <button type="button" class="primary" id="btn-new">New item</button>
+      <div class="seg" role="group" aria-label="Show">
+        <button type="button" id="flt-all" class="on">All</button>
+        <button type="button" id="flt-out">Outstanding</button>
+        <button type="button" id="flt-done">Complete</button>
+      </div>
+      <span class="status" id="sync-status"></span>
+    </div>
+    <div id="list"></div>
+  </div>
+  <div class="page-version" data-version="1.0">v1.0</div>
+  <script src="ocg-pax-data.js?v=1"></script>
+  <script src="ocg-pax-data-unpack.js?v=1"></script>
+  <script src="hx-shared-sync.js?v=1.0"></script>
+  <script>
+(function () {
+  "use strict";
+  hxUnpackRoster();
+  var STORE = "hx:brs:doc";
+  var SHARED = "briefing-read-sign";
+  var roster = (window.PEOPLE || []).map(function (p) {
+    return {
+      staff: pad(p.staff),
+      name: String(p.name || ""),
+      section: String(p.home || ""),
+      team: String(p.team || ""),
+      group: String(p.group || "")
+    };
+  }).filter(function (p) { return p.staff; });
+  var byStaff = {};
+  roster.forEach(function (p) { byStaff[p.staff] = p; });
+
+  var doc = { items: [] };
+  var filter = "all";
+  var cloudReady = false;
+  var suppress = false;
+  var suggestFor = "";
+
+  function pad(v) {
+    var d = String(v || "").replace(/\D/g, "");
+    if (!d) return "";
+    return d.length < 6 ? d.padStart(6, "0") : d;
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+  function uid(prefix) { return prefix + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function today() {
+    var d = new Date();
+    var p = function (n) { return String(n).padStart(2, "0"); };
+    return p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear();
+  }
+  function paintStatus(t) {
+    var el = document.getElementById("sync-status");
+    if (el) el.textContent = t || "";
+  }
+  function leftCount(it) {
+    return (it.people || []).filter(function (p) { return !p.ack; }).length;
+  }
+  function phase(it) {
+    var n = (it.people || []).length;
+    if (!n) return "draft";
+    return leftCount(it) === 0 ? "done" : "out";
+  }
+  function pack() {
+    return {
+      v: 1,
+      updated: new Date().toISOString(),
+      app: SHARED,
+      keys: { record: 1 },
+      items: doc.items
+    };
+  }
+  function writeLocal() {
+    try { localStorage.setItem(STORE, JSON.stringify(pack())); } catch (e) {
+      window.alert("Could not save in this browser. A material file may be too large. Remove it or use a link.");
+    }
+  }
+  var schedulePush = (window.HxSharedSync && window.HxSharedSync.schedule)
+    ? window.HxSharedSync.schedule(function () {
+        if (!cloudReady || suppress) return;
+        if (!window.HxSharedSync.getPassword()) return;
+        window.HxSharedSync.pushDoc(SHARED, pack()).then(function () {
+          paintStatus("Saved. Synced.");
+        }).catch(function () {
+          paintStatus("Saved in this browser. Cloud sync pending.");
+        });
+      }, 900)
+    : function () {};
+  function save() { writeLocal(); schedulePush(); }
+
+  function loadLocal() {
+    try {
+      var raw = localStorage.getItem(STORE);
+      if (!raw) return false;
+      var o = JSON.parse(raw);
+      if (!o || !Array.isArray(o.items)) return false;
+      doc.items = o.items;
+      return true;
+    } catch (e) { return false; }
+  }
+  function applyRemote(remote) {
+    if (!remote || !Array.isArray(remote.items)) return;
+    suppress = true;
+    doc.items = remote.items;
+    writeLocal();
+    render();
+    setTimeout(function () { suppress = false; }, 60);
+  }
+
+  function kindOfFile(name) {
+    var n = String(name || "").toLowerCase();
+    if (/\.pdf$/.test(n)) return "pdf";
+    if (/\.(xls|xlsx|csv)$/.test(n)) return "excel";
+    if (/\.(doc|docx)$/.test(n)) return "word";
+    return "";
+  }
+  function kindLabel(k) {
+    if (k === "word") return "Word";
+    if (k === "excel") return "Excel";
+    if (k === "pdf") return "PDF";
+    if (k === "link") return "Link";
+    return "File";
+  }
+
+  function render() {
+    document.getElementById("flt-all").classList.toggle("on", filter === "all");
+    document.getElementById("flt-out").classList.toggle("on", filter === "out");
+    document.getElementById("flt-done").classList.toggle("on", filter === "done");
+    var items = doc.items.filter(function (it) {
+      var ph = phase(it);
+      if (filter === "out") return ph === "out";
+      if (filter === "done") return ph === "done";
+      return true;
+    });
+    if (!items.length) {
+      document.getElementById("list").innerHTML = "<p class=\"empty\">No items in this view. Use New item to add a briefing or a read &amp; sign.</p>";
+      return;
+    }
+    document.getElementById("list").innerHTML = items.map(cardHtml).join("");
+    var hash = (location.hash || "").replace(/^#item=/, "");
+    if (hash) {
+      var node = document.getElementById("item-" + hash);
+      if (node) node.scrollIntoView({ block: "start" });
+    }
+  }
+
+  function cardHtml(it) {
+    var ph = phase(it);
+    var cls = ph === "done" ? " is-done" : ph === "out" ? " is-out" : "";
+    var n = (it.people || []).length;
+    var left = leftCount(it);
+    var prog = !n ? "No people selected yet."
+      : left === 0 ? "Complete · " + n + " acknowledged"
+      : "Outstanding · " + left + " of " + n + " still open";
+    var verb = it.type === "read-sign" ? "Sign" : "Seen";
+    var mats = (it.materials || []).map(function (m) {
+      var open = m.href ? "<a href=\"" + esc(m.href) + "\" target=\"_blank\" rel=\"noopener\">Open</a>" : "";
+      return "<li><span class=\"who\"><b>" + esc(kindLabel(m.kind)) + "</b> · " + esc(m.name || "Material") + "</span>" +
+        open + "<button type=\"button\" data-del-mat=\"" + esc(m.id) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
+    }).join("") || "<li class=\"muted\">No materials yet.</li>";
+    var people = (it.people || []).map(function (p) {
+      var done = p.ack ? (p.ack === "signed" ? "Signed" : "Seen") + (p.ackAt ? " · " + p.ackAt : "") : "Outstanding";
+      var act = p.ack
+        ? "<button type=\"button\" data-clear=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Clear</button>"
+        : "<button type=\"button\" data-ack=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">" + verb + "</button>";
+      return "<li><span class=\"who\"><b>" + esc(p.staff) + "</b> " + esc(p.name || "") +
+        " <span class=\"muted\">" + esc(p.section || "") + " · " + done + "</span></span>" +
+        act + "<button type=\"button\" data-del-person=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
+    }).join("") || "<li class=\"muted\">No people yet. Search the Name List.</li>";
+    return "<article class=\"card" + cls + "\" id=\"item-" + esc(it.id) + "\">" +
+      "<div class=\"card-top\">" +
+        "<div><label>Type</label><div class=\"seg\">" +
+          "<button type=\"button\" data-type=\"briefing\" data-item=\"" + esc(it.id) + "\"" + (it.type !== "read-sign" ? " class=\"on\"" : "") + ">Briefing</button>" +
+          "<button type=\"button\" data-type=\"read-sign\" data-item=\"" + esc(it.id) + "\"" + (it.type === "read-sign" ? " class=\"on\"" : "") + ">Read &amp; Sign</button>" +
+        "</div></div>" +
+        "<div class=\"grow\"><label for=\"title-" + esc(it.id) + "\">Title</label>" +
+          "<input id=\"title-" + esc(it.id) + "\" type=\"text\" data-title=\"" + esc(it.id) + "\" value=\"" + esc(it.title || "") + "\" placeholder=\"Course or notice name\"></div>" +
+      "</div>" +
+      "<p class=\"progress\">" + esc(prog) + "</p>" +
+      "<h2>Materials</h2><ul class=\"clean\">" + mats + "</ul>" +
+      "<div class=\"mat-add\">" +
+        "<div><label>Kind</label><select data-kind=\"" + esc(it.id) + "\">" +
+          "<option value=\"pdf\">PDF</option><option value=\"word\">Word</option><option value=\"excel\">Excel</option><option value=\"link\">Link</option>" +
+        "</select></div>" +
+        "<div><label>File or link</label><input type=\"text\" data-link=\"" + esc(it.id) + "\" placeholder=\"Paste a link, then Add link\">" +
+          "<button type=\"button\" data-add-link=\"" + esc(it.id) + "\">Add link</button></div>" +
+        "<div><label>&nbsp;</label><input type=\"file\" data-file=\"" + esc(it.id) + "\" accept=\".pdf,.doc,.docx,.xls,.xlsx,.csv\"></div>" +
+      "</div>" +
+      "<h2>People</h2>" +
+      "<div class=\"suggest\"><label>Name List</label>" +
+        "<input type=\"text\" data-find=\"" + esc(it.id) + "\" placeholder=\"Staff # or name\" autocomplete=\"off\">" +
+        "<ul data-suggest=\"" + esc(it.id) + "\" hidden></ul></div>" +
+      "<ul class=\"clean people\">" + people + "</ul>" +
+      "<div class=\"row-actions\">" +
+        "<a class=\"btn primary\" href=\"ke-read-sign-record.html?v=1.1&amp;item=" + encodeURIComponent(it.id) + "\">Open record</a>" +
+        "<button type=\"button\" data-del-item=\"" + esc(it.id) + "\">Delete item</button>" +
+      "</div></article>";
+  }
+
+  function itemById(id) {
+    for (var i = 0; i < doc.items.length; i++) if (doc.items[i].id === id) return doc.items[i];
+    return null;
+  }
+
+  document.getElementById("btn-new").onclick = function () {
+    doc.items.unshift({
+      id: uid("brs"),
+      type: "briefing",
+      title: "",
+      materials: [],
+      people: []
+    });
+    filter = "all";
+    save();
+    render();
+  };
+  document.getElementById("flt-all").onclick = function () { filter = "all"; render(); };
+  document.getElementById("flt-out").onclick = function () { filter = "out"; render(); };
+  document.getElementById("flt-done").onclick = function () { filter = "done"; render(); };
+
+  document.getElementById("list").addEventListener("input", function (e) {
+    var t = e.target;
+    if (t.dataset.title) {
+      var it = itemById(t.dataset.title);
+      if (!it) return;
+      it.title = t.value;
+      save();
+      return;
+    }
+    if (t.dataset.find) {
+      suggestFor = t.dataset.find;
+      showSuggest(t.dataset.find, t.value);
+    }
+  });
+  document.getElementById("list").addEventListener("change", function (e) {
+    var t = e.target;
+    if (!t.dataset || !t.dataset.file) return;
+    var file = t.files && t.files[0];
+    t.value = "";
+    if (!file) return;
+    addFile(t.dataset.file, file);
+  });
+  document.getElementById("list").addEventListener("keydown", function (e) {
+    var t = e.target;
+    if (!t.dataset || !t.dataset.link || e.key !== "Enter") return;
+    e.preventDefault();
+    addLink(t.dataset.link, t.value);
+    t.value = "";
+  });
+  document.getElementById("list").addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest("button") : null;
+    var sug = e.target.closest ? e.target.closest("[data-pick]") : null;
+    if (sug) {
+      addPerson(sug.getAttribute("data-item"), sug.getAttribute("data-pick"));
+      return;
+    }
+    if (!btn) return;
+    var id = btn.getAttribute("data-item") || btn.getAttribute("data-del-item");
+    if (btn.dataset.addLink) {
+      var box = document.querySelector('[data-link="' + btn.dataset.addLink + '"]');
+      addLink(btn.dataset.addLink, box ? box.value : "");
+      if (box) box.value = "";
+      return;
+    }
+    if (btn.dataset.type) {
+      var it = itemById(btn.dataset.item);
+      if (!it) return;
+      it.type = btn.dataset.type;
+      save();
+      render();
+      return;
+    }
+    if (btn.dataset.delItem) {
+      if (!window.confirm("Delete this briefing / read & sign item?")) return;
+      doc.items = doc.items.filter(function (x) { return x.id !== btn.dataset.delItem; });
+      save();
+      render();
+      return;
+    }
+    if (btn.dataset.delMat) {
+      var itm = itemById(btn.dataset.item);
+      if (!itm) return;
+      itm.materials = (itm.materials || []).filter(function (m) { return m.id !== btn.dataset.delMat; });
+      save();
+      render();
+      return;
+    }
+    if (btn.dataset.ack) {
+      acknowledge(btn.dataset.item, btn.dataset.ack, true);
+      return;
+    }
+    if (btn.dataset.clear) {
+      acknowledge(btn.dataset.item, btn.dataset.clear, false);
+      return;
+    }
+    if (btn.dataset.delPerson) {
+      var itp = itemById(btn.dataset.item);
+      if (!itp) return;
+      itp.people = (itp.people || []).filter(function (p) { return p.staff !== btn.dataset.delPerson; });
+      save();
+      render();
+    }
+  });
+
+  function showSuggest(itemId, q) {
+    var ul = document.querySelector('[data-suggest="' + itemId + '"]');
+    if (!ul) return;
+    var needle = String(q || "").trim().toLowerCase();
+    if (needle.length < 1) { ul.hidden = true; ul.innerHTML = ""; return; }
+    var it = itemById(itemId);
+    var have = {};
+    (it && it.people || []).forEach(function (p) { have[p.staff] = true; });
+    var hits = roster.filter(function (p) {
+      if (have[p.staff]) return false;
+      return p.staff.indexOf(needle) >= 0 || p.name.toLowerCase().indexOf(needle) >= 0;
+    }).slice(0, 8);
+    if (!hits.length) { ul.hidden = true; ul.innerHTML = ""; return; }
+    ul.hidden = false;
+    ul.innerHTML = hits.map(function (p) {
+      return "<li data-pick=\"" + esc(p.staff) + "\" data-item=\"" + esc(itemId) + "\">" +
+        esc(p.staff) + " · " + esc(p.name) + " · " + esc(p.section) + "</li>";
+    }).join("");
+  }
+  function addPerson(itemId, staff) {
+    var it = itemById(itemId);
+    var who = byStaff[pad(staff)];
+    if (!it || !who) {
+      window.alert("That staff number is not on the Name List, so they were not added.");
+      return;
+    }
+    if ((it.people || []).some(function (p) { return p.staff === who.staff; })) return;
+    it.people = it.people || [];
+    it.people.push({ staff: who.staff, name: who.name, section: who.section, team: who.team, ack: "", ackAt: "" });
+    save();
+    render();
+  }
+  function acknowledge(itemId, staff, on) {
+    var it = itemById(itemId);
+    if (!it) return;
+    var p = (it.people || []).filter(function (x) { return x.staff === staff; })[0];
+    if (!p) return;
+    if (on) {
+      p.ack = it.type === "read-sign" ? "signed" : "seen";
+      p.ackAt = today();
+    } else {
+      p.ack = "";
+      p.ackAt = "";
+    }
+    save();
+    render();
+  }
+  function addLink(itemId, href) {
+    var url = String(href || "").trim();
+    if (!url) return;
+    var it = itemById(itemId);
+    if (!it) return;
+    it.materials = it.materials || [];
+    it.materials.push({ id: uid("mat"), name: url, kind: "link", href: url });
+    save();
+    render();
+  }
+  function addFile(itemId, file) {
+    var kind = kindOfFile(file.name);
+    var sel = document.querySelector('[data-kind="' + itemId + '"]');
+    if (sel && sel.value !== "link") kind = sel.value;
+    if (!kind || kind === "link") {
+      window.alert("This file was not added. Choose Word, Excel, or PDF.");
+      return;
+    }
+    if (file.size > 900000) {
+      window.alert("This file was not added. It is over 900 KB. Paste a link instead.");
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      var it = itemById(itemId);
+      if (!it) return;
+      it.materials = it.materials || [];
+      it.materials.push({ id: uid("mat"), name: file.name, kind: kind, href: String(reader.result || "") });
+      save();
+      render();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  loadLocal();
+  render();
+  window.HxSharedSync && window.HxSharedSync.syncDoc(SHARED, {
+    getLocal: function () { return pack(); },
+    localEmpty: function (d) { return !(d && Array.isArray(d.items) && d.items.length); },
+    applyRemote: applyRemote,
+    onStatus: function (s) {
+      if (s === "need-password") paintStatus("Saved in this browser. Unlock HX once to sync across devices.");
+      else if (s === "uploaded") paintStatus("Uploaded this list.");
+      else if (s === "synced") paintStatus("Synced from the shared list.");
+      else if (s === "offline") paintStatus("Cloud unreachable. Using this browser copy.");
+    }
+  }).then(function () { cloudReady = true; });
+})();
+  </script>
+</body>
+</html>

@@ -17,7 +17,8 @@
 - [Course List (Name / Code / Type / Interval)](hx.html#courses) — [standalone page](course-catalog.html)
 - [Future section codes (new LT families, later use)](hx.html#sections) — [standalone page](section-codes.html)
 - [OCG Name List (Crew List / Name List / Full List / Future sections)](ocg-pax-mechanics-list.html)
-- [KE Read & Sign record (OPS002R3)](hx.html#ke-rs) — [standalone page](ke-read-sign-record.html)
+- [Briefing & Read & Sign](hx.html#brs) — [standalone page](briefing-read-sign.html)
+- [Briefing & Read & Sign Record](hx.html#ke-rs) — [standalone page](ke-read-sign-record.html)
 - [零碎筆記 / Scratch notes](scratch-notes.html)（畫面唔顯示 記下／日期時間／caption；時間喺頁內 hidden `#scratch-ledger`，問先答）
 - [HX 規矩（跨機）](hx-rules.html)（紅字＝呢部機新加；另一部機對齊用）
 
@@ -27,7 +28,7 @@
 - 每次本機更新（應上 GitHub 嘅 HX／倉資料）**即刻 commit + push**，唔好只留喺呢部機。之前漏咗就 **push 而家最新**（一次 commit 夠）。唔 push 秘密；唔 force；唔 skip hooks（除非用戶叫）。
 - **暗號 bye / 收工：** 用戶收工返屋企。即刻 `commit + push` 所有本機應上 GitHub 嘅野，包 Status / actions（`HX/team-board-actions.json`）。唔 force。Status 只喺 browser 而未 auto-push 嘅要講清楚。唔開新 Chrome。
 - After an HX update, **do not open a new browser / Chrome**. Tell the user the **page version number(s)** in the chat. The user will **manually refresh** the tab they already have.
-- **English-only pages:** `hx.html#links` / `#flow` / `#training` / `#auth-list` / `#lic-records` / `#audit` / `#team-board` / `#courses` / `#sections` / `#ocg-pax` and those HTML files must be English UI. Staff Chinese names stay. Not this rule: `#docs` / `#tooling` / `#fth-rewrite` / `#scratch` / `#rules`.
+- **English-only pages:** `hx.html#links` / `#flow` / `#training` / `#auth-list` / `#lic-records` / `#audit` / `#team-board` / `#courses` / `#sections` / `#ocg-pax` / `#brs` / `#ke-rs` and those HTML files must be English UI. Staff Chinese names stay. Not this rule: `#docs` / `#tooling` / `#fth-rewrite` / `#scratch` / `#rules`.
 - 改完 HX **唔好開新 browser / Chrome**。喺對話講 **version 號** 就得；用戶自己 refresh 已開嘅 tab。
 - **Ingest reject (no silent skip):** If the designed parser cannot recognize a row or cannot complete a required step, **popup and reject the entire file**. Do not skip unknown rows and still update. User must fix the source (or the parser / `CODE_RE`) first. Examples: unknown staff (UAL), unknown course code, missing usual columns, unreadable file.
 - 認唔到或做唔到必要步驟 → 彈窗、整份檔 REJECT、唔寫入。唔好跳過認唔到嘅行仲 UPDATE。UAL OCG Functional Area only：LM OCG AV / LM OCG PAX AF / LM OCG AF / LM OCG Management。**145 & OCG Planning = PLANNING**，唔係 OCG。真正 OCG 人唔喺 Name List → 彈窗；橙色 Override 確認後只入 Name List。唔識 course code／檔壞／0 個 OCG 行 → 硬 reject。UAL 回覆串：最上封最新，要 `From:` 下一行 `Sent:` 先切開（唔好單憑 From:），忽略舊 trail。人名彈窗 2–6 可 Override；檔壞／唔識 code（7）硬 reject。CT／Mandatory 全 LM export：Transit／非 OCG 唔當 reject（板面之後 filter）；認唔到 staff # 或冇 course code 先 reject 整份。

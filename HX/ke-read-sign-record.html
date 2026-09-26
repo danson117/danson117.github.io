@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KE Read &amp; Sign record</title>
+<title>Briefing &amp; Read &amp; Sign Record</title>
 <style>
   :root {
     --ink: #3d3935;
@@ -282,7 +282,7 @@
 </head>
 <body class="orient-port">
   <div class="toolbar no-print">
-    <h1>KE Read &amp; Sign</h1>
+    <h1>Briefing &amp; Read &amp; Sign Record</h1>
     <div class="seg" role="group" aria-label="Page orientation">
       <button type="button" id="btn-port" aria-pressed="true">Portrait</button>
       <button type="button" id="btn-land" aria-pressed="false">Landscape</button>
@@ -304,7 +304,7 @@
     </div>
   </div>
   <div class="stage" id="sheets"></div>
-  <div class="page-version no-print" data-version="1.0">v1.0</div>
+  <div class="page-version no-print" data-version="1.1">v1.1</div>
   <script src="hx-shared-sync.js?v=1.0"></script>
   <script>
 (function () {
@@ -329,7 +329,7 @@
 
   var SAMPLE_ROWS = [{"section": "0YGY", "staff": "350877", "name": "TSANG SIN HO, STEWART", "status": "SIGNED", "date": "01/04/2026"}, {"section": "LGDX", "staff": "106254", "name": "LAM CHI LEUNG", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGDX", "staff": "125949", "name": "MA KWEI HIM", "status": "SIGNED", "date": "15/03/2026"}, {"section": "LGDX", "staff": "136516", "name": "NGAN CHI YIN", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGDX", "staff": "152281", "name": "LAW YU CHEUNG", "status": "SIGNED", "date": "27/03/2026"}, {"section": "LGDX", "staff": "161860", "name": "CHOY KIM FAI", "status": "SIGNED", "date": "20/03/2026"}, {"section": "LGDX", "staff": "165200", "name": "LEUNG CHUN YIN", "status": "SIGNED", "date": "08/04/2026"}, {"section": "LGDX", "staff": "191239", "name": "CHAN KA CHUN", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LGDX", "staff": "191883", "name": "KWAN WAI SHUN", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGDX", "staff": "199150", "name": "CHENG CHUNG MO", "status": "SIGNED", "date": "28/03/2026"}, {"section": "LGDX", "staff": "228595", "name": "CHEUNG HO FUNG", "status": "SIGNED", "date": "04/04/2026"}, {"section": "LGDX", "staff": "239906", "name": "GELDERBLOM REON JACQUES", "status": "SIGNED", "date": "22/03/2026"}, {"section": "LGDX", "staff": "350885", "name": "CHEUNG SIK HUNG", "status": "SIGNED", "date": "07/04/2026"}, {"section": "LGDX", "staff": "355637", "name": "FONG KUN PONG", "status": "SIGNED", "date": "15/03/2026"}, {"section": "LGW1", "staff": "208802", "name": "KO CHUN YIN", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LGW1", "staff": "340315", "name": "CHEUNG TAK SHING", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGW2", "staff": "201385", "name": "SHEK PUN", "status": "SIGNED", "date": "16/03/2026"}, {"section": "LGW2", "staff": "347965", "name": "LAM CHUNG MAN", "status": "SIGNED", "date": "15/03/2026"}, {"section": "LGW3", "staff": "161753", "name": "CHUNG CHI", "status": "SIGNED", "date": "27/03/2026"}, {"section": "LGW3", "staff": "179425", "name": "NG MAN CHI, HUBERT", "status": "SIGNED", "date": "15/04/2026"}, {"section": "LGW3", "staff": "198558", "name": "CHENG KA YAN", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGW3", "staff": "325531", "name": "NG CHI LUN", "status": "SIGNED", "date": "17/03/2026"}, {"section": "LGW4", "staff": "199366", "name": "CHUNG MAN FAI", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGY1", "staff": "115255", "name": "LAU SIU WA", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LGY1", "staff": "170176", "name": "TSANG CHUN MING", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGY1", "staff": "170241", "name": "KWOK WAI MAN", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LGY1", "staff": "185224", "name": "LI MAN WAH", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGY1", "staff": "191429", "name": "TANG CHEONG FU", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGY1", "staff": "205048", "name": "YU YIU SHAN", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGY1", "staff": "278532", "name": "TAM KWOK HEI", "status": "SIGNED", "date": "16/03/2026"}, {"section": "LGY2", "staff": "122797", "name": "NG CHI CHIU", "status": "SIGNED", "date": "02/04/2026"}, {"section": "LGY2", "staff": "137126", "name": "CHEUNG MICHAEL", "status": "SIGNED", "date": "16/03/2026"}, {"section": "LGY2", "staff": "209397", "name": "CHEUNG CHI YIN", "status": "SIGNED", "date": "15/03/2026"}, {"section": "LGY2", "staff": "297615", "name": "PALAGAWONG NA AYUTTAYA KITIPONG", "status": "SIGNED", "date": "02/04/2026"}, {"section": "LGY2", "staff": "323808", "name": "JANPHONG PAISAN", "status": "SIGNED", "date": "16/03/2026"}, {"section": "LGY2", "staff": "336447", "name": "LEUNG TIN WAI", "status": "SIGNED", "date": "24/03/2026"}, {"section": "LGY2", "staff": "340018", "name": "ZHANG ZHONGPING", "status": "SIGNED", "date": "26/03/2026"}, {"section": "LGY3", "staff": "116170", "name": "WONG WAI MING", "status": "SIGNED", "date": "25/03/2026"}, {"section": "LGY3", "staff": "178203", "name": "CHE LOK MAN", "status": "SIGNED", "date": "20/03/2026"}, {"section": "LGY3", "staff": "191289", "name": "WONG WAI HUNG", "status": "SIGNED", "date": "18/03/2026"}, {"section": "LGY3", "staff": "191411", "name": "CHU KA LUN", "status": "SIGNED", "date": "20/03/2026"}, {"section": "LGY3", "staff": "212746", "name": "NG NAI MAN", "status": "SIGNED", "date": "04/04/2026"}, {"section": "LGY3", "staff": "236118", "name": "WAN KWOK FAI", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGY3", "staff": "299736", "name": "LIN QINGDIAN", "status": "SIGNED", "date": "23/03/2026"}, {"section": "LGY3", "staff": "343301", "name": "CHOY WAI YU", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGY4", "staff": "129686", "name": "CHOW KAI WING", "status": "SIGNED", "date": "27/03/2026"}, {"section": "LGY4", "staff": "137366", "name": "LAU SAI WAH", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGY4", "staff": "208860", "name": "UPFOLD PIERRE ULRICH", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGY4", "staff": "250019", "name": "PANG CHUNG FAI", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGY4", "staff": "332099", "name": "YEUNG SIU FAI", "status": "SIGNED", "date": "20/03/2026"}, {"section": "LGY4", "staff": "334095", "name": "LAM CHUN WING", "status": "SIGNED", "date": "30/03/2026"}, {"section": "LGY4", "staff": "343757", "name": "NG WUN KIT", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGY5", "staff": "240672", "name": "CHEN DE WEI", "status": "SIGNED", "date": "23/03/2026"}, {"section": "LLXM", "staff": "199712", "name": "CHAN KAM CHEONG, BENNY", "status": "SIGNED", "date": "25/03/2026"}, {"section": "LTDT", "staff": "213984", "name": "CHAN SUN NAM, TERRENCE", "status": "SIGNED", "date": "18/03/2026"}, {"section": "LTW1", "staff": "115700", "name": "LAM HO HONG, SAMUEL", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LTW1", "staff": "236027", "name": "HUI KWOK KEUNG", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LTW1", "staff": "296344", "name": "HO TAI HONG", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LTW1", "staff": "312405", "name": "KWAN KA KI TEDDY", "status": "SIGNED", "date": "22/03/2026"}, {"section": "LTW1", "staff": "351156", "name": "LIU YAU TING", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LTW2", "staff": "138041", "name": "SHING CHI WAI", "status": "SIGNED", "date": "24/03/2026"}, {"section": "LTW2", "staff": "300038", "name": "CHU TAT FU", "status": "SIGNED", "date": "18/03/2026"}, {"section": "LTW2", "staff": "300286", "name": "CHEN GUANGWU", "status": "SIGNED", "date": "10/04/2026"}, {"section": "LTW2", "staff": "373986", "name": "YIU HUNG FAI", "status": "SIGNED", "date": "17/03/2026"}, {"section": "LTW3", "staff": "191495", "name": "WONG CHI KAN", "status": "SIGNED", "date": "17/03/2026"}, {"section": "LTW3", "staff": "208357", "name": "TECHAKULWIROTE AKKAPONG", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LTW3", "staff": "213728", "name": "CHU SHIU HANG, SIMON", "status": "SIGNED", "date": "18/03/2026"}, {"section": "LTW3", "staff": "246860", "name": "TONG PO KIN", "status": "SIGNED", "date": "19/03/2026"}, {"section": "LTW4", "staff": "115362", "name": "KWOK KIM FUNG", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LTW4", "staff": "150441", "name": "LEE KWOK KEI", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LTW4", "staff": "206343", "name": "PHUMJUN SOMPORN", "status": "SIGNED", "date": "23/03/2026"}, {"section": "LTX2", "staff": "178732", "name": "WONG TAK WANG, JOE", "status": "SIGNED", "date": "23/03/2026"}, {"section": "LTX3", "staff": "228917", "name": "SO TSZ CHUN", "status": "SIGNED", "date": "19/03/2026"}, {"section": "LVY3", "staff": "093972", "name": "CHUCK YING YU", "status": "SIGNED", "date": "12/03/2026"}];
 
-  var state = { meta: clone(SAMPLE_META), rows: SAMPLE_ROWS.map(clone), orient: "port" };
+  var state = { meta: clone(SAMPLE_META), rows: SAMPLE_ROWS.map(clone), orient: "port", brsId: "", kind: "" };
   var cloudReady = false;
   var suppressCloud = false;
 
@@ -421,7 +421,74 @@
       }, 900)
     : function () {};
 
+  var BRS_STORE = "hx:brs:doc";
+  function readBrsStore() {
+    try {
+      var o = JSON.parse(localStorage.getItem(BRS_STORE) || "");
+      if (!o || !Array.isArray(o.items)) return { v: 1, items: [], updated: "" };
+      return o;
+    } catch (e) {
+      return { v: 1, items: [], updated: "" };
+    }
+  }
+  function loadBrsItem(id) {
+    var stored = readBrsStore();
+    var it = (stored.items || []).filter(function (x) { return x && x.id === id; })[0];
+    if (!it) return false;
+    state.brsId = it.id;
+    state.kind = it.type === "read-sign" ? "read-sign" : "briefing";
+    state.meta = clone(SAMPLE_META);
+    state.meta.subject = it.title || "";
+    state.meta.publisher = state.kind === "read-sign" ? "Read & Sign" : "Briefing";
+    state.meta.publisherRef = state.meta.publisher;
+    state.meta.docId = "";
+    state.meta.referenceNo = it.title || "";
+    state.meta.requestedBy = "";
+    state.meta.distribution = "";
+    state.meta.selection = "";
+    state.rows = (it.people || []).map(function (p) {
+      var status = p.ack === "signed" ? "SIGNED" : p.ack === "seen" ? "SEEN" : "";
+      return { section: p.section || "", staff: padStaff(p.staff), name: p.name || "", status: status, date: p.ackAt || "" };
+    });
+    return true;
+  }
+  function writeBackBrs() {
+    var stored = readBrsStore();
+    var it = (stored.items || []).filter(function (x) { return x && x.id === state.brsId; })[0];
+    if (!it) return;
+    it.title = state.meta.subject || it.title || "";
+    it.type = state.kind === "read-sign" ? "read-sign" : "briefing";
+    it.people = it.people || [];
+    var by = {};
+    it.people.forEach(function (p) { by[padStaff(p.staff)] = p; });
+    state.rows.forEach(function (r) {
+      var staff = padStaff(r.staff);
+      if (!staff) return;
+      var p = by[staff];
+      if (!p) {
+        p = { staff: staff, name: r.name || "", section: r.section || "", ack: "", ackAt: "" };
+        it.people.push(p);
+        by[staff] = p;
+      }
+      p.name = r.name || p.name;
+      p.section = r.section || p.section;
+      var st = String(r.status || "").trim().toUpperCase();
+      if (st === "SIGNED") { p.ack = "signed"; p.ackAt = r.date || p.ackAt || ""; }
+      else if (st === "SEEN") { p.ack = "seen"; p.ackAt = r.date || p.ackAt || ""; }
+      else if (!st) { p.ack = ""; p.ackAt = ""; }
+    });
+    stored.updated = new Date().toISOString();
+    stored.v = 1;
+    stored.app = "briefing-read-sign";
+    stored.keys = { record: 1 };
+    try { localStorage.setItem(BRS_STORE, JSON.stringify(stored)); } catch (e) {}
+    if (window.HxSharedSync && window.HxSharedSync.getPassword()) {
+      window.HxSharedSync.pushDoc("briefing-read-sign", stored).catch(function () {});
+    }
+    paintStatus("Saved to Briefing & Read & Sign.");
+  }
   function save() {
+    if (state.brsId) { writeBackBrs(); return; }
     persistLocal();
     schedulePush();
   }
@@ -445,7 +512,8 @@
   }
 
   function rowHtml(row, index) {
-    var st = String(row.status || "").toUpperCase() === "SIGNED" ? " status-in" : "";
+    var up = String(row.status || "").toUpperCase();
+    var st = (up === "SIGNED" || up === "SEEN") ? " status-in" : "";
     return '<tr>' +
       cell("sec", "section", row.section, index, "") +
       cell("staff", "staff", row.staff, index, "") +
@@ -482,7 +550,7 @@
         '</svg>' +
         '<div class="mast-text">' +
           '<p class="co">HONG KONG AIRCRAFT ENGINEERING CO. LTD.</p>' +
-          '<p class="doc-kicker">READ &amp; SIGN RECORD</p>' +
+          '<p class="doc-kicker">' + (state.kind === "briefing" ? "BRIEFING RECORD" : state.kind === "read-sign" ? "READ &amp; SIGN RECORD" : "BRIEFING &amp; READ &amp; SIGN RECORD") + '</p>' +
           '<p class="doc-title">OPS002R3 · Document Maintenance and Distribution Report by Document</p>' +
         '</div>' +
       '</header>' +
@@ -700,8 +768,12 @@
     paintStatus(rows.length + " rows appended.");
   };
 
+  var itemQ = "";
+  try { itemQ = new URLSearchParams(location.search).get("item") || ""; } catch (e) {}
   if (/[?&]orient=land\b/.test(location.search)) state.orient = "land";
-  if (!loadLocal()) {
+  if (itemQ && loadBrsItem(itemQ)) {
+    render();
+  } else if (!loadLocal()) {
     persistLocal();
     render();
   } else if (/[?&]orient=land\b/.test(location.search) || /[?&]orient=port\b/.test(location.search)) {
@@ -724,7 +796,7 @@
     });
     cloudReady = true;
   }
-  syncNow();
+  if (!state.brsId) syncNow();
 })();
   </script>
 </body>

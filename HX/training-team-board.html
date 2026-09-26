@@ -965,6 +965,37 @@
     padding: 4px 10px;
     pointer-events: none;
   }
+  .brs-pop[hidden] { display: none !important; }
+  .brs-pop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    background: rgba(20, 32, 40, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
+  .brs-card {
+    width: min(520px, 100%);
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 16px 18px 14px;
+  }
+  .brs-card h3 { margin: 0 0 6px; font-size: 18px; }
+  .brs-files { margin: 8px 0 12px; padding: 0; list-style: none; }
+  .brs-files li { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .brs-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button.linkish {
+    font: inherit;
+    font-size: 12px;
+    color: #015260;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+  }
   @media (max-width: 1100px) {
     .load { grid-template-columns: 1fr; }
   }
@@ -978,7 +1009,7 @@
 <body>
   <div class="page">
     <h1>Training One View</h1>
-    <p class="subtitle">UAL / CT / Mandatory / Manual · one place</p>
+    <p class="subtitle">UAL / CT / Mandatory / Manual / Briefing &amp; Read &amp; Sign · one place</p>
 
     <div class="filter-bar">
       <div class="filter-group">
@@ -989,6 +1020,7 @@
           <button type="button" data-src="ct">CT Reminder</button>
           <button type="button" data-src="omt">Mandatory</button>
           <button type="button" data-src="manual">Manual</button>
+          <button type="button" data-src="brs">Briefing &amp; Read &amp; Sign</button>
         </div>
       </div>
       <div class="filter-right">
@@ -1255,9 +1287,22 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="10.7" aria-label="Page version 10.7">v10.7</div>
+  <div id="brs-pop" class="brs-pop" hidden>
+    <div class="brs-card" role="dialog" aria-labelledby="brs-pop-title">
+      <h3 id="brs-pop-title"></h3>
+      <p id="brs-pop-type" class="note"></p>
+      <ul id="brs-pop-files" class="brs-files"></ul>
+      <div class="brs-actions">
+        <button type="button" id="brs-pop-ack">Seen</button>
+        <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.1">Open record</a>
+        <button type="button" id="brs-pop-close">Close</button>
+      </div>
+    </div>
+  </div>
+  <div class="page-version" data-version="10.8" aria-label="Page version 10.8">v10.8</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
+<script src="hx-shared-sync.js?v=1.0"></script>
 <script src="authorization-list-data.js?v=6"></script>
 <script>
 hxUnpackRoster();
@@ -1332,7 +1377,9 @@ const GH_BRANCH = "main";
 const PERSIST_MS = 800;
 const PUSH_MS = 1500;
 const SEED_ACTIONS = {"v":1,"updated":"","status":{},"manual":[]};
-const SRC_ALL = ["ual", "ct", "omt", "manual"];
+const SRC_ALL = ["ual", "ct", "omt", "manual", "brs"];
+const BRS_STORE = "hx:brs:doc";
+const BRS_META = "__hx_shared__/briefing-read-sign";
 const UAL_KEYS = ["hx-ual-cbt-mail", "hx:ual-cbt:mail", "hx:ual-cbt:text", "hx:team-board:ual", "hx:team-board:ual-mail", "hx-team-board-ual", "hx-team-board-mail"];
 const UAL_ROW_KEYS = ["hx:team-board:ual-rows", "hx:ual-cbt:rows", "hx-ual-cbt-rows"];
 const CT_FILE_KEYS = ["hx:team-board:ct-files", "hx-team-board-ct-files", "hx:ct-reminder:files", "hx-ct-files"];
@@ -2197,7 +2244,7 @@ function srcLoad(saved) {
   const raw = String(saved == null ? "" : saved).trim();
   if (!raw) return SRC_ALL.slice();
   if (raw === "all") return SRC_ALL.slice();
-  if (raw === "ual" || raw === "ct" || raw === "omt" || raw === "manual") return [raw];
+  if (raw === "ual" || raw === "ct" || raw === "omt" || raw === "manual" || raw === "brs") return [raw];
   let parts = [];
   if (raw.charAt(0) === "[") {
     try { parts = JSON.parse(raw); } catch (e) { parts = []; }
@@ -3601,12 +3648,86 @@ function applyQueryToPerson(who, needle) {
   next.status = statusOf(next);
   return next;
 }
+function readBrsDoc() {
+  try {
+    const o = JSON.parse(localStorage.getItem(BRS_STORE) || "");
+    if (!o || !Array.isArray(o.items)) return { items: [], updated: "" };
+    return o;
+  } catch (e) {
+    return { items: [], updated: "" };
+  }
+}
+function writeBrsDoc(doc) {
+  const payload = {
+    v: 1,
+    updated: new Date().toISOString(),
+    app: "briefing-read-sign",
+    keys: { record: 1 },
+    items: (doc && doc.items) || []
+  };
+  try { localStorage.setItem(BRS_STORE, JSON.stringify(payload)); } catch (e) {}
+  return payload;
+}
+function applyRemoteBrs(remote) {
+  const rec = remote && remote.status && remote.status[BRS_META];
+  if (!rec || rec.remark == null || rec.remark === "") return false;
+  let incoming = null;
+  try { incoming = JSON.parse(String(rec.remark)); } catch (e) { return false; }
+  if (!incoming || !Array.isArray(incoming.items)) return false;
+  const local = readBrsDoc();
+  const lu = String(local.updated || "");
+  const ru = String(incoming.updated || rec.updated || "");
+  if (lu && ru && lu > ru) return false;
+  if (JSON.stringify(local.items) === JSON.stringify(incoming.items)) return false;
+  try { localStorage.setItem(BRS_STORE, JSON.stringify(incoming)); } catch (e) { return false; }
+  return true;
+}
+function brsToday() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear();
+}
+function brsItems() {
+  const list = [];
+  readBrsDoc().items.forEach((it) => {
+    const open = (it.people || []).filter((p) => p && !p.ack);
+    if (!open.length) return;
+    const title = String(it.title || "").trim() || (it.type === "read-sign" ? "Read & Sign" : "Briefing");
+    const src = it.type === "read-sign" ? "rs" : "brief";
+    const people = [];
+    open.forEach((p) => {
+      const who = personOf(p.staff, p.name);
+      if (!orgOk(who.group) || !roleOk(who.home)) return;
+      people.push({
+        staff: who.staff,
+        name: who.name || p.name || "",
+        team: who.team,
+        group: who.group,
+        emp: "",
+        home: who.home || p.section || "",
+        shift: who.shift || "",
+        crew: crewOf(who),
+        code: title,
+        due: "",
+        remain: 0,
+        cname: src === "rs" ? "Read & Sign" : "Briefing",
+        kind: src,
+        brsId: it.id,
+        hot: true
+      });
+    });
+    if (!people.length) return;
+    list.push({ src: src, key: "brs:" + it.id, title: title, people: people, brsId: it.id });
+  });
+  return list;
+}
 function itemsRaw() {
   const list = [];
   if (srcHas("ual")) list.push(...ualItems());
   if (srcHas("ct")) list.push(...ctItems());
   if (srcHas("omt")) list.push(...omtItems());
   if (srcHas("manual")) list.push(...manualItems());
+  if (srcHas("brs")) list.push(...brsItems());
   return list;
 }
 function itemsAll() {
@@ -3717,7 +3838,7 @@ function paintBoard() {
     }).join("");
     const flagReasons = itemFlagReasons(it);
     return "<tr" + (flagReasons.length ? " class=\"flagged\"" : "") + ">" +
-      "<td class=\"item\"><span class=\"item-k\">" + esc(it.src === "ual" ? "UAL CBT" : it.src === "omt" ? "Mandatory" : it.src === "manual" ? "Manual" : "CT Reminder") + "</span>" +
+      "<td class=\"item\"><span class=\"item-k\">" + esc(srcKicker(it.src)) + "</span>" +
       "<span class=\"item-t\">" + esc(it.title) + "</span>" +
       flagChip(flagReasons) +
       (rowHot ? "<span class=\"fire\" title=\"Hot / overdue\">!</span>" : "") +
@@ -3767,13 +3888,14 @@ function peopleBundle(pairs) {
       remain: p.remain,
       src: item.src || "",
       kind: p.kind || "",
-      mid: p.mid || ""
+      mid: p.mid || "",
+      brsId: p.brsId || ""
     };
     const addRow = (arr) => {
-      if (arr.some((d) => d.code === row.code && d.due === row.due)) return;
+      if (arr.some((d) => d.code === row.code && d.due === row.due && (d.brsId || "") === (row.brsId || ""))) return;
       arr.push(row);
     };
-    const done = courseIsCompleted(p.staff, row);
+    const done = (item && (item.src === "brief" || item.src === "rs")) ? false : courseIsCompleted(p.staff, row);
     if (!done) {
       if (course && !prev.courses.includes(course)) prev.courses.push(course);
       addRow(prev.courseRows);
@@ -3917,10 +4039,20 @@ function paintDetail() {
   applyWriteAccess();
 }
 
+function srcKicker(src) {
+  if (src === "ual") return "UAL CBT";
+  if (src === "omt") return "Mandatory";
+  if (src === "manual") return "Manual";
+  if (src === "brief") return "Briefing";
+  if (src === "rs") return "Read & Sign";
+  return "CT Reminder";
+}
 function srcLabel(row) {
   if (row.src === "ual" || row.kind === "ual") return "UAL CBT";
   if (row.src === "omt" || row.kind === "omt") return "Mandatory";
   if (row.src === "manual" || row.kind === "manual") return "Manual";
+  if (row.src === "brief" || row.kind === "brief") return "Briefing";
+  if (row.src === "rs" || row.kind === "rs") return "Read & Sign";
   if (row.kind === "dueSoon") return "CT · weekly";
   if (row.kind === "overdue") return "CT · daily overdue";
   return row.src === "ct" ? "CT Reminder" : (row.src || "");
@@ -3964,6 +4096,7 @@ function courseSrcKey(row) {
   if (row.src === "ual" || row.kind === "ual") return "ual";
   if (row.src === "omt" || row.kind === "omt") return "omt";
   if (row.src === "manual" || row.kind === "manual") return "manual";
+  if (row.src === "brief" || row.src === "rs") return row.src;
   return "ct";
 }
 function courseCodeKey(row) {
@@ -6279,8 +6412,8 @@ function personCourseTableHtml(who) {
   const sorted = rows.slice().sort((a, b) => (Number(a.remain) || 0) - (Number(b.remain) || 0) || String(a.code).localeCompare(String(b.code)));
   if (!sorted.length) return "<p class=\"note\">No courses.</p>";
   return "<table class=\"person-course-table\"><colgroup>" +
-    "<col class=\"col-course\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-remark\"><col class=\"col-action\">" +
-    "</colgroup><thead><tr><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
+    "<col class=\"col-course\"><col class=\"col-ref\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-remark\"><col class=\"col-action\">" +
+    "</colgroup><thead><tr><th>Course</th><th>Reference</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
     sorted.map((r) => {
       const n = remainNum(r.remain);
       const rec = readCourseStatus(who.staff, r);
@@ -6304,6 +6437,9 @@ function personCourseTableHtml(who) {
         "</td>";
       return "<tr class=\"" + cls + "\">" +
         "<td>" + esc(r.code || "") + flagChip(flagReasons) + "</td>" +
+        "<td class=\"col-ref\">" + (r.brsId
+          ? "<button type=\"button\" class=\"linkish\" data-brs-open=\"" + esc(r.brsId) + "\" data-staff=\"" + esc(who.staff) + "\">Material</button>"
+          : "") + "</td>" +
         td(displayCourseName(r.code, r.name)) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") +
         srcTd + courseStatusCellHtml(who, r) + courseRemarkCellHtml(who, r) + actionTd + "</tr>";
     }).join("") + "</tbody></table>";
@@ -7006,6 +7142,13 @@ document.getElementById("detail").addEventListener("click", (e) => {
     return;
   }
   if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]")) return;
+  const brsBtn = e.target.closest("[data-brs-open]");
+  if (brsBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    openBrsPop(brsBtn.dataset.brsOpen, brsBtn.dataset.staff);
+    return;
+  }
   const del = e.target.closest("[data-manual-del]");
   if (del) {
     e.preventDefault();
@@ -7035,6 +7178,59 @@ document.getElementById("course-pop-download").addEventListener("click", (e) => 
   downloadCoursePopImage();
 });
 document.getElementById("course-pop-close").addEventListener("click", closeCoursePop);
+function openBrsPop(itemId, staff) {
+  const pop = document.getElementById("brs-pop");
+  const it = (readBrsDoc().items || []).find((x) => x && x.id === itemId);
+  if (!pop || !it) return;
+  pop.dataset.item = it.id;
+  pop.dataset.staff = padStaff(staff);
+  document.getElementById("brs-pop-title").textContent = it.title || (it.type === "read-sign" ? "Read & Sign" : "Briefing");
+  document.getElementById("brs-pop-type").textContent = it.type === "read-sign" ? "Read & Sign" : "Briefing";
+  const files = document.getElementById("brs-pop-files");
+  const mats = it.materials || [];
+  files.innerHTML = mats.length ? mats.map((m) => {
+    const label = (m.kind === "word" ? "Word" : m.kind === "excel" ? "Excel" : m.kind === "pdf" ? "PDF" : "Link") + " · " + (m.name || "Material");
+    return "<li><a href=\"" + esc(m.href || "#") + "\" target=\"_blank\" rel=\"noopener\">" + esc(label) + "</a></li>";
+  }).join("") : "<li>No materials on this item.</li>";
+  const ack = document.getElementById("brs-pop-ack");
+  ack.textContent = it.type === "read-sign" ? "Sign" : "Seen";
+  document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.1&item=" + encodeURIComponent(it.id);
+  pop.hidden = false;
+}
+function closeBrsPop() {
+  const pop = document.getElementById("brs-pop");
+  if (pop) pop.hidden = true;
+}
+function ackBrsFromPop() {
+  const pop = document.getElementById("brs-pop");
+  if (!pop) return;
+  const stored = readBrsDoc();
+  const it = (stored.items || []).find((x) => x && x.id === pop.dataset.item);
+  if (!it) return;
+  const staff = padStaff(pop.dataset.staff);
+  const person = (it.people || []).find((p) => padStaff(p.staff) === staff);
+  if (!person) return;
+  person.ack = it.type === "read-sign" ? "signed" : "seen";
+  person.ackAt = brsToday();
+  const payload = writeBrsDoc(stored);
+  closeBrsPop();
+  paint();
+  if (window.HxSharedSync && window.HxSharedSync.getPassword()) {
+    window.HxSharedSync.pushDoc("briefing-read-sign", payload).catch(() => {});
+  }
+}
+document.getElementById("brs-pop-close").addEventListener("click", closeBrsPop);
+document.getElementById("brs-pop-ack").addEventListener("click", ackBrsFromPop);
+document.getElementById("brs-pop").addEventListener("click", (e) => {
+  if (e.target.id === "brs-pop") closeBrsPop();
+});
+document.getElementById("course-pop").addEventListener("click", (e) => {
+  const brsBtn = e.target.closest("[data-brs-open]");
+  if (!brsBtn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openBrsPop(brsBtn.dataset.brsOpen, brsBtn.dataset.staff);
+});
 document.getElementById("course-pop").addEventListener("click", (e) => {
   const del = e.target.closest("[data-manual-del]");
   if (del) {
@@ -7995,8 +8191,12 @@ async function pollRemoteActions() {
   try {
     const remote = await loadActionsFromEdge();
     if (!remote) return;
+    const brsChanged = applyRemoteBrs(remote);
     const sig = actionsPayloadSig(remote);
-    if (!sig || sig === lastRemoteActionsSig) return;
+    if (!sig || sig === lastRemoteActionsSig) {
+      if (brsChanged) paint();
+      return;
+    }
     setSaveSync("Updating…");
     applyServerPayload(remote, {
       keepDirty: !!(dirtyStatusKeys.size || dirtyManualIds.size || pendingStatusDeletes.length || pendingManualDeletes.length)
