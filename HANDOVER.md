@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-27 本機（未有 MACHINE.md）
+
+- BRS editor 按鈕：Delete｜Close｜Confirm Add（左→右）；顏色／handler 不變。BRS **v2.9**、`hx.html` **v11.8**、`hx-rules` **v5.5**。GitHub 後備。
+
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
 - Training One View：刪底部長說明（`.why`）；ingest／Status／sync 邏輯不變。TOV **v12.5**、`hx.html` **v11.7**。GitHub 後備。
