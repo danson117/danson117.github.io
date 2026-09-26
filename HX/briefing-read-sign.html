@@ -570,7 +570,7 @@
   var byStaff = {};
   roster.forEach(function (p) { byStaff[p.staff] = p; });
 
-  var doc = { items: [] };
+  var doc = { items: [], issued: {} };
   var filter = "all";
   var cloudReady = false;
   var suppress = false;
@@ -675,9 +675,62 @@
     return leftCount(it) === 0 ? "done" : "out";
   }
   function itemLabel(it) {
-    var t = String(it.title || "").trim();
+    var code = String(it && it.code || "").trim();
+    var t = String(it && it.title || "").trim();
+    if (code && t && t !== code) return code + " · " + t;
+    if (code) return code;
     if (t) return t;
-    return it.type === "read-sign" ? "Read & Sign" : "Briefing";
+    return it && it.type === "read-sign" ? "Read & Sign" : "Briefing";
+  }
+  function itemCodePrefix(type) {
+    return type === "briefing" ? "BF" : "RS";
+  }
+  function ymStamp(d) {
+    var dt = d || new Date();
+    return String(dt.getFullYear()) + String(dt.getMonth() + 1).padStart(2, "0");
+  }
+  function parseItemCode(code) {
+    var m = String(code || "").trim().toUpperCase().match(/^(BF|RS)(\d{6})(\d{2})$/);
+    if (!m) return null;
+    return { prefix: m[1], ym: m[2], seq: parseInt(m[3], 10) };
+  }
+  function ensureIssuedMap() {
+    if (!doc.issued || typeof doc.issued !== "object") doc.issued = {};
+    return doc.issued;
+  }
+  function rememberIssuedCode(code) {
+    var p = parseItemCode(code);
+    if (!p || !p.seq) return;
+    var map = ensureIssuedMap();
+    var key = p.prefix + p.ym;
+    var prev = parseInt(map[key], 10) || 0;
+    if (p.seq > prev) map[key] = p.seq;
+  }
+  function rebuildIssuedFromItems() {
+    var map = ensureIssuedMap();
+    (doc.items || []).forEach(function (it) { rememberIssuedCode(it && it.code); });
+    return map;
+  }
+  function nextItemCode(type) {
+    var prefix = itemCodePrefix(type);
+    var ym = ymStamp();
+    var key = prefix + ym;
+    rebuildIssuedFromItems();
+    var map = ensureIssuedMap();
+    var next = (parseInt(map[key], 10) || 0) + 1;
+    if (next > 99) {
+      showMsgPop({ mode: "alert", title: "No number", lines: [key, "99 used"] });
+      return "";
+    }
+    map[key] = next;
+    return key + String(next).padStart(2, "0");
+  }
+  function assignItemCode(it, type) {
+    if (!it) return "";
+    var code = nextItemCode(type || it.type);
+    if (!code) return "";
+    it.code = code;
+    return code;
   }
   function paintDash() {
     var briefOut = 0;
@@ -751,11 +804,13 @@
     }
   }
   function pack() {
+    rebuildIssuedFromItems();
     return {
       v: 1,
       updated: new Date().toISOString(),
       app: SHARED,
       keys: { record: 1 },
+      issued: ensureIssuedMap(),
       items: doc.items
     };
   }
@@ -784,6 +839,8 @@
       var o = JSON.parse(raw);
       if (!o || !Array.isArray(o.items)) return false;
       doc.items = o.items;
+      doc.issued = (o.issued && typeof o.issued === "object") ? o.issued : {};
+      rebuildIssuedFromItems();
       return true;
     } catch (e) { return false; }
   }
@@ -791,6 +848,15 @@
     if (!remote || !Array.isArray(remote.items)) return;
     suppress = true;
     doc.items = remote.items;
+    var localIssued = ensureIssuedMap();
+    var remoteIssued = (remote.issued && typeof remote.issued === "object") ? remote.issued : {};
+    Object.keys(remoteIssued).forEach(function (k) {
+      var a = parseInt(localIssued[k], 10) || 0;
+      var b = parseInt(remoteIssued[k], 10) || 0;
+      localIssued[k] = Math.max(a, b);
+    });
+    doc.issued = localIssued;
+    rebuildIssuedFromItems();
     writeLocal();
     render();
     renderAdminEditor();
@@ -1037,9 +1103,13 @@
   }
   function createItem(type) {
     if (!isEditUnlocked()) return;
+    var kind = type === "briefing" ? "briefing" : "read-sign";
+    var code = nextItemCode(kind);
+    if (!code) return;
     var it = {
       id: uid("brs"),
-      type: type === "briefing" ? "briefing" : "read-sign",
+      code: code,
+      type: kind,
       title: "",
       materials: [],
       people: []
@@ -1050,7 +1120,7 @@
     save();
     render();
     renderAdminEditor();
-    paintAdminStatus("Editing new item. Set Type if needed.");
+    paintAdminStatus("Item " + code + ". Set Type if needed.");
   }
   function wireAdminOnce() {
     if (adminWired) return;
@@ -1137,16 +1207,33 @@
     if (btn.dataset.type) {
       var it = itemById(btn.dataset.item);
       if (!it) return;
-      it.type = btn.dataset.type;
+      var nextType = btn.dataset.type === "briefing" ? "briefing" : "read-sign";
+      if (it.type === nextType) return;
+      var wantPrefix = itemCodePrefix(nextType);
+      var cur = parseItemCode(it.code);
+      if (!cur || cur.prefix !== wantPrefix) {
+        var fresh = nextItemCode(nextType);
+        if (!fresh) return;
+        it.code = fresh;
+      }
+      it.type = nextType;
       save();
       render();
       renderAdminEditor();
+      paintAdminStatus("Item " + (it.code || "") + ".");
       return;
     }
     if (btn.dataset.delItem) {
       var delId = btn.dataset.delItem;
-      showMsgPop({ mode: "confirm", title: "Delete item", lines: ["Confirm delete"] }).then(function (ok) {
+      var delIt = itemById(delId);
+      var delCode = delIt && delIt.code ? String(delIt.code) : "";
+      showMsgPop({
+        mode: "confirm",
+        title: "Delete item",
+        lines: delCode ? [delCode, "Confirm delete"] : ["Confirm delete"]
+      }).then(function (ok) {
         if (!ok) return;
+        if (delCode) rememberIssuedCode(delCode);
         doc.items = doc.items.filter(function (x) { return x.id !== delId; });
         if (adminEditId === delId) adminEditId = "";
         save();
@@ -1333,6 +1420,8 @@
       "<div class=\"bar\"><h3 style=\"margin:0;flex:1\">Edit item</h3>" +
         "<button type=\"button\" data-admin-close=\"1\">Close editor</button></div>" +
       "<div class=\"card-top\">" +
+        "<div><label>Item number</label>" +
+          "<input type=\"text\" value=\"" + esc(it.code || "—") + "\" readonly disabled title=\"Auto-issued. Cannot edit.\"></div>" +
         "<div><label>Type</label><div class=\"seg\">" +
           "<button type=\"button\" data-type=\"briefing\" data-item=\"" + esc(it.id) + "\"" + (it.type !== "read-sign" ? " class=\"on\"" : "") + ">Briefing</button>" +
           "<button type=\"button\" data-type=\"read-sign\" data-item=\"" + esc(it.id) + "\"" + (it.type === "read-sign" ? " class=\"on\"" : "") + ">Read &amp; Sign</button>" +
@@ -1489,7 +1578,9 @@
       "</tr>";
     return "<tr class=\"" + sumCls + "\" id=\"item-" + esc(it.id) + "\" data-toggle-item=\"" + esc(it.id) + "\" aria-expanded=\"" + (open ? "true" : "false") + "\">" +
       "<td><span class=\"type-badge\">" + typeLabel + "</span></td>" +
-      "<td><b>" + esc(itemLabel(it)) + "</b></td>" +
+      "<td><b>" + esc(it.code || itemLabel(it)) + "</b>" +
+        (it.title && it.code ? "<br><span class=\"muted\">" + esc(it.title) + "</span>" : "") +
+      "</td>" +
       "<td><span class=\"frac\">" + esc(progressText) + "</span> <span class=\"muted\">" + esc(progressNote) + "</span></td>" +
       "<td class=\"chev\">" + (open ? "Hide ▴" : "Open ▾") + "</td>" +
       "</tr>" + detail;

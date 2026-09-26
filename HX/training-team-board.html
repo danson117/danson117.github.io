@@ -3766,10 +3766,11 @@ function applyQueryToPerson(who, needle) {
 function readBrsDoc() {
   try {
     const o = JSON.parse(localStorage.getItem(BRS_STORE) || "");
-    if (!o || !Array.isArray(o.items)) return { items: [], updated: "" };
+    if (!o || !Array.isArray(o.items)) return { items: [], issued: {}, updated: "" };
+    if (!o.issued || typeof o.issued !== "object") o.issued = {};
     return o;
   } catch (e) {
-    return { items: [], updated: "" };
+    return { items: [], issued: {}, updated: "" };
   }
 }
 function writeBrsDoc(doc) {
@@ -3778,6 +3779,7 @@ function writeBrsDoc(doc) {
     updated: new Date().toISOString(),
     app: "briefing-read-sign",
     keys: { record: 1 },
+    issued: (doc && doc.issued && typeof doc.issued === "object") ? doc.issued : {},
     items: (doc && doc.items) || []
   };
   try { localStorage.setItem(BRS_STORE, JSON.stringify(payload)); } catch (e) {}
@@ -4024,7 +4026,22 @@ function applyRemoteBrs(remote) {
   const lu = String(local.updated || "");
   const ru = String(incoming.updated || rec.updated || "");
   if (lu && ru && lu > ru) return false;
-  if (JSON.stringify(local.items) === JSON.stringify(incoming.items)) return false;
+  const localIssued = (local.issued && typeof local.issued === "object") ? local.issued : {};
+  const remoteIssued = (incoming.issued && typeof incoming.issued === "object") ? incoming.issued : {};
+  const mergedIssued = Object.assign({}, localIssued);
+  Object.keys(remoteIssued).forEach((k) => {
+    mergedIssued[k] = Math.max(parseInt(mergedIssued[k], 10) || 0, parseInt(remoteIssued[k], 10) || 0);
+  });
+  (incoming.items || []).forEach((it) => {
+    const m = String(it && it.code || "").trim().toUpperCase().match(/^(BF|RS)(\d{6})(\d{2})$/);
+    if (!m) return;
+    const key = m[1] + m[2];
+    const seq = parseInt(m[3], 10) || 0;
+    mergedIssued[key] = Math.max(parseInt(mergedIssued[key], 10) || 0, seq);
+  });
+  incoming.issued = mergedIssued;
+  if (JSON.stringify(local.items) === JSON.stringify(incoming.items) &&
+      JSON.stringify(localIssued) === JSON.stringify(mergedIssued)) return false;
   try { localStorage.setItem(BRS_STORE, JSON.stringify(incoming)); } catch (e) { return false; }
   return true;
 }
@@ -4038,7 +4055,10 @@ function brsItems() {
   readBrsDoc().items.forEach((it) => {
     const open = (it.people || []).filter((p) => p && !p.ack);
     if (!open.length) return;
+    const code = String(it.code || "").trim();
     const title = String(it.title || "").trim() || (it.type === "read-sign" ? "Read & Sign" : "Briefing");
+    const courseCode = code || title;
+    const courseName = code ? title : (it.type === "read-sign" ? "Read & Sign" : "Briefing");
     const src = it.type === "read-sign" ? "rs" : "brief";
     const people = [];
     open.forEach((p) => {
@@ -4053,17 +4073,17 @@ function brsItems() {
         home: who.home || p.section || "",
         shift: who.shift || "",
         crew: crewOf(who),
-        code: title,
+        code: courseCode,
         due: "",
         remain: 0,
-        cname: src === "rs" ? "Read & Sign" : "Briefing",
+        cname: courseName,
         kind: src,
         brsId: it.id,
         hot: true
       });
     });
     if (!people.length) return;
-    list.push({ src: src, key: "brs:" + it.id, title: title, people: people, brsId: it.id });
+    list.push({ src: src, key: "brs:" + it.id, title: code ? (code + (title && title !== code ? " · " + title : "")) : title, people: people, brsId: it.id });
   });
   return list;
 }
