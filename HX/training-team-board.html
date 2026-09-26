@@ -1410,7 +1410,7 @@
       <p id="brs-pop-sign-note" class="note">Materials only here. To mark Seen or Sign, use the Sign / Seen button on the outstanding row (staff PIN), or open the Briefing &amp; Read &amp; Sign page.</p>
       <ul id="brs-pop-files" class="brs-files"></ul>
       <div class="brs-actions">
-        <a id="brs-pop-brs" href="briefing-read-sign.html?v=2.6">Open Briefing &amp; Read &amp; Sign</a>
+        <a id="brs-pop-brs" href="briefing-read-sign.html?v=2.7">Open Briefing &amp; Read &amp; Sign</a>
         <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.3">Open record</a>
         <button type="button" id="brs-pop-close">Close</button>
       </div>
@@ -1468,7 +1468,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="12.2" aria-label="Page version 12.2">v12.2</div>
+  <div class="page-version" data-version="12.3" aria-label="Page version 12.3">v12.3</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -6428,14 +6428,25 @@ function matchRosterNameHints(q) {
     a.staff.localeCompare(b.staff)
   ).slice(0, TYPEAHEAD_LIMIT);
 }
+function authGroupKindRank(field) {
+  if (field === "op") return 0;
+  if (field === "ac") return 1;
+  if (field === "eng") return 2;
+  if (field === "cat") return 3;
+  if (field === "mod") return 4;
+  if (field === "section") return 5;
+  return 9;
+}
+function cmpAuthGroupHints(a, b) {
+  return authGroupKindRank(a.field) - authGroupKindRank(b.field) ||
+    String(a.code || "").localeCompare(String(b.code || ""), undefined, { sensitivity: "base" });
+}
 function matchAuthGroupHints(q) {
   const raw = String(q || "").trim();
   if (!raw || /^\d+$/.test(raw)) return [];
   const nq = raw.toLowerCase();
-  return listAuthGroupCodes().filter((it) => typeaheadContains(it.code, nq)).sort((a, b) =>
-    a.code.length - b.code.length ||
-    a.code.localeCompare(b.code)
-  ).slice(0, TYPEAHEAD_LIMIT).map((it) => ({
+  return listAuthGroupCodes().filter((it) => typeaheadContains(it.code, nq)).sort(cmpAuthGroupHints)
+  .slice(0, TYPEAHEAD_LIMIT).map((it) => ({
     kind: "auth",
     value: it.code,
     code: it.code,
@@ -7792,7 +7803,7 @@ function openBrsPop(itemId, staff) {
     return "<li><a href=\"" + esc(m.href || "#") + "\" target=\"_blank\" rel=\"noopener\">" + esc(label) + "</a></li>";
   }).join("") : "<li>No materials on this item.</li>";
   const brsLink = document.getElementById("brs-pop-brs");
-  if (brsLink) brsLink.href = "briefing-read-sign.html?v=2.6#item=" + encodeURIComponent(it.id);
+  if (brsLink) brsLink.href = "briefing-read-sign.html?v=2.7#item=" + encodeURIComponent(it.id);
   document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.3&item=" + encodeURIComponent(it.id);
   pop.hidden = false;
 }

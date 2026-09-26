@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- Staff # / Group 建議：Operator → Aircraft → Engine（種內 A→Z）；Section／人名另組。TOV **v12.3**、BRS **v2.7**、`hx.html` **v11.4**。GitHub 後備。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - Training One View：三個 ingest 卡列闊還原 100%（撤 `66.666%`）；`repeat(3, 1fr)` 不變；Add course 仍全闊喺三卡下。TOV **v12.2**、`hx.html` **v11.3**。GitHub 後備。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
