@@ -229,6 +229,18 @@
     return d.length < 6 ? d.padStart(6, "0") : d.slice(-6);
   }
 
+  async function pinStatus(staff) {
+    var res = await fetch(EDGE_URL + "/pin/status", {
+      method: "POST",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ staff: padStaffPin(staff) }),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error((data && data.error) || ("pin-status " + res.status));
+    return { set: !!(data && data.set) };
+  }
+
   async function pinCheck(staff, pin) {
     var res = await fetch(EDGE_URL + "/pin/check", {
       method: "POST",
@@ -312,6 +324,7 @@
     docHasContent: docHasContent,
     schedule: schedule,
     padStaffPin: padStaffPin,
+    pinStatus: pinStatus,
     pinCheck: pinCheck,
     pinSet: pinSet,
     pinAdminList: pinAdminList,

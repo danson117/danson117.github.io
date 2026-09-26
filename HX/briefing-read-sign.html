@@ -149,9 +149,69 @@
   .pin-card h3 { margin: 0 0 6px; font-size: 17px; color: var(--teal-deep); }
   .pin-card .note { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
   .pin-card .field { margin: 0 0 10px; }
+  .pin-card .pin-hint { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
+  .pin-card .pin-hint[hidden] { display: none !important; }
+  .pin-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .pin-wrap input {
+    width: 100%;
+    padding-right: 2.6rem;
+  }
+  .pin-eye {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 28px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .pin-eye:hover { color: var(--teal-deep); border-color: transparent; }
+  .pin-eye svg { width: 18px; height: 18px; display: block; pointer-events: none; }
   .pin-card .err { color: #b42318; font-size: 13px; margin: 0 0 8px; min-height: 1.2em; }
   .pin-card .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
   #vault-list { max-height: 360px; overflow: auto; }
+  .record-panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 14px 16px 16px;
+    margin: 18px 0 14px;
+  }
+  .record-panel h2 {
+    margin: 0 0 6px;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--teal-deep);
+    font-weight: 700;
+  }
+  .record-panel .note { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
+  .record-panel .bar { margin: 0 0 10px; }
+  .record-frame-wrap {
+    border: 1px solid var(--line);
+    background: #f7f9fb;
+    min-height: 720px;
+  }
+  .record-frame-wrap iframe {
+    display: block;
+    width: 100%;
+    min-height: 720px;
+    height: 78vh;
+    border: 0;
+    background: #fff;
+  }
   @media (max-width: 720px) {
     .mat-add { grid-template-columns: 1fr; }
   }
@@ -160,7 +220,7 @@
 <body>
   <div class="page">
     <h1>Briefing &amp; Read &amp; Sign</h1>
-    <p class="sub">Attach one or more Word, Excel, or PDF materials, choose the people, then record who has seen or signed with their 6-digit staff PIN. When everyone is done the item turns green. Anyone still open stays outstanding on Training One View (Material link only — status is not changed there).</p>
+    <p class="sub">Attach one or more Word, Excel, or PDF materials, choose the people, then record who has seen or signed with their 6-digit staff PIN. When everyone is done the item turns green. Anyone still open stays outstanding on Training One View (Material link only — status is not changed there). The printable record for the selected item (or the KE sample) stays on this same page below.</p>
     <div class="bar">
       <button type="button" class="primary" id="btn-new">New item</button>
       <div class="seg" role="group" aria-label="Show">
@@ -168,9 +228,24 @@
         <button type="button" id="flt-out">Outstanding</button>
         <button type="button" id="flt-done">Complete</button>
       </div>
+      <button type="button" id="btn-record-sample" title="Open KE sample printable record on this page">Printable record (KE sample)</button>
       <span class="status" id="sync-status"></span>
     </div>
     <div id="list"></div>
+
+    <section class="record-panel" id="record-panel" aria-labelledby="record-heading">
+      <h2 id="record-heading">Briefing &amp; Read &amp; Sign Record</h2>
+      <p class="note">Portrait or landscape printable sheet with HAECO header, fill / generate, Print / PDF, and the official last-page sentence. Use <b>Open record</b> on an item above, or load the KE sample when no item is selected. Standalone file <code>ke-read-sign-record.html</code> still works for Training One View and direct links.</p>
+      <div class="bar">
+        <button type="button" class="primary" id="btn-record-reload">Reload record</button>
+        <button type="button" id="btn-record-blank">KE sample</button>
+        <a class="btn" id="record-solo" href="ke-read-sign-record.html?v=1.3" target="_blank" rel="noopener">Open record alone</a>
+        <span class="status" id="record-status">KE sample (no item selected)</span>
+      </div>
+      <div class="record-frame-wrap">
+        <iframe id="record-frame" title="Briefing and Read and Sign printable record" src="ke-read-sign-record.html?v=1.3"></iframe>
+      </div>
+    </section>
 
     <section class="vault" id="pin-vault">
       <h2>Admin PIN vault</h2>
@@ -189,31 +264,47 @@
       <p class="note" id="pin-pop-who"></p>
       <div class="field" id="pin-step-current">
         <label for="pin-current">6-digit PIN</label>
-        <input id="pin-current" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Enter PIN">
+        <div class="pin-wrap">
+          <input id="pin-current" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Enter PIN">
+          <button type="button" class="pin-eye" data-pin-eye="pin-current" aria-label="Show PIN" aria-pressed="false" title="Show PIN">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>
+          </button>
+        </div>
       </div>
+      <p class="pin-hint" id="pin-default-hint" hidden></p>
       <div id="pin-step-change" hidden>
         <p class="note">First-time default accepted. Choose a new 6-digit PIN that is not your staff number. Signature is recorded only after the new PIN is saved.</p>
         <div class="field">
           <label for="pin-new">New PIN</label>
-          <input id="pin-new" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="New 6-digit PIN">
+          <div class="pin-wrap">
+            <input id="pin-new" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="New 6-digit PIN">
+            <button type="button" class="pin-eye" data-pin-eye="pin-new" aria-label="Show PIN" aria-pressed="false" title="Show PIN">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>
+            </button>
+          </div>
         </div>
         <div class="field">
           <label for="pin-new2">Confirm new PIN</label>
-          <input id="pin-new2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="Enter again">
+          <div class="pin-wrap">
+            <input id="pin-new2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="Enter again">
+            <button type="button" class="pin-eye" data-pin-eye="pin-new2" aria-label="Show PIN" aria-pressed="false" title="Show PIN">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>
+            </button>
+          </div>
         </div>
       </div>
       <p class="err" id="pin-err"></p>
       <div class="actions">
-        <button type="button" class="primary" id="pin-ok">Continue</button>
+        <button type="button" class="primary" id="pin-ok">Confirm</button>
         <button type="button" id="pin-cancel">Cancel</button>
       </div>
     </div>
   </div>
 
-  <div class="page-version" data-version="1.3">v1.3</div>
+  <div class="page-version" data-version="1.5">v1.5</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
-  <script src="hx-shared-sync.js?v=1.1"></script>
+  <script src="hx-shared-sync.js?v=1.3"></script>
   <script>
 (function () {
   "use strict";
@@ -239,6 +330,31 @@
   var suggestFor = "";
   var pinCtx = null;
   var pinSetStaff = {};
+  var pinBusy = false;
+  var EYE_SHOW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>';
+  var EYE_HIDE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.3 2.3 2 3.6l3.1 3.1C3.4 8.1 2.2 9.6 1.5 10.8a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19c2 0 3.8-.6 5.3-1.5l3.1 3.1 1.3-1.3zm7.4 11.5A2.9 2.9 0 0 1 8.2 11l2.5 2.5zm1.3-6.5c.3 0 .6 0 .9.1l-1.7 1.7A3.5 3.5 0 0 0 8.5 13l-1.7 1.7A5.5 5.5 0 0 1 12 7.3zm8.6 3.5c-.5.8-1.4 2-2.7 3.1l1.4 1.4c1.5-1.3 2.6-2.8 3.2-3.7a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5c-.9 0-1.7.1-2.5.3l1.6 1.6c.3 0 .6-.1.9-.1 3.7 0 6.8 2.8 8.1 4.5z"/></svg>';
+
+  function setPinEye(btn, shown) {
+    if (!btn) return;
+    btn.setAttribute("aria-pressed", shown ? "true" : "false");
+    btn.setAttribute("aria-label", shown ? "Hide PIN" : "Show PIN");
+    btn.title = shown ? "Hide PIN" : "Show PIN";
+    btn.innerHTML = shown ? EYE_HIDE_SVG : EYE_SHOW_SVG;
+  }
+  function resetPinEyes() {
+    ["pin-current", "pin-new", "pin-new2"].forEach(function (id) {
+      var input = document.getElementById(id);
+      var btn = document.querySelector('[data-pin-eye="' + id + '"]');
+      if (input) input.type = "password";
+      setPinEye(btn, false);
+    });
+  }
+  function digitsFromInput(el) {
+    if (!el) return "";
+    var v = String(el.value || "").replace(/\D/g, "").slice(0, 6);
+    if (el.value !== v) el.value = v;
+    return v;
+  }
 
   function pad(v) {
     var d = String(v || "").replace(/\D/g, "");
@@ -399,9 +515,37 @@
         "<ul data-suggest=\"" + esc(it.id) + "\" hidden></ul></div>" +
       "<ul class=\"clean people\">" + people + "</ul>" +
       "<div class=\"row-actions\">" +
-        "<a class=\"btn primary\" href=\"ke-read-sign-record.html?v=1.2&amp;item=" + encodeURIComponent(it.id) + "\">Open record</a>" +
+        "<button type=\"button\" class=\"primary\" data-open-record=\"" + esc(it.id) + "\">Open record</button>" +
         "<button type=\"button\" data-del-item=\"" + esc(it.id) + "\">Delete item</button>" +
       "</div></article>";
+  }
+
+  var RECORD_FILE = "ke-read-sign-record.html?v=1.3";
+  var recordItemId = "";
+  function recordSrc(itemId) {
+    var base = RECORD_FILE;
+    if (itemId) return base + (base.indexOf("?") >= 0 ? "&" : "?") + "item=" + encodeURIComponent(itemId);
+    return base;
+  }
+  function paintRecordStatus() {
+    var el = document.getElementById("record-status");
+    var solo = document.getElementById("record-solo");
+    if (el) {
+      el.textContent = recordItemId
+        ? ("Record for item · " + recordItemId)
+        : "KE sample (no item selected)";
+    }
+    if (solo) solo.href = recordSrc(recordItemId);
+  }
+  function loadRecord(itemId, scroll) {
+    recordItemId = itemId ? String(itemId) : "";
+    var frame = document.getElementById("record-frame");
+    if (frame) frame.src = recordSrc(recordItemId);
+    paintRecordStatus();
+    if (scroll) {
+      var panel = document.getElementById("record-panel");
+      if (panel) panel.scrollIntoView({ block: "start", behavior: "smooth" });
+    }
   }
 
   function itemById(id) {
@@ -415,28 +559,54 @@
   }
   function closePinPop() {
     pinCtx = null;
+    pinBusy = false;
     var pop = document.getElementById("pin-pop");
     if (pop) pop.hidden = true;
     document.getElementById("pin-step-change").hidden = true;
     document.getElementById("pin-current").value = "";
     document.getElementById("pin-new").value = "";
     document.getElementById("pin-new2").value = "";
+    var hint = document.getElementById("pin-default-hint");
+    if (hint) { hint.hidden = true; hint.textContent = ""; }
+    resetPinEyes();
     setPinErr("");
+    var btn = document.getElementById("pin-ok");
+    if (btn) btn.disabled = false;
   }
-  function openPinPop(itemId, staff) {
+  async function openPinPop(itemId, staff) {
     var it = itemById(itemId);
     var who = byStaff[pad(staff)] || { staff: pad(staff), name: "" };
     if (!it || !who.staff) return;
-    pinCtx = { itemId: itemId, staff: who.staff, currentPin: "", phase: "check" };
+    pinCtx = { itemId: itemId, staff: who.staff, currentPin: "", phase: "check", autoVerify: false, pinSet: null };
     document.getElementById("pin-pop-title").textContent = it.type === "read-sign" ? "Sign with PIN" : "Seen with PIN";
     document.getElementById("pin-pop-who").textContent = who.staff + (who.name ? " · " + who.name : "");
     document.getElementById("pin-step-change").hidden = true;
     document.getElementById("pin-current").value = "";
     document.getElementById("pin-new").value = "";
     document.getElementById("pin-new2").value = "";
+    var hint = document.getElementById("pin-default-hint");
+    if (hint) { hint.hidden = true; hint.textContent = ""; }
+    resetPinEyes();
     setPinErr("");
     document.getElementById("pin-pop").hidden = false;
     setTimeout(function () { document.getElementById("pin-current").focus(); }, 30);
+    if (!window.HxSharedSync || typeof window.HxSharedSync.pinStatus !== "function") {
+      return;
+    }
+    try {
+      var st = await window.HxSharedSync.pinStatus(who.staff);
+      if (!pinCtx || pinCtx.staff !== who.staff) return;
+      pinCtx.autoVerify = true;
+      pinCtx.pinSet = !!st.set;
+      if (!st.set && hint) {
+        hint.hidden = false;
+        hint.textContent = "You are entering the default PIN. The default PIN is your staff number: " + who.staff + ".";
+      }
+    } catch (e) {
+      if (!pinCtx || pinCtx.staff !== who.staff) return;
+      pinCtx.autoVerify = false;
+      pinCtx.pinSet = null;
+    }
   }
   function applyAck(itemId, staff) {
     var it = itemById(itemId);
@@ -453,12 +623,14 @@
       setPinErr("PIN service is not available.");
       return;
     }
+    if (pinBusy) return;
     var staff = pinCtx.staff;
     var btn = document.getElementById("pin-ok");
+    pinBusy = true;
     btn.disabled = true;
     try {
       if (pinCtx.phase === "check") {
-        var pin = String(document.getElementById("pin-current").value || "").replace(/\D/g, "");
+        var pin = digitsFromInput(document.getElementById("pin-current"));
         if (!/^[0-9]{6}$/.test(pin)) {
           setPinErr("Enter exactly 6 digits.");
           return;
@@ -472,6 +644,8 @@
         if (check.mustChange) {
           pinCtx.phase = "change";
           document.getElementById("pin-step-change").hidden = false;
+          var hint = document.getElementById("pin-default-hint");
+          if (hint) { hint.hidden = true; }
           setPinErr("");
           document.getElementById("pin-new").focus();
           return;
@@ -481,9 +655,9 @@
         return;
       }
       if (pinCtx.phase === "change") {
-        var neu = String(document.getElementById("pin-new").value || "").replace(/\D/g, "");
-        var neu2 = String(document.getElementById("pin-new2").value || "").replace(/\D/g, "");
-        if (!/^[0-9]{6}$/.test(neu)) {
+        var neu = digitsFromInput(document.getElementById("pin-new"));
+        var neu2 = digitsFromInput(document.getElementById("pin-new2"));
+        if (!/^[0-9]{6}$/.test(neu) || !/^[0-9]{6}$/.test(neu2)) {
           setPinErr("New PIN must be exactly 6 digits.");
           return;
         }
@@ -502,7 +676,40 @@
     } catch (e) {
       setPinErr(String((e && e.message) || e || "PIN request failed."));
     } finally {
-      btn.disabled = false;
+      pinBusy = false;
+      if (pinCtx) btn.disabled = false;
+    }
+  }
+  function onPinFieldInput(e) {
+    var t = e.target;
+    if (!t || !pinCtx) return;
+    if (t.id !== "pin-current" && t.id !== "pin-new" && t.id !== "pin-new2") return;
+    var v = digitsFromInput(t);
+    if (pinCtx.phase === "check" && t.id === "pin-current") {
+      if (v.length < 6) {
+        if (document.getElementById("pin-err").textContent) setPinErr("");
+        return;
+      }
+      if (pinCtx.autoVerify && v.length === 6) submitPinFlow();
+      return;
+    }
+    if (pinCtx.phase === "change" && (t.id === "pin-new" || t.id === "pin-new2")) {
+      var neu = digitsFromInput(document.getElementById("pin-new"));
+      var neu2 = digitsFromInput(document.getElementById("pin-new2"));
+      if (neu.length === 6 && neu2.length === 6) {
+        if (neu !== neu2) {
+          setPinErr("New PIN entries do not match.");
+          return;
+        }
+        if (neu === pinCtx.staff) {
+          setPinErr("New PIN must not equal the staff number.");
+          return;
+        }
+        setPinErr("");
+        submitPinFlow();
+        return;
+      }
+      if (document.getElementById("pin-err").textContent) setPinErr("");
     }
   }
 
@@ -521,6 +728,9 @@
   document.getElementById("flt-all").onclick = function () { filter = "all"; render(); };
   document.getElementById("flt-out").onclick = function () { filter = "out"; render(); };
   document.getElementById("flt-done").onclick = function () { filter = "done"; render(); };
+  document.getElementById("btn-record-sample").onclick = function () { loadRecord("", true); };
+  document.getElementById("btn-record-blank").onclick = function () { loadRecord("", true); };
+  document.getElementById("btn-record-reload").onclick = function () { loadRecord(recordItemId, true); };
 
   document.getElementById("list").addEventListener("input", function (e) {
     var t = e.target;
@@ -589,6 +799,10 @@
       render();
       return;
     }
+    if (btn.dataset.openRecord) {
+      loadRecord(btn.dataset.openRecord, true);
+      return;
+    }
     if (btn.dataset.ack) {
       openPinPop(btn.dataset.item, btn.dataset.ack);
       return;
@@ -610,7 +824,19 @@
   document.getElementById("pin-ok").onclick = function () { submitPinFlow(); };
   document.getElementById("pin-pop").addEventListener("click", function (e) {
     if (e.target.id === "pin-pop") closePinPop();
+    var eye = e.target.closest ? e.target.closest("[data-pin-eye]") : null;
+    if (eye) {
+      e.preventDefault();
+      var id = eye.getAttribute("data-pin-eye");
+      var input = document.getElementById(id);
+      if (!input) return;
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      setPinEye(eye, show);
+      input.focus();
+    }
   });
+  document.getElementById("pin-pop").addEventListener("input", onPinFieldInput);
   document.getElementById("pin-pop").addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
       e.preventDefault();
