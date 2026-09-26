@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- Training One View：三個 ingest 卡列闊還原 100%（撤 `66.666%`）；`repeat(3, 1fr)` 不變；Add course 仍全闊喺三卡下。TOV **v12.2**、`hx.html` **v11.3**。GitHub 後備。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - BRS／TOV Staff # / Group：Operator 建議顯示短碼＋全名（由 AUTH_PACK module title）；Name List section 準確碼／prefix（LGA1 vs LGA）。BRS item number：New 只 preview；綠色 Add item 確認先入 `issued`；未確認 draft 唔上摘要／TOV。People 標籤 Staff # / Group；清走 236051／KE sample。BRS **v2.6**、TOV **v12.1**、`hx-rules` **v5.2**、`hx.html` **v11.2**。GitHub 後備。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）

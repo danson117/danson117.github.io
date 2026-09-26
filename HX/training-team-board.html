@@ -541,8 +541,6 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     margin: 0 0 12px;
-    width: 66.666%;
-    max-width: 66.666%;
     box-sizing: border-box;
   }
   .box { padding: 10px 12px; }
@@ -1470,7 +1468,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="12.1" aria-label="Page version 12.1">v12.1</div>
+  <div class="page-version" data-version="12.2" aria-label="Page version 12.2">v12.2</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -8001,6 +7999,11 @@ document.addEventListener("keydown", (e) => {
       closeIngestPop();
       return;
     }
+    const courseClash = document.getElementById("course-clash-pop");
+    if (courseClash && !courseClash.hidden) {
+      closeCourseClashPop({});
+      return;
+    }
     const access = document.getElementById("access-pop");
     if (access && !access.hidden) {
       closeAccessPop();
@@ -8063,6 +8066,22 @@ document.getElementById("ingest-ok").addEventListener("click", closeIngestPop);
 document.getElementById("ingest-override").addEventListener("click", runIngestOverride);
 document.getElementById("ingest-pop").addEventListener("click", (e) => {
   if (e.target.id === "ingest-pop") closeIngestPop();
+});
+document.getElementById("course-clash-apply").addEventListener("click", () => {
+  const list = document.getElementById("course-clash-list");
+  const clashes = [];
+  if (list) {
+    list.querySelectorAll("li[data-clash-id]").forEach((li) => {
+      clashes.push({ id: li.getAttribute("data-clash-id") });
+    });
+  }
+  closeCourseClashPop(readCourseClashChoices(clashes));
+});
+document.getElementById("course-clash-keep-all").addEventListener("click", () => {
+  closeCourseClashPop({});
+});
+document.getElementById("course-clash-pop").addEventListener("click", (e) => {
+  if (e.target.id === "course-clash-pop") closeCourseClashPop({});
 });
 document.getElementById("copy-fail-ok").addEventListener("click", closeCopyFailPop);
 document.getElementById("copy-fail-pop").addEventListener("click", (e) => {
