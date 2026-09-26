@@ -11,16 +11,16 @@
     --line: #d5dbe3;
     --paper: #f4f6f8;
     --card: #ffffff;
-    --navy: #1e3a5f;
-    --navy-soft: #e8eef5;
-    --done: #3b82f6;
+    --navy: #015260;
+    --navy-soft: #e5f4f6;
+    --done: #00778b;
     --out: #ef4444;
     --hot: #b42318;
     --hot-bg: #fee4e2;
     --warn: #8a5a00;
     --warn-bg: #fff3b0;
     --ok-row: #e8f5e9;
-    --progress-cell: #dbeafe;
+    --progress-cell: #d7f3f5;
     --blank: #d9dee6;
   }
   * { box-sizing: border-box; }
@@ -644,7 +644,7 @@
     user-select: none;
   }
   .manual-auth-table th.sort:hover {
-    background: #1e3a5f;
+    background: #015260;
   }
   .manual-auth-table th.sort.on::after {
     content: attr(data-dir);
@@ -1294,12 +1294,12 @@
       <ul id="brs-pop-files" class="brs-files"></ul>
       <div class="brs-actions">
         <button type="button" id="brs-pop-ack">Seen</button>
-        <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.1">Open record</a>
+        <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.2">Open record</a>
         <button type="button" id="brs-pop-close">Close</button>
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="10.8" aria-label="Page version 10.8">v10.8</div>
+  <div class="page-version" data-version="10.9" aria-label="Page version 10.9">v10.9</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.0"></script>
@@ -7194,7 +7194,7 @@ function openBrsPop(itemId, staff) {
   }).join("") : "<li>No materials on this item.</li>";
   const ack = document.getElementById("brs-pop-ack");
   ack.textContent = it.type === "read-sign" ? "Sign" : "Seen";
-  document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.1&item=" + encodeURIComponent(it.id);
+  document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.2&item=" + encodeURIComponent(it.id);
   pop.hidden = false;
 }
 function closeBrsPop() {

@@ -115,46 +115,57 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 10px;
+    gap: 12px;
+    margin-bottom: 6px;
   }
-  .logo { width: 148px; height: auto; display: block; }
-  .mast-text { text-align: right; }
+  .logo { width: 128px; height: auto; display: block; }
+  .mast-text { text-align: right; min-width: 0; }
   .co {
     margin: 0;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
-    letter-spacing: 0.045em;
+    letter-spacing: 0.04em;
     color: var(--char);
   }
   .doc-kicker {
-    margin: 4px 0 0;
+    margin: 2px 0 0;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     color: var(--teal);
   }
   .doc-title {
-    margin: 3px 0 0;
-    font-size: 13px;
+    margin: 2px 0 0;
+    font-size: 12.5px;
     font-weight: 650;
     color: var(--ink);
   }
-  .meta, .docblock {
-    display: grid;
-    gap: 6px 18px;
-    margin: 0 0 10px;
+  .page-no {
+    margin: 4px 0 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--teal-deep);
+    text-align: right;
   }
-  .meta { grid-template-columns: 1fr 1fr; }
-  .docblock { grid-template-columns: 1fr 1fr; }
+  .meta-short {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px 12px;
+    margin: 0 0 4px;
+  }
+  .meta-long {
+    display: grid;
+    gap: 2px 12px;
+    margin: 0 0 6px;
+  }
   .field { min-width: 0; }
   .field.wide { grid-column: 1 / -1; }
   .field label {
     display: block;
-    margin: 0 0 2px;
-    font-size: 10px;
+    margin: 0;
+    font-size: 9.5px;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--teal-deep);
   }
@@ -164,7 +175,7 @@
     width: 100%;
     border: 1px solid transparent;
     background: transparent;
-    padding: 3px 4px;
+    padding: 0 2px 1px;
     border-radius: 1px;
   }
   .doc-in:hover { border-color: #d7e4e7; background: #f8fbfb; }
@@ -180,7 +191,7 @@
   }
   th, td {
     border-bottom: 1px solid #e1eaec;
-    padding: 5px 8px;
+    padding: 4px 7px;
     text-align: left;
     vertical-align: middle;
   }
@@ -192,7 +203,7 @@
     letter-spacing: 0.07em;
     text-transform: uppercase;
     border-bottom: 0;
-    padding: 7px 8px;
+    padding: 5px 7px;
   }
   tbody tr:nth-child(even) { background: #f5fafb; }
   td .doc-in { padding: 2px 4px; }
@@ -224,11 +235,19 @@
     letter-spacing: 0.02em;
   }
   .endnote {
-    margin: 14px 0 0;
+    margin: 8px 0 0;
     text-align: center;
     color: var(--muted);
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.14em;
+  }
+  .official {
+    margin: 8px 0 0;
+    padding-top: 6px;
+    border-top: 1px solid var(--line);
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--ink);
   }
   .page-version {
     position: fixed;
@@ -255,8 +274,8 @@
       page-break-after: always;
     }
     .rule { margin: 0 0 8px; }
-    .mast { margin-bottom: 8px; }
-    .meta, .docblock { gap: 3px 16px; margin-bottom: 8px; }
+    .mast { margin-bottom: 4px; }
+    .meta-short, .meta-long { gap: 1px 10px; margin-bottom: 4px; }
     th, td { padding: 3px 6px; }
     body.orient-land .logo { width: 120px; }
     body.orient-land .mast { margin-bottom: 4px; }
@@ -304,14 +323,14 @@
     </div>
   </div>
   <div class="stage" id="sheets"></div>
-  <div class="page-version no-print" data-version="1.1">v1.1</div>
+  <div class="page-version no-print" data-version="1.2">v1.2</div>
   <script src="hx-shared-sync.js?v=1.0"></script>
   <script>
 (function () {
   "use strict";
   var STORE = "hx:ke-read-sign";
   var SHARED_DOC = "ke-read-sign";
-  var PER_PAGE = { port: 14, land: 8 };
+  var PER_PAGE = { port: 20, land: 11 };
 
   var SAMPLE_META = {
     distribution: "",
@@ -552,28 +571,28 @@
           '<p class="co">HONG KONG AIRCRAFT ENGINEERING CO. LTD.</p>' +
           '<p class="doc-kicker">' + (state.kind === "briefing" ? "BRIEFING RECORD" : state.kind === "read-sign" ? "READ &amp; SIGN RECORD" : "BRIEFING &amp; READ &amp; SIGN RECORD") + '</p>' +
           '<p class="doc-title">OPS002R3 · Document Maintenance and Distribution Report by Document</p>' +
+          '<p class="page-no">Page ' + pageNo + ' of ' + pageCount + '</p>' +
         '</div>' +
       '</header>' +
-      '<section class="meta">' +
+      '<section class="meta-short">' +
         field("Distribution", "distribution", false) +
-        '<div class="field"><label>Page</label><input class="doc-in" readonly value="' + pageNo + " of " + pageCount + '"></div>' +
         field("Requested by", "requestedBy", false) +
         field("Run at", "runAt", false) +
-        field("Reference no", "referenceNo", true) +
-        field("Selection criteria", "selection", true) +
         field("Print at", "printAt", false) +
-      '</section>' +
-      '<section class="docblock">' +
         field("Doc ID", "docId", false) +
         field("Publisher", "publisher", false) +
         field("Publisher reference", "publisherRef", false) +
         field("Effective date", "effective", false) +
+      '</section>' +
+      '<section class="meta-long">' +
+        field("Reference no", "referenceNo", true) +
+        field("Selection criteria", "selection", true) +
         field("Subject", "subject", true) +
       '</section>' +
       '<table><thead><tr>' +
         '<th>Section</th><th>Staff no</th><th>Name</th><th>Status</th><th>Date signed</th><th class="no-print"></th>' +
       '</tr></thead><tbody>' + body + '</tbody></table>' +
-      (last ? '<p class="endnote">END OF REPORT</p>' : '') +
+      (last ? '<p class="endnote">END OF REPORT</p><p class="official">This is an LM OCG authorised electronic version of HAECO. No additional signature is required. The information above has been verified as accurate and is this department\'s official record.</p>' : '') +
       '<footer class="sheet-foot"><span>Hong Kong Aircraft Engineering Co. Ltd.</span><span>Page ' + pageNo + ' of ' + pageCount + '</span></footer>' +
       '</article>';
   }
