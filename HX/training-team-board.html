@@ -1045,6 +1045,9 @@
   .pin-eye svg { width: 18px; height: 18px; display: block; pointer-events: none; }
   .pin-card .err { color: #b42318; font-size: 13px; margin: 0 0 8px; min-height: 1.2em; }
   .pin-card .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .pin-card .msg-line { margin: 0 0 8px; color: var(--ink, #1a1a1a); font-size: 15px; font-weight: 600; }
+  .pin-card .msg-line:last-child { margin-bottom: 12px; }
+  #msg-pop { z-index: 95; }
   button.linkish {
     font: inherit;
     font-size: 12px;
@@ -1353,7 +1356,7 @@
       <p id="brs-pop-sign-note" class="note">Materials only here. To mark Seen or Sign, use the Sign / Seen button on the outstanding row (staff PIN), or open the Briefing &amp; Read &amp; Sign page.</p>
       <ul id="brs-pop-files" class="brs-files"></ul>
       <div class="brs-actions">
-        <a id="brs-pop-brs" href="briefing-read-sign.html?v=1.7">Open Briefing &amp; Read &amp; Sign</a>
+        <a id="brs-pop-brs" href="briefing-read-sign.html?v=1.9">Open Briefing &amp; Read &amp; Sign</a>
         <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.3">Open record</a>
         <button type="button" id="brs-pop-close">Close</button>
       </div>
@@ -1401,7 +1404,17 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="11.3" aria-label="Page version 11.3">v11.3</div>
+  <div id="msg-pop" class="pin-pop" hidden>
+    <div class="pin-card" role="dialog" aria-labelledby="msg-pop-title" aria-describedby="msg-pop-body">
+      <h3 id="msg-pop-title">Notice</h3>
+      <div id="msg-pop-body"></div>
+      <div class="actions">
+        <button type="button" class="primary" id="msg-pop-ok">OK</button>
+        <button type="button" id="msg-pop-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="page-version" data-version="11.4" aria-label="Page version 11.4">v11.4</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -3787,6 +3800,41 @@ function applyBrsAck(itemId, staff) {
 }
 let brsPinCtx = null;
 let brsPinBusy = false;
+let brsMsgResolve = null;
+function closeBrsMsgPop(ok) {
+  const pop = document.getElementById("msg-pop");
+  if (pop) pop.hidden = true;
+  const fn = brsMsgResolve;
+  brsMsgResolve = null;
+  if (fn) fn(!!ok);
+}
+function showBrsMsgPop(opts) {
+  opts = opts || {};
+  return new Promise(function (resolve) {
+    if (brsMsgResolve) closeBrsMsgPop(false);
+    brsMsgResolve = resolve;
+    const title = document.getElementById("msg-pop-title");
+    const body = document.getElementById("msg-pop-body");
+    const okBtn = document.getElementById("msg-pop-ok");
+    const cancelBtn = document.getElementById("msg-pop-cancel");
+    if (title) title.textContent = opts.title || "Notice";
+    const lines = Array.isArray(opts.lines) ? opts.lines : [];
+    if (body) {
+      body.innerHTML = lines.map(function (line) {
+        return "<p class=\"msg-line\">" + esc(String(line == null ? "" : line)) + "</p>";
+      }).join("");
+    }
+    const alertMode = opts.mode === "alert";
+    if (okBtn) okBtn.textContent = opts.okLabel || (alertMode ? "OK" : "Confirm");
+    if (cancelBtn) {
+      cancelBtn.hidden = !!alertMode;
+      cancelBtn.textContent = opts.cancelLabel || "Cancel";
+    }
+    const pop = document.getElementById("msg-pop");
+    if (pop) pop.hidden = false;
+    setTimeout(function () { if (okBtn) okBtn.focus(); }, 30);
+  });
+}
 const BRS_EYE_SHOW = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>';
 const BRS_EYE_HIDE = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.3 2.3 2 3.6l3.1 3.1C3.4 8.1 2.2 9.6 1.5 10.8a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19c2 0 3.8-.6 5.3-1.5l3.1 3.1 1.3-1.3zm7.4 11.5A2.9 2.9 0 0 1 8.2 11l2.5 2.5zm1.3-6.5c.3 0 .6 0 .9.1l-1.7 1.7A3.5 3.5 0 0 0 8.5 13l-1.7 1.7A5.5 5.5 0 0 1 12 7.3zm8.6 3.5c-.5.8-1.4 2-2.7 3.1l1.4 1.4c1.5-1.3 2.6-2.8 3.2-3.7a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5c-.9 0-1.7.1-2.5.3l1.6 1.6c.3 0 .6-.1.9-.1 3.7 0 6.8 2.8 8.1 4.5z"/></svg>';
 function setBrsPinEye(btn, shown) {
@@ -6705,7 +6753,7 @@ function applyCourseStatusEvent(e) {
   if (src === "brief" || src === "rs") {
     e.preventDefault();
     e.stopPropagation();
-    window.alert("Briefing / Read & Sign status is Complete or Not started only. Use Sign / Seen with that staff PIN on this page.");
+    showBrsMsgPop({ mode: "alert", title: "Status locked", lines: ["Use Sign / Seen"] });
     paint();
     return;
   }
@@ -7552,7 +7600,7 @@ function openBrsPop(itemId, staff) {
     return "<li><a href=\"" + esc(m.href || "#") + "\" target=\"_blank\" rel=\"noopener\">" + esc(label) + "</a></li>";
   }).join("") : "<li>No materials on this item.</li>";
   const brsLink = document.getElementById("brs-pop-brs");
-  if (brsLink) brsLink.href = "briefing-read-sign.html?v=1.7#item=" + encodeURIComponent(it.id);
+  if (brsLink) brsLink.href = "briefing-read-sign.html?v=1.9#item=" + encodeURIComponent(it.id);
   document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.3&item=" + encodeURIComponent(it.id);
   pop.hidden = false;
 }
@@ -7603,6 +7651,14 @@ document.getElementById("pin-pop").addEventListener("click", (e) => {
     setBrsPinEye(eye, show);
     input.focus();
   }
+});
+document.getElementById("msg-pop-ok").addEventListener("click", () => closeBrsMsgPop(true));
+document.getElementById("msg-pop-cancel").addEventListener("click", () => closeBrsMsgPop(false));
+document.getElementById("msg-pop").addEventListener("click", (e) => {
+  if (e.target.id === "msg-pop") closeBrsMsgPop(false);
+});
+document.getElementById("msg-pop").addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { e.preventDefault(); closeBrsMsgPop(false); }
 });
 document.getElementById("pin-pop").addEventListener("input", onBrsPinFieldInput);
 document.getElementById("pin-pop").addEventListener("keydown", (e) => {

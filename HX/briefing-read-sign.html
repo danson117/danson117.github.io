@@ -112,7 +112,23 @@
   }
   .suggest li { padding: 6px 8px; cursor: pointer; }
   .suggest li:hover { background: #f4f8f9; }
-  .mat-add { display: grid; grid-template-columns: 120px 1fr auto; gap: 8px; align-items: end; }
+  .mat-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+  .mat-drop {
+    border: 2px dashed var(--teal);
+    background: #eef8f9;
+    padding: 14px 12px;
+    margin: 0 0 10px;
+    text-align: center;
+    color: var(--teal-deep);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .mat-drop.drag-over {
+    background: #d9f0f3;
+    border-color: var(--teal-deep);
+  }
+  .mat-drop .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .mat-drop input[type="file"] { display: none; }
   .row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   .page-version {
     position: fixed; right: 12px; bottom: 8px;
@@ -310,7 +326,18 @@
   .pin-eye svg { width: 18px; height: 18px; display: block; pointer-events: none; }
   .pin-card .err { color: #b42318; font-size: 13px; margin: 0 0 8px; min-height: 1.2em; }
   .pin-card .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .pin-card .msg-line { margin: 0 0 8px; color: var(--ink); font-size: 15px; font-weight: 600; }
+  .pin-card .msg-line:last-child { margin-bottom: 12px; }
+  #msg-pop { z-index: 50; }
   #vault-list { max-height: 360px; overflow: auto; }
+  .admin-block .vault .vault-search {
+    display: block;
+    width: min(360px, 100%);
+    margin: 0 0 10px;
+    font: inherit;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+  }
   .record-panel {
     background: var(--card);
     border: 1px solid var(--line);
@@ -488,7 +515,18 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="1.7">v1.7</div>
+  <div id="msg-pop" class="pin-pop" hidden>
+    <div class="pin-card" role="dialog" aria-labelledby="msg-pop-title" aria-describedby="msg-pop-body">
+      <h3 id="msg-pop-title">Notice</h3>
+      <div id="msg-pop-body"></div>
+      <div class="actions">
+        <button type="button" class="primary" id="msg-pop-ok">Confirm</button>
+        <button type="button" id="msg-pop-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-version" data-version="1.9">v1.9</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -518,6 +556,7 @@
   var pinCtx = null;
   var pinSetStaff = {};
   var pinBusy = false;
+  var msgResolve = null;
   var GATE_ROLE_KEY = "hx:hub:gate-role";
   var GATE_PW_KEY = "hx:hub:gate-pw";
   var hubRole = "view";
@@ -547,6 +586,40 @@
     var v = String(el.value || "").replace(/\D/g, "").slice(0, 6);
     if (el.value !== v) el.value = v;
     return v;
+  }
+  function closeMsgPop(ok) {
+    var pop = document.getElementById("msg-pop");
+    if (pop) pop.hidden = true;
+    var fn = msgResolve;
+    msgResolve = null;
+    if (fn) fn(!!ok);
+  }
+  function showMsgPop(opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      if (msgResolve) closeMsgPop(false);
+      msgResolve = resolve;
+      var title = document.getElementById("msg-pop-title");
+      var body = document.getElementById("msg-pop-body");
+      var okBtn = document.getElementById("msg-pop-ok");
+      var cancelBtn = document.getElementById("msg-pop-cancel");
+      if (title) title.textContent = opts.title || "Notice";
+      var lines = Array.isArray(opts.lines) ? opts.lines : [];
+      if (body) {
+        body.innerHTML = lines.map(function (line) {
+          return "<p class=\"msg-line\">" + esc(String(line == null ? "" : line)) + "</p>";
+        }).join("");
+      }
+      var alertMode = opts.mode === "alert";
+      if (okBtn) okBtn.textContent = opts.okLabel || (alertMode ? "OK" : "Confirm");
+      if (cancelBtn) {
+        cancelBtn.hidden = !!alertMode;
+        cancelBtn.textContent = opts.cancelLabel || "Cancel";
+      }
+      var pop = document.getElementById("msg-pop");
+      if (pop) pop.hidden = false;
+      setTimeout(function () { if (okBtn) okBtn.focus(); }, 30);
+    });
   }
 
   function pad(v) {
@@ -664,7 +737,7 @@
   }
   function writeLocal() {
     try { localStorage.setItem(STORE, JSON.stringify(pack())); } catch (e) {
-      window.alert("Could not save in this browser. A material file may be too large. Remove it or use a link.");
+      showMsgPop({ mode: "alert", title: "Not saved", lines: ["File too large", "Use a link"] });
     }
   }
   var schedulePush = (window.HxSharedSync && window.HxSharedSync.schedule)
@@ -761,8 +834,7 @@
           "<h2>Admin</h2>" +
           "<p class=\"note\">Visible only while this browser has HX <b>edit</b> unlock (same hub Unlock — no second password). Create or edit Briefings and Read &amp; Sign (Name List people only), delete items, clear acknowledgements, and manage the PIN vault. PINs and hashes are never shown.</p>" +
           "<div class=\"bar\">" +
-            "<button type=\"button\" class=\"primary\" id=\"btn-new-briefing\">New Briefing</button>" +
-            "<button type=\"button\" class=\"primary\" id=\"btn-new-rs\">New Read &amp; Sign</button>" +
+            "<button type=\"button\" class=\"primary\" id=\"btn-new\">New</button>" +
             "<span class=\"status\" id=\"admin-status\"></span>" +
           "</div>" +
           "<div id=\"admin-editor-wrap\"></div>" +
@@ -773,6 +845,7 @@
               "<button type=\"button\" id=\"vault-refresh\">Refresh list</button>" +
               "<span class=\"status\" id=\"vault-status\"></span>" +
             "</div>" +
+            "<input type=\"search\" id=\"vault-search\" class=\"vault-search\" placeholder=\"Search staff # or name\" autocomplete=\"off\">" +
             "<ul class=\"clean\" id=\"vault-list\"><li class=\"muted\">Click Refresh list after edit unlock.</li></ul>" +
           "</div>" +
         "</section>";
@@ -788,7 +861,7 @@
     if (!isEditUnlocked()) return;
     var it = {
       id: uid("brs"),
-      type: type === "read-sign" ? "read-sign" : "briefing",
+      type: type === "briefing" ? "briefing" : "read-sign",
       title: "",
       materials: [],
       people: []
@@ -799,7 +872,7 @@
     save();
     render();
     renderAdminEditor();
-    paintAdminStatus("Editing new " + (it.type === "read-sign" ? "Read & Sign" : "Briefing") + ".");
+    paintAdminStatus("Editing new item. Set Type if needed.");
   }
   function wireAdminOnce() {
     if (adminWired) return;
@@ -810,19 +883,31 @@
     root.addEventListener("input", onAdminInput);
     root.addEventListener("change", onAdminChange);
     root.addEventListener("keydown", onAdminKeydown);
+    root.addEventListener("dragenter", onMatDrag);
+    root.addEventListener("dragover", onMatDrag);
+    root.addEventListener("dragleave", onMatDragLeave);
+    root.addEventListener("drop", onMatDrop);
   }
   function onAdminClick(e) {
     if (!isEditUnlocked()) return;
     var btn = e.target.closest ? e.target.closest("button") : null;
     var sug = e.target.closest ? e.target.closest("[data-pick]") : null;
+    var drop = e.target.closest ? e.target.closest("[data-mat-drop]") : null;
     if (sug) {
       addPerson(sug.getAttribute("data-item"), sug.getAttribute("data-pick"));
       renderAdminEditor();
       return;
     }
+    if (drop && (!btn || !btn.dataset.addLink)) {
+      var fileInp = drop.querySelector('input[type="file"]');
+      if (fileInp && e.target !== fileInp) {
+        e.preventDefault();
+        fileInp.click();
+        return;
+      }
+    }
     if (!btn) return;
-    if (btn.id === "btn-new-briefing") { createItem("briefing"); return; }
-    if (btn.id === "btn-new-rs") { createItem("read-sign"); return; }
+    if (btn.id === "btn-new") { createItem("read-sign"); return; }
     if (btn.id === "vault-refresh") { refreshVault(); return; }
     if (btn.dataset.adminEdit) {
       adminEditId = btn.dataset.adminEdit;
@@ -853,12 +938,15 @@
       return;
     }
     if (btn.dataset.delItem) {
-      if (!window.confirm("Delete this briefing / read & sign item?")) return;
-      doc.items = doc.items.filter(function (x) { return x.id !== btn.dataset.delItem; });
-      if (adminEditId === btn.dataset.delItem) adminEditId = "";
-      save();
-      render();
-      renderAdminEditor();
+      var delId = btn.dataset.delItem;
+      showMsgPop({ mode: "confirm", title: "Delete item", lines: ["Confirm delete"] }).then(function (ok) {
+        if (!ok) return;
+        doc.items = doc.items.filter(function (x) { return x.id !== delId; });
+        if (adminEditId === delId) adminEditId = "";
+        save();
+        render();
+        renderAdminEditor();
+      });
       return;
     }
     if (btn.dataset.delMat) {
@@ -892,6 +980,10 @@
   function onAdminInput(e) {
     if (!isEditUnlocked()) return;
     var t = e.target;
+    if (t && t.id === "vault-search") {
+      renderVaultList();
+      return;
+    }
     if (t.dataset && t.dataset.title) {
       var it = itemById(t.dataset.title);
       if (!it) return;
@@ -922,10 +1014,65 @@
     t.value = "";
     renderAdminEditor();
   }
+  function matDropZone(el) {
+    return el && el.closest ? el.closest("[data-mat-drop]") : null;
+  }
+  function onMatDrag(e) {
+    var zone = matDropZone(e.target);
+    if (!zone || !isEditUnlocked()) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+    zone.classList.add("drag-over");
+  }
+  function onMatDragLeave(e) {
+    var zone = matDropZone(e.target);
+    if (!zone) return;
+    var related = e.relatedTarget;
+    if (related && zone.contains(related)) return;
+    zone.classList.remove("drag-over");
+  }
+  function extractDropUrl(dt) {
+    if (!dt) return "";
+    var uri = "";
+    try {
+      uri = String(dt.getData("text/uri-list") || "").split(/\r?\n/).filter(function (l) {
+        return l && l.charAt(0) !== "#";
+      })[0] || "";
+    } catch (err) {}
+    if (uri) return uri.trim();
+    try {
+      var plain = String(dt.getData("text/plain") || "").trim();
+      if (/^https?:\/\//i.test(plain) || /^mailto:/i.test(plain)) return plain;
+    } catch (err2) {}
+    return "";
+  }
+  function onMatDrop(e) {
+    var zone = matDropZone(e.target);
+    if (!zone || !isEditUnlocked()) return;
+    e.preventDefault();
+    e.stopPropagation();
+    zone.classList.remove("drag-over");
+    var itemId = zone.getAttribute("data-mat-drop");
+    if (!itemId) return;
+    var dt = e.dataTransfer;
+    var files = dt && dt.files ? dt.files : null;
+    if (files && files.length) {
+      var file = files[0];
+      addFile(itemId, file).then(function () { renderAdminEditor(); });
+      return;
+    }
+    var url = extractDropUrl(dt);
+    if (url) {
+      addLink(itemId, url);
+      renderAdminEditor();
+    }
+  }
   async function onVaultReset(btn) {
     var staff = pad(btn.getAttribute("data-pin-reset"));
     if (!staff) return;
-    if (!window.confirm("Reset PIN for staff " + staff + "? Next sign will use the staff number, then force a new 6-digit PIN. The current PIN is never shown.")) return;
+    var ok = await showMsgPop({ mode: "confirm", title: "Reset PIN", lines: [staff, "Default PIN"] });
+    if (!ok) return;
     try {
       if (!(await ensureAdminPassword())) return;
       await window.HxSharedSync.pinAdminReset(staff);
@@ -968,13 +1115,14 @@
           "<input id=\"title-" + esc(it.id) + "\" type=\"text\" data-title=\"" + esc(it.id) + "\" value=\"" + esc(it.title || "") + "\" placeholder=\"Course or notice name\"></div>" +
       "</div>" +
       "<h2>Materials</h2><ul class=\"clean\">" + mats + "</ul>" +
+      "<div class=\"mat-drop\" data-mat-drop=\"" + esc(it.id) + "\" tabindex=\"0\" role=\"button\" aria-label=\"Add material\">" +
+        "Drop a Word, Excel, or PDF file here, or drop a link.<div class=\"hint\">Click to choose a file. Max about 900 KB for embedded files.</div>" +
+        "<input type=\"file\" data-file=\"" + esc(it.id) + "\" accept=\".pdf,.doc,.docx,.xls,.xlsx,.csv,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\">" +
+      "</div>" +
       "<div class=\"mat-add\">" +
-        "<div><label>Kind</label><select data-kind=\"" + esc(it.id) + "\">" +
-          "<option value=\"pdf\">PDF</option><option value=\"word\">Word</option><option value=\"excel\">Excel</option><option value=\"link\">Link</option>" +
-        "</select></div>" +
-        "<div><label>File or link</label><input type=\"text\" data-link=\"" + esc(it.id) + "\" placeholder=\"Paste a link, then Add link\">" +
-          "<button type=\"button\" data-add-link=\"" + esc(it.id) + "\">Add link</button></div>" +
-        "<div><label>&nbsp;</label><input type=\"file\" data-file=\"" + esc(it.id) + "\" accept=\".pdf,.doc,.docx,.xls,.xlsx,.csv\"></div>" +
+        "<div class=\"grow\"><label for=\"link-" + esc(it.id) + "\">Or add a link</label>" +
+          "<input id=\"link-" + esc(it.id) + "\" type=\"url\" data-link=\"" + esc(it.id) + "\" placeholder=\"https://…\" autocomplete=\"off\"></div>" +
+        "<div><label>&nbsp;</label><button type=\"button\" data-add-link=\"" + esc(it.id) + "\">Add link</button></div>" +
       "</div>" +
       "<h2>People</h2>" +
       "<div class=\"suggest\"><label>Name List</label>" +
@@ -992,7 +1140,7 @@
       var on = it.id === adminEditId ? " class=\"on\"" : "";
       return "<button type=\"button\" data-admin-edit=\"" + esc(it.id) + "\"" + on + ">" +
         esc(it.type === "read-sign" ? "R&S" : "Brief") + " · " + esc(itemLabel(it)) + "</button>";
-    }).join("") || "<span class=\"muted\">No items yet. Use New Briefing or New Read &amp; Sign.</span>";
+    }).join("") || "<span class=\"muted\">No items yet. Use New, then set Type.</span>";
     var ed = "";
     var it = adminEditId ? itemById(adminEditId) : null;
     if (it) ed = editorHtml(it);
@@ -1369,6 +1517,14 @@
       input.focus();
     }
   });
+  document.getElementById("msg-pop-ok").onclick = function () { closeMsgPop(true); };
+  document.getElementById("msg-pop-cancel").onclick = function () { closeMsgPop(false); };
+  document.getElementById("msg-pop").addEventListener("click", function (e) {
+    if (e.target.id === "msg-pop") closeMsgPop(false);
+  });
+  document.getElementById("msg-pop").addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); closeMsgPop(false); }
+  });
   document.getElementById("pin-pop").addEventListener("input", onPinFieldInput);
   document.getElementById("pin-pop").addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
@@ -1403,7 +1559,7 @@
     var it = itemById(itemId);
     var who = byStaff[pad(staff)];
     if (!it || !who) {
-      window.alert("That staff number is not on the Name List, so they were not added.");
+      showMsgPop({ mode: "alert", title: "Not added", lines: ["Not on Name List"] });
       return;
     }
     if ((it.people || []).some(function (p) { return p.staff === who.staff; })) return;
@@ -1436,16 +1592,14 @@
   }
   function addFile(itemId, file) {
     if (!isEditUnlocked()) return Promise.resolve();
+    if (!file) return Promise.resolve();
     var kind = kindOfFile(file.name);
-    var sel = document.querySelector('#brs-admin [data-kind="' + itemId + '"]') ||
-      document.querySelector('[data-kind="' + itemId + '"]');
-    if (sel && sel.value !== "link") kind = sel.value;
-    if (!kind || kind === "link") {
-      window.alert("This file was not added. Choose Word, Excel, or PDF.");
+    if (!kind) {
+      showMsgPop({ mode: "alert", title: "Not added", lines: ["Word, Excel, or PDF"] });
       return Promise.resolve();
     }
     if (file.size > 900000) {
-      window.alert("This file was not added. It is over 900 KB. Paste a link instead.");
+      showMsgPop({ mode: "alert", title: "Not added", lines: ["Over 900 KB", "Use a link"] });
       return Promise.resolve();
     }
     return new Promise(function (resolve) {
@@ -1471,11 +1625,20 @@
   function renderVaultList() {
     var ul = document.getElementById("vault-list");
     if (!ul || !isEditUnlocked()) return;
+    var qEl = document.getElementById("vault-search");
+    var needle = String((qEl && qEl.value) || "").trim().toLowerCase();
     var rows = roster.slice().sort(function (a, b) {
       return a.staff.localeCompare(b.staff) || a.name.localeCompare(b.name);
     });
+    if (needle) {
+      rows = rows.filter(function (p) {
+        return p.staff.indexOf(needle) >= 0 || String(p.name || "").toLowerCase().indexOf(needle) >= 0;
+      });
+    }
     if (!rows.length) {
-      ul.innerHTML = "<li class=\"muted\">No Name List people loaded.</li>";
+      ul.innerHTML = needle
+        ? "<li class=\"muted\">No match.</li>"
+        : "<li class=\"muted\">No Name List people loaded.</li>";
       return;
     }
     ul.innerHTML = rows.map(function (p) {
