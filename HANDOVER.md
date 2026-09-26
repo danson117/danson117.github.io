@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- Training One View：刪底部長說明（`.why`）；ingest／Status／sync 邏輯不變。TOV **v12.5**、`hx.html` **v11.7**。GitHub 後備。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - BRS item number：自動號＝已確認列表同年月最大 suffix + 1（BF／RS 共用）；欄可改；Add item 擋重複。BRS **v2.8**、`hx-rules` **v5.4**、`hx.html` **v11.6**。GitHub 後備。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）

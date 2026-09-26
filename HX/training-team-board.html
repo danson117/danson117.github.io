@@ -39,13 +39,10 @@
   .page { max-width: 1380px; margin: 0 auto; padding: 18px 16px 72px; }
   h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); font-weight: 700; }
   .subtitle { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
-  .why, .box, .stat, .detail {
+  .box, .stat, .detail {
     border: 1px solid var(--line);
     background: var(--card);
   }
-  .why { padding: 10px 12px; margin: 12px 0 0; }
-  .why p { margin: 0 0 6px; }
-  .why p:last-child { margin: 0; }
   .tabs, .toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 10px; }
   .filter-bar {
     display: flex;
@@ -1291,10 +1288,6 @@
       </table>
     </div>
     <div id="detail" class="detail hidden"></div>
-    <div class="why write-zone" hidden>
-      <p>This trial pulls <b>UAL CBT</b>, <b>CT Reminder</b>, and <b>Outstanding Mandatory Training</b> into one board, plus <b>Manual</b> rows from <b>Add course</b>. <b>Status</b>, <b>Remark</b>, and <b>Manual</b> auto-save in this browser. After Unlock with the hub password, each change also syncs immediately through a locked server path (no per-browser sync-key paste). <b>UAL CBT email</b>, <b>CT Reminder</b> CSV (more than one file is OK), and <b>Mandatory</b> xlsx/CSV uploads sync the same way — every open board sees them via the ~5s poll (view and edit). Open boards poll that path about every 5 seconds so other windows update without refresh. Else, when a GitHub token is stored, each change auto-pushes <code>HX/team-board-actions.json</code>. No daily Keep Status click. Anon cannot write staff Status. Sources can be multi-selected (All = all four). Drop the LM mandatory xlsx / CSV; only Name List (OCG) staff stay on the board. <b>Course List</b> is stored on its own — loading CT / Mandatory / UAL does not delete or replace those records. Code-only CSV rows take the course name from Course List. Same code with a different name (or same name with a different code) pops up to choose Course List vs CSV — no silent overwrite. Matching pairs use the stored Course List name. If Mandatory has a Course Code and no Course Name, the name comes from <b>Course List</b> / CT / UAL. <b>OCG / CG / PAX</b> tabs and <b>Other / Team 1–4</b> columns use the current Name List. <b>LTW1–4</b> count as Team 1–4. On the team list header, <b>All / Certifiers (LTW1–4) / Mechanics (other sections)</b> filter by section. A person is CG or PAX only. OCG = CG + PAX. PAX = Crew List (including FLS / RF). Staff # is 6 digits. Manual courses stay in this browser and can be removed from the course card. <b>Ingest reject:</b> if the parser cannot recognize a row or cannot finish a required step, a popup rejects the <i>entire</i> file — previous data stays. Unlock is still required to ingest.</p>
-      <p><b>%</b> = people in that tab + team who are <i>not</i> on the outstanding / overdue list. Each PIC cell shows <b>98% (xx/yy) 6 left</b> — xx = clear of this item, yy = roster for that tab + team, left = still outstanding. The PIC training-item grid starts <b>collapsed</b> (Other / Team 1–4 headers only); use <b>Show training items</b> to expand. Open/closed is remembered in this browser. PIC item rows stay <b>most outstanding first</b>. Click <b>Training item</b> to sort by name. Table and Details people follow <b>Team 1–4</b> top to bottom, then <b>section + crew</b> (Team n: LTA<i>n</i> then other LTA, then crew). Other / TBD (office sections such as LGC1) sit after Team 4. Click a people-list column to override. Course rows inside one person stay remaining / due order. With no team selected, the list below shows <b>all outstanding people</b>. Click <b>Other / Team 1–4</b> to narrow to that team. Team is 1–4 or <b>TBD</b>. Row colors use remaining days for UAL / CT / Mandatory / Manual: <b>Overdue or will expire</b> (pink) = remaining ≤30 days; <b>Coming due</b> (yellow) = remaining &gt;30 and ≤90 days; remaining &gt;90 has no due-color. <b>Completed</b> clears that course from the PIC board and from Table / Details. When every course for a person is <b>Completed</b>, their name drops off Details. <b>In Progress</b> blues the Status cell only. <b>Add course</b> accepts a staff # or an Authorization group code (e.g. Operator <b>D0</b>) to select matching CS from the Authorization List, with +/− before one course + expire date for all. <b>Table</b> is the people list — click a row for that person’s course card (this browser only). <b>Details</b> stacks the same course card for every visible person (Section + Crew · Staff # · Name, with course count on the right) for capture / print. Course tables end with <b>Remark</b> (last column; stays with Status). Click a PIC cell for one course.</p>
-    </div>
   </div>
   <div id="course-pop" class="pop hidden" hidden>
     <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="course-pop-title">
@@ -1479,7 +1472,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="12.4" aria-label="Page version 12.4">v12.4</div>
+  <div class="page-version" data-version="12.5" aria-label="Page version 12.5">v12.5</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1852,7 +1845,6 @@ function applyWriteAccess() {
     let show = unlocked;
     if (el.classList.contains("load")) show = canIngest;
     else if (el.id === "add-course") show = canManual;
-    else if (el.classList.contains("why")) show = !!(lv && lv.owner);
     el.hidden = !show;
     el.setAttribute("aria-hidden", show ? "false" : "true");
   });
