@@ -178,11 +178,23 @@
     flex-direction: column;
     gap: 8px;
   }
+  .action-log-list ul {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0 0 0 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-left: 2px solid var(--line);
+  }
   .action-log-list li {
     border: 1px solid var(--line);
     background: #f8fafc;
     padding: 8px 10px;
     font-size: 12.5px;
+  }
+  .action-log-list ul li {
+    background: #f1f5f9;
   }
   .action-log-list .log-meta {
     color: var(--muted);
@@ -1224,7 +1236,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="9.4" aria-label="Page version 9.4">v9.4</div>
+  <div class="page-version" data-version="9.5" aria-label="Page version 9.5">v9.5</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=6"></script>
@@ -4773,6 +4785,98 @@ function closeActionLogPop() {
   pop.classList.add("hidden");
   pop.hidden = true;
 }
+function manualRowsFromLogSnap(snap) {
+  if (!snap || typeof snap !== "object") return [];
+  if (Array.isArray(snap.rows)) return snap.rows;
+  if (snap.row && typeof snap.row === "object") return [snap.row];
+  return [];
+}
+function manualLogSubjectKey(entry) {
+  if (!entry) return "";
+  const kind = entry.kind === "undo" ? (entry.targetKind || "") : entry.kind;
+  if (kind !== "manual-add" && kind !== "manual-remove") return "";
+  const rows = manualRowsFromLogSnap(entry.before).concat(manualRowsFromLogSnap(entry.after));
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || typeof r !== "object") continue;
+    const staff = padStaff(r.staff || r.uid || "");
+    const code = String(r.code || "").trim().toUpperCase();
+    const exp = String(r.exp || r.expire || r.due || "").trim();
+    if (staff && code) return staff + "|" + code + "|" + exp;
+  }
+  return "";
+}
+function entryTouchesManualKey(entry, key) {
+  if (!entry || !key) return false;
+  const kind = entry.kind === "undo" ? (entry.targetKind || "") : entry.kind;
+  if (kind !== "manual-add" && kind !== "manual-remove") return false;
+  const rows = manualRowsFromLogSnap(entry.before).concat(manualRowsFromLogSnap(entry.after));
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || typeof r !== "object") continue;
+    const staff = padStaff(r.staff || r.uid || "");
+    const code = String(r.code || "").trim().toUpperCase();
+    const exp = String(r.exp || r.expire || r.due || "").trim();
+    if (staff + "|" + code + "|" + exp === key) return true;
+  }
+  return false;
+}
+function actionLogParentId(entry, byId) {
+  if (!entry || !byId) return "";
+  if (entry.undoOf && byId.has(entry.undoOf)) return entry.undoOf;
+  if (entry.kind !== "manual-remove") return "";
+  const key = manualLogSubjectKey(entry);
+  if (!key) return "";
+  // actionLog is newest-first; walk oldest→newest for the first Add of this staff+course+exp
+  for (let i = actionLog.length - 1; i >= 0; i--) {
+    const e = actionLog[i];
+    if (!e || e.id === entry.id) continue;
+    if (e.kind !== "manual-add") continue;
+    if (entryTouchesManualKey(e, key)) return e.id;
+  }
+  return "";
+}
+function buildActionLogTree() {
+  const byId = new Map();
+  actionLog.forEach((e) => { if (e && e.id) byId.set(e.id, e); });
+  const children = new Map();
+  const rooted = new Set();
+  actionLog.forEach((e) => {
+    if (!e || !e.id) return;
+    const pid = actionLogParentId(e, byId);
+    if (!pid || pid === e.id) return;
+    if (!children.has(pid)) children.set(pid, []);
+    children.get(pid).push(e);
+    rooted.add(e.id);
+  });
+  children.forEach((list) => {
+    list.sort((a, b) => String(a.at || "").localeCompare(String(b.at || "")));
+  });
+  const roots = actionLog.filter((e) => e && e.id && !rooted.has(e.id));
+  return { roots: roots, children: children };
+}
+function paintActionLogEntryHtml(e, childrenMap) {
+  const can = canUndoActionEntry(e);
+  const note = e.undone
+    ? "<p class=\"log-note\"><span class=\"badge-undone\">Undone</span></p>"
+    : (e.undoNote ? "<p class=\"log-note\">" + esc(e.undoNote) + "</p>" : "");
+  const btn = can
+    ? "<button type=\"button\" data-log-undo=\"" + esc(e.id) + "\">Undo</button>"
+    : (e.undoable && !e.undone && !hasPerm(e.perm)
+      ? "<span class=\"badge-undone\">No permission to undo</span>"
+      : "");
+  const kids = (childrenMap && childrenMap.get(e.id)) || [];
+  const nested = kids.length
+    ? "<ul>" + kids.map((c) => paintActionLogEntryHtml(c, childrenMap)).join("") + "</ul>"
+    : "";
+  return "<li class=\"" + (e.undone ? "log-undone" : "") + "\">" +
+    "<div class=\"log-meta\">" + esc(e.who) + " · " + esc(fmtActionLogWhen(e.at)) + "</div>" +
+    "<p class=\"log-what\">" + esc(e.what) + "</p>" +
+    note +
+    "<div class=\"log-actions\">" + btn + "</div>" +
+    nested +
+    "</li>";
+}
 function paintActionLogList() {
   const list = document.getElementById("action-log-list");
   const empty = document.getElementById("action-log-empty");
@@ -4783,23 +4887,8 @@ function paintActionLogList() {
     return;
   }
   if (empty) empty.hidden = true;
-  list.innerHTML = actionLog.map((e) => {
-    const can = canUndoActionEntry(e);
-    const note = e.undone
-      ? "<p class=\"log-note\"><span class=\"badge-undone\">Undone</span></p>"
-      : (e.undoNote ? "<p class=\"log-note\">" + esc(e.undoNote) + "</p>" : "");
-    const btn = can
-      ? "<button type=\"button\" data-log-undo=\"" + esc(e.id) + "\">Undo</button>"
-      : (e.undoable && !e.undone && !hasPerm(e.perm)
-        ? "<span class=\"badge-undone\">No permission to undo</span>"
-        : "");
-    return "<li class=\"" + (e.undone ? "log-undone" : "") + "\">" +
-      "<div class=\"log-meta\">" + esc(e.who) + " · " + esc(fmtActionLogWhen(e.at)) + "</div>" +
-      "<p class=\"log-what\">" + esc(e.what) + "</p>" +
-      note +
-      "<div class=\"log-actions\">" + btn + "</div>" +
-      "</li>";
-  }).join("");
+  const tree = buildActionLogTree();
+  list.innerHTML = tree.roots.map((e) => paintActionLogEntryHtml(e, tree.children)).join("");
 }
 function openActionLogPop() {
   paintActionLogList();
