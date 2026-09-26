@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- 更正 `63e7020`：D0→KE 只係 placeholder／hint 例子（`236051 or KE`）；唔再預填 Requested by／開 BRS item 唔 force Publisher=KE（返 Briefing／Read & Sign；Requested by 空）。KE sample Requested by 返 `350885`。TOV **v11.7**、BRS **v2.2**、record **v1.5**、`hx.html` **v10.96**。GitHub 後備。冇改 Name List／PIN。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - HX UI defaults：staff # placeholder／Requested by 預設 `236051`；printable record Publisher（Airline）預設 `KE`（開 BRS item 時都係 KE）。Training One View **v11.6**、Briefing & Read & Sign **v2.1**、record **v1.4**、`hx.html` **v10.95**。GitHub 後備。冇改 Name List／PIN。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）

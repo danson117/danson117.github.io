@@ -323,7 +323,7 @@
     </div>
   </div>
   <div class="stage" id="sheets"></div>
-  <div class="page-version no-print" data-version="1.4">v1.4</div>
+  <div class="page-version no-print" data-version="1.5">v1.5</div>
   <script src="hx-shared-sync.js?v=1.3"></script>
   <script>
 (function () {
@@ -334,7 +334,7 @@
 
   var SAMPLE_META = {
     distribution: "",
-    requestedBy: "236051",
+    requestedBy: "350885",
     referenceNo: "OPS002R3 Document Maintenance and Distribution Report by Document",
     selection: "( ( [Publisher] = 'ke' ) and ( DocumentID = '58257' ))",
     runAt: "22/09/2026 16:41:59",
@@ -458,11 +458,11 @@
     state.kind = it.type === "read-sign" ? "read-sign" : "briefing";
     state.meta = clone(SAMPLE_META);
     state.meta.subject = it.title || "";
-    state.meta.publisher = "KE";
-    state.meta.publisherRef = state.kind === "read-sign" ? "Read & Sign" : "Briefing";
+    state.meta.publisher = state.kind === "read-sign" ? "Read & Sign" : "Briefing";
+    state.meta.publisherRef = state.meta.publisher;
     state.meta.docId = "";
     state.meta.referenceNo = it.title || "";
-    state.meta.requestedBy = "236051";
+    state.meta.requestedBy = "";
     state.meta.distribution = "";
     state.meta.selection = "";
     state.rows = (it.people || []).map(function (p) {

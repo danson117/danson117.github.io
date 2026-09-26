@@ -1173,7 +1173,7 @@
         <div class="add-course-grid">
           <div class="typeahead-wrap">
             <label for="manual-staff">Staff # / Auth group</label>
-            <input id="manual-staff" type="text" maxlength="16" placeholder="236051 or D0" required autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="staff-suggest" aria-expanded="false">
+            <input id="manual-staff" type="text" maxlength="16" placeholder="236051 or KE" required autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="staff-suggest" aria-expanded="false">
             <ul id="staff-suggest" class="typeahead" hidden role="listbox" aria-label="Staff and auth group suggestions"></ul>
           </div>
           <div class="typeahead-wrap">
@@ -1234,7 +1234,7 @@
           <div id="manual-auth-list" class="manual-auth-table-wrap" aria-label="Selected certifying staff"></div>
         </div>
       </form>
-      <p class="note" id="manual-hint">Type a staff # (Name List autofill) or an Authorization group code such as <b>D0</b> (Operator) to select every matching CS, then +/− edit the list. One course code and one expire date apply to the whole set. This browser only. Source: Manual.</p>
+      <p class="note" id="manual-hint">Type a staff # (Name List autofill) or an Authorization group code such as <b>KE</b> (Operator) to select every matching CS, then +/− edit the list. One course code and one expire date apply to the whole set. This browser only. Source: Manual.</p>
     </div>
     <div id="detail" class="detail hidden"></div>
     <div class="why write-zone" hidden>
@@ -1414,7 +1414,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="11.6" aria-label="Page version 11.6">v11.6</div>
+  <div class="page-version" data-version="11.7" aria-label="Page version 11.7">v11.7</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -6062,7 +6062,7 @@ function fillManualFromRoster() {
 function addManualAuthStaff() {
   if (!requirePerm("manual")) return;
   if (!manualAuthPick) {
-    setManualHint("Enter an Authorization group code first (e.g. D0).");
+    setManualHint("Enter an Authorization group code first (e.g. KE).");
     return;
   }
   const inp = document.getElementById("manual-auth-add-staff");
@@ -6617,7 +6617,7 @@ function addManualCourse() {
   }
   const rawStaff = String(document.getElementById("manual-staff").value || "").trim();
   if (!/^\d{5,6}$/.test(rawStaff)) {
-    setManualHint("Staff # must be 5–6 digits, or use an Authorization group code such as D0.");
+    setManualHint("Staff # must be 5–6 digits, or use an Authorization group code such as KE.");
     return;
   }
   const staff = padStaff(rawStaff);
