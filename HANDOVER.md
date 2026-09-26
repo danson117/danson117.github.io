@@ -10,6 +10,12 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- Briefing & Read & Sign **合併**：hub 只留 `#brs`（`briefing-read-sign.html` **v1.5**）。板面＋dashboard＋printable record（iframe `ke-read-sign-record.html` **v1.3**）同一頁。`#ke-rs` alias → `#brs`。獨立檔同 `?item=` 仍可用。
+- Dashboard：Briefings not complete、Read & Sign not complete、Outstanding people（只未做完 Name List 人＋item）、Items complete；全齊＝綠。PIN eye／default hint／6 位 auto-confirm／Confirm 標籤保留。
+- `hx.html` **v10.89**、`hx-rules` **v4.5**（紅字）、`links` **v2.8**、README。GitHub 後備。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - Briefing & Read & Sign **v1.4**：PIN 對話加 eye（Show／Hide PIN）、未設自訂時顯示 default＝staff # 提示、滿 6 位即核對／改 PIN 兩邊一致即存；按鈕改 **Confirm**。`hx-shared-sync.js` **v1.2** 加 `pinStatus`。Edge `team-board` **v6** 加公開 `/pin/status`（只回 set／unset）。Training One View Status 規則同 hash 存放未改。`hx.html` **v10.88**、`?v=1.4`。GitHub 後備；Supabase Edge 已部署。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）

@@ -212,8 +212,66 @@
     border: 0;
     background: #fff;
   }
+  .dash {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 12px;
+  }
+  .dash .stat {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 8px 10px;
+  }
+  .dash .stat b {
+    display: block;
+    font-size: 20px;
+    color: var(--teal-deep);
+    line-height: 1.2;
+  }
+  .dash .stat span { color: var(--muted); font-size: 12px; }
+  .dash.is-clear .stat {
+    background: var(--ok-bg);
+    border-color: #b7dfc8;
+  }
+  .dash.is-clear .stat b { color: var(--ok); }
+  .dash.is-hot .stat.hot {
+    background: var(--out-bg);
+    border-color: #f0d7c4;
+  }
+  .dash.is-hot .stat.hot b { color: var(--out); }
+  .out-people {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 10px 12px 12px;
+    margin: 0 0 14px;
+  }
+  .out-people.is-clear {
+    background: var(--ok-bg);
+    border-color: #b7dfc8;
+  }
+  .out-people h2 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .out-people .note { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
+  .out-people ul.clean { max-height: 220px; overflow: auto; }
+  .out-people .who button.linkish {
+    border: 0;
+    background: none;
+    padding: 0;
+    color: var(--teal);
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+  }
   @media (max-width: 720px) {
     .mat-add { grid-template-columns: 1fr; }
+    .dash { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -231,6 +289,17 @@
       <button type="button" id="btn-record-sample" title="Open KE sample printable record on this page">Printable record (KE sample)</button>
       <span class="status" id="sync-status"></span>
     </div>
+    <div class="dash" id="dash" aria-live="polite">
+      <div class="stat hot"><b id="n-brief-out">0</b><span>Briefings not complete</span></div>
+      <div class="stat hot"><b id="n-rs-out">0</b><span>Read &amp; Sign not complete</span></div>
+      <div class="stat hot"><b id="n-people-out">0</b><span>Outstanding people</span></div>
+      <div class="stat"><b id="n-done">0</b><span>Items complete</span></div>
+    </div>
+    <section class="out-people" id="out-people" aria-labelledby="out-people-h">
+      <h2 id="out-people-h">Outstanding people</h2>
+      <p class="note" id="out-people-note">Name List people who still have at least one open Briefing or Read &amp; Sign on this page.</p>
+      <ul class="clean" id="out-people-list"><li class="muted">No outstanding people.</li></ul>
+    </section>
     <div id="list"></div>
 
     <section class="record-panel" id="record-panel" aria-labelledby="record-heading">
@@ -384,6 +453,82 @@
     if (!n) return "draft";
     return leftCount(it) === 0 ? "done" : "out";
   }
+  function itemLabel(it) {
+    var t = String(it.title || "").trim();
+    if (t) return t;
+    return it.type === "read-sign" ? "Read & Sign" : "Briefing";
+  }
+  function paintDash() {
+    var briefOut = 0;
+    var rsOut = 0;
+    var done = 0;
+    var byPerson = {};
+    (doc.items || []).forEach(function (it) {
+      var ph = phase(it);
+      if (ph === "done") done += 1;
+      if (ph === "out") {
+        if (it.type === "read-sign") rsOut += 1;
+        else briefOut += 1;
+      }
+      (it.people || []).forEach(function (p) {
+        if (p.ack) return;
+        var staff = pad(p.staff);
+        if (!staff || !byStaff[staff]) return;
+        if (!byPerson[staff]) {
+          byPerson[staff] = {
+            staff: staff,
+            name: byStaff[staff].name || p.name || "",
+            section: byStaff[staff].section || p.section || "",
+            items: []
+          };
+        }
+        byPerson[staff].items.push({ id: it.id, title: itemLabel(it), type: it.type === "read-sign" ? "Read & Sign" : "Briefing" });
+      });
+    });
+    var people = Object.keys(byPerson).map(function (k) { return byPerson[k]; })
+      .sort(function (a, b) {
+        return a.name.localeCompare(b.name) || a.staff.localeCompare(b.staff);
+      });
+    var nPeople = people.length;
+    var clear = briefOut === 0 && rsOut === 0 && nPeople === 0;
+    var dash = document.getElementById("dash");
+    if (dash) {
+      dash.classList.toggle("is-clear", clear);
+      dash.classList.toggle("is-hot", !clear && (briefOut + rsOut + nPeople) > 0);
+    }
+    var set = function (id, n) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = String(n);
+    };
+    set("n-brief-out", briefOut);
+    set("n-rs-out", rsOut);
+    set("n-people-out", nPeople);
+    set("n-done", done);
+    var box = document.getElementById("out-people");
+    var note = document.getElementById("out-people-note");
+    var ul = document.getElementById("out-people-list");
+    if (box) box.classList.toggle("is-clear", clear);
+    if (note) {
+      note.textContent = clear
+        ? "All assigned people are done. Items with people turn green when complete."
+        : "Name List people who still have at least one open Briefing or Read & Sign on this page.";
+    }
+    if (ul) {
+      if (!people.length) {
+        ul.innerHTML = "<li class=\"muted\">No outstanding people.</li>";
+      } else {
+        ul.innerHTML = people.map(function (p) {
+          var items = p.items.map(function (x) {
+            return "<button type=\"button\" class=\"linkish\" data-jump-item=\"" + esc(x.id) + "\">" +
+              esc(x.type) + " · " + esc(x.title) + "</button>";
+          }).join(" · ");
+          return "<li><span class=\"who\"><b>" + esc(p.staff) + "</b> " + esc(p.name) +
+            " <span class=\"muted\">" + esc(p.section || "") + "</span><br>" + items +
+            "</span></li>";
+        }).join("");
+      }
+    }
+  }
   function pack() {
     return {
       v: 1,
@@ -449,6 +594,7 @@
     document.getElementById("flt-all").classList.toggle("on", filter === "all");
     document.getElementById("flt-out").classList.toggle("on", filter === "out");
     document.getElementById("flt-done").classList.toggle("on", filter === "done");
+    paintDash();
     var items = doc.items.filter(function (it) {
       var ph = phase(it);
       if (filter === "out") return ph === "out";
@@ -731,6 +877,15 @@
   document.getElementById("btn-record-sample").onclick = function () { loadRecord("", true); };
   document.getElementById("btn-record-blank").onclick = function () { loadRecord("", true); };
   document.getElementById("btn-record-reload").onclick = function () { loadRecord(recordItemId, true); };
+  document.getElementById("out-people").addEventListener("click", function (e) {
+    var jump = e.target.closest ? e.target.closest("[data-jump-item]") : null;
+    if (!jump) return;
+    var id = jump.getAttribute("data-jump-item");
+    filter = "all";
+    render();
+    var node = document.getElementById("item-" + id);
+    if (node) node.scrollIntoView({ block: "start", behavior: "smooth" });
+  });
 
   document.getElementById("list").addEventListener("input", function (e) {
     var t = e.target;
@@ -1007,6 +1162,13 @@
 
   loadLocal();
   render();
+  paintRecordStatus();
+  if (/^#record/i.test(location.hash || "") || /[?&]record=1(?:&|$)/.test(location.search || "")) {
+    setTimeout(function () {
+      var panel = document.getElementById("record-panel");
+      if (panel) panel.scrollIntoView({ block: "start" });
+    }, 80);
+  }
   window.HxSharedSync && window.HxSharedSync.syncDoc(SHARED, {
     getLocal: function () { return pack(); },
     localEmpty: function (d) { return !(d && Array.isArray(d.items) && d.items.length); },
