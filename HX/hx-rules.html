@@ -209,6 +209,7 @@
       <ul>
         <li>而家起 UAL／CT／Mandatory 上載全機同步。舊「ignore」只係唔好特登帶舊檔。</li>
         <li>Mandatory 只留 Name List（OCG）staff。Course 缺名時跟 Course List／CT／UAL。</li>
+        <li><span class="key">新 · BRS item number 自動申請</span>：Briefing＝<code>BF</code>＋年份月份＋兩位序號（例 <code>BF20260901</code>）；Read &amp; Sign＝<code>RS</code>＋同年月＋兩位。新建自動出號；刪咗唔重用（<code>issued</code> 計數留喺共用 doc）；人唔可以改 item number。改 Type 會出新 prefix 嘅號，舊號仍然佔用。詳見 Briefing &amp; Read &amp; Sign 頁。</li>
         <li><span class="key">新 · Briefing &amp; Read &amp; Sign 合併</span>：hub 只留一個主題 <code>#brs</code>（板面＋printable record 同一頁）。舊 hash <code>#ke-rs</code> 自動 alias 去 <code>#brs</code>。獨立檔 <code>briefing-read-sign.html</code>／<code>ke-read-sign-record.html</code>（含 <code>?item=</code>）仍然可用。頁頂 dashboard：Briefings not complete、Read &amp; Sign not complete、Outstanding people（只列未做完嘅 Name List 人＋所屬 item）；全部完成＝綠。</li>
         <li><span class="key">新 · BRS 摘要板（似 Training One View）</span>：<code>#brs</code> 只係 Briefing + Read &amp; Sign。每項一行摘要（code／title）＋完成分數 <b>done / assigned</b>；預設收埋，撳一行先開 detail（人完成／未完成＋Section＋材料）。Admin 區塊喺頁頂，只喺 HX <b>edit unlock</b>（<code>hx:hub:gate-role</code>／gate-pw）先入 DOM；create／edit／delete item 同 PIN vault（reset only，唔顯示 PIN／hash）都喺度。View-only 唔見到 Admin。</li>
         <li><span class="key">新 · Briefing &amp; Read &amp; Sign · PIN 可喺兩頁簽</span>：Seen／Sign 用每人員工 6 位 PIN（首次預設＝staff #，之後強制改成唔同嘅 6 位；錯 PIN 唔簽；eye／6 位 auto-check／Confirm）。可喺 <b>Briefing &amp; Read &amp; Sign</b> 頁或 <b>Training One View</b> 未完成行嘅 Sign／Seen 掣簽；簽完＝Complete，outstanding 消失。Status 仍只顯示 <b>Complete</b>／<b>Not started</b>（無 In Progress、無下拉、唔寫 Status 欄）。欄序 Status → Reference → Remark；Reference／Material 開材料。Admin PIN vault 只 set／still-default + Remove／reset。Hash 只喺 locked <code>hx_private.brs_staff_pin</code>（Edge <code>/pin/*</code>）。Printable record 嵌同一頁。</li>
@@ -255,6 +256,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#fth-rewrite</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="4.7">v4.7</div>
+  <div class="page-version" data-version="4.8">v4.8</div>
 </body>
 </html>

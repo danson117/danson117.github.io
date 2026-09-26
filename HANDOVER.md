@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- Briefing & Read & Sign **v2.1**：item number 自動申請。Briefing＝`BF`＋年月＋兩位（例 `BF20260901`）；Read & Sign＝`RS`＋同格式。`issued` 計數喺共用 doc；刪咗唔重用；畫面唔俾改號。改 Type 會出新 prefix 號。Training One View **v11.6** 顯示 code。`hx.html` **v10.95**、`hx-rules` **v4.8**。GitHub 後備。冇改 PIN／Edge schema。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - Training One View **v11.5**：開頁慢因 `init` 喺 `await syncIngestWithRemote()`（Edge）完之前先加 `hx-ready`，而 `html:not(.hx-ready) body{visibility:hidden}` 會藏成 3–4 秒；而家先 `paint()` 本地再 sync。Briefing & Read & Sign **v2.0**：People 加 Auth group（同 TOV Add course 嘅 D0 類）＋ Name List 即時 suggest；Admin 仍係單一 **New**＋表單 Type；Materials 拖放／揀檔／加 link。`hx.html` **v10.94**。GitHub 後備。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
