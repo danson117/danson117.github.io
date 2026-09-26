@@ -795,14 +795,14 @@
     border-collapse: collapse;
   }
   .person-course-table col.col-course { width: 9%; }
-  .person-course-table col.col-ref { width: 8%; }
   .person-course-table col.col-cname { width: 18%; }
   .person-course-table col.col-due { width: 10%; }
   .person-course-table col.col-remain { width: 9%; }
   .person-course-table col.col-src { width: 10%; }
-  .person-course-table col.col-action { width: 8%; }
-  .person-course-table col.col-status { width: 13%; }
+  .person-course-table col.col-status { width: 12%; }
+  .person-course-table col.col-ref { width: 9%; min-width: 6.5em; }
   .person-course-table col.col-remark { width: 15%; }
+  .person-course-table col.col-action { width: 8%; }
   .person-course-table th,
   .person-course-table td {
     overflow-wrap: anywhere;
@@ -813,12 +813,33 @@
     overflow-wrap: normal;
     word-break: normal;
     white-space: nowrap;
+    min-width: 6.5em;
   }
   .course-status-cell {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 4px;
+  }
+  .course-status-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.3;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    width: fit-content;
+    max-width: 100%;
+  }
+  .course-status-badge.complete {
+    background: var(--ok-row);
+    color: var(--navy);
+    border-color: #7cb87c;
+  }
+  .course-status-badge.not-started {
+    background: #f8fafc;
+    color: var(--muted);
   }
   .course-done-wrap {
     display: flex;
@@ -1301,13 +1322,13 @@
       <p id="brs-pop-sign-note" class="note">To mark Seen or Sign, open the Briefing &amp; Read &amp; Sign page and use the staff PIN. This popup only opens materials.</p>
       <ul id="brs-pop-files" class="brs-files"></ul>
       <div class="brs-actions">
-        <a id="brs-pop-brs" href="briefing-read-sign.html?v=1.2">Open Briefing &amp; Read &amp; Sign</a>
-        <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.2">Open record</a>
+        <a id="brs-pop-brs" href="briefing-read-sign.html?v=1.5">Open Briefing &amp; Read &amp; Sign</a>
+        <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.3">Open record</a>
         <button type="button" id="brs-pop-close">Close</button>
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="11.1" aria-label="Page version 11.1">v11.1</div>
+  <div class="page-version" data-version="11.2" aria-label="Page version 11.2">v11.2</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.1"></script>
@@ -3747,7 +3768,20 @@ function itemsAll() {
     return it.people.some((p) => personRowMatch(p, it, s));
   });
 }
+function brsStaffAcked(staff, row) {
+  const id = row && row.brsId;
+  if (!id) return false;
+  const want = padStaff(staff);
+  const it = (readBrsDoc().items || []).find((x) => x && String(x.id) === String(id));
+  if (!it) return false;
+  const p = (it.people || []).find((x) => x && padStaff(x.staff) === want);
+  return !!(p && p.ack);
+}
+function brsStatusLabel(staff, row) {
+  return brsStaffAcked(staff, row) ? "Complete" : "Not started";
+}
 function courseIsCompleted(staff, row) {
+  if (isBrsCourseRow(row)) return brsStaffAcked(staff, row);
   return readCourseStatus(staff, row).status === "Completed";
 }
 function personItemRow(p, item) {
@@ -3755,7 +3789,8 @@ function personItemRow(p, item) {
     code: (p && (p.code || (item && item.key))) || "",
     name: (p && p.cname) || "",
     src: (item && item.src) || (p && p.src) || "",
-    kind: (p && p.kind) || ""
+    kind: (p && p.kind) || "",
+    brsId: (p && p.brsId) || (item && item.brsId) || ""
   };
 }
 function isBrsCourseRow(row) {
@@ -6305,27 +6340,32 @@ function removeManualCourse(id) {
   paint();
 }
 function courseStatusCellHtml(who, row) {
+  if (isBrsCourseRow(row)) {
+    const acked = brsStaffAcked(who.staff, row);
+    const label = brsStatusLabel(who.staff, row);
+    const klass = acked ? "complete" : "not-started";
+    return "<td class=\"col-status\">" +
+      "<div class=\"course-status-cell\">" +
+      "<span class=\"course-status-badge " + klass + "\" title=\"From Briefing &amp; Read &amp; Sign record (ack). Not editable here.\">" +
+      esc(label) + "</span></div></td>";
+  }
   const rec = readCourseStatus(who.staff, row);
   const staff = esc(padStaff(who.staff));
   const code = esc(courseCodeKey(row));
   const src = esc(courseSrcKey(row));
-  const brsLock = isBrsCourseRow(row);
   const opts = COURSE_STATUS_OPTS.map((opt) =>
     "<option value=\"" + esc(opt) + "\"" + (rec.status === opt ? " selected" : "") + ">" + esc(opt) + "</option>"
   ).join("");
   const display = rec.status === "Completed" && rec.done ? fmtDoneDisplay(rec.done) : "";
   const doneVal = display ? " value=\"" + esc(display) + "\"" : "";
   const calVal = rec.status === "Completed" && rec.done ? " value=\"" + esc(rec.done) + "\"" : "";
-  const doneHidden = rec.status === "Completed" && !brsLock ? "" : " hidden";
-  const lockAttr = brsLock
-    ? " disabled title=\"Sign on the Briefing & Read & Sign page. Status is not changed here.\""
-    : "";
+  const doneHidden = rec.status === "Completed" ? "" : " hidden";
   return "<td class=\"col-status\">" +
     "<div class=\"course-status-cell\">" +
-    "<select class=\"course-status\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Status\"" + lockAttr + ">" + opts + "</select>" +
+    "<select class=\"course-status\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Status\">" + opts + "</select>" +
     "<div class=\"course-done-wrap\"" + doneHidden + ">" +
-    "<input type=\"text\" class=\"course-done\" lang=\"en\" inputmode=\"numeric\" placeholder=\"DD-MM-YY\" pattern=\"\\d{2}-\\d{2}-\\d{2}\" maxlength=\"10\" title=\"DD-MM-YY\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Completed date\"" + (brsLock ? " disabled" : "") + doneVal + ">" +
-    "<input type=\"date\" class=\"course-done-cal\" lang=\"en\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Pick completed date\" title=\"Pick date\"" + (brsLock ? " disabled" : "") + calVal + ">" +
+    "<input type=\"text\" class=\"course-done\" lang=\"en\" inputmode=\"numeric\" placeholder=\"DD-MM-YY\" pattern=\"\\d{2}-\\d{2}-\\d{2}\" maxlength=\"10\" title=\"DD-MM-YY\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Completed date\"" + doneVal + ">" +
+    "<input type=\"date\" class=\"course-done-cal\" lang=\"en\" data-staff=\"" + staff + "\" data-code=\"" + code + "\" data-src=\"" + src + "\" aria-label=\"Pick completed date\" title=\"Pick date\"" + calVal + ">" +
     "</div></div></td>";
 }
 function courseRemarkCellHtml(who, row) {
@@ -6446,16 +6486,17 @@ function personCourseTableHtml(who) {
   const sorted = rows.slice().sort((a, b) => (Number(a.remain) || 0) - (Number(b.remain) || 0) || String(a.code).localeCompare(String(b.code)));
   if (!sorted.length) return "<p class=\"note\">No courses.</p>";
   return "<table class=\"person-course-table\"><colgroup>" +
-    "<col class=\"col-course\"><col class=\"col-ref\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-remark\"><col class=\"col-action\">" +
-    "</colgroup><thead><tr><th>Course</th><th class=\"col-ref\">Reference</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
+    "<col class=\"col-course\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-ref\"><col class=\"col-remark\"><col class=\"col-action\">" +
+    "</colgroup><thead><tr><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th class=\"col-ref\">Reference</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
     sorted.map((r) => {
       const n = remainNum(r.remain);
-      const rec = readCourseStatus(who.staff, r);
+      const brs = isBrsCourseRow(r);
+      const rec = brs ? null : readCourseStatus(who.staff, r);
       const flagReasons = flaggedStaffReasons(who.staff).concat(flaggedCourseReasons(r.code));
       const cls = [
         remainBand(r.remain),
-        rec.status === "Completed" ? "completed" : "",
-        rec.status === "In Progress" ? "in-progress" : "",
+        brs ? (brsStaffAcked(who.staff, r) ? "completed" : "") : (rec.status === "Completed" ? "completed" : ""),
+        brs ? "" : (rec.status === "In Progress" ? "in-progress" : ""),
         flagReasons.length ? "flagged" : ""
       ].filter(Boolean).join(" ");
       const td = (text, extra) => {
@@ -6464,6 +6505,9 @@ function personCourseTableHtml(who) {
         return "<td" + (klass ? " class=\"" + klass + "\"" : "") + ">" + esc(t) + "</td>";
       };
       const srcTd = "<td>" + esc(srcLabel(r)) + "</td>";
+      const refTd = "<td class=\"col-ref\">" + (r.brsId
+        ? "<button type=\"button\" class=\"linkish\" data-brs-open=\"" + esc(r.brsId) + "\" data-staff=\"" + esc(who.staff) + "\">Material</button>"
+        : "") + "</td>";
       const actionTd = "<td class=\"col-action\">" +
         ((r.src === "manual" || r.kind === "manual") && r.mid
           ? "<button type=\"button\" class=\"manual-del\" data-manual-del=\"" + esc(r.mid) + "\">Remove</button>"
@@ -6471,11 +6515,8 @@ function personCourseTableHtml(who) {
         "</td>";
       return "<tr class=\"" + cls + "\">" +
         "<td>" + esc(r.code || "") + flagChip(flagReasons) + "</td>" +
-        "<td class=\"col-ref\">" + (r.brsId
-          ? "<button type=\"button\" class=\"linkish\" data-brs-open=\"" + esc(r.brsId) + "\" data-staff=\"" + esc(who.staff) + "\">Material</button>"
-          : "") + "</td>" +
         td(displayCourseName(r.code, r.name)) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") +
-        srcTd + courseStatusCellHtml(who, r) + courseRemarkCellHtml(who, r) + actionTd + "</tr>";
+        srcTd + courseStatusCellHtml(who, r) + refTd + courseRemarkCellHtml(who, r) + actionTd + "</tr>";
     }).join("") + "</tbody></table>";
 }
 function closeCoursePop() {
@@ -7227,8 +7268,8 @@ function openBrsPop(itemId, staff) {
     return "<li><a href=\"" + esc(m.href || "#") + "\" target=\"_blank\" rel=\"noopener\">" + esc(label) + "</a></li>";
   }).join("") : "<li>No materials on this item.</li>";
   const brsLink = document.getElementById("brs-pop-brs");
-  if (brsLink) brsLink.href = "briefing-read-sign.html?v=1.2#item=" + encodeURIComponent(it.id);
-  document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.2&item=" + encodeURIComponent(it.id);
+  if (brsLink) brsLink.href = "briefing-read-sign.html?v=1.5#item=" + encodeURIComponent(it.id);
+  document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.3&item=" + encodeURIComponent(it.id);
   pop.hidden = false;
 }
 function closeBrsPop() {
