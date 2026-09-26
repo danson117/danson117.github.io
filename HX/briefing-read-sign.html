@@ -719,7 +719,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="2.7">v2.7</div>
+  <div class="page-version" data-version="2.8">v2.8</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -875,40 +875,50 @@
     var p = parseItemCode(code);
     if (!p || !p.seq) return;
     var map = ensureIssuedMap();
-    var key = p.prefix + p.ym;
+    var key = "YM" + p.ym;
     var prev = parseInt(map[key], 10) || 0;
     if (p.seq > prev) map[key] = p.seq;
   }
   function rebuildIssuedFromItems() {
     var map = ensureIssuedMap();
+    Object.keys(map).forEach(function (k) {
+      if (/^(BF|RS)\d{6}$/.test(k) || /^YM\d{6}$/.test(k)) delete map[k];
+    });
     (doc.items || []).forEach(function (it) { rememberIssuedCode(it && it.code); });
     return map;
   }
-  /** Next free BF/RS number from confirmed issued ledger only. Does not write issued. */
+  /** Max two-digit suffix on the current confirmed list for this year-month (BF and RS share). */
+  function maxSuffixOnList(ym) {
+    var max = 0;
+    (doc.items || []).forEach(function (it) {
+      var p = parseItemCode(it && it.code);
+      if (!p || p.ym !== ym) return;
+      if (p.seq > max) max = p.seq;
+    });
+    return max;
+  }
+  /** Next auto number: max suffix on current list + 1, shared by BF/RS. Does not use issued tally. */
   function peekNextItemCode(type) {
     var prefix = itemCodePrefix(type);
     var ym = ymStamp();
-    var key = prefix + ym;
-    rebuildIssuedFromItems();
-    var map = ensureIssuedMap();
-    var next = (parseInt(map[key], 10) || 0) + 1;
+    var next = maxSuffixOnList(ym) + 1;
     if (next > 99) {
-      showMsgPop({ mode: "alert", title: "No number", lines: [key, "99 used"] });
+      showMsgPop({ mode: "alert", title: "No number", lines: [prefix + ym, "99 used"] });
       return "";
     }
-    return key + String(next).padStart(2, "0");
+    return prefix + ym + String(next).padStart(2, "0");
   }
-  /** Reserve a confirmed number in issued (never reuse after this). */
-  function consumeIssuedCode(code) {
-    rememberIssuedCode(code);
+  function normalizeItemCode(code) {
+    return String(code || "").trim().toUpperCase();
   }
-  function codeAlreadyIssued(code) {
-    var p = parseItemCode(code);
-    if (!p || !p.seq) return true;
-    rebuildIssuedFromItems();
-    var map = ensureIssuedMap();
-    var max = parseInt(map[p.prefix + p.ym], 10) || 0;
-    return p.seq <= max;
+  /** True if another confirmed row already uses this exact code. */
+  function codeUsedOnList(code, exceptId) {
+    var want = normalizeItemCode(code);
+    if (!want) return false;
+    return (doc.items || []).some(function (it) {
+      if (!it || (exceptId && it.id === exceptId)) return false;
+      return normalizeItemCode(it.code) === want;
+    });
   }
   function isDraftItem(it) {
     return !!(draftItem && it && draftItem.id === it.id);
@@ -920,13 +930,18 @@
   }
   function confirmDraft(id) {
     if (!draftItem || draftItem.id !== id) return;
-    var code = String(draftItem.code || "").trim();
-    if (!code || codeAlreadyIssued(code)) {
-      code = peekNextItemCode(draftItem.type);
-      if (!code) return;
-      draftItem.code = code;
+    var code = normalizeItemCode(draftItem.code);
+    draftItem.code = code;
+    var parsed = parseItemCode(code);
+    if (!code || !parsed) {
+      paintAdminStatus("Enter a valid item number (BF/RS + YYYYMM + two digits).");
+      return;
     }
-    consumeIssuedCode(code);
+    if (codeUsedOnList(code, draftItem.id)) {
+      showMsgPop({ mode: "alert", title: "Number used", lines: [code] });
+      return;
+    }
+    rememberIssuedCode(code);
     var it = draftItem;
     draftItem = null;
     doc.items.unshift(it);
@@ -1053,14 +1068,7 @@
     if (!remote || !Array.isArray(remote.items)) return;
     suppress = true;
     doc.items = remote.items;
-    var localIssued = ensureIssuedMap();
-    var remoteIssued = (remote.issued && typeof remote.issued === "object") ? remote.issued : {};
-    Object.keys(remoteIssued).forEach(function (k) {
-      var a = parseInt(localIssued[k], 10) || 0;
-      var b = parseInt(remoteIssued[k], 10) || 0;
-      localIssued[k] = Math.max(a, b);
-    });
-    doc.issued = localIssued;
+    doc.issued = {};
     rebuildIssuedFromItems();
     writeLocal();
     render();
@@ -1563,11 +1571,9 @@
       var wantPrefix = itemCodePrefix(nextType);
       var cur = parseItemCode(it.code);
       var draft = isDraftItem(it);
-      if (!cur || cur.prefix !== wantPrefix) {
-        var fresh = peekNextItemCode(nextType);
-        if (!fresh) return;
-        it.code = fresh;
-        if (!draft) consumeIssuedCode(fresh);
+      /* Parsed BF/RS number: swap prefix only, keep same suffix. Custom/edited whole field: leave as-is. */
+      if (cur) {
+        it.code = wantPrefix + cur.ym + String(cur.seq).padStart(2, "0");
       }
       it.type = nextType;
       if (!draft) {
@@ -1597,8 +1603,8 @@
         lines: delCode ? [delCode, "Confirm delete"] : ["Confirm delete"]
       }).then(function (ok) {
         if (!ok) return;
-        if (delCode) rememberIssuedCode(delCode);
         doc.items = doc.items.filter(function (x) { return x.id !== delId; });
+        rebuildIssuedFromItems();
         if (adminEditId === delId) adminEditId = "";
         save();
         render();
@@ -1639,6 +1645,12 @@
     var t = e.target;
     if (t && t.id === "vault-search") {
       renderVaultList();
+      return;
+    }
+    if (t.dataset && t.dataset.code) {
+      var itCode = itemById(t.dataset.code);
+      if (!itCode || !isDraftItem(itCode)) return;
+      itCode.code = normalizeItemCode(t.value);
       return;
     }
     if (t.dataset && t.dataset.title) {
@@ -1782,9 +1794,12 @@
         clear + "<button type=\"button\" class=\"danger\" data-del-person=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
     }).join("") || "<li class=\"muted\">No people yet. Search the Name List.</li>";
     var numTitle = draft
-      ? "Preview only until Add item. Not reserved yet."
-      : "Auto-issued. Cannot edit.";
+      ? "Auto-filled. You can edit before Add item."
+      : "Confirmed item number.";
     var headLabel = draft ? "New item (not confirmed)" : "Edit item";
+    var codeInput = draft
+      ? "<input type=\"text\" data-code=\"" + esc(it.id) + "\" value=\"" + esc(it.code || "") + "\" autocomplete=\"off\" spellcheck=\"false\" maxlength=\"12\" title=\"" + esc(numTitle) + "\">"
+      : "<input type=\"text\" value=\"" + esc(it.code || "—") + "\" readonly disabled title=\"" + esc(numTitle) + "\">";
     var actions =
       "<div class=\"admin-section row-actions\">" +
         "<button type=\"button\" class=\"danger\" data-del-item=\"" + esc(it.id) + "\">Delete item</button>" +
@@ -1797,8 +1812,7 @@
         "<div class=\"bar\"><h3 style=\"margin:0;flex:1\">" + headLabel + "</h3>" +
           "<button type=\"button\" class=\"quiet\" data-admin-close=\"1\">Close editor</button></div>" +
         "<div class=\"card-top\">" +
-          "<div><label>Item number</label>" +
-            "<input type=\"text\" value=\"" + esc(it.code || "—") + "\" readonly disabled title=\"" + esc(numTitle) + "\"></div>" +
+          "<div><label>Item number</label>" + codeInput + "</div>" +
           "<div><label>Type</label><div class=\"seg\">" +
             "<button type=\"button\" data-type=\"briefing\" data-item=\"" + esc(it.id) + "\"" + (it.type !== "read-sign" ? " class=\"on\"" : "") + ">Briefing</button>" +
             "<button type=\"button\" data-type=\"read-sign\" data-item=\"" + esc(it.id) + "\"" + (it.type === "read-sign" ? " class=\"on\"" : "") + ">Read &amp; Sign</button>" +

@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- BRS item number：自動號＝已確認列表同年月最大 suffix + 1（BF／RS 共用）；欄可改；Add item 擋重複。BRS **v2.8**、`hx-rules` **v5.4**、`hx.html` **v11.6**。GitHub 後備。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - Course List 獨立於 CSV ingest：CT／Mandatory／UAL 唔刪／唔取代 Course List；code-only 用存檔名；code／名唔夾 → 頁內 dialog 揀（唔靜默覆寫）。TOV **v12.4**、Course List **v1.7**、`hx-rules` **v5.3**、`hx.html` **v11.5**。GitHub 後備。冇清 Status／PIN。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
