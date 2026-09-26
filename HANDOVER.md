@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
 
+- Course List 獨立於 CSV ingest：CT／Mandatory／UAL 唔刪／唔取代 Course List；code-only 用存檔名；code／名唔夾 → 頁內 dialog 揀（唔靜默覆寫）。TOV **v12.4**、Course List **v1.7**、`hx-rules` **v5.3**、`hx.html` **v11.5**。GitHub 後備。冇清 Status／PIN。
+
+## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）
+
 - Staff # / Group 建議：Operator → Aircraft → Engine（種內 A→Z）；Section／人名另組。TOV **v12.3**、BRS **v2.7**、`hx.html` **v11.4**。GitHub 後備。
 
 ## 2026-09-26 本機（未有 `C:\Cursor_Work\MACHINE.md`）

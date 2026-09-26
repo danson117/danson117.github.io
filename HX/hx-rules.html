@@ -209,6 +209,7 @@
       <ul>
         <li>而家起 UAL／CT／Mandatory 上載全機同步。舊「ignore」只係唔好特登帶舊檔。</li>
         <li>Mandatory 只留 Name List（OCG）staff。Course 缺名時跟 Course List／CT／UAL。</li>
+        <li><span class="key">新 · Course List 獨立於 CSV ingest</span>：Course List（<code>course-catalog.html</code>）自己存；上 CT Reminder／Mandatory／UAL <b>唔刪、唔整份取代</b> Course List。CSV 只有 course code → 自動用 Course List 名。Code／名同存檔唔夾（同 code 唔同名，或同名唔同 code）→ 頁內 dialog 問用 Course List 定 CSV；<b>唔靜默覆寫</b>。夾嘅就用存檔名、唔彈窗。</li>
         <li><span class="key">新 · BRS／TOV Staff # / Group</span>：Authorization Operator 建議顯示短碼＋全名（全名由 <code>AUTH_PACK</code> module title 推導，例 AC → Air Canada）；亦接受 Name List <b>home section</b>——準確碼（LGA1）只揀該 section；無尾數 prefix（LGA）包晒 LGA1／LGA2…。仍然只 Name List 人。</li>
         <li><span class="key">新 · BRS item number 確認先佔號</span>：格式仍係 <code>BF</code>／<code>RS</code>＋年月＋兩位（例 <code>BF20260901</code>）。<b>New</b> 只 preview 下一個未佔號；未按綠色 <b>Add item</b> 確認前唔寫入 <code>issued</code>，號碼仍可重用（再 New／Delete／Close 都唔佔）。只有 <b>Add item</b> 確認先入 <code>issued</code>、作實、上摘要板／Training One View。已確認號碼永遠唔重用（之後刪咗都唔重用）。改 Type（未確認）只換 preview，唔消耗。人唔可以改 item number。</li>
         <li><span class="key">新 · BRS item number 自動申請</span>：Briefing＝<code>BF</code>＋年份月份＋兩位序號（例 <code>BF20260901</code>）；Read &amp; Sign＝<code>RS</code>＋同年月＋兩位。新建自動出號；刪咗唔重用（<code>issued</code> 計數留喺共用 doc）；人唔可以改 item number。改 Type 會出新 prefix 嘅號，舊號仍然佔用。詳見 Briefing &amp; Read &amp; Sign 頁。</li>
@@ -259,6 +260,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#fth-rewrite</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="5.2">v5.2</div>
+  <div class="page-version" data-version="5.3">v5.3</div>
 </body>
 </html>
