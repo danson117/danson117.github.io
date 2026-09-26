@@ -17,6 +17,7 @@
 - [Course List (Name / Code / Type / Interval)](hx.html#courses) — [standalone page](course-catalog.html)
 - [Future section codes (new LT families, later use)](hx.html#sections) — [standalone page](section-codes.html)
 - [OCG Name List (Crew List / Name List / Full List / Future sections)](ocg-pax-mechanics-list.html)
+- [KE Read & Sign record (OPS002R3)](hx.html#ke-rs) — [standalone page](ke-read-sign-record.html)
 - [零碎筆記 / Scratch notes](scratch-notes.html)（畫面唔顯示 記下／日期時間／caption；時間喺頁內 hidden `#scratch-ledger`，問先答）
 - [HX 規矩（跨機）](hx-rules.html)（紅字＝呢部機新加；另一部機對齊用）
 

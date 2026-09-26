@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KE Read &amp; Sign record</title>
+<style>
+  :root {
+    --ink: #3d3935;
+    --muted: #5e6a70;
+    --line: #d3dee2;
+    --bg: #e7eef0;
+    --paper: #ffffff;
+    --teal: #00778b;
+    --teal-deep: #015260;
+    --accent: #00a8ad;
+    --char: #3d3935;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    align-items: center;
+    padding: 12px 18px;
+    background: #f7fafa;
+    border-bottom: 1px solid var(--line);
+  }
+  .toolbar h1 {
+    margin: 0 8px 0 0;
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    color: var(--teal-deep);
+  }
+  .seg { display: inline-flex; border: 1px solid #c5d2d6; background: #fff; }
+  .seg button { border: 0; border-radius: 0; }
+  .seg button + button { border-left: 1px solid #c5d2d6; }
+  button {
+    font: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid #c5d2d6;
+    padding: 6px 11px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--teal); color: var(--teal-deep); }
+  button.primary { background: var(--teal); color: #fff; border-color: var(--teal); }
+  button.primary:hover { background: var(--teal-deep); color: #fff; }
+  button[aria-pressed="true"] { background: var(--teal-deep); color: #fff; }
+  .status-line {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+    min-width: 12em;
+    text-align: right;
+  }
+  .paste {
+    display: none;
+    padding: 0 18px 14px;
+    background: #f7fafa;
+    border-bottom: 1px solid var(--line);
+  }
+  .paste.open { display: block; }
+  .paste p { margin: 10px 0 8px; color: var(--muted); font-size: 12.5px; max-width: 920px; }
+  textarea {
+    width: min(920px, 100%);
+    min-height: 120px;
+    font: 12.5px/1.45 Consolas, "Segoe UI", monospace;
+    color: var(--ink);
+    border: 1px solid #c5d2d6;
+    padding: 8px 10px;
+    resize: vertical;
+  }
+  .paste-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .stage { overflow-x: auto; padding: 16px 12px 56px; }
+  .sheet {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto 16px;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 10px 28px rgba(1, 40, 48, 0.08);
+    padding: 11mm 12mm 10mm;
+    position: relative;
+  }
+  body.orient-land .sheet {
+    width: 297mm;
+    min-height: 210mm;
+  }
+  .rule {
+    height: 3px;
+    background: var(--teal);
+    margin: -11mm -12mm 10px;
+  }
+  .rule span {
+    display: block;
+    height: 2px;
+    margin-top: 3px;
+    background: var(--accent);
+  }
+  .mast {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+  }
+  .logo { width: 148px; height: auto; display: block; }
+  .mast-text { text-align: right; }
+  .co {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.045em;
+    color: var(--char);
+  }
+  .doc-kicker {
+    margin: 4px 0 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--teal);
+  }
+  .doc-title {
+    margin: 3px 0 0;
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--ink);
+  }
+  .meta, .docblock {
+    display: grid;
+    gap: 6px 18px;
+    margin: 0 0 10px;
+  }
+  .meta { grid-template-columns: 1fr 1fr; }
+  .docblock { grid-template-columns: 1fr 1fr; }
+  .field { min-width: 0; }
+  .field.wide { grid-column: 1 / -1; }
+  .field label {
+    display: block;
+    margin: 0 0 2px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal-deep);
+  }
+  .doc-in {
+    font: inherit;
+    color: var(--ink);
+    width: 100%;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 3px 4px;
+    border-radius: 1px;
+  }
+  .doc-in:hover { border-color: #d7e4e7; background: #f8fbfb; }
+  .doc-in:focus {
+    outline: none;
+    border-color: var(--teal);
+    background: #fff;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2px;
+  }
+  th, td {
+    border-bottom: 1px solid #e1eaec;
+    padding: 5px 8px;
+    text-align: left;
+    vertical-align: middle;
+  }
+  th {
+    background: var(--teal-deep);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-bottom: 0;
+    padding: 7px 8px;
+  }
+  tbody tr:nth-child(even) { background: #f5fafb; }
+  td .doc-in { padding: 2px 4px; }
+  td.col-sec { width: 18%; }
+  td.col-staff { width: 16%; }
+  td.col-name { width: 34%; }
+  td.col-status { width: 14%; }
+  td.col-date { width: 16%; }
+  td.col-x { width: 28px; padding-right: 0; }
+  .status-in { font-weight: 650; letter-spacing: 0.04em; color: var(--teal); }
+  .x {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    line-height: 1;
+    color: var(--muted);
+    border-color: transparent;
+    background: transparent;
+  }
+  .sheet-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+  }
+  .endnote {
+    margin: 14px 0 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+  }
+  .page-version {
+    position: fixed;
+    right: 12px;
+    bottom: 8px;
+    z-index: 30;
+    font-size: 11px;
+    color: #6d7c82;
+  }
+  @page { size: A4 portrait; margin: 7mm; }
+  @page land { size: A4 landscape; margin: 7mm; }
+  @media print {
+    body { background: #fff; }
+    .no-print { display: none !important; }
+    .stage { overflow: visible; padding: 0; }
+    .sheet,
+    body.orient-land .sheet {
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      box-shadow: none;
+      break-after: page;
+      page-break-after: always;
+    }
+    .rule { margin: 0 0 8px; }
+    .mast { margin-bottom: 8px; }
+    .meta, .docblock { gap: 3px 16px; margin-bottom: 8px; }
+    th, td { padding: 3px 6px; }
+    body.orient-land .logo { width: 120px; }
+    body.orient-land .mast { margin-bottom: 4px; }
+    body.orient-land .meta,
+    body.orient-land .docblock { gap: 2px 14px; margin-bottom: 4px; }
+    body.orient-land th,
+    body.orient-land td { padding: 2px 6px; }
+    body.orient-land .sheet-foot { margin-top: 6px; padding-top: 4px; }
+    body.orient-land .endnote { margin-top: 8px; }
+    body.orient-land .sheet { page: land; }
+    .sheet:last-child,
+    body.orient-land .sheet:last-child { break-after: auto; page-break-after: auto; }
+    .doc-in, .doc-in:hover, .doc-in:focus {
+      border: 0 !important;
+      background: transparent !important;
+      padding: 0 !important;
+    }
+    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .rule, .rule span { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tbody tr:nth-child(even) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body class="orient-port">
+  <div class="toolbar no-print">
+    <h1>KE Read &amp; Sign</h1>
+    <div class="seg" role="group" aria-label="Page orientation">
+      <button type="button" id="btn-port" aria-pressed="true">Portrait</button>
+      <button type="button" id="btn-land" aria-pressed="false">Landscape</button>
+    </div>
+    <button type="button" id="btn-add">Add row</button>
+    <button type="button" id="btn-paste">Generate from text</button>
+    <button type="button" id="btn-sample">Load this notice</button>
+    <button type="button" id="btn-clear">Clear rows</button>
+    <button type="button" id="btn-csv">Download CSV</button>
+    <button type="button" class="primary" id="btn-print">Print / PDF</button>
+    <span class="status-line" id="sync-status"></span>
+  </div>
+  <div class="paste no-print" id="paste-box">
+    <p>One person per line. A whole paste is kept only when every line can be read. Use a Crystal report line, or <code>Section, Staff no, Name, Status, DD/MM/YYYY</code> (comma or tab). Names may contain a comma when the line is tab-separated, or when status and date stay at the end.</p>
+    <textarea id="paste-text" spellcheck="false" placeholder="LGDX&#9;106254&#9;LAM CHI LEUNG&#9;SIGNED&#9;21/03/2026"></textarea>
+    <div class="paste-actions">
+      <button type="button" class="primary" id="btn-gen-replace">Replace rows</button>
+      <button type="button" id="btn-gen-append">Append rows</button>
+    </div>
+  </div>
+  <div class="stage" id="sheets"></div>
+  <div class="page-version no-print" data-version="1.0">v1.0</div>
+  <script src="hx-shared-sync.js?v=1.0"></script>
+  <script>
+(function () {
+  "use strict";
+  var STORE = "hx:ke-read-sign";
+  var SHARED_DOC = "ke-read-sign";
+  var PER_PAGE = { port: 14, land: 8 };
+
+  var SAMPLE_META = {
+    distribution: "",
+    requestedBy: "350885",
+    referenceNo: "OPS002R3 Document Maintenance and Distribution Report by Document",
+    selection: "( ( [Publisher] = 'ke' ) and ( DocumentID = '58257' ))",
+    runAt: "22/09/2026 16:41:59",
+    printAt: "22/09/2026 16:42:16",
+    docId: "58257",
+    subject: "SELOY Safety Notice 25-1 A/C damage due to PBB contact during A/C Ramp-In",
+    publisher: "KE",
+    publisherRef: "Safety notice 25-1",
+    effective: "03/12/2026"
+  };
+
+  var SAMPLE_ROWS = [{"section": "0YGY", "staff": "350877", "name": "TSANG SIN HO, STEWART", "status": "SIGNED", "date": "01/04/2026"}, {"section": "LGDX", "staff": "106254", "name": "LAM CHI LEUNG", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGDX", "staff": "125949", "name": "MA KWEI HIM", "status": "SIGNED", "date": "15/03/2026"}, {"section": "LGDX", "staff": "136516", "name": "NGAN CHI YIN", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGDX", "staff": "152281", "name": "LAW YU CHEUNG", "status": "SIGNED", "date": "27/03/2026"}, {"section": "LGDX", "staff": "161860", "name": "CHOY KIM FAI", "status": "SIGNED", "date": "20/03/2026"}, {"section": "LGDX", "staff": "165200", "name": "LEUNG CHUN YIN", "status": "SIGNED", "date": "08/04/2026"}, {"section": "LGDX", "staff": "191239", "name": "CHAN KA CHUN", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LGDX", "staff": "191883", "name": "KWAN WAI SHUN", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGDX", "staff": "199150", "name": "CHENG CHUNG MO", "status": "SIGNED", "date": "28/03/2026"}, {"section": "LGDX", "staff": "228595", "name": "CHEUNG HO FUNG", "status": "SIGNED", "date": "04/04/2026"}, {"section": "LGDX", "staff": "239906", "name": "GELDERBLOM REON JACQUES", "status": "SIGNED", "date": "22/03/2026"}, {"section": "LGDX", "staff": "350885", "name": "CHEUNG SIK HUNG", "status": "SIGNED", "date": "07/04/2026"}, {"section": "LGDX", "staff": "355637", "name": "FONG KUN PONG", "status": "SIGNED", "date": "15/03/2026"}, {"section": "LGW1", "staff": "208802", "name": "KO CHUN YIN", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LGW1", "staff": "340315", "name": "CHEUNG TAK SHING", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGW2", "staff": "201385", "name": "SHEK PUN", "status": "SIGNED", "date": "16/03/2026"}, {"section": "LGW2", "staff": "347965", "name": "LAM CHUNG MAN", "status": "SIGNED", "date": "15/03/2026"}, {"section": "LGW3", "staff": "161753", "name": "CHUNG CHI", "status": "SIGNED", "date": "27/03/2026"}, {"section": "LGW3", "staff": "179425", "name": "NG MAN CHI, HUBERT", "status": "SIGNED", "date": "15/04/2026"}, {"section": "LGW3", "staff": "198558", "name": "CHENG KA YAN", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGW3", "staff": "325531", "name": "NG CHI LUN", "status": "SIGNED", "date": "17/03/2026"}, {"section": "LGW4", "staff": "199366", "name": "CHUNG MAN FAI", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGY1", "staff": "115255", "name": "LAU SIU WA", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LGY1", "staff": "170176", "name": "TSANG CHUN MING", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGY1", "staff": "170241", "name": "KWOK WAI MAN", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LGY1", "staff": "185224", "name": "LI MAN WAH", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGY1", "staff": "191429", "name": "TANG CHEONG FU", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LGY1", "staff": "205048", "name": "YU YIU SHAN", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGY1", "staff": "278532", "name": "TAM KWOK HEI", "status": "SIGNED", "date": "16/03/2026"}, {"section": "LGY2", "staff": "122797", "name": "NG CHI CHIU", "status": "SIGNED", "date": "02/04/2026"}, {"section": "LGY2", "staff": "137126", "name": "CHEUNG MICHAEL", "status": "SIGNED", "date": "16/03/2026"}, {"section": "LGY2", "staff": "209397", "name": "CHEUNG CHI YIN", "status": "SIGNED", "date": "15/03/2026"}, {"section": "LGY2", "staff": "297615", "name": "PALAGAWONG NA AYUTTAYA KITIPONG", "status": "SIGNED", "date": "02/04/2026"}, {"section": "LGY2", "staff": "323808", "name": "JANPHONG PAISAN", "status": "SIGNED", "date": "16/03/2026"}, {"section": "LGY2", "staff": "336447", "name": "LEUNG TIN WAI", "status": "SIGNED", "date": "24/03/2026"}, {"section": "LGY2", "staff": "340018", "name": "ZHANG ZHONGPING", "status": "SIGNED", "date": "26/03/2026"}, {"section": "LGY3", "staff": "116170", "name": "WONG WAI MING", "status": "SIGNED", "date": "25/03/2026"}, {"section": "LGY3", "staff": "178203", "name": "CHE LOK MAN", "status": "SIGNED", "date": "20/03/2026"}, {"section": "LGY3", "staff": "191289", "name": "WONG WAI HUNG", "status": "SIGNED", "date": "18/03/2026"}, {"section": "LGY3", "staff": "191411", "name": "CHU KA LUN", "status": "SIGNED", "date": "20/03/2026"}, {"section": "LGY3", "staff": "212746", "name": "NG NAI MAN", "status": "SIGNED", "date": "04/04/2026"}, {"section": "LGY3", "staff": "236118", "name": "WAN KWOK FAI", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGY3", "staff": "299736", "name": "LIN QINGDIAN", "status": "SIGNED", "date": "23/03/2026"}, {"section": "LGY3", "staff": "343301", "name": "CHOY WAI YU", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGY4", "staff": "129686", "name": "CHOW KAI WING", "status": "SIGNED", "date": "27/03/2026"}, {"section": "LGY4", "staff": "137366", "name": "LAU SAI WAH", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGY4", "staff": "208860", "name": "UPFOLD PIERRE ULRICH", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGY4", "staff": "250019", "name": "PANG CHUNG FAI", "status": "SIGNED", "date": "14/03/2026"}, {"section": "LGY4", "staff": "332099", "name": "YEUNG SIU FAI", "status": "SIGNED", "date": "20/03/2026"}, {"section": "LGY4", "staff": "334095", "name": "LAM CHUN WING", "status": "SIGNED", "date": "30/03/2026"}, {"section": "LGY4", "staff": "343757", "name": "NG WUN KIT", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LGY5", "staff": "240672", "name": "CHEN DE WEI", "status": "SIGNED", "date": "23/03/2026"}, {"section": "LLXM", "staff": "199712", "name": "CHAN KAM CHEONG, BENNY", "status": "SIGNED", "date": "25/03/2026"}, {"section": "LTDT", "staff": "213984", "name": "CHAN SUN NAM, TERRENCE", "status": "SIGNED", "date": "18/03/2026"}, {"section": "LTW1", "staff": "115700", "name": "LAM HO HONG, SAMUEL", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LTW1", "staff": "236027", "name": "HUI KWOK KEUNG", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LTW1", "staff": "296344", "name": "HO TAI HONG", "status": "SIGNED", "date": "21/03/2026"}, {"section": "LTW1", "staff": "312405", "name": "KWAN KA KI TEDDY", "status": "SIGNED", "date": "22/03/2026"}, {"section": "LTW1", "staff": "351156", "name": "LIU YAU TING", "status": "SIGNED", "date": "13/03/2026"}, {"section": "LTW2", "staff": "138041", "name": "SHING CHI WAI", "status": "SIGNED", "date": "24/03/2026"}, {"section": "LTW2", "staff": "300038", "name": "CHU TAT FU", "status": "SIGNED", "date": "18/03/2026"}, {"section": "LTW2", "staff": "300286", "name": "CHEN GUANGWU", "status": "SIGNED", "date": "10/04/2026"}, {"section": "LTW2", "staff": "373986", "name": "YIU HUNG FAI", "status": "SIGNED", "date": "17/03/2026"}, {"section": "LTW3", "staff": "191495", "name": "WONG CHI KAN", "status": "SIGNED", "date": "17/03/2026"}, {"section": "LTW3", "staff": "208357", "name": "TECHAKULWIROTE AKKAPONG", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LTW3", "staff": "213728", "name": "CHU SHIU HANG, SIMON", "status": "SIGNED", "date": "18/03/2026"}, {"section": "LTW3", "staff": "246860", "name": "TONG PO KIN", "status": "SIGNED", "date": "19/03/2026"}, {"section": "LTW4", "staff": "115362", "name": "KWOK KIM FUNG", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LTW4", "staff": "150441", "name": "LEE KWOK KEI", "status": "SIGNED", "date": "12/03/2026"}, {"section": "LTW4", "staff": "206343", "name": "PHUMJUN SOMPORN", "status": "SIGNED", "date": "23/03/2026"}, {"section": "LTX2", "staff": "178732", "name": "WONG TAK WANG, JOE", "status": "SIGNED", "date": "23/03/2026"}, {"section": "LTX3", "staff": "228917", "name": "SO TSZ CHUN", "status": "SIGNED", "date": "19/03/2026"}, {"section": "LVY3", "staff": "093972", "name": "CHUCK YING YU", "status": "SIGNED", "date": "12/03/2026"}];
+
+  var state = { meta: clone(SAMPLE_META), rows: SAMPLE_ROWS.map(clone), orient: "port" };
+  var cloudReady = false;
+  var suppressCloud = false;
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function blankRow() {
+    return { section: "", staff: "", name: "", status: "", date: "" };
+  }
+
+  function padStaff(v) {
+    var d = String(v || "").replace(/\D/g, "");
+    if (!d) return "";
+    return d.length < 6 ? d.padStart(6, "0") : d;
+  }
+
+  function lsGet(k) {
+    try { return localStorage.getItem(k); } catch (e) { return null; }
+  }
+  function lsSet(k, v) {
+    try { localStorage.setItem(k, v); } catch (e) {}
+  }
+
+  function pack() {
+    return {
+      v: 1,
+      updated: new Date().toISOString(),
+      app: SHARED_DOC,
+      keys: { record: 1 },
+      meta: state.meta,
+      rows: state.rows,
+      orient: state.orient
+    };
+  }
+
+  function applyDoc(doc) {
+    if (!doc || typeof doc !== "object") return;
+    suppressCloud = true;
+    if (doc.meta && typeof doc.meta === "object") state.meta = Object.assign(clone(SAMPLE_META), doc.meta);
+    if (Array.isArray(doc.rows)) state.rows = doc.rows.map(normRow);
+    if (doc.orient === "land" || doc.orient === "port") state.orient = doc.orient;
+    persistLocal();
+    render();
+    setTimeout(function () { suppressCloud = false; }, 60);
+  }
+
+  function normRow(r) {
+    r = r || {};
+    return {
+      section: String(r.section || "").trim(),
+      staff: padStaff(r.staff),
+      name: String(r.name || "").trim(),
+      status: String(r.status || "").trim(),
+      date: String(r.date || "").trim()
+    };
+  }
+
+  function persistLocal() {
+    lsSet(STORE, JSON.stringify({ meta: state.meta, rows: state.rows, orient: state.orient }));
+  }
+
+  function loadLocal() {
+    var raw = lsGet(STORE);
+    if (!raw) return false;
+    try {
+      var doc = JSON.parse(raw);
+      if (!doc || typeof doc !== "object") return false;
+      applyDoc(doc);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  var schedulePush = (window.HxSharedSync && window.HxSharedSync.schedule)
+    ? window.HxSharedSync.schedule(function () {
+        if (!cloudReady || suppressCloud) return;
+        if (!(window.HxSharedSync && window.HxSharedSync.getPassword())) return;
+        window.HxSharedSync.pushDoc(SHARED_DOC, pack()).then(function () {
+          paintStatus("Saved. Synced.");
+        }).catch(function () {
+          paintStatus("Saved in this browser. Cloud sync pending.");
+        });
+      }, 900)
+    : function () {};
+
+  function save() {
+    persistLocal();
+    schedulePush();
+  }
+
+  function paintStatus(t) {
+    var el = document.getElementById("sync-status");
+    if (el) el.textContent = t || "";
+  }
+
+  function field(label, key, wide) {
+    return '<div class="field' + (wide ? " wide" : "") + '"><label>' + esc(label) +
+      '</label><input class="doc-in" data-meta="' + esc(key) + '" value="' + esc(state.meta[key] || "") + '"></div>';
+  }
+
+  function pagesOf(rows) {
+    var n = state.orient === "land" ? PER_PAGE.land : PER_PAGE.port;
+    if (!rows.length) return [[]];
+    var out = [];
+    for (var i = 0; i < rows.length; i += n) out.push(rows.slice(i, i + n));
+    return out;
+  }
+
+  function rowHtml(row, index) {
+    var st = String(row.status || "").toUpperCase() === "SIGNED" ? " status-in" : "";
+    return '<tr>' +
+      cell("sec", "section", row.section, index, "") +
+      cell("staff", "staff", row.staff, index, "") +
+      cell("name", "name", row.name, index, "") +
+      cell("status", "status", row.status, index, st) +
+      cell("date", "date", row.date, index, "") +
+      '<td class="col-x no-print"><button type="button" class="x" data-del="' + index + '" aria-label="Remove row">&times;</button></td>' +
+      "</tr>";
+  }
+
+  function cell(col, key, val, index, extra) {
+    return '<td class="col-' + col + '"><input class="doc-in' + extra + '" data-i="' + index +
+      '" data-k="' + key + '" value="' + esc(val) + '"></td>';
+  }
+
+  function sheetHtml(slice, pageNo, pageCount, baseIndex, last) {
+    var body = slice.map(function (row, i) { return rowHtml(row, baseIndex + i); }).join("");
+    if (!body) {
+      body = '<tr><td colspan="6" style="color:#5e6a70;padding:14px 8px;">No sign-off rows yet.</td></tr>';
+    }
+    return '<article class="sheet">' +
+      '<div class="rule"><span></span></div>' +
+      '<header class="mast">' +
+        '<svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 296.65 75.33" aria-label="HAECO">' +
+          '<path fill="#3d3935" d="M151.3,34.31c-4.74.27-5.94,2.49-6.29,4.41l-1.93,12.49h-15l2.6-16.9h-3c-5.33.31-5.91,2.53-6.36,4.7l-5.51,35.76h8.54l2.69-17.43h15.07l-2.69,17.43H148l6.24-40.46Z"/>' +
+          '<path fill="#3d3935" d="M199.32,38.37l-3.75,36.4h20.69c5.18.08,6.17-6.18,6.17-6.18H204.88l1.17-11h8A5.34,5.34,0,0,0,219.53,53l.31-1.53H206.7l1.14-10.75h11.62c3.08-.12,4.21-1.48,4.93-3.2l1-2.91H204.49c-3.81.3-4.88,2.6-5.17,3.74"/>' +
+          '<path fill="#3d3935" d="M287.09,54.73c-.74,7.28-3.53,14.33-10.57,14.33-7.2,0-8.26-6.88-7.25-14.33s3.79-14.34,10.53-14.34c7,0,8,7,7.29,14.34m-6.62-20.61c-11.52,0-18.94,9-20.66,20.61-1.85,11.87,3.24,20.6,15.89,20.6,12.36,0,19.9-9.4,20.85-20.6.9-11.37-4.08-20.61-16.08-20.61"/>' +
+          '<path fill="#3d3935" d="M168,58.72,173.53,47s.64-1.47.88-1.92c.55-1,1-1.77,1-1.77s.19,1,.39,1.69c0,.16.41,1.78.41,1.78l2.82,12Zm9-24.36c-6,.5-8,4.39-9.09,6.19L152.32,74.77h9l4.25-9.89h14.8l1.94,9.89h9.23L180.92,34.3a33.5,33.5,0,0,0-3.9.06"/>' +
+          '<path fill="#3d3935" d="M258.91,39.2a15,15,0,0,0-12-5c-11.43.18-19.19,9-20.85,21.17s3.53,20.07,15.27,19.88c5.47-.08,9.65-1.5,13.68-5.45,2.27-2.72-1.36-6.07-1.36-6.07a18,18,0,0,1-11.49,5.39c-6.39.1-7.82-6.55-6.82-13.91s4.09-14.71,10.48-14.82a8.06,8.06,0,0,1,6.54,3.2c.09.13.18.28.27.43.42.54,2,1.88,5.14-2.52l.67-1,.52-.77a1.35,1.35,0,0,1,.15-.26Z"/>' +
+          '<path fill="#00778b" d="M20.15,36.19C14.3,31.18,0,31.73,0,31.73L19.67,69.19a9.44,9.44,0,0,0,1.26,2,9.81,9.81,0,0,0,4.49,3.07c0-.35,1.69-25-5.27-38.07"/>' +
+          '<path fill="#adadad" d="M40.88,58.83c-8.3-9.11-17.53-19.25-20-22a8.75,8.75,0,0,0-.69-.67c7,13.12,5.29,37.72,5.27,38.07h0L40.88,58.83"/>' +
+          '<path fill="#00a8ad" d="M44.71,63.05,25.43,74.27h0a14,14,0,0,0,2.54.49H72.3c5.78-.49,8-3.7,14.71-15.22,2.82-4.87,10.83-18.74,18.37-31.8Z"/>' +
+          '<path fill="#00778b" d="M91.44,8.27C80.26,19.47,56.63,43.1,40.88,58.83L25.43,74.27h0L44.71,63.05l60.67-35.3L121.08.54S102.74-3,91.44,8.27"/>' +
+        '</svg>' +
+        '<div class="mast-text">' +
+          '<p class="co">HONG KONG AIRCRAFT ENGINEERING CO. LTD.</p>' +
+          '<p class="doc-kicker">READ &amp; SIGN RECORD</p>' +
+          '<p class="doc-title">OPS002R3 · Document Maintenance and Distribution Report by Document</p>' +
+        '</div>' +
+      '</header>' +
+      '<section class="meta">' +
+        field("Distribution", "distribution", false) +
+        '<div class="field"><label>Page</label><input class="doc-in" readonly value="' + pageNo + " of " + pageCount + '"></div>' +
+        field("Requested by", "requestedBy", false) +
+        field("Run at", "runAt", false) +
+        field("Reference no", "referenceNo", true) +
+        field("Selection criteria", "selection", true) +
+        field("Print at", "printAt", false) +
+      '</section>' +
+      '<section class="docblock">' +
+        field("Doc ID", "docId", false) +
+        field("Publisher", "publisher", false) +
+        field("Publisher reference", "publisherRef", false) +
+        field("Effective date", "effective", false) +
+        field("Subject", "subject", true) +
+      '</section>' +
+      '<table><thead><tr>' +
+        '<th>Section</th><th>Staff no</th><th>Name</th><th>Status</th><th>Date signed</th><th class="no-print"></th>' +
+      '</tr></thead><tbody>' + body + '</tbody></table>' +
+      (last ? '<p class="endnote">END OF REPORT</p>' : '') +
+      '<footer class="sheet-foot"><span>Hong Kong Aircraft Engineering Co. Ltd.</span><span>Page ' + pageNo + ' of ' + pageCount + '</span></footer>' +
+      '</article>';
+  }
+
+  function render() {
+    document.body.classList.toggle("orient-land", state.orient === "land");
+    document.body.classList.toggle("orient-port", state.orient !== "land");
+    document.getElementById("btn-port").setAttribute("aria-pressed", state.orient !== "land" ? "true" : "false");
+    document.getElementById("btn-land").setAttribute("aria-pressed", state.orient === "land" ? "true" : "false");
+    var chunks = pagesOf(state.rows);
+    var html = "";
+    var cursor = 0;
+    chunks.forEach(function (slice, i) {
+      html += sheetHtml(slice, i + 1, chunks.length, cursor, i === chunks.length - 1);
+      cursor += slice.length;
+    });
+    document.getElementById("sheets").innerHTML = html;
+  }
+
+  function parseLine(line) {
+    var s = String(line || "").trim();
+    if (!s) return null;
+    var crystal = s.match(/^(SIGNED|UNSIGNED|NOT SIGNED|PENDING)(.+?)([A-Z0-9]{4}) (\d{2}\/\d{2}\/\d{4})(\d{5,6})$/i);
+    if (crystal) {
+      return normRow({
+        status: crystal[1].toUpperCase(),
+        name: crystal[2],
+        section: crystal[3].toUpperCase(),
+        date: crystal[4],
+        staff: crystal[5]
+      });
+    }
+    var parts;
+    if (s.indexOf("\t") >= 0) parts = s.split("\t").map(function (x) { return x.trim(); });
+    else parts = splitCsv(s);
+    if (parts.length < 5) return null;
+    var section = parts[0];
+    var staff = parts[1];
+    var date = parts[parts.length - 1];
+    var status = parts[parts.length - 2];
+    var name = parts.slice(2, parts.length - 2).join(", ");
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(date)) return null;
+    if (!section || !name || !status || !/^\d{5,6}$/.test(String(staff).replace(/\D/g, ""))) return null;
+    return normRow({ section: section, staff: staff, name: name, status: status, date: date });
+  }
+
+  function splitCsv(s) {
+    var out = [];
+    var cur = "";
+    var q = false;
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charAt(i);
+      if (c === '"') { q = !q; continue; }
+      if (c === "," && !q) { out.push(cur.trim()); cur = ""; continue; }
+      cur += c;
+    }
+    out.push(cur.trim());
+    return out;
+  }
+
+  function parsePaste(text) {
+    var lines = String(text || "").split(/\r?\n/);
+    var rows = [];
+    var bad = [];
+    lines.forEach(function (line) {
+      var s = line.trim();
+      if (!s) return;
+      if (/END OF REPORT/i.test(s)) return;
+      if (/^(SECTION|STAFF NO|DOC ID|DISTRIBUTION|REQUESTED BY|REFERENCE NO|SELECTION CRITERIA|PAGE|RUN AT|PRINT AT)\b/i.test(s)) return;
+      var row = parseLine(s);
+      if (!row) bad.push(s);
+      else rows.push(row);
+    });
+    if (bad.length) {
+      window.alert("This paste was not applied.\n\nCould not read " + bad.length + " line(s). Fix them and paste the whole set again.\n\n" + bad.slice(0, 6).join("\n"));
+      return null;
+    }
+    if (!rows.length) {
+      window.alert("This paste was not applied.\n\nNo sign-off rows were found.");
+      return null;
+    }
+    return rows;
+  }
+
+  function csvCell(v) {
+    var s = String(v == null ? "" : v);
+    if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function downloadCsv() {
+    var lines = ["Section,Staff no,Name,Status,Date signed"];
+    state.rows.forEach(function (r) {
+      lines.push([r.section, r.staff, r.name, r.status, r.date].map(csvCell).join(","));
+    });
+    var blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ke-read-sign-" + (state.meta.docId || "record") + ".csv";
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+  }
+
+  document.getElementById("sheets").addEventListener("input", function (e) {
+    var t = e.target;
+    if (!t || !t.classList || !t.classList.contains("doc-in")) return;
+    if (t.dataset.meta) {
+      state.meta[t.dataset.meta] = t.value;
+      save();
+      return;
+    }
+    if (t.dataset.i != null && t.dataset.k) {
+      var row = state.rows[Number(t.dataset.i)];
+      if (!row) return;
+      row[t.dataset.k] = t.value;
+      save();
+    }
+  });
+
+  document.getElementById("sheets").addEventListener("change", function (e) {
+    var t = e.target;
+    if (!t || t.dataset.k !== "staff") return;
+    var row = state.rows[Number(t.dataset.i)];
+    if (!row) return;
+    row.staff = padStaff(t.value);
+    t.value = row.staff;
+    save();
+  });
+
+  document.getElementById("sheets").addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest("[data-del]") : null;
+    if (!btn) return;
+    state.rows.splice(Number(btn.getAttribute("data-del")), 1);
+    save();
+    render();
+  });
+
+  document.getElementById("btn-port").onclick = function () {
+    state.orient = "port";
+    save();
+    render();
+  };
+  document.getElementById("btn-land").onclick = function () {
+    state.orient = "land";
+    save();
+    render();
+  };
+  document.getElementById("btn-add").onclick = function () {
+    state.rows.push(blankRow());
+    save();
+    render();
+    var inputs = document.querySelectorAll('input[data-k="section"]');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  };
+  document.getElementById("btn-paste").onclick = function () {
+    document.getElementById("paste-box").classList.toggle("open");
+  };
+  document.getElementById("btn-sample").onclick = function () {
+    if (state.rows.length && !window.confirm("Replace the current record with the KE Safety Notice 25-1 sign-off from the source report?")) return;
+    state.meta = clone(SAMPLE_META);
+    state.rows = SAMPLE_ROWS.map(clone);
+    save();
+    render();
+    paintStatus("Loaded the notice from the source report.");
+  };
+  document.getElementById("btn-clear").onclick = function () {
+    if (!window.confirm("Clear all sign-off rows? Document fields stay.")) return;
+    state.rows = [];
+    save();
+    render();
+  };
+  document.getElementById("btn-csv").onclick = downloadCsv;
+  document.getElementById("btn-print").onclick = function () {
+    save();
+    render();
+    window.print();
+  };
+  document.getElementById("btn-gen-replace").onclick = function () {
+    var rows = parsePaste(document.getElementById("paste-text").value);
+    if (!rows) return;
+    state.rows = rows;
+    save();
+    render();
+    paintStatus(rows.length + " rows generated.");
+  };
+  document.getElementById("btn-gen-append").onclick = function () {
+    var rows = parsePaste(document.getElementById("paste-text").value);
+    if (!rows) return;
+    state.rows = state.rows.concat(rows);
+    save();
+    render();
+    paintStatus(rows.length + " rows appended.");
+  };
+
+  if (/[?&]orient=land\b/.test(location.search)) state.orient = "land";
+  if (!loadLocal()) {
+    persistLocal();
+    render();
+  } else if (/[?&]orient=land\b/.test(location.search) || /[?&]orient=port\b/.test(location.search)) {
+    state.orient = /[?&]orient=land\b/.test(location.search) ? "land" : "port";
+    render();
+  }
+
+  async function syncNow() {
+    if (!window.HxSharedSync) return;
+    await window.HxSharedSync.syncDoc(SHARED_DOC, {
+      getLocal: function () { return pack(); },
+      localEmpty: function (doc) { return !(doc && Array.isArray(doc.rows) && doc.rows.length); },
+      applyRemote: function (doc) { applyDoc(doc); },
+      onStatus: function (s) {
+        if (s === "need-password") paintStatus("Saved in this browser. Unlock HX once to sync across devices.");
+        else if (s === "uploaded") paintStatus("Uploaded this record.");
+        else if (s === "synced") paintStatus("Synced from the shared record.");
+        else if (s === "offline") paintStatus("Cloud unreachable. Using this browser copy.");
+      }
+    });
+    cloudReady = true;
+  }
+  syncNow();
+})();
+  </script>
+</body>
+</html>
