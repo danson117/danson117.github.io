@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-27 本機（未有 MACHINE.md）
 
+- BRS：Close 只收埋 editor、保留 draft（含未確認）；只有 Delete 先刪。綠掣改名 **Add**（原 Confirm Add）。BRS **v3.1**、TOV **v12.6**（skip draft）、`hx-rules` **v5.6**、`hx.html` **v12.0**。GitHub 後備。
+
+## 2026-09-27 本機（未有 MACHINE.md）
+
 - BRS Admin：Add link 改淺綠底＋深綠字；Close 改明顯灰色底＋白字。BRS **v3.0**、`hx.html` **v11.9**。GitHub 後備。
 
 ## 2026-09-27 本機（未有 MACHINE.md）

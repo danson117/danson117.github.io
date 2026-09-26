@@ -1472,7 +1472,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="12.5" aria-label="Page version 12.5">v12.5</div>
+  <div class="page-version" data-version="12.6" aria-label="Page version 12.6">v12.6</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -4302,6 +4302,7 @@ function brsToday() {
 function brsItems() {
   const list = [];
   readBrsDoc().items.forEach((it) => {
+    if (it && it.draft) return;
     const open = (it.people || []).filter((p) => p && !p.ack);
     if (!open.length) return;
     const code = String(it.code || "").trim();
