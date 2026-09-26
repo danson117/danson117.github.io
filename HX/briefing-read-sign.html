@@ -22,6 +22,12 @@
     --admin-bg: #f6efe6;
     --admin-border: #c4a484;
     --admin-soft: #efe4d4;
+    --btn-danger: #b42318;
+    --btn-danger-bg: #fef3f2;
+    --btn-add: #0f766e;
+    --btn-clear: #b45309;
+    --btn-clear-bg: #fffbeb;
+    --btn-quiet: #5b6775;
   }
   * { box-sizing: border-box; }
   body {
@@ -165,7 +171,7 @@
     border: 2px solid var(--admin-border);
     border-left: 6px solid var(--admin);
     padding: 14px 16px 16px;
-    margin: 0 0 16px;
+    margin: 0 0 22px;
   }
   .admin-block > h2 {
     margin: 0 0 4px;
@@ -182,13 +188,54 @@
     max-width: 760px;
   }
   .admin-block label { color: var(--admin); }
-  .admin-block button.primary,
-  .admin-block button.on {
+  .admin-block button.primary {
+    background: var(--teal);
+    color: #fff;
+    border-color: var(--teal);
+  }
+  .admin-block button.primary:hover { border-color: var(--teal-deep); background: var(--teal-deep); }
+  .admin-block .seg button.on {
     background: var(--admin);
     color: #fff;
     border-color: var(--admin);
   }
   .admin-block button:hover { border-color: var(--admin); }
+  .admin-block button.danger {
+    background: var(--btn-danger);
+    color: #fff;
+    border-color: var(--btn-danger);
+  }
+  .admin-block button.danger:hover {
+    background: #912018;
+    border-color: #912018;
+  }
+  .admin-block button.add {
+    background: var(--btn-add);
+    color: #fff;
+    border-color: var(--btn-add);
+  }
+  .admin-block button.add:hover {
+    background: #0b5f59;
+    border-color: #0b5f59;
+  }
+  .admin-block button.clear {
+    background: var(--btn-clear-bg);
+    color: var(--btn-clear);
+    border-color: var(--btn-clear);
+  }
+  .admin-block button.clear:hover {
+    background: #fef3c7;
+    border-color: #92400e;
+  }
+  .admin-block button.quiet {
+    background: #f3f4f6;
+    color: var(--btn-quiet);
+    border-color: #c5d0d8;
+  }
+  .admin-block button.quiet:hover {
+    background: #e5e7eb;
+    border-color: var(--btn-quiet);
+  }
   .admin-block .auth-pick-head span { color: var(--admin); }
   .admin-block .mat-drop {
     border-color: var(--admin-border);
@@ -199,10 +246,21 @@
     background: #e5d4bc;
     border-color: var(--admin);
   }
-  .admin-block .vault {
-    margin-top: 18px;
-    border-top: 2px solid var(--admin-border);
+  .admin-section {
+    border-top: 1px solid var(--admin-border);
+    margin-top: 14px;
     padding-top: 14px;
+  }
+  .admin-section:first-child {
+    border-top: 0;
+    margin-top: 0;
+    padding-top: 0;
+  }
+  .admin-block .vault {
+    margin-top: 16px;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-soft);
+    padding: 14px 12px 12px;
   }
   .admin-block .vault h3 {
     margin: 0 0 6px;
@@ -211,16 +269,107 @@
     font-weight: 700;
   }
   .admin-block .vault .note { color: var(--muted); font-size: 13px; margin: 0 0 12px; max-width: 720px; }
+  .admin-pick {
+    margin: 0 0 4px;
+  }
+  .admin-pick-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--admin);
+    margin: 0 0 8px;
+  }
+  .admin-pick-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .admin-pick-row {
+    display: grid;
+    grid-template-columns: 7.5em 7.5em minmax(0, 1fr) 4.5em;
+    gap: 8px 12px;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    padding: 9px 12px;
+    background: #fff;
+    border: 1px solid var(--admin-border);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .admin-pick-row:hover {
+    border-color: var(--admin);
+    background: #fbf6f0;
+  }
+  .admin-pick-row.on {
+    background: var(--admin);
+    border-color: var(--admin);
+    color: #fff;
+  }
+  .admin-pick-row.on .pick-type,
+  .admin-pick-row.on .pick-frac { color: #f3e8d8; }
+  .admin-pick-row .pick-code {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .admin-pick-row .pick-type {
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--admin);
+    white-space: nowrap;
+  }
+  .admin-pick-row .pick-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-pick-row .pick-frac {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--admin);
+    text-align: right;
+    white-space: nowrap;
+  }
+  @media (max-width: 720px) {
+    .admin-pick-row {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "code type"
+        "title title"
+        "frac frac";
+    }
+    .admin-pick-row .pick-code { grid-area: code; }
+    .admin-pick-row .pick-type { grid-area: type; text-align: right; }
+    .admin-pick-row .pick-title { grid-area: title; white-space: normal; }
+    .admin-pick-row .pick-frac { grid-area: frac; text-align: left; }
+  }
   .admin-editor {
     background: var(--admin-soft);
     border: 1px solid var(--admin-border);
     padding: 12px 14px 14px;
-    margin: 0 0 12px;
+    margin: 12px 0 0;
   }
   .admin-editor h3 {
     margin: 0 0 8px;
     font-size: 14px;
     color: var(--admin);
+  }
+  .admin-editor > .admin-section > h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--admin);
+    font-weight: 700;
+  }
+  #admin-slot + h1 {
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    margin-top: 4px;
   }
   .type-badge {
     display: inline-block;
@@ -569,7 +718,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="2.3">v2.3</div>
+  <div class="page-version" data-version="2.4">v2.4</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1099,16 +1248,18 @@
         "<section class=\"admin-block\" id=\"brs-admin\" aria-label=\"Admin\">" +
           "<h2>Admin</h2>" +
           "<p class=\"note\">Visible only while this browser has HX <b>edit</b> unlock (same hub Unlock — no second password). Create or edit Briefings and Read &amp; Sign (Name List people only), delete items, clear acknowledgements, and manage the PIN vault. PINs and hashes are never shown.</p>" +
-          "<div class=\"bar\">" +
-            "<button type=\"button\" class=\"primary\" id=\"btn-new\">New</button>" +
-            "<span class=\"status\" id=\"admin-status\"></span>" +
+          "<div class=\"admin-section\">" +
+            "<div class=\"bar\">" +
+              "<button type=\"button\" class=\"primary\" id=\"btn-new\">New</button>" +
+              "<span class=\"status\" id=\"admin-status\"></span>" +
+            "</div>" +
           "</div>" +
-          "<div id=\"admin-editor-wrap\"></div>" +
+          "<div class=\"admin-section\" id=\"admin-editor-wrap\"></div>" +
           "<div class=\"vault\" id=\"pin-vault\">" +
             "<h3>Admin PIN vault</h3>" +
             "<p class=\"note\">Shows Name List people as <b>Custom PIN set</b> or <b>Still default</b> (staff number until first change). Admins never see a PIN or hash. The only action is Remove / reset, which deletes the custom PIN so the next sign uses the staff number again and then forces a new 6-digit PIN.</p>" +
             "<div class=\"bar\">" +
-              "<button type=\"button\" id=\"vault-refresh\">Refresh list</button>" +
+              "<button type=\"button\" class=\"quiet\" id=\"vault-refresh\">Refresh list</button>" +
               "<span class=\"status\" id=\"vault-status\"></span>" +
             "</div>" +
             "<input type=\"search\" id=\"vault-search\" class=\"vault-search\" placeholder=\"Search staff # or name\" autocomplete=\"off\">" +
@@ -1427,74 +1578,92 @@
     var mats = (it.materials || []).map(function (m) {
       var open = m.href ? "<a href=\"" + esc(m.href) + "\" target=\"_blank\" rel=\"noopener\">Open</a>" : "";
       return "<li><span class=\"who\"><b>" + esc(kindLabel(m.kind)) + "</b> · " + esc(m.name || "Material") + "</span>" +
-        open + "<button type=\"button\" data-del-mat=\"" + esc(m.id) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
+        open + "<button type=\"button\" class=\"danger\" data-del-mat=\"" + esc(m.id) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
     }).join("") || "<li class=\"muted\">No materials yet.</li>";
     var people = (it.people || []).map(function (p) {
       var done = p.ack ? (p.ack === "signed" ? "Signed" : "Seen") + (p.ackAt ? " · " + p.ackAt : "") : "Outstanding";
       var clear = p.ack
-        ? "<button type=\"button\" data-clear=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Clear</button>"
+        ? "<button type=\"button\" class=\"clear\" data-clear=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Clear</button>"
         : "";
       return "<li><span class=\"who\"><b>" + esc(p.staff) + "</b> " + esc(p.name || "") +
         " <span class=\"muted\">" + esc(p.section || "") + " · " + done + "</span></span>" +
-        clear + "<button type=\"button\" data-del-person=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
+        clear + "<button type=\"button\" class=\"danger\" data-del-person=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
     }).join("") || "<li class=\"muted\">No people yet. Search the Name List.</li>";
     return "<div class=\"admin-editor\" id=\"admin-editor\">" +
-      "<div class=\"bar\"><h3 style=\"margin:0;flex:1\">Edit item</h3>" +
-        "<button type=\"button\" data-admin-close=\"1\">Close editor</button></div>" +
-      "<div class=\"card-top\">" +
-        "<div><label>Item number</label>" +
-          "<input type=\"text\" value=\"" + esc(it.code || "—") + "\" readonly disabled title=\"Auto-issued. Cannot edit.\"></div>" +
-        "<div><label>Type</label><div class=\"seg\">" +
-          "<button type=\"button\" data-type=\"briefing\" data-item=\"" + esc(it.id) + "\"" + (it.type !== "read-sign" ? " class=\"on\"" : "") + ">Briefing</button>" +
-          "<button type=\"button\" data-type=\"read-sign\" data-item=\"" + esc(it.id) + "\"" + (it.type === "read-sign" ? " class=\"on\"" : "") + ">Read &amp; Sign</button>" +
-        "</div></div>" +
-        "<div class=\"grow\"><label for=\"title-" + esc(it.id) + "\">Title</label>" +
-          "<input id=\"title-" + esc(it.id) + "\" type=\"text\" data-title=\"" + esc(it.id) + "\" value=\"" + esc(it.title || "") + "\" placeholder=\"Course or notice name\"></div>" +
-      "</div>" +
-      "<h2>Materials</h2><ul class=\"clean\">" + mats + "</ul>" +
-      "<div class=\"mat-drop\" data-mat-drop=\"" + esc(it.id) + "\" tabindex=\"0\" role=\"button\" aria-label=\"Add material\">" +
-        "Drop a Word, Excel, or PDF file here, or drop a link.<div class=\"hint\">Click to choose a file. Max about 900 KB for embedded files.</div>" +
-        "<input type=\"file\" data-file=\"" + esc(it.id) + "\" accept=\".pdf,.doc,.docx,.xls,.xlsx,.csv,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\">" +
-      "</div>" +
-      "<div class=\"mat-add\">" +
-        "<div class=\"grow\"><label for=\"link-" + esc(it.id) + "\">Or add a link</label>" +
-          "<input id=\"link-" + esc(it.id) + "\" type=\"url\" data-link=\"" + esc(it.id) + "\" placeholder=\"https://…\" autocomplete=\"off\"></div>" +
-        "<div><label>&nbsp;</label><button type=\"button\" data-add-link=\"" + esc(it.id) + "\">Add link</button></div>" +
-      "</div>" +
-      "<h2>People</h2>" +
-      "<div class=\"people-add\">" +
-        "<label for=\"find-" + esc(it.id) + "\">Staff # / Auth group</label>" +
-        "<div class=\"suggest\">" +
-          "<input id=\"find-" + esc(it.id) + "\" type=\"text\" data-find=\"" + esc(it.id) + "\" placeholder=\"236051 or KE\" autocomplete=\"off\" spellcheck=\"false\" maxlength=\"16\">" +
-          "<ul data-suggest=\"" + esc(it.id) + "\" hidden role=\"listbox\"></ul>" +
+      "<div class=\"admin-section\">" +
+        "<div class=\"bar\"><h3 style=\"margin:0;flex:1\">Edit item</h3>" +
+          "<button type=\"button\" class=\"quiet\" data-admin-close=\"1\">Close editor</button></div>" +
+        "<div class=\"card-top\">" +
+          "<div><label>Item number</label>" +
+            "<input type=\"text\" value=\"" + esc(it.code || "—") + "\" readonly disabled title=\"Auto-issued. Cannot edit.\"></div>" +
+          "<div><label>Type</label><div class=\"seg\">" +
+            "<button type=\"button\" data-type=\"briefing\" data-item=\"" + esc(it.id) + "\"" + (it.type !== "read-sign" ? " class=\"on\"" : "") + ">Briefing</button>" +
+            "<button type=\"button\" data-type=\"read-sign\" data-item=\"" + esc(it.id) + "\"" + (it.type === "read-sign" ? " class=\"on\"" : "") + ">Read &amp; Sign</button>" +
+          "</div></div>" +
+          "<div class=\"grow\"><label for=\"title-" + esc(it.id) + "\">Title</label>" +
+            "<input id=\"title-" + esc(it.id) + "\" type=\"text\" data-title=\"" + esc(it.id) + "\" value=\"" + esc(it.title || "") + "\" placeholder=\"Course or notice name\"></div>" +
         "</div>" +
-        "<p class=\"note\" data-people-hint=\"" + esc(it.id) + "\">Type a staff # or name for the Name List popup, or an Authorization group code such as <b>KE</b>. Name List people only.</p>" +
-        "<div class=\"auth-pick\" data-auth-pick=\"" + esc(it.id) + "\" hidden>" +
-          "<div class=\"auth-pick-head\">" +
-            "<span data-auth-label=\"" + esc(it.id) + "\"></span>" +
-            "<button type=\"button\" class=\"primary\" data-auth-add-all=\"" + esc(it.id) + "\">Add selected</button>" +
-            "<button type=\"button\" data-auth-clear=\"" + esc(it.id) + "\">Clear</button>" +
+      "</div>" +
+      "<div class=\"admin-section\">" +
+        "<h2>Materials</h2><ul class=\"clean\">" + mats + "</ul>" +
+        "<div class=\"mat-drop\" data-mat-drop=\"" + esc(it.id) + "\" tabindex=\"0\" role=\"button\" aria-label=\"Add material\">" +
+          "Drop a Word, Excel, or PDF file here, or drop a link.<div class=\"hint\">Click to choose a file. Max about 900 KB for embedded files.</div>" +
+          "<input type=\"file\" data-file=\"" + esc(it.id) + "\" accept=\".pdf,.doc,.docx,.xls,.xlsx,.csv,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\">" +
+        "</div>" +
+        "<div class=\"mat-add\">" +
+          "<div class=\"grow\"><label for=\"link-" + esc(it.id) + "\">Or add a link</label>" +
+            "<input id=\"link-" + esc(it.id) + "\" type=\"url\" data-link=\"" + esc(it.id) + "\" placeholder=\"https://…\" autocomplete=\"off\"></div>" +
+          "<div><label>&nbsp;</label><button type=\"button\" class=\"add\" data-add-link=\"" + esc(it.id) + "\">Add link</button></div>" +
+        "</div>" +
+      "</div>" +
+      "<div class=\"admin-section\">" +
+        "<h2>People</h2>" +
+        "<div class=\"people-add\">" +
+          "<label for=\"find-" + esc(it.id) + "\">Staff # / Auth group</label>" +
+          "<div class=\"suggest\">" +
+            "<input id=\"find-" + esc(it.id) + "\" type=\"text\" data-find=\"" + esc(it.id) + "\" placeholder=\"236051 or KE\" autocomplete=\"off\" spellcheck=\"false\" maxlength=\"16\">" +
+            "<ul data-suggest=\"" + esc(it.id) + "\" hidden role=\"listbox\"></ul>" +
           "</div>" +
-          "<ul class=\"clean\" data-auth-list=\"" + esc(it.id) + "\"></ul>" +
+          "<p class=\"note\" data-people-hint=\"" + esc(it.id) + "\">Type a staff # or name for the Name List popup, or an Authorization group code such as <b>KE</b>. Name List people only.</p>" +
+          "<div class=\"auth-pick\" data-auth-pick=\"" + esc(it.id) + "\" hidden>" +
+            "<div class=\"auth-pick-head\">" +
+              "<span data-auth-label=\"" + esc(it.id) + "\"></span>" +
+              "<button type=\"button\" class=\"add\" data-auth-add-all=\"" + esc(it.id) + "\">Add selected</button>" +
+              "<button type=\"button\" class=\"clear\" data-auth-clear=\"" + esc(it.id) + "\">Clear</button>" +
+            "</div>" +
+            "<ul class=\"clean\" data-auth-list=\"" + esc(it.id) + "\"></ul>" +
+          "</div>" +
         "</div>" +
+        "<ul class=\"clean people\">" + people + "</ul>" +
       "</div>" +
-      "<ul class=\"clean people\">" + people + "</ul>" +
-      "<div class=\"row-actions\">" +
-        "<button type=\"button\" data-del-item=\"" + esc(it.id) + "\">Delete item</button>" +
+      "<div class=\"admin-section row-actions\">" +
+        "<button type=\"button\" class=\"danger\" data-del-item=\"" + esc(it.id) + "\">Delete item</button>" +
       "</div></div>";
   }
   function renderAdminEditor() {
     var wrap = document.getElementById("admin-editor-wrap");
     if (!wrap || !isEditUnlocked()) return;
     var pick = doc.items.map(function (it) {
-      var on = it.id === adminEditId ? " class=\"on\"" : "";
-      return "<button type=\"button\" data-admin-edit=\"" + esc(it.id) + "\"" + on + ">" +
-        esc(it.type === "read-sign" ? "R&S" : "Brief") + " · " + esc(itemLabel(it)) + "</button>";
+      var on = it.id === adminEditId ? " on" : "";
+      var da = doneAssigned(it);
+      var typeLabel = it.type === "read-sign" ? "Read & Sign" : "Briefing";
+      var code = String(it.code || "").trim() || "—";
+      var title = String(it.title || "").trim() || "—";
+      return "<button type=\"button\" class=\"admin-pick-row" + on + "\" data-admin-edit=\"" + esc(it.id) + "\">" +
+        "<span class=\"pick-code\">" + esc(code) + "</span>" +
+        "<span class=\"pick-type\">" + esc(typeLabel) + "</span>" +
+        "<span class=\"pick-title\">" + esc(title) + "</span>" +
+        "<span class=\"pick-frac\">" + da.done + " / " + da.assigned + "</span>" +
+        "</button>";
     }).join("") || "<span class=\"muted\">No items yet. Use New, then set Type.</span>";
     var ed = "";
     var it = adminEditId ? itemById(adminEditId) : null;
     if (it) ed = editorHtml(it);
-    wrap.innerHTML = "<div class=\"bar\" style=\"margin-bottom:10px\"><span class=\"muted\" style=\"margin-right:6px\">Edit existing:</span>" + pick + "</div>" + ed;
+    wrap.innerHTML =
+      "<div class=\"admin-pick\">" +
+        "<span class=\"admin-pick-label\">Edit existing</span>" +
+        "<div class=\"admin-pick-list\">" + pick + "</div>" +
+      "</div>" + ed;
     if (peopleAuthPick && peopleAuthPick.itemId === adminEditId) paintPeopleAuthPick();
     else if (peopleAuthPick && peopleAuthPick.itemId !== adminEditId) clearPeopleAuthPick();
   }
@@ -2012,7 +2181,7 @@
         ? "<span class=\"badge set\">Custom PIN set</span>"
         : "<span class=\"badge def\">Still default</span>";
       var reset = set
-        ? "<button type=\"button\" data-pin-reset=\"" + esc(p.staff) + "\">Remove / reset</button>"
+        ? "<button type=\"button\" class=\"danger\" data-pin-reset=\"" + esc(p.staff) + "\">Remove / reset</button>"
         : "";
       return "<li><span class=\"who\"><b>" + esc(p.staff) + "</b> " + esc(p.name) +
         " <span class=\"muted\">" + esc(p.section || "") + "</span></span>" + badge + reset + "</li>";

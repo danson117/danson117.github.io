@@ -22,6 +22,10 @@
     --ok-row: #e8f5e9;
     --progress-cell: #d7f3f5;
     --blank: #d9dee6;
+    --admin: #6b3e26;
+    --admin-bg: #f6efe6;
+    --admin-border: #c4a484;
+    --admin-soft: #efe4d4;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -297,6 +301,48 @@
     margin: 0 0 8px;
     font-size: 14px;
     color: var(--navy);
+  }
+  .admin-block {
+    background: var(--admin-bg);
+    border: 2px solid var(--admin-border);
+    border-left: 6px solid var(--admin);
+    padding: 12px 14px 14px;
+    margin: 0 0 14px;
+  }
+  .admin-block h3,
+  .admin-block > h3 {
+    color: var(--admin);
+  }
+  .admin-block label { color: var(--admin); }
+  .load.admin-block {
+    gap: 10px;
+    padding: 12px;
+  }
+  .load.admin-block .box {
+    background: var(--admin-soft);
+    border-color: var(--admin-border);
+  }
+  .load.admin-block .drop {
+    border-color: var(--admin-border);
+    background: #fff;
+  }
+  .load.admin-block .drop.on {
+    border-color: var(--admin);
+    background: #f3e7d6;
+  }
+  .add-course.admin-block {
+    background: var(--admin-bg);
+    border: 2px solid var(--admin-border);
+    border-left: 6px solid var(--admin);
+  }
+  .add-course.admin-block h3 { color: var(--admin); }
+  .add-course.admin-block label { color: var(--admin); }
+  .admin-block .manual-auth-head b,
+  .admin-block .manual-auth-head span { color: var(--admin); }
+  .admin-block button.primary {
+    background: var(--navy);
+    color: #fff;
+    border-color: var(--navy);
   }
   .add-course-grid {
     display: grid;
@@ -1102,7 +1148,7 @@
       </div>
     </div>
 
-    <div class="load write-zone" hidden>
+    <div class="load write-zone admin-block" hidden aria-label="Admin ingest">
       <div class="box">
         <label>UAL CBT email</label>
         <textarea id="ual-src" placeholder="Paste the UAL CBT reminder email."></textarea>
@@ -1167,7 +1213,7 @@
         <tbody id="board-body"></tbody>
       </table>
     </div>
-    <div class="add-course write-zone" id="add-course" hidden>
+    <div class="add-course write-zone admin-block" id="add-course" hidden aria-label="Admin add course">
       <h3>Add course</h3>
       <form id="manual-form" lang="en" autocomplete="off">
         <div class="add-course-grid">
@@ -1356,7 +1402,7 @@
       <p id="brs-pop-sign-note" class="note">Materials only here. To mark Seen or Sign, use the Sign / Seen button on the outstanding row (staff PIN), or open the Briefing &amp; Read &amp; Sign page.</p>
       <ul id="brs-pop-files" class="brs-files"></ul>
       <div class="brs-actions">
-        <a id="brs-pop-brs" href="briefing-read-sign.html?v=2.0">Open Briefing &amp; Read &amp; Sign</a>
+        <a id="brs-pop-brs" href="briefing-read-sign.html?v=2.4">Open Briefing &amp; Read &amp; Sign</a>
         <a id="brs-pop-record" href="ke-read-sign-record.html?v=1.3">Open record</a>
         <button type="button" id="brs-pop-close">Close</button>
       </div>
@@ -1414,7 +1460,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="11.7" aria-label="Page version 11.7">v11.7</div>
+  <div class="page-version" data-version="11.8" aria-label="Page version 11.8">v11.8</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -7620,7 +7666,7 @@ function openBrsPop(itemId, staff) {
     return "<li><a href=\"" + esc(m.href || "#") + "\" target=\"_blank\" rel=\"noopener\">" + esc(label) + "</a></li>";
   }).join("") : "<li>No materials on this item.</li>";
   const brsLink = document.getElementById("brs-pop-brs");
-  if (brsLink) brsLink.href = "briefing-read-sign.html?v=2.0#item=" + encodeURIComponent(it.id);
+  if (brsLink) brsLink.href = "briefing-read-sign.html?v=2.4#item=" + encodeURIComponent(it.id);
   document.getElementById("brs-pop-record").href = "ke-read-sign-record.html?v=1.3&item=" + encodeURIComponent(it.id);
   pop.hidden = false;
 }
