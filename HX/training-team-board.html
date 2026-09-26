@@ -274,9 +274,15 @@
     background: var(--card);
   }
   .search-bar label { font-weight: 650; white-space: nowrap; }
-  .search-bar input[type="search"] {
+  .search-bar .typeahead-wrap {
     flex: 1;
     min-width: 160px;
+    position: relative;
+    overflow: visible;
+  }
+  .search-bar input[type="search"] {
+    width: 100%;
+    min-width: 0;
     font: inherit;
     padding: 7px 10px;
     border: 1px solid var(--line);
@@ -399,8 +405,10 @@
     white-space: nowrap;
     border: 0;
   }
-  .code-suggest-wrap { position: relative; overflow: visible; }
-  .code-suggest {
+  .code-suggest-wrap,
+  .typeahead-wrap { position: relative; overflow: visible; }
+  .code-suggest,
+  .typeahead {
     position: absolute;
     left: 0;
     top: 100%;
@@ -418,15 +426,20 @@
     background: #fff;
     box-shadow: 0 6px 16px rgba(20, 30, 45, 0.12);
   }
-  .code-suggest[hidden] { display: none; }
-  .code-suggest li {
+  .code-suggest[hidden],
+  .typeahead[hidden] { display: none; }
+  .code-suggest li,
+  .typeahead li {
     padding: 6px 8px;
     cursor: pointer;
     white-space: nowrap;
   }
   .code-suggest li.on,
-  .code-suggest li:hover { background: var(--navy-soft); }
-  .code-suggest .sep { color: var(--muted); }
+  .code-suggest li:hover,
+  .typeahead li.on,
+  .typeahead li:hover { background: var(--navy-soft); }
+  .code-suggest .sep,
+  .typeahead .sep { color: var(--muted); }
   button.manual-del {
     margin: 0;
     padding: 1px 6px;
@@ -1041,7 +1054,10 @@
     </div>
     <div class="search-bar">
       <label for="q">Search</label>
-      <input id="q" type="search" placeholder="Course / name / staff #">
+      <div class="typeahead-wrap">
+        <input id="q" type="search" placeholder="Course / name / staff #" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="q-suggest" aria-expanded="false">
+        <ul id="q-suggest" class="typeahead" hidden role="listbox" aria-label="Search suggestions"></ul>
+      </div>
     </div>
     <div id="ingest-flags" class="ingest-flags" hidden></div>
 
@@ -1061,22 +1077,25 @@
       <h3>Add course</h3>
       <form id="manual-form" lang="en" autocomplete="off">
         <div class="add-course-grid">
-          <div>
+          <div class="typeahead-wrap">
             <label for="manual-staff">Staff # / Auth group</label>
-            <input id="manual-staff" type="text" maxlength="16" placeholder="084096 or D0" required>
+            <input id="manual-staff" type="text" maxlength="16" placeholder="084096 or D0" required autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="staff-suggest" aria-expanded="false">
+            <ul id="staff-suggest" class="typeahead" hidden role="listbox" aria-label="Staff and auth group suggestions"></ul>
           </div>
-          <div>
+          <div class="typeahead-wrap">
             <label for="manual-name">Name</label>
-            <input id="manual-name" type="text" placeholder="Auto-fill from Name List">
+            <input id="manual-name" type="text" placeholder="Auto-fill from Name List" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="name-suggest" aria-expanded="false">
+            <ul id="name-suggest" class="typeahead" hidden role="listbox" aria-label="Name suggestions"></ul>
           </div>
-          <div class="code-suggest-wrap">
+          <div class="code-suggest-wrap typeahead-wrap">
             <label for="manual-code">Course code</label>
             <input id="manual-code" type="text" placeholder="ANSP" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="code-suggest" aria-expanded="false">
-            <ul id="code-suggest" class="code-suggest" hidden role="listbox" aria-label="Course code suggestions"></ul>
+            <ul id="code-suggest" class="code-suggest typeahead" hidden role="listbox" aria-label="Course code suggestions"></ul>
           </div>
-          <div>
+          <div class="typeahead-wrap">
             <label for="manual-cname">Course name</label>
-            <input id="manual-cname" type="text" placeholder="Course name">
+            <input id="manual-cname" type="text" placeholder="Course name" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="cname-suggest" aria-expanded="false">
+            <ul id="cname-suggest" class="typeahead" hidden role="listbox" aria-label="Course name suggestions"></ul>
           </div>
           <div>
             <label for="manual-exp">Expire date</label>
@@ -1236,7 +1255,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="9.5" aria-label="Page version 9.5">v9.5</div>
+  <div class="page-version" data-version="9.6" aria-label="Page version 9.6">v9.6</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=6"></script>
@@ -5345,7 +5364,7 @@ function resetManualFormFields() {
   document.getElementById("manual-exp").value = "";
   const addStaff = document.getElementById("manual-auth-add-staff");
   if (addStaff) addStaff.value = "";
-  hideCodeSuggest();
+  hideAllTypeahead();
   clearManualAuthPick();
 }
 function looseCode(s) {
@@ -5405,26 +5424,188 @@ function uniqueFullCourse(q) {
   );
   return hits.length === 1 ? hits[0] : null;
 }
+const TYPEAHEAD_LIMIT = 12;
 let suggestItems = [];
 let suggestIdx = -1;
 let suggestBlurTimer = 0;
-function hideCodeSuggest() {
-  const list = document.getElementById("code-suggest");
-  const inp = document.getElementById("manual-code");
-  if (list) {
+let typeaheadActive = "";
+function typeaheadContains(hay, needle) {
+  return String(hay || "").toLowerCase().indexOf(String(needle || "").toLowerCase()) >= 0;
+}
+function listAuthGroupCodes() {
+  const idx = ensureAuthIndex();
+  const seen = new Map();
+  ["op", "ac", "cat", "eng", "mod"].forEach((field) => {
+    idx[field].forEach((people, code) => {
+      const c = String(code || "").trim().toUpperCase();
+      if (!c || seen.has(c)) return;
+      seen.set(c, { code: c, field: field, n: (people || []).length });
+    });
+  });
+  return Array.from(seen.values());
+}
+function matchRosterStaffHints(q) {
+  const raw = String(q || "").trim();
+  if (!raw) return [];
+  const nq = raw.toLowerCase();
+  const out = [];
+  byStaff.forEach((p, id) => {
+    const staff = String(id || "");
+    if (!typeaheadContains(staff, nq)) return;
+    const name = String((p && p.name) || "").trim();
+    out.push({
+      kind: "staff",
+      value: staff,
+      staff: staff,
+      name: name,
+      labelHtml: esc(staff) + (name ? " <span class=\"sep\">—</span> " + esc(name) : "")
+    });
+  });
+  return out.sort((a, b) =>
+    a.staff.length - b.staff.length ||
+    a.staff.localeCompare(b.staff) ||
+    String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" })
+  ).slice(0, TYPEAHEAD_LIMIT);
+}
+function matchRosterNameHints(q) {
+  const raw = String(q || "").trim();
+  if (raw.length < 1) return [];
+  const nq = raw.toLowerCase();
+  const out = [];
+  byStaff.forEach((p, id) => {
+    const name = String((p && p.name) || "").trim();
+    if (!name || !typeaheadContains(name, nq)) return;
+    const staff = String(id || "");
+    out.push({
+      kind: "name",
+      value: name,
+      staff: staff,
+      name: name,
+      labelHtml: esc(name) + " <span class=\"sep\">—</span> " + esc(staff)
+    });
+  });
+  return out.sort((a, b) =>
+    String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }) ||
+    a.staff.localeCompare(b.staff)
+  ).slice(0, TYPEAHEAD_LIMIT);
+}
+function matchAuthGroupHints(q) {
+  const raw = String(q || "").trim();
+  if (!raw || /^\d+$/.test(raw)) return [];
+  const nq = raw.toLowerCase();
+  return listAuthGroupCodes().filter((it) => typeaheadContains(it.code, nq)).sort((a, b) =>
+    a.code.length - b.code.length ||
+    a.code.localeCompare(b.code)
+  ).slice(0, TYPEAHEAD_LIMIT).map((it) => ({
+    kind: "auth",
+    value: it.code,
+    code: it.code,
+    field: it.field,
+    labelHtml: esc(it.code) + " <span class=\"sep\">—</span> " + esc(authFieldLabel(it.field) + " · " + it.n + " CS")
+  }));
+}
+function matchStaffFieldHints(q) {
+  const raw = String(q || "").trim();
+  if (!raw) return [];
+  if (/^\d/.test(raw)) return matchRosterStaffHints(raw);
+  const auth = matchAuthGroupHints(raw);
+  if (auth.length) return auth;
+  return matchRosterStaffHints(raw);
+}
+function matchCourseNameHints(q) {
+  const raw = String(q || "").trim();
+  if (raw.length < 1) return [];
+  const nq = raw.toLowerCase();
+  return collectCourseHints().filter((item) => {
+    const code = String(item.code || "");
+    const name = displayCourseName(item.code, item.name);
+    return typeaheadContains(code, nq) || typeaheadContains(name, nq);
+  }).sort((a, b) =>
+    String(a.code).length - String(b.code).length ||
+    String(a.code).localeCompare(String(b.code), undefined, { numeric: true, sensitivity: "base" })
+  ).slice(0, TYPEAHEAD_LIMIT).map((item) => {
+    const name = displayCourseName(item.code, item.name) || item.name || "";
+    return {
+      kind: "course",
+      value: name || item.code,
+      code: item.code,
+      name: name,
+      labelHtml: name
+        ? esc(item.code) + " <span class=\"sep\">—</span> " + esc(name)
+        : esc(item.code)
+    };
+  });
+}
+function matchSearchHints(q) {
+  const raw = String(q || "").trim();
+  if (!raw) return [];
+  const staff = matchRosterStaffHints(raw);
+  const names = matchRosterNameHints(raw).filter((n) =>
+    !staff.some((s) => s.staff === n.staff)
+  );
+  const courses = matchCourseHints(raw).map((item) => {
+    const name = displayCourseName(item.code, item.name) || item.name || "";
+    return {
+      kind: "course",
+      value: item.code,
+      code: item.code,
+      name: name,
+      labelHtml: name
+        ? esc(item.code) + " <span class=\"sep\">—</span> " + esc(name)
+        : esc(item.code)
+    };
+  });
+  return staff.concat(names, courses).slice(0, TYPEAHEAD_LIMIT);
+}
+function typeaheadListId(field) {
+  return ({
+    q: "q-suggest",
+    staff: "staff-suggest",
+    name: "name-suggest",
+    code: "code-suggest",
+    cname: "cname-suggest"
+  })[field] || "";
+}
+function typeaheadInputId(field) {
+  return ({
+    q: "q",
+    staff: "manual-staff",
+    name: "manual-name",
+    code: "manual-code",
+    cname: "manual-cname"
+  })[field] || "";
+}
+function hideTypeahead(field) {
+  const id = field ? typeaheadListId(field) : "";
+  const lists = id
+    ? [document.getElementById(id)].filter(Boolean)
+    : Array.from(document.querySelectorAll(".typeahead, .code-suggest"));
+  lists.forEach((list) => {
+    if (!list) return;
     list.hidden = true;
     list.innerHTML = "";
+    const inp = document.querySelector('[aria-controls="' + list.id + '"]');
+    if (inp) {
+      inp.setAttribute("aria-expanded", "false");
+      inp.removeAttribute("aria-activedescendant");
+    }
+  });
+  if (!field || typeaheadActive === field) {
+    typeaheadActive = "";
+    suggestItems = [];
+    suggestIdx = -1;
   }
-  if (inp) {
-    inp.setAttribute("aria-expanded", "false");
-    inp.removeAttribute("aria-activedescendant");
-  }
-  suggestItems = [];
-  suggestIdx = -1;
+}
+function hideCodeSuggest() {
+  hideTypeahead("code");
+}
+function hideAllTypeahead() {
+  hideTypeahead("");
 }
 function paintSuggestHighlight() {
-  const list = document.getElementById("code-suggest");
-  const inp = document.getElementById("manual-code");
+  if (!typeaheadActive) return;
+  const list = document.getElementById(typeaheadListId(typeaheadActive));
+  const inp = document.getElementById(typeaheadInputId(typeaheadActive));
   if (!list) return;
   const lis = list.querySelectorAll("li");
   lis.forEach((li, i) => {
@@ -5434,9 +5615,27 @@ function paintSuggestHighlight() {
     if (on) li.scrollIntoView({ block: "nearest" });
   });
   if (inp) {
-    if (suggestIdx >= 0) inp.setAttribute("aria-activedescendant", "code-suggest-" + suggestIdx);
+    if (suggestIdx >= 0) inp.setAttribute("aria-activedescendant", list.id + "-" + suggestIdx);
     else inp.removeAttribute("aria-activedescendant");
   }
+}
+function openTypeahead(field, items) {
+  const list = document.getElementById(typeaheadListId(field));
+  const inp = document.getElementById(typeaheadInputId(field));
+  if (!list || !inp) return;
+  if (typeaheadActive && typeaheadActive !== field) hideAllTypeahead();
+  suggestItems = items || [];
+  suggestIdx = -1;
+  typeaheadActive = field;
+  if (!suggestItems.length) {
+    hideTypeahead(field);
+    return;
+  }
+  list.innerHTML = suggestItems.map((it, i) =>
+    "<li role=\"option\" id=\"" + list.id + "-" + i + "\" data-i=\"" + i + "\">" + (it.labelHtml || esc(it.value || "")) + "</li>"
+  ).join("");
+  list.hidden = false;
+  inp.setAttribute("aria-expanded", "true");
 }
 function setManualCourseName(name, force) {
   const nameEl = document.getElementById("manual-cname");
@@ -5450,9 +5649,63 @@ function setManualCourseName(name, force) {
 function pickCodeSuggest(item) {
   const codeEl = document.getElementById("manual-code");
   if (!item || !codeEl) return;
-  codeEl.value = item.code;
-  setManualCourseName(item.name || courseNameFor(item.code), false);
-  hideCodeSuggest();
+  codeEl.value = item.code || item.value || "";
+  setManualCourseName(item.name || courseNameFor(codeEl.value), true);
+  hideAllTypeahead();
+}
+function pickTypeaheadItem(field, item) {
+  if (!item) return;
+  if (field === "code") {
+    pickCodeSuggest(item.kind === "course" ? item : { code: item.code || item.value, name: item.name });
+    return;
+  }
+  if (field === "q") {
+    const qEl = document.getElementById("q");
+    if (!qEl) return;
+    qEl.value = item.value || "";
+    q = qEl.value;
+    pick = null;
+    hideAllTypeahead();
+    paint();
+    return;
+  }
+  if (field === "staff") {
+    const staffEl = document.getElementById("manual-staff");
+    if (!staffEl) return;
+    staffEl.value = item.value || "";
+    hideAllTypeahead();
+    fillManualFromRoster();
+    return;
+  }
+  if (field === "name") {
+    const nameEl = document.getElementById("manual-name");
+    const staffEl = document.getElementById("manual-staff");
+    if (!nameEl) return;
+    nameEl.value = item.name || item.value || "";
+    nameEl.dataset.autofill = "";
+    if (staffEl && item.staff && (!staffEl.value.trim() || staffEl.dataset.autofill === "1" || /^\d*$/.test(staffEl.value.trim()))) {
+      staffEl.value = item.staff;
+      staffEl.dataset.autofill = "1";
+      fillManualFromRoster();
+    }
+    hideAllTypeahead();
+    return;
+  }
+  if (field === "cname") {
+    const nameEl = document.getElementById("manual-cname");
+    const codeEl = document.getElementById("manual-code");
+    if (!nameEl) return;
+    const nm = item.name || displayCourseName(item.code, item.value) || item.value || "";
+    nameEl.value = nm;
+    nameEl.dataset.autofill = "";
+    if (codeEl && item.code) {
+      if (!codeEl.value.trim() || codeEl.dataset.autofill === "1") {
+        codeEl.value = item.code;
+        codeEl.dataset.autofill = "1";
+      }
+    }
+    hideAllTypeahead();
+  }
 }
 function fillUniqueCourseName(rewriteCode) {
   const codeEl = document.getElementById("manual-code");
@@ -5465,24 +5718,77 @@ function fillUniqueCourseName(rewriteCode) {
 }
 function showCodeSuggest() {
   const codeEl = document.getElementById("manual-code");
-  const list = document.getElementById("code-suggest");
-  if (!codeEl || !list) return;
-  const q = codeEl.value;
+  if (!codeEl) return;
   fillUniqueCourseName(false);
-  suggestItems = matchCourseHints(q);
-  suggestIdx = -1;
-  if (!suggestItems.length) {
-    hideCodeSuggest();
-    return;
-  }
-  list.innerHTML = suggestItems.map((it, i) => {
-    const label = it.name
-      ? esc(it.code) + " <span class=\"sep\">—</span> " + esc(displayCourseName(it.code, it.name))
-      : esc(it.code);
-    return "<li role=\"option\" id=\"code-suggest-" + i + "\" data-i=\"" + i + "\">" + label + "</li>";
-  }).join("");
-  list.hidden = false;
-  codeEl.setAttribute("aria-expanded", "true");
+  const hits = matchCourseHints(codeEl.value).map((item) => {
+    const name = displayCourseName(item.code, item.name) || item.name || "";
+    return {
+      kind: "course",
+      value: item.code,
+      code: item.code,
+      name: name,
+      labelHtml: name
+        ? esc(item.code) + " <span class=\"sep\">—</span> " + esc(name)
+        : esc(item.code)
+    };
+  });
+  openTypeahead("code", hits);
+}
+function showStaffSuggest() {
+  const el = document.getElementById("manual-staff");
+  if (!el) return;
+  openTypeahead("staff", matchStaffFieldHints(el.value));
+}
+function showNameSuggest() {
+  const el = document.getElementById("manual-name");
+  if (!el) return;
+  openTypeahead("name", matchRosterNameHints(el.value));
+}
+function showCnameSuggest() {
+  const el = document.getElementById("manual-cname");
+  if (!el) return;
+  openTypeahead("cname", matchCourseNameHints(el.value));
+}
+function showSearchSuggest() {
+  const el = document.getElementById("q");
+  if (!el) return;
+  openTypeahead("q", matchSearchHints(el.value));
+}
+function typeaheadIsOpen(field) {
+  const list = document.getElementById(typeaheadListId(field));
+  return !!(typeaheadActive === field && suggestItems.length && list && !list.hidden);
+}
+function wireTypeaheadKeys(field, showFn) {
+  const inp = document.getElementById(typeaheadInputId(field));
+  if (!inp) return;
+  inp.addEventListener("keydown", (e) => {
+    const open = typeaheadIsOpen(field);
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!open) showFn();
+      if (suggestItems.length) {
+        suggestIdx = (suggestIdx + 1) % suggestItems.length;
+        paintSuggestHighlight();
+      }
+    } else if (e.key === "ArrowUp") {
+      if (!open) return;
+      e.preventDefault();
+      suggestIdx = suggestIdx <= 0 ? suggestItems.length - 1 : suggestIdx - 1;
+      paintSuggestHighlight();
+    } else if (e.key === "Enter") {
+      if (open && suggestIdx >= 0 && suggestItems[suggestIdx]) {
+        e.preventDefault();
+        pickTypeaheadItem(field, suggestItems[suggestIdx]);
+      } else if (open && suggestItems.length === 1) {
+        e.preventDefault();
+        pickTypeaheadItem(field, suggestItems[0]);
+      }
+    } else if (e.key === "Escape" && open) {
+      e.preventDefault();
+      e.stopPropagation();
+      hideTypeahead(field);
+    }
+  });
 }
 function fillManualCourseName() {
   const codeEl = document.getElementById("manual-code");
@@ -6396,7 +6702,24 @@ document.getElementById("detail").addEventListener("click", (e) => {
   role = b.dataset.role;
   paint();
 });
-document.getElementById("q").addEventListener("input", (e) => { q = e.target.value; pick = null; paint(); });
+document.getElementById("q").addEventListener("input", (e) => {
+  q = e.target.value;
+  pick = null;
+  showSearchSuggest();
+  paint();
+});
+document.getElementById("q").addEventListener("focus", showSearchSuggest);
+wireTypeaheadKeys("q", showSearchSuggest);
+document.getElementById("q").addEventListener("blur", () => {
+  suggestBlurTimer = window.setTimeout(() => hideTypeahead("q"), 160);
+});
+document.getElementById("q-suggest").addEventListener("mousedown", (e) => {
+  const li = e.target.closest("li[data-i]");
+  if (!li) return;
+  e.preventDefault();
+  window.clearTimeout(suggestBlurTimer);
+  pickTypeaheadItem("q", suggestItems[Number(li.dataset.i)]);
+});
 document.getElementById("board-head").addEventListener("click", (e) => {
   const details = e.target.closest("[data-team-details]");
   if (details) {
@@ -6487,8 +6810,25 @@ document.getElementById("manual-form").addEventListener("submit", (e) => {
   e.preventDefault();
   addManualCourse();
 });
-document.getElementById("manual-staff").addEventListener("input", fillManualFromRoster);
-document.getElementById("manual-staff").addEventListener("blur", fillManualFromRoster);
+document.getElementById("manual-staff").addEventListener("input", () => {
+  showStaffSuggest();
+  fillManualFromRoster();
+});
+document.getElementById("manual-staff").addEventListener("focus", showStaffSuggest);
+document.getElementById("manual-staff").addEventListener("blur", () => {
+  suggestBlurTimer = window.setTimeout(() => {
+    fillManualFromRoster();
+    hideTypeahead("staff");
+  }, 160);
+});
+wireTypeaheadKeys("staff", showStaffSuggest);
+document.getElementById("staff-suggest").addEventListener("mousedown", (e) => {
+  const li = e.target.closest("li[data-i]");
+  if (!li) return;
+  e.preventDefault();
+  window.clearTimeout(suggestBlurTimer);
+  pickTypeaheadItem("staff", suggestItems[Number(li.dataset.i)]);
+});
 document.getElementById("board-toggle").addEventListener("click", () => setBoardOpen(!boardOpen));
 document.getElementById("manual-auth-pick").addEventListener("click", (e) => {
   const sortTh = e.target.closest("[data-auth-sort]");
@@ -6530,41 +6870,27 @@ document.getElementById("manual-auth-add-staff").addEventListener("keydown", (e)
 });
 document.getElementById("manual-name").addEventListener("input", () => {
   document.getElementById("manual-name").dataset.autofill = "";
+  showNameSuggest();
+});
+document.getElementById("manual-name").addEventListener("focus", showNameSuggest);
+wireTypeaheadKeys("name", showNameSuggest);
+document.getElementById("manual-name").addEventListener("blur", () => {
+  suggestBlurTimer = window.setTimeout(() => hideTypeahead("name"), 160);
+});
+document.getElementById("name-suggest").addEventListener("mousedown", (e) => {
+  const li = e.target.closest("li[data-i]");
+  if (!li) return;
+  e.preventDefault();
+  window.clearTimeout(suggestBlurTimer);
+  pickTypeaheadItem("name", suggestItems[Number(li.dataset.i)]);
 });
 document.getElementById("manual-code").addEventListener("input", showCodeSuggest);
 document.getElementById("manual-code").addEventListener("focus", showCodeSuggest);
-document.getElementById("manual-code").addEventListener("keydown", (e) => {
-  const open = suggestItems.length > 0 && document.getElementById("code-suggest") && !document.getElementById("code-suggest").hidden;
-  if (e.key === "ArrowDown") {
-    e.preventDefault();
-    if (!open) showCodeSuggest();
-    if (suggestItems.length) {
-      suggestIdx = (suggestIdx + 1) % suggestItems.length;
-      paintSuggestHighlight();
-    }
-  } else if (e.key === "ArrowUp") {
-    if (!open) return;
-    e.preventDefault();
-    suggestIdx = suggestIdx <= 0 ? suggestItems.length - 1 : suggestIdx - 1;
-    paintSuggestHighlight();
-  } else if (e.key === "Enter") {
-    if (open && suggestIdx >= 0 && suggestItems[suggestIdx]) {
-      e.preventDefault();
-      pickCodeSuggest(suggestItems[suggestIdx]);
-    } else if (open && suggestItems.length === 1) {
-      e.preventDefault();
-      pickCodeSuggest(suggestItems[0]);
-    }
-  } else if (e.key === "Escape" && open) {
-    e.preventDefault();
-    e.stopPropagation();
-    hideCodeSuggest();
-  }
-});
+wireTypeaheadKeys("code", showCodeSuggest);
 document.getElementById("manual-code").addEventListener("blur", () => {
   suggestBlurTimer = window.setTimeout(() => {
     fillManualCourseName();
-    hideCodeSuggest();
+    hideTypeahead("code");
   }, 160);
 });
 document.getElementById("code-suggest").addEventListener("mousedown", (e) => {
@@ -6572,14 +6898,27 @@ document.getElementById("code-suggest").addEventListener("mousedown", (e) => {
   if (!li) return;
   e.preventDefault();
   window.clearTimeout(suggestBlurTimer);
-  pickCodeSuggest(suggestItems[Number(li.dataset.i)]);
-});
-document.addEventListener("mousedown", (e) => {
-  const wrap = document.querySelector(".code-suggest-wrap");
-  if (wrap && !wrap.contains(e.target)) hideCodeSuggest();
+  pickTypeaheadItem("code", suggestItems[Number(li.dataset.i)]);
 });
 document.getElementById("manual-cname").addEventListener("input", () => {
   document.getElementById("manual-cname").dataset.autofill = "";
+  showCnameSuggest();
+});
+document.getElementById("manual-cname").addEventListener("focus", showCnameSuggest);
+wireTypeaheadKeys("cname", showCnameSuggest);
+document.getElementById("manual-cname").addEventListener("blur", () => {
+  suggestBlurTimer = window.setTimeout(() => hideTypeahead("cname"), 160);
+});
+document.getElementById("cname-suggest").addEventListener("mousedown", (e) => {
+  const li = e.target.closest("li[data-i]");
+  if (!li) return;
+  e.preventDefault();
+  window.clearTimeout(suggestBlurTimer);
+  pickTypeaheadItem("cname", suggestItems[Number(li.dataset.i)]);
+});
+document.addEventListener("mousedown", (e) => {
+  if (e.target.closest(".typeahead-wrap, .code-suggest-wrap")) return;
+  hideAllTypeahead();
 });
 document.getElementById("detail").addEventListener("change", applyCourseStatusEvent);
 document.getElementById("course-pop").addEventListener("change", applyCourseStatusEvent);
@@ -6591,9 +6930,9 @@ document.getElementById("detail").addEventListener("focusin", applyCourseRemarkE
 document.getElementById("course-pop").addEventListener("focusin", applyCourseRemarkEvent);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
-    const list = document.getElementById("code-suggest");
-    if (list && !list.hidden) {
-      hideCodeSuggest();
+    const openTa = document.querySelector(".typeahead:not([hidden]), .code-suggest:not([hidden])");
+    if (openTa) {
+      hideAllTypeahead();
       return;
     }
     const copyFail = document.getElementById("copy-fail-pop");
