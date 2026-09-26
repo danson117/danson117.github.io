@@ -79,6 +79,7 @@
     <h2 class="new">新加（要對齊）</h2>
     <div class="card new-box">
       <ul class="new">
+        <li class="new"><span style="color:#b00000"><b>Handover log (all projects, both computers):</b> Before changing this repo, Life OS, Supabase (<code>life_os</code> / <code>hx_private</code>), or Vercel, read <code>HANDOVER.md</code> at the <strong>repo root</strong> (not only inside HX). If the other computer logged work this PC does not have yet, sync that first (pull GitHub <code>main</code>; for Supabase / Vercel follow the log — do not guess, do not overwrite with an older local file). After any machine-level, Supabase, or Vercel change the other PC must follow, append one entry the same turn (date + which computer + what + where), then commit + push. Computer role is local only: <code>C:\Cursor_Work\MACHINE.md</code> (do not commit it; do not put “this PC is 公司” into a synced user rule). No staff-level training detail in the public log — point at Supabase. No force-push. No <code>hx_test</code> writes.<br>做任何涉及 GitHub／Life OS／Supabase／Vercel 嘅事先讀倉根 <code>HANDOVER.md</code>。另一部機有新紀錄就先對齊再做。做完同一輪寫低邊部電腦、日期、做咗乜，然後 push。角色只寫喺本機 <code>MACHINE.md</code>。公開日誌唔寫職員明細。</span></li>
         <li>After every local HX / repo update that should live on GitHub, <strong>commit and <code>git push</code> immediately</strong> (same turn). Do not leave work only on this PC. If several versions were never pushed, <strong>push the latest</strong> (one commit of current state is enough — do not invent one commit per missed version). Still: do not open a new browser; tell version numbers; user refreshes. Do not push secrets (<code>.env</code>, passwords, credentials). Do not force-push. Do not skip hooks unless the user asked.<br>每次本機更新（應上 GitHub 嘅 HX／倉資料）<strong>即刻 commit + push</strong>，唔好只留喺呢部機。之前漏咗就 <strong>push 而家最新</strong>（一次 commit 夠）。仍然唔開新 browser，講 version，用戶自己 refresh。唔 push 秘密；唔 force；唔 skip hooks（除非用戶叫）。</li>
         <li><b>暗號 bye / 收工：</b>用戶收工返屋企。即刻把<strong>所有本機</strong>應上 GitHub 嘅野 <code>commit + push</code>（呢個倉 <code>main</code>），<strong>包 Status / Remark / Manual</strong>（<code>HX/team-board-actions.json</code>）。唔好留低未 push 嘅 HTML／規則／名單／actions。唔 force；唔 push 秘密／PAT。Status 只喺呢個 browser 而未 auto-push 嘅，講清楚；唔好開新 Chrome。<br>bye / 收工＝而家即刻 sync 晒去 GitHub，返屋企另一部機先有得用。</li>
         <li>After an HX update, <strong>do not open a new browser / Chrome</strong>. Tell the user the <strong>page version number(s)</strong> in the chat. The user will <strong>manually refresh</strong> the tab they already have.<br>改完 HX <strong>唔好開新 browser / Chrome</strong>。喺對話講 <strong>version 號</strong> 就得；用戶自己 refresh 已開嘅 tab。</li>
@@ -131,6 +132,6 @@
       </ul>
     </div>
   </div>
-  <div class="page-version" data-version="3.60">v3.60</div>
+  <div class="page-version" data-version="3.61">v3.61</div>
 </body>
 </html>

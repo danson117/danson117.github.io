@@ -1,0 +1,22 @@
+---
+description: Read and update the shared handover log before and after GitHub, Supabase, or Vercel work
+alwaysApply: true
+---
+
+# Handover log
+
+Shared log for both computers: `HANDOVER.md` at the root of `danson117/danson117.github.io`. It covers HX, Life OS, Alpha_Learn, Karson_Learn, and any other work that the other computer must know about. Visible rule: `HX/hx-rules.html` (red handover item).
+
+## Before editing
+
+Read `HANDOVER.md` first when the task touches this repo, Life OS, Supabase (`life_os` / `hx_private`), or Vercel.
+
+If the log shows the other computer changed something this machine does not have yet: pull GitHub `main` first, and for Supabase or Vercel data follow the log. Do not guess. Do not overwrite GitHub or Supabase with an older local file.
+
+## After editing
+
+If the work changed this machine, Supabase, or Vercel in a way the other computer must follow: append one entry to `HANDOVER.md` in the same turn, then commit and push it with any rule-page bump. No force-push. No secrets, `.env`, `*.db`, or tokens. Do not write Supabase public table `hx_test`.
+
+Each entry starts with the date and the computer role. Read the role from `C:\Cursor_Work\MACHINE.md` on this PC only. That file is not in git. If it is missing, ask once which computer this is. Do not put "this PC is the company computer" into a synced user rule.
+
+Do not copy staff-level training detail into `HANDOVER.md`. Point at Supabase or the live page instead.
