@@ -84,6 +84,33 @@
     font: inherit; padding: 5px 8px; border: 1px solid var(--line);
   }
   .filters input[type="search"] { min-width: 200px; }
+  .current-toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 10px; align-items: flex-end;
+    padding: 10px 12px; border: 1px solid var(--line); background: #f3fafb;
+  }
+  .current-toolbar .search-wrap { flex: 1 1 280px; min-width: 220px; }
+  .current-toolbar .search-wrap label {
+    display: block; font-size: 12px; font-weight: 650; color: var(--navy); margin-bottom: 4px;
+  }
+  .current-toolbar input[type="search"] {
+    width: 100%; box-sizing: border-box; font: inherit; font-size: 14px;
+    padding: 8px 10px; border: 1px solid var(--teal); background: #fff;
+  }
+  .current-toolbar .show-wrap label {
+    font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px;
+  }
+  .current-toolbar select {
+    font: inherit; padding: 7px 8px; border: 1px solid var(--line); background: #fff;
+  }
+  th.sortable {
+    cursor: pointer; user-select: none; white-space: nowrap;
+  }
+  th.sortable:hover { background: #d2eef2; }
+  th.sortable .sort-ind { color: var(--teal); font-size: 10px; margin-left: 3px; }
+  th.sortable:not(.sort-asc):not(.sort-desc) .sort-ind { opacity: 0.35; }
+  th.sort-asc .sort-ind::after { content: "▲"; }
+  th.sort-desc .sort-ind::after { content: "▼"; }
+  th.sortable:not(.sort-asc):not(.sort-desc) .sort-ind::after { content: "↕"; }
   .legend { font-size: 12px; color: var(--muted); margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 12px; }
   .legend i { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; border: 1px solid var(--line); }
   .sw-added { background: var(--green-bg); }
@@ -161,16 +188,6 @@
 
   <div class="stats" id="stats"></div>
 
-  <div class="filters">
-    <label>Show <select id="f-view">
-      <option value="all">All rows (current)</option>
-      <option value="changes">Latest compare changes only</option>
-      <option value="expiry">Expiry (overdue / ≤30 days)</option>
-      <option value="changes-expiry">Latest changes + expiry</option>
-    </select></label>
-    <label>Search <input type="search" id="f-q" placeholder="Emp ID / name / qual / HX Staff # / PDF Date"></label>
-  </div>
-
   <p class="legend">
     <span><i class="sw-added"></i>Added</span>
     <span><i class="sw-removed"></i>Removed</span>
@@ -182,18 +199,18 @@
   <h2 class="section">Difference history (kept · newer first)</h2>
   <p class="hist-meta" id="hist-meta">No differences saved yet. Compare a weekly paste to start the log.</p>
   <div class="table-wrap" id="hist-wrap">
-    <table>
+    <table id="hist-table">
       <thead>
         <tr>
-          <th>PDF Date</th>
-          <th>Change</th>
-          <th>Emp ID</th>
-          <th>Name</th>
-          <th>Qual</th>
-          <th>Description</th>
-          <th>Due</th>
-          <th>Status</th>
-          <th>Note</th>
+          <th class="sortable" data-sort="docDate" data-type="docdate">PDF Date <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="kind" data-type="text">Change <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="empId" data-type="text">Emp ID <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="name" data-type="text">Name <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="qualification" data-type="text">Qual <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="description" data-type="text">Description <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="dueDate" data-type="amosdate">Due <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="status" data-type="text">Status <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="note" data-type="text">Note <span class="sort-ind"></span></th>
         </tr>
       </thead>
       <tbody id="hist-body"></tbody>
@@ -203,14 +220,37 @@
 
   <h2 class="section" id="current-heading">Current report</h2>
   <p class="ref-note" id="current-note">Latest week vs previous week (highlights).</p>
+  <div class="current-toolbar" id="current-toolbar">
+    <div class="search-wrap">
+      <label for="f-q">Search</label>
+      <input type="search" id="f-q" placeholder="HX Staff # / Emp ID / name / qual / description / station / status / dates" autocomplete="off">
+    </div>
+    <div class="show-wrap">
+      <label>Show
+        <select id="f-view">
+          <option value="all">All rows (current)</option>
+          <option value="changes">Latest compare changes only</option>
+          <option value="expiry">Expiry (overdue / ≤30 days)</option>
+          <option value="changes-expiry">Latest changes + expiry</option>
+        </select>
+      </label>
+    </div>
+  </div>
   <div class="table-wrap">
-    <table>
+    <table id="current-table">
       <thead>
         <tr>
-          <th>HX Staff #</th>
-          <th>Emp ID</th><th>Last Name</th><th>First Name</th><th>Job Code</th>
-          <th>Qualification</th><th>Description</th><th>Station</th>
-          <th>Issue Date</th><th>Due Date</th><th>Status</th>
+          <th class="sortable" data-sort="haecoStaff" data-type="staff">HX Staff # <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="empId" data-type="text">Emp ID <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="lastName" data-type="text">Last Name <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="firstName" data-type="text">First Name <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="jobCode" data-type="text">Job Code <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="qualification" data-type="text">Qualification <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="description" data-type="text">Description <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="station" data-type="text">Station <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="issueDate" data-type="amosdate">Issue Date <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="dueDate" data-type="amosdate">Due Date <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="status" data-type="text">Status <span class="sort-ind"></span></th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -232,7 +272,7 @@
     </table>
   </div>
 
-      <p class="page-version">page-version 1.4</p>
+      <p class="page-version">page-version 1.5</p>
 </div>
 
 <script>
@@ -243,8 +283,10 @@
   const LS_HIST = "hx:vhhh-lmx-auth:history:v2";
   const LS_SEED_VER = "hx:vhhh-lmx-auth:seed-ver";
   const SEED_VER = 2;
-  const SEED_URL = "vhhh-line-mx-history-seed.json?v=1.4";
-  const BASELINE_URL = "vhhh-line-mx-baseline.json?v=1.4";
+  const SEED_URL = "vhhh-line-mx-history-seed.json?v=1.5";
+  const BASELINE_URL = "vhhh-line-mx-baseline.json?v=1.5";
+  let sortCurrent = { key: "empId", type: "text", dir: 1 };
+  let sortHist = { key: "docDate", type: "docdate", dir: -1 };
   const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
   const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const QUAL_RE = /(MP\d{5})\s+(.+?)\s+(MT[AQ]\d{4}[A-Z]?(?:-[A-Z0-9]+)?)\s+(.+?)\s+VHHH\s+(\d{2}\.[A-Za-z]{3}\.\d{4})\s+(N\/A|\d{2}\.[A-Za-z]{3}\.\d{4})(?:\s+(AUTHORIZED|QUALIFIED|NON-AUTHORIZED))?/;
@@ -604,7 +646,11 @@
   function matchFilter(r, d) {
     const q = ($("f-q").value || "").trim().toLowerCase();
     if (q) {
-      const hay = [r.empId, r.lastName, r.firstName, r.qualification, r.description, r.haecoStaff, r.haecoName, r.dept].join(" ").toLowerCase();
+      const hay = [
+        r.haecoStaff, r.empId, r.lastName, r.firstName, r.jobCode,
+        r.qualification, r.description, r.station, r.issueDate, r.dueDate, r.status,
+        r.haecoName, r.dept
+      ].join(" ").toLowerCase();
       if (!hay.includes(q)) return false;
     }
     const view = $("f-view").value;
@@ -625,8 +671,74 @@
     return hay.includes(q);
   }
 
+  function amosDateSortKey(s) {
+    const d = parseAmosDate(s);
+    if (!d) return Number.POSITIVE_INFINITY;
+    return d.getTime();
+  }
+
+  function staffSortKey(s) {
+    const digits = String(s || "").replace(/\D/g, "");
+    if (!digits) return { n: Number.POSITIVE_INFINITY, t: String(s || "").toLowerCase() };
+    return { n: Number(digits.padStart(6, "0")), t: digits.padStart(6, "0") };
+  }
+
+  function cmpSort(aVal, bVal, type, dir) {
+    let c = 0;
+    if (type === "amosdate") {
+      const ak = amosDateSortKey(aVal);
+      const bk = amosDateSortKey(bVal);
+      c = ak === bk ? 0 : ak < bk ? -1 : 1;
+    } else if (type === "docdate") {
+      const ak = docDateSortKey(aVal);
+      const bk = docDateSortKey(bVal);
+      c = ak === bk ? 0 : ak < bk ? -1 : 1;
+    } else if (type === "staff") {
+      const ak = staffSortKey(aVal);
+      const bk = staffSortKey(bVal);
+      c = ak.n === bk.n ? ak.t.localeCompare(bk.t) : ak.n < bk.n ? -1 : 1;
+    } else {
+      c = String(aVal || "").localeCompare(String(bVal || ""), undefined, { sensitivity: "base", numeric: true });
+    }
+    return c * dir;
+  }
+
+  function updateSortHeaders(tableId, state) {
+    const table = $(tableId);
+    if (!table) return;
+    table.querySelectorAll("th.sortable").forEach((th) => {
+      th.classList.remove("sort-asc", "sort-desc");
+      if (th.getAttribute("data-sort") === state.key) {
+        th.classList.add(state.dir === 1 ? "sort-asc" : "sort-desc");
+      }
+    });
+  }
+
+  function wireSortable(tableId, getState, setState, onChange) {
+    const table = $(tableId);
+    if (!table) return;
+    table.querySelectorAll("th.sortable").forEach((th) => {
+      th.addEventListener("click", () => {
+        const key = th.getAttribute("data-sort");
+        const type = th.getAttribute("data-type") || "text";
+        const cur = getState();
+        if (cur.key === key) setState({ key, type, dir: -cur.dir });
+        else setState({ key, type, dir: 1 });
+        onChange();
+      });
+    });
+  }
+
   function renderHistory() {
     const flat = flatHistoryRows().filter(matchHistFilter);
+    flat.sort((a, b) => {
+      let c = cmpSort(a[sortHist.key], b[sortHist.key], sortHist.type, sortHist.dir);
+      if (c !== 0) return c;
+      c = cmpSort(a.docDate, b.docDate, "docdate", -1);
+      if (c !== 0) return c;
+      return String(a.empId || "").localeCompare(String(b.empId || ""), undefined, { sensitivity: "base" });
+    });
+    updateSortHeaders("hist-table", sortHist);
     const empty = $("hist-empty");
     const wrap = $("hist-wrap");
     const meta = $("hist-meta");
@@ -648,7 +760,7 @@
     empty.hidden = true;
     wrap.hidden = false;
     const nItems = history.reduce((n, b) => n + (b.items || []).length, 0);
-    meta.textContent = nItems + " difference row(s) across " + history.length + " document(s) · newest PDF Date on top · stays in this browser";
+    meta.textContent = nItems + " difference row(s) across " + history.length + " document(s) · click headers to sort · Search under Current report also filters here · stays in this browser";
     $("hist-body").innerHTML = flat.map((r) => {
       const cls = r.kind === "added" ? "diff-added" : r.kind === "removed" ? "diff-removed" : "diff-changed";
       const strike = r.kind === "removed" ? " strike" : "";
@@ -689,11 +801,16 @@
 
   function renderTable() {
     const tbody = $("tbody");
-    const sorted = currentRows.slice().sort((a, b) => {
-      const c = a.empId.localeCompare(b.empId);
-      return c !== 0 ? c : a.qualification.localeCompare(b.qualification);
+    const filtered = currentRows.filter((r) => matchFilter(r, diff));
+    filtered.sort((a, b) => {
+      let c = cmpSort(a[sortCurrent.key], b[sortCurrent.key], sortCurrent.type, sortCurrent.dir);
+      if (c !== 0) return c;
+      c = String(a.empId || "").localeCompare(String(b.empId || ""), undefined, { sensitivity: "base", numeric: true });
+      if (c !== 0) return c;
+      return String(a.qualification || "").localeCompare(String(b.qualification || ""), undefined, { sensitivity: "base" });
     });
-    tbody.innerHTML = sorted.filter((r) => matchFilter(r, diff)).map((r) => {
+    updateSortHeaders("current-table", sortCurrent);
+    tbody.innerHTML = filtered.map((r) => {
       const tags = rowTags(r, diff);
       const staffCell = esc(r.haecoStaff || "") + (tags ? " " + tags : "");
       return "<tr class=\"" + rowClass(r, diff) + "\">" +
@@ -1008,6 +1125,16 @@
     $("paste").addEventListener("input", onPasteInput);
     $("f-view").addEventListener("change", renderTable);
     $("f-q").addEventListener("input", renderTable);
+    wireSortable("current-table",
+      () => sortCurrent,
+      (s) => { sortCurrent = s; },
+      renderTable);
+    wireSortable("hist-table",
+      () => sortHist,
+      (s) => { sortHist = s; },
+      renderHistory);
+    updateSortHeaders("current-table", sortCurrent);
+    updateSortHeaders("hist-table", sortHist);
   }
 
   init();
