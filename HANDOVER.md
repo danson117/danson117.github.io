@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-27 本機（未有 MACHINE.md）
 
+- Supabase project `kcoszufshvvpxikpzlue`（hx-test）：DROP unused leftover **`public.hx_test`**（migration `drop_public_hx_test`；先前 4 行測試資料＋ always-true RLS policies）。Workspace／Edge 無 runtime 引用（只規則／HANDOVER 寫「唔寫入」）。真正資料仍喺 **`hx_private`**（唔動）。Security Advisor：已無 `public.hx_test`／其 always-true policy；餘下 INFO＝`hx_private`／`life_os`「RLS enabled no policy」（預期，service_role／RPC）；另 `hx_site_gate`／`_lmx_sql_buf` RLS off（未改）。GitHub：呢條 handover。
+
+## 2026-09-27 本機（未有 MACHINE.md）
+
 - VHHH Line MX Weekly Auth **v1.7**：Difference history **REMOVED**＝灰、**DUE**＝淺紅（row＋badge＋legend）；ADDED／STATUS／ISSUE 不變。Hub `hx.html` **v12.8** `?v=1.7`。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-27 本機（未有 MACHINE.md）
