@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-27 本機（未有 MACHINE.md）
 
+- 刪除 superseded standalone：`HX/hkg-vhhh-weekly-auth-2026-09-10.html` — **本機／origin/main 已不存在**；`hx.html`／links／HANDOVER 無殘留引用。正式頁＝`vhhh-line-mx-weekly-auth.html`。唔開 Chrome。
+
+## 2026-09-27 本機（未有 MACHINE.md）
+
 - VHHH Line MX Weekly Auth **v1.3**：Current report Status **唔再顯示 CG/PAX badge**（只 AUTHORIZED／QUALIFIED 等）；HX Staff #＋AMOS 欄不變。種子 `vhhh-line-mx-history-seed.json`（chat paste 06–27 Aug＋03 Sep；Downloads PDF 10／17／24 Sep）；history 空／Clear 後／Reset 且空時 load 入 localStorage。Hub `hx.html` **v12.4** `?v=1.3`。GitHub 後備；Live Vercel。唔開 Chrome。
 
 ## 2026-09-27 本機（未有 MACHINE.md）
