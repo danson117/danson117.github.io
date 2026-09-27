@@ -201,7 +201,8 @@
       <h3>同步</h3>
       <ul>
         <li>Status／Remark／Manual／UAL／CT／Mandatory 經 locked Edge <code>team-board</code> → <code>hx_private</code>。約 5 秒 poll。</li>
-        <li>UI：Saving…／Saved；Updating…／Updated。撞車：先寫贏；後寫 409，還原伺服器版。</li>
+        <li style="color:#b00020"><b>新 · B1 lite poll + fresh-first：</b>定時 poll 用 <code>?lite=1</code>（Status／Manual＋ingest meta，<b>唔帶</b> CT／OMT／UAL 大檔／log）。開頁同 ingest meta 有變先 <code>?ingest=1</code> 拉齊檔。畫面等 Edge 確認最新先顯示（Loading latest…）；寧願多等幾秒，唔用未確認舊 local 當真相。Poll 間隔維持約 5 秒（唔做 B2 拉長）。</li>
+        <li>UI：Saving…／Saved；Updating…／Updated；開頁 Loading latest…。撞車：先寫贏；後寫 409，還原伺服器版。</li>
         <li><code>HX/team-board-actions.json</code> 只係舊後備空殼；唔好用佢覆蓋 Supabase。</li>
         <li>Unlock 後保持 unlocked，直至 Lock。</li>
       </ul>
@@ -259,6 +260,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#fth-rewrite</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="5.6">v5.6</div>
+  <div class="page-version" data-version="5.7">v5.7</div>
 </body>
 </html>

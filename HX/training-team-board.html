@@ -1027,6 +1027,10 @@
   }
   .hidden { display: none; }
   html:not(.hx-ready) body { visibility: hidden; }
+  html.hx-waiting-remote #save-sync {
+    color: var(--teal, #00778b);
+    font-weight: 600;
+  }
   .page-version {
     position: fixed;
     right: max(12px, env(safe-area-inset-right));
@@ -1472,7 +1476,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="12.6" aria-label="Page version 12.6">v12.6</div>
+  <div class="page-version" data-version="12.7" aria-label="Page version 12.7">v12.7</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1527,6 +1531,9 @@ const BOARD_PW_KEY = "hx:hub:gate-pw";
 const BOARD_ROLE_KEY = "hx:hub:gate-role";
 const SYNC_EDGE_URL = "https://kcoszufshvvpxikpzlue.supabase.co/functions/v1/team-board";
 const SYNC_POLL_MS = 5000;
+/** Set after Edge lite+ingest confirmed; board paint waits for this when syncing. */
+let remoteBoardConfirmed = false;
+let lastRemoteIngestMetaSig = "";
 const GH_REPO = "danson117/danson117.github.io";
 const GH_PATH = "HX/team-board-actions.json";
 let hubGate = { role: "view", password: "", editActions: [] };
@@ -1940,18 +1947,21 @@ function ingestMetaSig(data) {
   if (!data || typeof data !== "object") return "";
   try {
     const ual = data.ual && typeof data.ual === "object" ? data.ual : null;
+    const ualLen = ual
+      ? (ual.text != null ? String(ual.text).length : (Number(ual.textLen) || 0))
+      : 0;
     return JSON.stringify({
       ualAt: ual ? String(ual.uploadedAt || "") : "",
-      ualLen: ual && ual.text ? String(ual.text).length : 0,
+      ualLen: ualLen,
       ct: (Array.isArray(data.ctFiles) ? data.ctFiles : []).map((f) => [
         String(f.name || ""),
         String(f.uploadedAt || ""),
-        Array.isArray(f.rows) ? f.rows.length : 0
+        Array.isArray(f.rows) ? f.rows.length : (Number(f.rowCount) || 0)
       ]),
       omt: (Array.isArray(data.omtFiles) ? data.omtFiles : []).map((f) => [
         String(f.name || ""),
         String(f.uploadedAt || ""),
-        Array.isArray(f.rows) ? f.rows.length : 0
+        Array.isArray(f.rows) ? f.rows.length : (Number(f.rowCount) || 0)
       ])
     });
   } catch (e) {
@@ -4975,7 +4985,11 @@ function applyServerPayload(data, opts) {
   lastRemoteActionsSig = actionsPayloadSig(data);
   if (!keepDirty) clearDirtyAll();
   persistActionsLocal();
-  applyServerIngest(data, { keepDirty: dirtyIngest });
+  // Lite poll has ingest meta only (rowCount / textLen) — never apply as file bodies.
+  if (!(data && data._lite)) {
+    applyServerIngest(data, { keepDirty: dirtyIngest });
+    lastRemoteIngestMetaSig = ingestMetaSig(data);
+  }
 }
 function packIngestForEdge() {
   const snap = localIngestSnapshot();
@@ -5122,9 +5136,10 @@ async function pushIngestToEdge() {
   return true;
 }
 async function syncIngestWithRemote() {
-  const remote = await loadActionsFromEdge();
+  const remote = await fetchLatestBoardFresh();
   if (!remote) return;
   lastRemoteActionsSig = actionsPayloadSig(remote);
+  lastRemoteIngestMetaSig = ingestMetaSig(remote);
   lastRemoteIngestHadContent = ingestHasContent(remote);
   const localSnap = localIngestSnapshot();
   const remoteHas = lastRemoteIngestHadContent;
@@ -5431,9 +5446,13 @@ async function restoreActionsHandle() {
   const ok = await ensureActionsHandlePerm(saved);
   actionsFileHandle = ok;
 }
-async function loadActionsFromEdge() {
+async function loadActionsFromEdge(opts) {
   try {
-    const res = await fetch(SYNC_EDGE_URL, {
+    const mode = opts && opts.mode;
+    let url = SYNC_EDGE_URL;
+    if (mode === "lite") url += (url.indexOf("?") >= 0 ? "&" : "?") + "lite=1";
+    else if (mode === "ingest") url += (url.indexOf("?") >= 0 ? "&" : "?") + "ingest=1";
+    const res = await fetch(url, {
       cache: "no-store",
       headers: edgeAuthHeaders()
     });
@@ -5448,13 +5467,26 @@ async function loadActionsFromEdge() {
     return null;
   }
 }
+/** Confirmed latest: lite status/manual + full ingest blobs (parallel). */
+async function fetchLatestBoardFresh() {
+  const [lite, ingest] = await Promise.all([
+    loadActionsFromEdge({ mode: "lite" }),
+    loadActionsFromEdge({ mode: "ingest" })
+  ]);
+  if (!lite || !ingest) return null;
+  return {
+    v: lite.v != null ? lite.v : ingest.v,
+    updated: lite.updated || ingest.updated || "",
+    status: lite.status && typeof lite.status === "object" ? lite.status : {},
+    manual: Array.isArray(lite.manual) ? lite.manual : [],
+    ual: ingest.ual,
+    ctFiles: Array.isArray(ingest.ctFiles) ? ingest.ctFiles : [],
+    omtFiles: Array.isArray(ingest.omtFiles) ? ingest.omtFiles : []
+  };
+}
 async function loadActionsFileJson() {
   if (actionsFileCache !== undefined) return actionsFileCache;
-  const remote = await loadActionsFromEdge();
-  if (remote) {
-    actionsFileCache = remote;
-    return actionsFileCache;
-  }
+  // Do not GET full Edge here — init uses fetchLatestBoardFresh (lite+ingest) as SoT.
   try {
     const url = new URL(ACTIONS_FILE, document.baseURI || location.href);
     const res = await fetch(url.href, { cache: "no-store" });
@@ -9042,15 +9074,34 @@ function applyHubGate(msg) {
 }
 async function pollRemoteActions() {
   if (syncPollBusy || suppressRemoteMerge || pushBusy || ingestPushBusy) return;
+  if (!remoteBoardConfirmed) return;
   syncPollBusy = true;
   try {
-    const remote = await loadActionsFromEdge();
-    if (!remote) return;
-    const brsChanged = applyRemoteBrs(remote);
-    const sig = actionsPayloadSig(remote);
+    const lite = await loadActionsFromEdge({ mode: "lite" });
+    if (!lite) return;
+    const brsChanged = applyRemoteBrs(lite);
+    const sig = actionsPayloadSig(lite);
     if (!sig || sig === lastRemoteActionsSig) {
       if (brsChanged) paint();
       return;
+    }
+    const nextIngestMeta = ingestMetaSig(lite);
+    let remote = lite;
+    if (nextIngestMeta !== lastRemoteIngestMetaSig) {
+      const ingest = await loadActionsFromEdge({ mode: "ingest" });
+      // Prefer wait: do not paint status-only if ingest changed but fetch failed.
+      if (!ingest) return;
+      remote = {
+        v: lite.v != null ? lite.v : ingest.v,
+        updated: lite.updated || ingest.updated || "",
+        status: lite.status && typeof lite.status === "object" ? lite.status : {},
+        manual: Array.isArray(lite.manual) ? lite.manual : [],
+        ual: ingest.ual,
+        ctFiles: Array.isArray(ingest.ctFiles) ? ingest.ctFiles : [],
+        omtFiles: Array.isArray(ingest.omtFiles) ? ingest.omtFiles : []
+      };
+    } else {
+      remote = Object.assign({}, lite, { _lite: true });
     }
     setSaveSync("Updating…");
     applyServerPayload(remote, {
@@ -9105,27 +9156,47 @@ window.addEventListener("message", (e) => {
       password: getBoardPassword(),
       editActions: hubGate.editActions || []
     });
-    // First paint from local data — do not wait on Edge / PIN / remote round-trips.
-    paint();
     applyWriteAccess();
+    // Fresh-first: wait for confirmed Edge lite+ingest before showing the board.
+    document.documentElement.classList.add("hx-waiting-remote");
+    setSaveSync("Loading latest…");
     document.documentElement.classList.add("hx-ready");
     try {
-      if (getBoardPassword() || getSyncKey()) {
-        persistActionsLocal();
-        await syncIngestWithRemote();
-        flushActionsOut();
+      const fresh = await fetchLatestBoardFresh();
+      if (fresh) {
+        applyServerPayload(fresh, { keepDirty: false });
+        lastRemoteIngestHadContent = ingestHasContent(fresh);
+        remoteBoardConfirmed = true;
+        setSaveSync("");
+        if (getBoardPassword() || getSyncKey()) {
+          persistActionsLocal();
+          const canWrite = canRemoteWrite();
+          if (canWrite) {
+            const localSnap = localIngestSnapshot();
+            if (!lastRemoteIngestHadContent && ingestHasContent(localSnap)) {
+              await pushIngestToEdge();
+              lastRemoteIngestHadContent = ingestHasContent(localIngestSnapshot());
+            }
+          }
+          flushActionsOut();
+        }
       } else {
-        await syncIngestWithRemote();
+        remoteBoardConfirmed = false;
+        setSaveSync("Could not load latest — refresh");
       }
     } catch (syncErr) {
       try { console.error(syncErr); } catch (e2) {}
+      remoteBoardConfirmed = false;
+      setSaveSync("Could not load latest — refresh");
     }
-    startSyncPoll();
+    document.documentElement.classList.remove("hx-waiting-remote");
     paint();
     applyWriteAccess();
+    if (remoteBoardConfirmed) startSyncPoll();
   } catch (e) {
     try { console.error(e); } catch (e2) {}
     document.documentElement.classList.add("hx-ready");
+    setSaveSync("Could not load latest — refresh");
   }
 })();
 window.addEventListener("storage", (e) => {

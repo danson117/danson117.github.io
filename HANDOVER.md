@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-27 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **TOV B1 + fresh-first：** Edge `team-board` **v7** — GET `?lite=1`（Status／Manual＋ingest meta，唔帶 CT／OMT／UAL blob／log）；`?ingest=1`（只拉檔）；開頁等 lite+ingest 確認先顯示（Loading latest…；唔用未確認舊 local 當板）。Poll 仍 **5s**（唔做 B2）。源碼備份 `HX/supabase-edge/team-board/index.ts`。TOV **v12.7**、hub **v12.9**、`hx-rules` **v5.7** 紅字。GitHub 後備；Live Vercel／Supabase Edge。唔開 Chrome。
+
 ## 2026-09-27 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md` 已寫）
 
 - **Supabase `kcoszufshvvpxikpzlue`（hx-test，org plan Free）：** migration `enable_rls_hx_site_gate_and_lmx_sql_buf` — `hx_private.hx_site_gate` + `hx_private._lmx_sql_buf` **ENABLE RLS only**，**零** anon/authenticated policy（同其他 hx_private；service_role／Edge only）。Advisor 而家 INFO＝RLS enabled no policy（預期）。
