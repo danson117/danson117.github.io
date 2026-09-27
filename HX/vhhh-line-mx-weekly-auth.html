@@ -216,7 +216,7 @@
     </table>
   </div>
 
-  <p class="page-version">page-version 1.2</p>
+      <p class="page-version">page-version 1.3</p>
 </div>
 
 <script>
@@ -714,9 +714,6 @@
     tbody.innerHTML = sorted.filter((r) => matchFilter(r, diff)).map((r) => {
       const tags = rowTags(r, diff);
       const staffCell = esc(r.haecoStaff || "") + (tags ? " " + tags : "");
-      const statusBits = [];
-      if (r.cgPax) statusBits.push('<span class="tag">' + esc(r.cgPax) + "</span>");
-      statusBits.push('<span class="' + statusClass(r.status) + '">' + esc(r.status || "") + "</span>");
       return "<tr class=\"" + rowClass(r, diff) + "\">" +
         "<td>" + staffCell + "</td>" +
         "<td>" + esc(r.empId) + "</td>" +
@@ -728,7 +725,7 @@
         "<td>" + esc(r.station) + "</td>" +
         "<td>" + esc(r.issueDate) + "</td>" +
         "<td>" + esc(r.dueDate) + "</td>" +
-        "<td>" + statusBits.join(" ") + "</td>" +
+        "<td class=\"" + statusClass(r.status) + "\">" + esc(r.status || "") + "</td>" +
         "</tr>";
     }).join("");
     renderHistory();
@@ -829,17 +826,6 @@
     renderTable();
   }
 
-  function onResetRef() {
-    saveReference({
-      reportDate: baselinePack.reportDate,
-      label: baselinePack.label,
-      rows: baselinePack.rows.slice(),
-    });
-    diff = currentRows.length ? computeDiff(reference.rows, currentRows) : null;
-    showMsg("Reference reset to 06 Aug 2026 baseline. History is kept.", true);
-    renderTable();
-  }
-
   function onImportChain() {
     hideMsg();
     const text = $("paste").value.trim();
@@ -897,7 +883,31 @@
     renderTable();
   }
 
-  function onClearHist() {
+  async function loadHistorySeedIfEmpty() {
+    if (history.length) return false;
+    try {
+      const res = await fetch("vhhh-line-mx-history-seed.json?v=1.3");
+      if (!res.ok) return false;
+      const seed = await res.json();
+      const batches = Array.isArray(seed.history) ? seed.history : [];
+      if (!batches.length) return false;
+      history = batches
+        .filter((b) => b && b.docDate && Array.isArray(b.items) && b.items.length)
+        .map((b) => ({
+          docDate: b.docDate,
+          vsLabel: b.vsLabel || "",
+          comparedAt: b.comparedAt || "",
+          items: b.items,
+        }));
+      history.sort((a, b) => docDateSortKey(b.docDate) - docDateSortKey(a.docDate));
+      saveHistory();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function onClearHist() {
     if (!history.length) {
       showMsg("History already empty.", true);
       return;
@@ -905,13 +915,26 @@
     if (!confirm("Clear all saved difference history in this browser?")) return;
     history = [];
     saveHistory();
-    showMsg("Difference history cleared.", true);
+    const seeded = await loadHistorySeedIfEmpty();
+    showMsg(seeded ? "Difference history cleared · reloaded seeded weekly chain." : "Difference history cleared.", true);
+    renderTable();
+  }
+
+  async function onResetRef() {
+    saveReference({
+      reportDate: baselinePack.reportDate,
+      label: baselinePack.label,
+      rows: baselinePack.rows.slice(),
+    });
+    if (!history.length) await loadHistorySeedIfEmpty();
+    diff = currentRows.length ? computeDiff(reference.rows, currentRows) : null;
+    showMsg("Reference reset to 06 Aug 2026 baseline. History is kept (or re-seeded if empty).", true);
     renderTable();
   }
 
   async function init() {
     try {
-      const res = await fetch("vhhh-line-mx-baseline.json?v=1.2");
+      const res = await fetch("vhhh-line-mx-baseline.json?v=1.3");
       baselinePack = await res.json();
     } catch (e) {
       showMsg("Could not load baseline JSON.", false);
@@ -924,6 +947,12 @@
     }
     reference = loadReference();
     history = loadHistory();
+    if (!history.length) {
+      const seeded = await loadHistorySeedIfEmpty();
+      if (seeded) {
+        showMsg("Loaded seeded weekly difference history (Aug 13 → Sep 24). Stays in this browser.", true);
+      }
+    }
     currentRows = (baselinePack.rows || []).slice().map(enrichRow);
     diff = null;
     updateRefNote();

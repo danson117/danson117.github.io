@@ -1,0 +1,935 @@
+{
+  "version": 1,
+  "baselinePdfDate": "08.06.2026",
+  "baselineLabel": "06 Aug 2026 (baseline)",
+  "weeks": [
+    {
+      "pdfDate": "08.06.2026",
+      "rows": 227,
+      "baselineRows": 228,
+      "people": 38,
+      "role": "baseline"
+    },
+    {
+      "pdfDate": "08.13.2026",
+      "rows": 218,
+      "people": 36,
+      "added": 1,
+      "removed": 11,
+      "changed": 3
+    },
+    {
+      "pdfDate": "08.20.2026",
+      "rows": 218,
+      "people": 36,
+      "added": 0,
+      "removed": 0,
+      "changed": 5
+    },
+    {
+      "pdfDate": "08.27.2026",
+      "rows": 218,
+      "people": 36,
+      "added": 0,
+      "removed": 0,
+      "changed": 15
+    },
+    {
+      "pdfDate": "09.03.2026",
+      "rows": 218,
+      "people": 36,
+      "added": 0,
+      "removed": 0,
+      "changed": 5
+    },
+    {
+      "pdfDate": "09.10.2026",
+      "rows": 206,
+      "people": 36,
+      "added": 1,
+      "removed": 13,
+      "changed": 3
+    },
+    {
+      "pdfDate": "09.17.2026",
+      "rows": 206,
+      "people": 36,
+      "added": 0,
+      "removed": 0,
+      "changed": 0
+    },
+    {
+      "pdfDate": "09.24.2026",
+      "rows": 209,
+      "people": 36,
+      "added": 14,
+      "removed": 11,
+      "changed": 0
+    }
+  ],
+  "history": [
+    {
+      "docDate": "09.24.2026",
+      "vsLabel": "PDF 09.17.2026",
+      "comparedAt": "2026-09-27T00:00:00.000Z",
+      "items": [
+        {
+          "kind": "added",
+          "empId": "MP11270",
+          "name": "Che Lok Man",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "12.May.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11271",
+          "name": "Cheng Chung Mo",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "15.Dec.2026",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11272",
+          "name": "Cheng Ka Yan",
+          "qualification": "MTA0200",
+          "description": "Kalitta Air RII B747-400",
+          "dueDate": "29.Jun.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11273",
+          "name": "Cheung Michael",
+          "qualification": "MTA0310-CF6",
+          "description": "B747-400 Engine Run with CF6 Engines",
+          "dueDate": "01.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11277",
+          "name": "Chu Ka Lun",
+          "qualification": "MTA0315-GE",
+          "description": "B777 Engine Run with GE Engines",
+          "dueDate": "01.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP12621",
+          "name": "Ho Pak Ki",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "08.Jul.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11283",
+          "name": "Ko Chun Yin (Eric)",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "16.Apr.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11287",
+          "name": "Lau Sai Wah",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "22.Apr.2027",
+          "status": "QUALIFIED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11295",
+          "name": "NG Chi Chiu",
+          "qualification": "MTA0315-GE",
+          "description": "B777 Engine Run with GE Engines",
+          "dueDate": "01.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11294",
+          "name": "NG Nai Man",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "14.May.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11296",
+          "name": "Pang Chung Fai",
+          "qualification": "MTA0315-GE",
+          "description": "B777 Engine Run with GE Engines",
+          "dueDate": "01.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11300",
+          "name": "Tang Cheong Fu",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "15.Jun.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP11304",
+          "name": "Yee Emmanuel Parrilla",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "10.Jul.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "added",
+          "empId": "MP12618",
+          "name": "Zhu Zhen Long",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "29.Jul.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11270",
+          "name": "Che Lok Man",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "14.Dec.2026",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11273",
+          "name": "Cheung Michael",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "20.Dec.2026",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11277",
+          "name": "Chu Ka Lun",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "02.May.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11280",
+          "name": "Hui Chung Foon Felix",
+          "qualification": "MTA0001",
+          "description": "AWR",
+          "dueDate": "N/A",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11283",
+          "name": "Ko Chun Yin (Eric)",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "16.Apr.2027",
+          "status": "QUALIFIED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11290",
+          "name": "Li Man-Wah",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "05.Apr.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11295",
+          "name": "NG Chi Chiu",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "20.Dec.2026",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11294",
+          "name": "NG Nai Man",
+          "qualification": "MTA0310-CF6",
+          "description": "B747-400 Engine Run with CF6 Engines",
+          "dueDate": "01.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11296",
+          "name": "Pang Chung Fai",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "22.Apr.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11300",
+          "name": "Tang Cheong Fu",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "10.May.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11304",
+          "name": "Yee Emmanuel Parrilla",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "15.Jul.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        }
+      ]
+    },
+    {
+      "docDate": "09.10.2026",
+      "vsLabel": "PDF 09.03.2026",
+      "comparedAt": "2026-09-27T00:00:00.000Z",
+      "items": [
+        {
+          "kind": "added",
+          "empId": "MP12618",
+          "name": "Zhu Zhen Long",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "28.Jul.2027",
+          "status": "QUALIFIED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11270",
+          "name": "Che Lok Man",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "12.May.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11271",
+          "name": "Cheng Chung Mo",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "15.Dec.2026",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11273",
+          "name": "Cheung Michael",
+          "qualification": "MTA0310-CF6",
+          "description": "B747-400 Engine Run with CF6 Engines",
+          "dueDate": "01.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11277",
+          "name": "Chu Ka Lun",
+          "qualification": "MTA0315-GE",
+          "description": "B777 Engine Run with GE Engines",
+          "dueDate": "01.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP12621",
+          "name": "Ho Pak Ki",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "08.Jul.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11283",
+          "name": "Ko Chun Yin (Eric)",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "16.Apr.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11287",
+          "name": "Lau Sai Wah",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "22.Apr.2027",
+          "status": "QUALIFIED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11295",
+          "name": "NG Chi Chiu",
+          "qualification": "MTA0315-GE",
+          "description": "B777 Engine Run with GE Engines",
+          "dueDate": "01.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11294",
+          "name": "NG Nai Man",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "14.May.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11296",
+          "name": "Pang Chung Fai",
+          "qualification": "MTA0315-GE",
+          "description": "B777 Engine Run with GE Engines",
+          "dueDate": "01.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11300",
+          "name": "Tang Cheong Fu",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "15.Jun.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11304",
+          "name": "Yee Emmanuel Parrilla",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "10.Jul.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP12618",
+          "name": "Zhu Zhen Long",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "29.Jul.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12736",
+          "name": "Luo Yaonan",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "26.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "issue 09.Sep.2025 → 03.Sep.2026; due 03.Sep.2026 → 26.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12620",
+          "name": "NG Man Chi Hubert",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "27.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "issue 16.Sep.2025 → 27.Aug.2026; due 04.Sep.2026 → 27.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12797",
+          "name": "Zhang Zhong Ping",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "22.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "status NON-AUTHORIZED → AUTHORIZED"
+        }
+      ]
+    },
+    {
+      "docDate": "09.03.2026",
+      "vsLabel": "PDF 08.27.2026",
+      "comparedAt": "2026-09-27T00:00:00.000Z",
+      "items": [
+        {
+          "kind": "changed",
+          "empId": "MP12611",
+          "name": "Chen Xue Shan",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "17.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "issue 11.Sep.2025 → 31.Aug.2026; due 30.Aug.2026 → 17.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12798",
+          "name": "Ke Ren Ti",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "24.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "issue 19.Sep.2025 → 31.Aug.2026; due 01.Sep.2026 → 24.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12614",
+          "name": "Palagawong Na Ayuttaya Kitipong",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "22.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "issue 19.Sep.2025 → 31.Aug.2026; due 17.Sep.2026 → 22.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12615",
+          "name": "Yang Shaopeng",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "28.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 13.Sep.2026 → 28.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12797",
+          "name": "Zhang Zhong Ping",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "22.Aug.2027",
+          "status": "NON-AUTHORIZED",
+          "note": "issue 07.Oct.2025 → 31.Aug.2026; due 07.Sep.2026 → 22.Aug.2027; status AUTHORIZED → NON-AUTHORIZED"
+        }
+      ]
+    },
+    {
+      "docDate": "08.27.2026",
+      "vsLabel": "PDF 08.20.2026",
+      "comparedAt": "2026-09-27T00:00:00.000Z",
+      "items": [
+        {
+          "kind": "changed",
+          "empId": "MP12611",
+          "name": "Chen Xue Shan",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "18.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 26.Aug.2026 → 18.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12619",
+          "name": "Chung Chi",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "25.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 29.Aug.2026 → 25.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12798",
+          "name": "Ke Ren Ti",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "25.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 12.Sep.2026 → 25.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12798",
+          "name": "Ke Ren Ti",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "24.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 08.Sep.2026 → 24.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12798",
+          "name": "Ke Ren Ti",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "24.Aug.2027",
+          "status": "QUALIFIED",
+          "note": "due 08.Sep.2026 → 24.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12614",
+          "name": "Palagawong Na Ayuttaya Kitipong",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "22.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 05.Sep.2026 → 22.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12614",
+          "name": "Palagawong Na Ayuttaya Kitipong",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "22.Aug.2027",
+          "status": "QUALIFIED",
+          "note": "due 05.Sep.2026 → 22.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12623",
+          "name": "Tsang Wai Ching",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "25.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 07.Sep.2026 → 25.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12623",
+          "name": "Tsang Wai Ching",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "21.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 07.Sep.2026 → 21.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12623",
+          "name": "Tsang Wai Ching",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "21.Aug.2027",
+          "status": "QUALIFIED",
+          "note": "due 07.Sep.2026 → 21.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12615",
+          "name": "Yang Shaopeng",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "22.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 13.Sep.2026 → 22.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12615",
+          "name": "Yang Shaopeng",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "22.Aug.2027",
+          "status": "QUALIFIED",
+          "note": "due 13.Sep.2026 → 22.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12797",
+          "name": "Zhang Zhong Ping",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "22.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 10.Sep.2026 → 22.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12797",
+          "name": "Zhang Zhong Ping",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "22.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 14.Sep.2026 → 22.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12797",
+          "name": "Zhang Zhong Ping",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "22.Aug.2027",
+          "status": "QUALIFIED",
+          "note": "due 14.Sep.2026 → 22.Aug.2027"
+        }
+      ]
+    },
+    {
+      "docDate": "08.20.2026",
+      "vsLabel": "PDF 08.13.2026",
+      "comparedAt": "2026-09-27T00:00:00.000Z",
+      "items": [
+        {
+          "kind": "changed",
+          "empId": "MP12611",
+          "name": "Chen Xue Shan",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "17.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 26.Aug.2026 → 17.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12611",
+          "name": "Chen Xue Shan",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "17.Aug.2027",
+          "status": "QUALIFIED",
+          "note": "due 26.Aug.2026 → 17.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12617",
+          "name": "Choy Wai Yu",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "14.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 23.Aug.2026 → 14.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12619",
+          "name": "Chung Chi",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "16.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 29.Aug.2026 → 16.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12619",
+          "name": "Chung Chi",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "16.Aug.2027",
+          "status": "QUALIFIED",
+          "note": "due 29.Aug.2026 → 16.Aug.2027"
+        }
+      ]
+    },
+    {
+      "docDate": "08.13.2026",
+      "vsLabel": "06 Aug 2026 (baseline)",
+      "comparedAt": "2026-09-27T00:00:00.000Z",
+      "items": [
+        {
+          "kind": "added",
+          "empId": "MP11286",
+          "name": "Kwok Wai Man",
+          "qualification": "MTA0200",
+          "description": "Kalitta Air RII B747-400",
+          "dueDate": "13.Jul.2027",
+          "status": "AUTHORIZED",
+          "note": "Qualification present in this document, not in previous reference"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11275",
+          "name": "Cheung Ho Fung",
+          "qualification": "MTA0001",
+          "description": "AWR",
+          "dueDate": "N/A",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11275",
+          "name": "Cheung Ho Fung",
+          "qualification": "MTA0200",
+          "description": "Kalitta Air RII B747-400",
+          "dueDate": "14.Aug.2026",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11275",
+          "name": "Cheung Ho Fung",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "14.Aug.2026",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11275",
+          "name": "Cheung Ho Fung",
+          "qualification": "MTA0900B",
+          "description": "LMP 400",
+          "dueDate": "12.Aug.2026",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11275",
+          "name": "Cheung Ho Fung",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "12.Aug.2026",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11275",
+          "name": "Cheung Ho Fung",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "15.Jul.2027",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP11275",
+          "name": "Cheung Ho Fung",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "15.Jul.2027",
+          "status": "QUALIFIED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP12624",
+          "name": "Cheung Tin Ho",
+          "qualification": "MTA0001",
+          "description": "AWR",
+          "dueDate": "N/A",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP12624",
+          "name": "Cheung Tin Ho",
+          "qualification": "MTA0211",
+          "description": "Kalitta Air RII B777",
+          "dueDate": "04.Sep.2026",
+          "status": "AUTHORIZED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP12624",
+          "name": "Cheung Tin Ho",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "14.Aug.2026",
+          "status": "QUALIFIED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "removed",
+          "empId": "MP12618",
+          "name": "Zhu Zhen Long",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "28.Jul.2027",
+          "status": "QUALIFIED",
+          "note": "Was in previous reference; missing from this document"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12550",
+          "name": "Cen Che",
+          "qualification": "MTA0900D",
+          "description": "LMP 777",
+          "dueDate": "05.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 30.Aug.2026 → 05.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12550",
+          "name": "Cen Che",
+          "qualification": "MTA0902",
+          "description": "B777 ETOPS Authorized",
+          "dueDate": "04.Aug.2027",
+          "status": "AUTHORIZED",
+          "note": "due 24.Aug.2026 → 04.Aug.2027"
+        },
+        {
+          "kind": "changed",
+          "empId": "MP12550",
+          "name": "Cen Che",
+          "qualification": "MTQ0902",
+          "description": "B777 ETOPS Qualified",
+          "dueDate": "04.Aug.2027",
+          "status": "QUALIFIED",
+          "note": "due 24.Aug.2026 → 04.Aug.2027"
+        }
+      ]
+    }
+  ],
+  "note": "Seeded from chat paste (06–27 Aug + 03 Sep 2026) and Downloads PDFs (10/17/24 Sep 2026). Page loads into localStorage when history empty."
+}
