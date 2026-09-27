@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VHHH Line MX Weekly Auth</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #c8d0d8;
+    --paper: #f6f4ee;
+    --card: #ffffff;
+    --navy: #015260;
+    --teal: #00778b;
+    --green: #1f6b3a;
+    --green-bg: #e8f5ec;
+    --red: #8b1a1a;
+    --red-bg: #fdeaea;
+    --amber: #8a5a00;
+    --amber-bg: #fff8e6;
+    --hot: #7a1f1f;
+    --admin-h: #6b3e26;
+    --admin-bg: #f6efe6;
+    --admin-line: #c4a484;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.4;
+    font-size: 13px;
+  }
+  .page { max-width: 1480px; margin: 0 auto; padding: 22px 18px 56px; }
+  h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); }
+  .subtitle { color: var(--muted); margin: 0 0 14px; }
+  .disclaimer {
+    border: 1px solid #c44; background: #fff5f5; padding: 10px 12px;
+    margin: 0 0 16px; font-size: 12px;
+  }
+  .admin-block {
+    border: 1px solid var(--admin-line);
+    background: var(--admin-bg);
+    padding: 14px 16px;
+    margin: 0 0 16px;
+  }
+  .admin-block h2 {
+    margin: 0 0 10px; font-size: 14px; color: var(--admin-h);
+    background: none; padding: 0; text-transform: none; font-weight: 700;
+  }
+  textarea {
+    width: 100%; min-height: 160px; font: inherit; font-size: 12px;
+    border: 1px solid var(--admin-line); padding: 8px; resize: vertical;
+  }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+  button {
+    font: inherit; font-size: 13px; border: 1px solid var(--line);
+    background: var(--card); padding: 7px 12px; cursor: pointer;
+  }
+  button:hover { background: #e5f4f6; }
+  button.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  button.primary:hover { background: var(--teal); }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .stat {
+    border: 1px solid var(--line); background: var(--card);
+    padding: 8px 12px; min-width: 120px;
+  }
+  .stat b { display: block; font-size: 18px; color: var(--navy); }
+  .stat span { color: var(--muted); font-size: 11px; }
+  .stat.hot b { color: var(--hot); }
+  .stat.add b { color: var(--green); }
+  .stat.rem b { color: var(--red); }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; align-items: center; }
+  .filters label { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+  .filters select, .filters input[type="search"] {
+    font: inherit; padding: 5px 8px; border: 1px solid var(--line);
+  }
+  .filters input[type="search"] { min-width: 200px; }
+  .legend { font-size: 12px; color: var(--muted); margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .legend i { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; border: 1px solid var(--line); }
+  .sw-added { background: var(--green-bg); }
+  .sw-removed { background: var(--red-bg); }
+  .sw-changed { background: var(--amber-bg); }
+  .sw-overdue { background: #f4d4d0; }
+  .sw-duesoon { background: #fff3b0; }
+  h2.section {
+    font-size: 14px; margin: 20px 0 8px; padding: 7px 11px;
+    background: var(--navy); color: #fff; font-weight: 650;
+  }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); background: var(--card); }
+  table { border-collapse: collapse; width: 100%; min-width: 1200px; }
+  th, td { border: 1px solid var(--line); padding: 5px 7px; vertical-align: top; text-align: left; }
+  th { background: #e5f4f6; position: sticky; top: 0; z-index: 1; }
+  tbody tr:nth-child(even):not(.diff-added):not(.diff-removed):not(.diff-changed) { background: #fafafa; }
+  tr.diff-added { background: var(--green-bg) !important; }
+  tr.diff-removed { background: var(--red-bg) !important; text-decoration: line-through; color: var(--muted); }
+  tr.diff-changed { background: var(--amber-bg) !important; }
+  tr.exp-overdue { box-shadow: inset 3px 0 0 var(--hot); }
+  tr.exp-duesoon { box-shadow: inset 3px 0 0 var(--amber); }
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 1px 5px; border-radius: 2px; margin-right: 4px; vertical-align: middle;
+  }
+  .tag-add { background: #c8ebd4; color: var(--green); }
+  .tag-rem { background: #f0c8c8; color: var(--red); }
+  .tag-chg { background: #f0e0a8; color: var(--amber); }
+  .tag-hot { background: #f4d4d0; color: var(--hot); }
+  .tag-soon { background: #fff3b0; color: var(--amber); }
+  .status-authorized { color: var(--green); font-weight: 600; }
+  .status-qualified { color: var(--teal); font-weight: 600; }
+  .ref-note { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+  .msg { padding: 10px 12px; margin: 0 0 12px; border: 1px solid var(--line); background: var(--card); font-size: 12px; }
+  .msg.err { border-color: #c44; background: #fff5f5; color: var(--red); }
+  .msg.ok { border-color: #6a9; background: #f0faf4; }
+  .page-version { margin-top: 20px; text-align: right; color: var(--muted); font-size: 11px; }
+  details.removed-block { margin: 0 0 14px; font-size: 12px; }
+  details.removed-block summary { cursor: pointer; font-weight: 650; color: var(--red); }
+  @media print { th { position: static; } .admin-block { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>VHHH Line MX Weekly Auth</h1>
+  <p class="subtitle">Kalitta AMOS · Training by Qualification · paste weekly text, diff vs last reference, expiry alerts (≤30 days)</p>
+  <p class="disclaimer"><strong>FOR REFERENCE ONLY</strong> — AMOS report does not authorize, qualify, or give permit status. Hanger list not shown here.</p>
+
+  <p class="ref-note" id="ref-note">Reference: loading…</p>
+
+  <div class="admin-block">
+    <h2>Paste new weekly report (plain text)</h2>
+    <textarea id="paste" placeholder="Paste Line MX Weekly Auth text here (AMOS export)…"></textarea>
+    <div class="btn-row">
+      <button type="button" class="primary" id="btn-compare">Compare to reference</button>
+      <button type="button" id="btn-set-ref">Use this paste as reference for next week</button>
+      <button type="button" id="btn-reset-ref">Reset reference to 10 Sep 2026 baseline</button>
+      <button type="button" id="btn-clear">Clear paste</button>
+    </div>
+  </div>
+
+  <p class="msg" id="msg" hidden></p>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="filters">
+    <label>Show <select id="f-view">
+      <option value="all">All rows (current)</option>
+      <option value="changes">Changes only</option>
+      <option value="expiry">Expiry (overdue / ≤30 days)</option>
+      <option value="changes-expiry">Changes + expiry</option>
+    </select></label>
+    <label>Search <input type="search" id="f-q" placeholder="Emp ID / name / qual / HAECO #"></label>
+  </div>
+
+  <p class="legend">
+    <span><i class="sw-added"></i>Added vs reference</span>
+    <span><i class="sw-removed"></i>Removed vs reference</span>
+    <span><i class="sw-changed"></i>Changed (date / status)</span>
+    <span><i class="sw-overdue"></i>Overdue</span>
+    <span><i class="sw-duesoon"></i>Due within 30 days</span>
+  </p>
+
+  <details class="removed-block" id="removed-wrap" hidden>
+    <summary id="removed-summary">Removed vs reference</summary>
+    <div class="table-wrap" id="removed-table"></div>
+  </details>
+
+  <h2 class="section">Current report</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Emp ID</th><th>Last name</th><th>First name</th><th>Job code</th>
+          <th>HAECO #</th><th>HAECO name</th><th>CG/PAX</th><th>Dept</th>
+          <th>Qualification</th><th>Description</th><th>Issue</th><th>Due</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <p class="page-version">page-version 1.0</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const LS_REF = "hx:vhhh-lmx-auth:reference";
+  const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+  const QUAL_TAIL = /(MT[AQ]\d{4}[A-Z]?(?:-[A-Z0-9]+)?)\s+(.+?)\s+(VHHH)\s+(\d{2}\.[A-Za-z]{3}\.\d{4})\s+(N\/A|\d{2}\.[A-Za-z]{3}\.\d{4})(?:\s+(AUTHORIZED|QUALIFIED))?\s*$/;
+  const EMP_START = /^MP\d+\b/;
+  const PAGE_FOOTER_RE = /\s+\d{2}\.[A-Za-z]{3}\.\d{4}\s+Page\s+\d+\s+\/\s+\d+.*$/;
+  const PAGE_HEADER_JUNK_RE = /MX PROVIDERSQualification Type:[\s\S]*?(?=MP\d+\b)/g;
+  const JOB_MARKERS = ["Inspector-NDT", "MX Provider Mechanic/Inspector", "Mechanic/Inspector", "MX Provider", "Inspector"];
+  const SKIP = ["Mx Trng", "produced by", "*FOR REFERENCE", "Emp ID", "**DOES NOT", "Qualification Type:", "Department", "MX PROVIDERS"];
+
+  let baselinePack = null;
+  let mpLookup = {};
+  let reference = null;
+  let currentRows = [];
+  let diff = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  function parseAmosDate(s) {
+    if (!s || s === "N/A") return null;
+    const m = String(s).match(/^(\d{2})\.([A-Za-z]{3})\.(\d{4})$/);
+    if (!m) return null;
+    const mo = MONTHS[m[2]];
+    if (mo === undefined) return null;
+    return new Date(Number(m[3]), mo, Number(m[1]));
+  }
+
+  function dueKind(dueStr) {
+    const d = parseAmosDate(dueStr);
+    if (!d) return "";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffDays = Math.floor((d - today) / 86400000);
+    if (diffDays < 0) return "overdue";
+    if (diffDays <= 30) return "duesoon";
+    return "";
+  }
+
+  function normalizeBlob(blob) {
+    return blob.replace(PAGE_FOOTER_RE, "").replace(PAGE_HEADER_JUNK_RE, "").replace(/\s+/g, " ").trim();
+  }
+
+  function parseJob(pre) {
+    let job = "";
+    let work = pre;
+    for (const marker of JOB_MARKERS) {
+      if (work.includes(marker)) {
+        job = marker;
+        work = work.replace(marker, " ");
+        break;
+      }
+    }
+    work = work.replace(/\s+/g, " ").trim();
+    const parts = work.split(/\s+/);
+    const lastName = parts[0] || "";
+    const firstName = parts.slice(1).join(" ");
+    return { lastName, firstName, jobCode: job };
+  }
+
+  function cleanLines(text) {
+    return text.split(/\r?\n/).map((l) => l.trim()).filter((line) => {
+      if (!line) return false;
+      if (/^Page \d+ /i.test(line)) return false;
+      if (/^\d+\.[A-Za-z]{3}\.\d{4}\s+\d+:\d+/.test(line)) return false;
+      return !SKIP.some((s) => line.includes(s));
+    });
+  }
+
+  function splitRecords(text) {
+    const lines = cleanLines(text);
+    const merged = [];
+    let buf = [];
+    for (const line of lines) {
+      if (EMP_START.test(line)) {
+        if (buf.length) merged.push(normalizeBlob(buf.join(" ")));
+        buf = [line];
+      } else if (buf.length) {
+        buf.push(line);
+      }
+    }
+    if (buf.length) merged.push(normalizeBlob(buf.join(" ")));
+    const out = [];
+    for (const blob of merged) {
+      const parts = blob.split(/(?=MP\d{5}\b)/).filter(Boolean);
+      out.push(...parts.map((p) => normalizeBlob(p)));
+    }
+    return out;
+  }
+
+  function enrichRow(r) {
+    const info = mpLookup[r.empId] || {};
+    r.haecoStaff = info.staff || r.haecoStaff || "";
+    r.haecoName = info.name || r.haecoName || "";
+    r.dept = info.dept || r.dept || "";
+    r.cgPax = r.cgPax || info.cgPax || "";
+    return r;
+  }
+
+  function parseAmosText(text) {
+    const rows = [];
+    const unparsed = [];
+    for (const blob of splitRecords(text)) {
+      const m = QUAL_TAIL.exec(blob);
+      if (!m) {
+        unparsed.push(blob.slice(0, 100));
+        continue;
+      }
+      const empId = blob.split(/\s/, 1)[0];
+      const pre = blob.slice(empId.length, m.index).trim();
+      const names = parseJob(pre);
+      rows.push(enrichRow({
+        empId,
+        lastName: names.lastName,
+        firstName: names.firstName,
+        jobCode: names.jobCode,
+        qualification: m[1],
+        description: m[2].trim(),
+        station: m[3],
+        issueDate: m[4],
+        dueDate: m[5],
+        status: m[6] || "",
+      }));
+    }
+    return { rows, unparsed };
+  }
+
+  function qualKey(r) {
+    return r.empId + "|" + r.qualification;
+  }
+
+  function rowChanged(a, b) {
+    return a.issueDate !== b.issueDate || a.dueDate !== b.dueDate || a.status !== b.status;
+  }
+
+  function computeDiff(refRows, newRows) {
+    const refMap = new Map(refRows.map((r) => [qualKey(r), r]));
+    const newMap = new Map(newRows.map((r) => [qualKey(r), r]));
+    const refEmps = new Set(refRows.map((r) => r.empId));
+    const newEmps = new Set(newRows.map((r) => r.empId));
+    const added = [];
+    const removed = [];
+    const changed = [];
+    const tags = new Map();
+
+    for (const [k, r] of newMap) {
+      if (!refMap.has(k)) {
+        added.push(r);
+        tags.set(k, "added");
+      } else if (rowChanged(refMap.get(k), r)) {
+        changed.push({ was: refMap.get(k), now: r });
+        tags.set(k, "changed");
+      }
+    }
+    for (const [k, r] of refMap) {
+      if (!newMap.has(k)) {
+        removed.push(r);
+      }
+    }
+    const peopleAdded = [...newEmps].filter((e) => !refEmps.has(e));
+    const peopleRemoved = [...refEmps].filter((e) => !newEmps.has(e));
+
+    return { added, removed, changed, tags, peopleAdded, peopleRemoved };
+  }
+
+  function esc(s) {
+    return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function statusClass(s) {
+    if (s === "AUTHORIZED") return "status-authorized";
+    if (s === "QUALIFIED") return "status-qualified";
+    return "";
+  }
+
+  function rowTags(r, d) {
+    const parts = [];
+    const k = qualKey(r);
+    if (d && d.tags.get(k) === "added") parts.push('<span class="tag tag-add">NEW</span>');
+    if (d && d.tags.get(k) === "changed") parts.push('<span class="tag tag-chg">CHG</span>');
+    const exp = dueKind(r.dueDate);
+    if (exp === "overdue") parts.push('<span class="tag tag-hot">OVERDUE</span>');
+    if (exp === "duesoon") parts.push('<span class="tag tag-soon">≤30d</span>');
+    return parts.join("");
+  }
+
+  function rowClass(r, d) {
+    const cls = [];
+    const k = qualKey(r);
+    if (d) {
+      if (d.tags.get(k) === "added") cls.push("diff-added");
+      if (d.tags.get(k) === "changed") cls.push("diff-changed");
+    }
+    const exp = dueKind(r.dueDate);
+    if (exp === "overdue") cls.push("exp-overdue");
+    if (exp === "duesoon") cls.push("exp-duesoon");
+    return cls.join(" ");
+  }
+
+  function matchFilter(r, d) {
+    const q = ($("f-q").value || "").trim().toLowerCase();
+    if (q) {
+      const hay = [r.empId, r.lastName, r.firstName, r.qualification, r.description, r.haecoStaff, r.haecoName, r.dept].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    const view = $("f-view").value;
+    const k = qualKey(r);
+    const isChg = d && (d.tags.get(k) === "added" || d.tags.get(k) === "changed");
+    const isExp = dueKind(r.dueDate) !== "";
+    if (view === "all") return true;
+    if (view === "changes") return isChg;
+    if (view === "expiry") return isExp;
+    if (view === "changes-expiry") return isChg || isExp;
+    return true;
+  }
+
+  function renderRemoved() {
+    if (!diff || !diff.removed.length) {
+      $("removed-wrap").hidden = true;
+      return;
+    }
+    $("removed-wrap").hidden = false;
+    $("removed-summary").textContent = "Removed vs reference (" + diff.removed.length + " qualification row(s), " + diff.peopleRemoved.length + " person(s))";
+    const head = "<table><thead><tr><th>Emp ID</th><th>Name</th><th>Qual</th><th>Description</th><th>Due</th><th>Status</th></tr></thead><tbody>";
+    const body = diff.removed.map((r) =>
+      "<tr class=\"diff-removed\"><td>" + esc(r.empId) + "</td><td>" + esc(r.lastName + " " + r.firstName) + "</td><td>" + esc(r.qualification) + "</td><td>" + esc(r.description) + "</td><td>" + esc(r.dueDate) + "</td><td>" + esc(r.status) + "</td></tr>"
+    ).join("");
+    $("removed-table").innerHTML = head + body + "</tbody></table>";
+  }
+
+  function renderStats() {
+    const emps = new Set(currentRows.map((r) => r.empId));
+    let hot = 0;
+    currentRows.forEach((r) => { if (dueKind(r.dueDate)) hot++; });
+    const parts = [
+      "<div class=\"stat\"><b>" + emps.size + "</b><span>People (current)</span></div>",
+      "<div class=\"stat\"><b>" + currentRows.length + "</b><span>Qualification rows</span></div>",
+      "<div class=\"stat hot\"><b>" + hot + "</b><span>Overdue / ≤30 days</span></div>",
+    ];
+    if (diff) {
+      parts.push("<div class=\"stat add\"><b>+" + diff.added.length + "</b><span>Qual rows added</span></div>");
+      parts.push("<div class=\"stat rem\"><b>-" + diff.removed.length + "</b><span>Qual rows removed</span></div>");
+      parts.push("<div class=\"stat\"><b>" + diff.changed.length + "</b><span>Qual rows changed</span></div>");
+      parts.push("<div class=\"stat add\"><b>+" + diff.peopleAdded.length + "</b><span>People added</span></div>");
+      parts.push("<div class=\"stat rem\"><b>-" + diff.peopleRemoved.length + "</b><span>People removed</span></div>");
+    }
+    $("stats").innerHTML = parts.join("");
+  }
+
+  function renderTable() {
+    const tbody = $("tbody");
+    const sorted = currentRows.slice().sort((a, b) => {
+      const c = a.empId.localeCompare(b.empId);
+      return c !== 0 ? c : a.qualification.localeCompare(b.qualification);
+    });
+    tbody.innerHTML = sorted.filter((r) => matchFilter(r, diff)).map((r) =>
+      "<tr class=\"" + rowClass(r, diff) + "\">" +
+      "<td>" + rowTags(r, diff) + "</td>" +
+      "<td>" + esc(r.empId) + "</td>" +
+      "<td>" + esc(r.lastName) + "</td>" +
+      "<td>" + esc(r.firstName) + "</td>" +
+      "<td>" + esc(r.jobCode) + "</td>" +
+      "<td>" + esc(r.haecoStaff) + "</td>" +
+      "<td>" + esc(r.haecoName) + "</td>" +
+      "<td>" + esc(r.cgPax) + "</td>" +
+      "<td>" + esc(r.dept) + "</td>" +
+      "<td>" + esc(r.qualification) + "</td>" +
+      "<td>" + esc(r.description) + "</td>" +
+      "<td>" + esc(r.issueDate) + "</td>" +
+      "<td>" + esc(r.dueDate) + "</td>" +
+      "<td class=\"" + statusClass(r.status) + "\">" + esc(r.status) + "</td>" +
+      "</tr>"
+    ).join("");
+    renderRemoved();
+    renderStats();
+  }
+
+  function updateRefNote() {
+    $("ref-note").textContent = "Reference for diff: " + reference.label + " · " + reference.rows.length + " qual rows · " + new Set(reference.rows.map((r) => r.empId)).size + " people";
+  }
+
+  function showMsg(text, ok) {
+    const el = $("msg");
+    el.hidden = false;
+    el.className = "msg " + (ok ? "ok" : "err");
+    el.textContent = text;
+  }
+
+  function hideMsg() {
+    $("msg").hidden = true;
+  }
+
+  function saveReference(pack) {
+    reference = pack;
+    localStorage.setItem(LS_REF, JSON.stringify(pack));
+    updateRefNote();
+  }
+
+  function loadReference() {
+    try {
+      const raw = localStorage.getItem(LS_REF);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { /* ignore */ }
+    return {
+      reportDate: baselinePack.reportDate,
+      label: baselinePack.label,
+      rows: baselinePack.rows.slice(),
+    };
+  }
+
+  function onCompare() {
+    hideMsg();
+    const text = $("paste").value.trim();
+    if (!text) {
+      showMsg("Paste the Line MX weekly report text first.", false);
+      return;
+    }
+    const parsed = parseAmosText(text);
+    if (!parsed.rows.length) {
+      showMsg("No qualification rows parsed. Check the paste is Line MX AMOS text.", false);
+      return;
+    }
+    if (parsed.unparsed.length) {
+      showMsg("Parsed " + parsed.rows.length + " rows; " + parsed.unparsed.length + " fragment(s) skipped.", true);
+    } else {
+      showMsg("Parsed " + parsed.rows.length + " rows from " + new Set(parsed.rows.map((r) => r.empId)).size + " people.", true);
+    }
+    currentRows = parsed.rows;
+    diff = computeDiff(reference.rows, currentRows);
+    renderTable();
+  }
+
+  function onSetRef() {
+    if (!currentRows.length) {
+      showMsg("Compare a paste first, or paste is empty.", false);
+      return;
+    }
+    const label = prompt("Label for this reference (e.g. 17 Sep 2026):", "");
+    saveReference({
+      reportDate: new Date().toISOString().slice(0, 10),
+      label: label || "Saved reference",
+      rows: currentRows.slice(),
+    });
+    diff = computeDiff(reference.rows, currentRows);
+    showMsg("Reference updated. Next compare will diff against this version.", true);
+    renderTable();
+  }
+
+  function onResetRef() {
+    saveReference({
+      reportDate: baselinePack.reportDate,
+      label: baselinePack.label,
+      rows: baselinePack.rows.slice(),
+    });
+    diff = currentRows.length ? computeDiff(reference.rows, currentRows) : null;
+    showMsg("Reference reset to 10 Sep 2026 baseline.", true);
+    renderTable();
+  }
+
+  async function init() {
+    try {
+      const res = await fetch("vhhh-line-mx-baseline.json?v=1");
+      baselinePack = await res.json();
+    } catch (e) {
+      showMsg("Could not load baseline JSON.", false);
+      return;
+    }
+    mpLookup = baselinePack.mpLookup || {};
+    reference = loadReference();
+    currentRows = baselinePack.rows.slice();
+    diff = null;
+    updateRefNote();
+    renderTable();
+
+    $("btn-compare").addEventListener("click", onCompare);
+    $("btn-set-ref").addEventListener("click", onSetRef);
+    $("btn-reset-ref").addEventListener("click", onResetRef);
+    $("btn-clear").addEventListener("click", () => { $("paste").value = ""; hideMsg(); });
+    $("f-view").addEventListener("change", renderTable);
+    $("f-q").addEventListener("input", renderTable);
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

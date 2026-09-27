@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-27 本機（未有 MACHINE.md）
 
+- **VHHH Line MX Weekly Auth** 新頁：`vhhh-line-mx-weekly-auth.html` **v1.0** + `vhhh-line-mx-baseline.json`（10 Sep 2026 Line MX 219 rows）。Paste 純文字 → diff vs reference（localStorage；預設 baseline）、removed/added/changed highlight、due ≤30d / overdue。Hanger list 唔顯示。Hub `hx.html` **v12.1** 側欄新 link `#vhhh-lmx-auth`。GitHub 後備；Live Vercel。
+
+## 2026-09-27 本機（未有 MACHINE.md）
+
 - BRS：Close 只收埋 editor、保留 draft（含未確認）；只有 Delete 先刪。綠掣改名 **Add**（原 Confirm Add）。BRS **v3.1**、TOV **v12.6**（skip draft）、`hx-rules` **v5.6**、`hx.html` **v12.0**。GitHub 後備。
 
 ## 2026-09-27 本機（未有 MACHINE.md）
