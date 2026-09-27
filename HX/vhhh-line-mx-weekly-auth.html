@@ -201,7 +201,8 @@
   </div>
   <p class="hist-empty" id="hist-empty">No differences saved yet.</p>
 
-  <h2 class="section">Current report</h2>
+  <h2 class="section" id="current-heading">Current report</h2>
+  <p class="ref-note" id="current-note">Latest week vs previous week (highlights).</p>
   <div class="table-wrap">
     <table>
       <thead>
@@ -216,23 +217,40 @@
     </table>
   </div>
 
-      <p class="page-version">page-version 1.3</p>
+  <h2 class="section" id="removed-heading" hidden>Removed vs previous week</h2>
+  <div class="table-wrap" id="removed-wrap" hidden>
+    <table>
+      <thead>
+        <tr>
+          <th>HX Staff #</th>
+          <th>Emp ID</th><th>Last Name</th><th>First Name</th><th>Job Code</th>
+          <th>Qualification</th><th>Description</th><th>Station</th>
+          <th>Issue Date</th><th>Due Date</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="removed-body"></tbody>
+    </table>
+  </div>
+
+      <p class="page-version">page-version 1.4</p>
 </div>
 
 <script>
 (function () {
   "use strict";
 
-  const LS_REF = "hx:vhhh-lmx-auth:reference";
-  const LS_HIST = "hx:vhhh-lmx-auth:history";
+  const LS_REF = "hx:vhhh-lmx-auth:reference:v2";
+  const LS_HIST = "hx:vhhh-lmx-auth:history:v2";
+  const LS_SEED_VER = "hx:vhhh-lmx-auth:seed-ver";
+  const SEED_VER = 2;
+  const SEED_URL = "vhhh-line-mx-history-seed.json?v=1.4";
+  const BASELINE_URL = "vhhh-line-mx-baseline.json?v=1.4";
   const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
   const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const QUAL_TAIL = /(MT[AQ]\d{4}[A-Z]?(?:-[A-Z0-9]+)?)\s+(.+?)\s+(VHHH)\s+(\d{2}\.[A-Za-z]{3}\.\d{4})\s+(N\/A|\d{2}\.[A-Za-z]{3}\.\d{4})(?:\s+(AUTHORIZED|QUALIFIED|NON-AUTHORIZED))?\s*$/;
-  const EMP_START = /^MP\d+\b/;
-  const PAGE_FOOTER_RE = /\s+\d{2}\.[A-Za-z]{3}\.\d{4}\s+Page\s+\d+\s+\/\s+\d+.*$/;
-  const PAGE_HEADER_JUNK_RE = /MX PROVIDERSQualification Type:[\s\S]*?(?=MP\d+\b)/g;
+  const QUAL_RE = /(MP\d{5})\s+(.+?)\s+(MT[AQ]\d{4}[A-Z]?(?:-[A-Z0-9]+)?)\s+(.+?)\s+VHHH\s+(\d{2}\.[A-Za-z]{3}\.\d{4})\s+(N\/A|\d{2}\.[A-Za-z]{3}\.\d{4})(?:\s+(AUTHORIZED|QUALIFIED|NON-AUTHORIZED))?/;
+  const EMP_START = /^MP\d{5}\b/;
   const JOB_MARKERS = ["Inspector-NDT", "MX Provider Mechanic/Inspector", "Mechanic/Inspector", "MX Provider", "Inspector", "Mechanic"];
-  const SKIP = ["Mx Trng", "produced by", "*FOR REFERENCE", "Emp ID", "**DOES NOT", "Qualification Type:", "Department", "MX PROVIDERS"];
+  const HEADER_MARKERS = ["Mx Trng", "*FOR REFERENCE", "produced by", "Emp ID", "Qualification Type", "MX PROVIDERS", "**DOES NOT", "Department"];
 
   let baselinePack = null;
   let mpLookup = {};
@@ -240,6 +258,8 @@
   let currentRows = [];
   let diff = null;
   let history = [];
+  let currentPdfDate = "";
+  let previousPdfDate = "";
 
   const $ = (id) => document.getElementById(id);
 
@@ -293,85 +313,91 @@
     return "";
   }
 
-  function scrubBlob(blob) {
-    return String(blob || "")
-      .replace(/\*\*DOES NOT INCLUDE ON-HOLD USERS\*\*[\s\S]*?(?=MP\d{5}\b|$)/g, " ")
-      .replace(/MX PROVIDERSQualification Type:[\s\S]*?(?=MP\d{5}\b|$)/g, " ")
-      .replace(/Qualification Type:[\s\S]*?(?=MP\d{5}\b|$)/g, " ")
-      .replace(/produced by www\.swiss-as\.com AMOS/g, " ")
-      .replace(PAGE_FOOTER_RE, " ")
-      .replace(PAGE_HEADER_JUNK_RE, " ")
-      .replace(/Mx Trng[\s\S]*?Page\s+\d+\s+\/\s+\d+/g, " ")
-      .replace(/\*FOR REFERENCE ONLY[^*]*(?:\*[^*]*)*/g, " ")
-      .replace(/\s+Department\s*$/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
+  function isHeaderLine(s) {
+    if (EMP_START.test(s)) return false;
+    return HEADER_MARKERS.some((h) => s.includes(h));
   }
 
-  function normalizeBlob(blob) {
-    return scrubBlob(blob);
-  }
-
-  function parseJob(pre) {
+  function rowFromMatch(m) {
+    const empId = m[1];
+    let pre = m[2].trim();
     let job = "";
-    let work = pre;
-    for (const marker of JOB_MARKERS) {
-      if (work.includes(marker)) {
-        job = marker;
-        work = work.replace(marker, " ");
+    let name = pre;
+    for (const jm of JOB_MARKERS) {
+      if (pre.includes(jm)) {
+        const idx = pre.lastIndexOf(jm);
+        name = pre.slice(0, idx).trim();
+        job = pre.slice(idx).trim();
         break;
       }
     }
-    work = work.replace(/\s+/g, " ").trim();
-    const parts = work.split(/\s+/);
-    return { lastName: parts[0] || "", firstName: parts.slice(1).join(" "), jobCode: job };
+    const parts = name.split(/\s+/).filter(Boolean);
+    return {
+      empId,
+      lastName: parts[0] || "",
+      firstName: parts.slice(1).join(" "),
+      jobCode: job,
+      qualification: m[3],
+      description: m[4].trim(),
+      station: "VHHH",
+      issueDate: m[5],
+      dueDate: m[6],
+      status: m[7] || "",
+    };
   }
 
-  function cleanLines(text) {
-    const HEADER_CUT = /Emp ID Last Name \*? First Name \*?\*? Job Code Qualification \*?\*?\*? Description Station Issue Date \*?\*?\*?\*? Due Date Status\s*/i;
-    const out = [];
-    for (let line of String(text || "").split(/\r?\n/)) {
-      line = line.trim();
-      if (!line) continue;
-      if (/^Page \d+ /i.test(line)) continue;
-      if (/^\d+\.[A-Za-z]{3}\.\d{4}\s+\d+:\d+/.test(line)) continue;
-      // page-as-one-line paste: cut header, keep body from first MP
-      if (HEADER_CUT.test(line) || line.includes("Mx Trng")) {
-        const cut = line.split(HEADER_CUT);
-        line = cut.length > 1 ? cut.slice(1).join(" ") : line;
-        const mi = line.search(/MP\d{5}\b/);
-        if (mi >= 0) line = line.slice(mi);
-      } else if (SKIP.some((s) => line.includes(s)) && !EMP_START.test(line)) {
+  function blobsFromLines(lines) {
+    const blobs = [];
+    let buf = "";
+    for (const raw of lines) {
+      const s = String(raw || "").trim();
+      if (!s) continue;
+      if (EMP_START.test(s)) {
+        if (buf) blobs.push(buf);
+        buf = s;
         continue;
       }
-      line = scrubBlob(line);
-      if (line) out.push(line);
+      if (isHeaderLine(s) && !/MP\d{5}\b/.test(s)) continue;
+      const mi = s.search(/MP\d{5}\b/);
+      if (mi >= 0 && (isHeaderLine(s) || !buf)) {
+        if (buf) blobs.push(buf);
+        const rest = s.slice(mi);
+        const parts = rest.split(/(?=MP\d{5}\b)/).filter(Boolean);
+        for (let i = 0; i < parts.length; i++) {
+          if (i < parts.length - 1) blobs.push(parts[i].trim());
+          else buf = parts[i].trim();
+        }
+        continue;
+      }
+      if (buf) buf += " " + s;
     }
-    return out;
+    if (buf) blobs.push(buf);
+    return blobs;
   }
 
-  function splitRecords(text) {
-    const lines = cleanLines(text);
-    const merged = [];
-    let buf = [];
-    for (const line of lines) {
-      if (EMP_START.test(line)) {
-        if (buf.length) merged.push(normalizeBlob(buf.join(" ")));
-        buf = [line];
-      } else if (buf.length) {
-        buf.push(line);
-      } else if (/MP\d{5}\b/.test(line)) {
-        // body-only page line(s)
-        buf = [line];
+  function enrichRow(r) {
+    const info = mpLookup[r.empId] || {};
+    r.haecoStaff = info.staff || r.haecoStaff || "";
+    r.haecoName = info.name || r.haecoName || "";
+    r.dept = info.dept || r.dept || "";
+    // Status column is status text only — never attach CG/PAX badges.
+    delete r.cgPax;
+    return r;
+  }
+
+  function parseAmosText(text) {
+    const rows = [];
+    const unparsed = [];
+    const blobs = blobsFromLines(String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n"));
+    for (const blob of blobs) {
+      const m = QUAL_RE.exec(blob);
+      if (!m) {
+        if (/MP\d{5}\b/.test(blob)) unparsed.push(blob.slice(0, 120));
+        continue;
       }
+      rows.push(enrichRow(rowFromMatch(m)));
     }
-    if (buf.length) merged.push(normalizeBlob(buf.join(" ")));
-    const out = [];
-    for (const blob of merged) {
-      const parts = scrubBlob(blob).split(/(?=MP\d{5}\b)/).filter(Boolean);
-      out.push(...parts.map((p) => normalizeBlob(p)).filter((p) => EMP_START.test(p)));
-    }
-    return out;
+    return { rows, unparsed };
   }
 
   /** Split a multi-week paste into {pdfDate, text} chunks (oldest first). */
@@ -389,7 +415,6 @@
       const d = extractDocDateFromText(text);
       return d ? [{ pdfDate: d, text }] : [];
     }
-    // group consecutive same-date pages
     const groups = [];
     let cur = { pdfDate: hits[0].pdfDate, start: hits[0].index };
     for (let i = 1; i < hits.length; i++) {
@@ -399,53 +424,10 @@
       }
     }
     groups.push({ pdfDate: cur.pdfDate, start: cur.start, end: text.length });
-    // extend start backward a bit for header on first page of each group
     return groups.map((g, idx) => {
       const start = idx === 0 ? 0 : Math.max(0, g.start - 80);
       return { pdfDate: g.pdfDate, text: text.slice(start, g.end) };
     }).sort((a, b) => docDateSortKey(a.pdfDate) - docDateSortKey(b.pdfDate));
-  }
-
-  function enrichRow(r) {
-    const info = mpLookup[r.empId] || {};
-    r.haecoStaff = info.staff || r.haecoStaff || "";
-    r.haecoName = info.name || r.haecoName || "";
-    r.dept = info.dept || r.dept || "";
-    if (!r.cgPax) {
-      if (info.cgPax) r.cgPax = info.cgPax;
-      else if (info.group === "PAX") r.cgPax = "PAX";
-      else if (info.group === "CG" || info.group === "OC") r.cgPax = "CG";
-      else r.cgPax = "";
-    }
-    return r;
-  }
-
-  function parseAmosText(text) {
-    const rows = [];
-    const unparsed = [];
-    for (const blob of splitRecords(text)) {
-      const m = QUAL_TAIL.exec(blob);
-      if (!m) {
-        unparsed.push(blob.slice(0, 120));
-        continue;
-      }
-      const empId = blob.split(/\s/, 1)[0];
-      const pre = blob.slice(empId.length, m.index).trim();
-      const names = parseJob(pre);
-      rows.push(enrichRow({
-        empId,
-        lastName: names.lastName,
-        firstName: names.firstName,
-        jobCode: names.jobCode,
-        qualification: m[1],
-        description: m[2].trim(),
-        station: m[3],
-        issueDate: m[4],
-        dueDate: m[5],
-        status: m[6] || "",
-      }));
-    }
-    return { rows, unparsed };
   }
 
   function qualKey(r) {
@@ -728,6 +710,40 @@
         "<td class=\"" + statusClass(r.status) + "\">" + esc(r.status || "") + "</td>" +
         "</tr>";
     }).join("");
+
+    const remHead = $("removed-heading");
+    const remWrap = $("removed-wrap");
+    const remBody = $("removed-body");
+    if (diff && diff.removed && diff.removed.length) {
+      remHead.hidden = false;
+      remWrap.hidden = false;
+      remBody.innerHTML = diff.removed.map((r) => {
+        const er = enrichRow(Object.assign({}, r));
+        return "<tr class=\"diff-removed\">" +
+          "<td>" + esc(er.haecoStaff || "") + " <span class=\"tag tag-rem\">REMOVED</span></td>" +
+          "<td class=\"strike\">" + esc(er.empId) + "</td>" +
+          "<td class=\"strike\">" + esc(er.lastName) + "</td>" +
+          "<td class=\"strike\">" + esc(er.firstName) + "</td>" +
+          "<td class=\"strike\">" + esc(er.jobCode) + "</td>" +
+          "<td class=\"strike\">" + esc(er.qualification) + "</td>" +
+          "<td class=\"strike\">" + esc(er.description) + "</td>" +
+          "<td class=\"strike\">" + esc(er.station) + "</td>" +
+          "<td class=\"strike\">" + esc(er.issueDate) + "</td>" +
+          "<td class=\"strike\">" + esc(er.dueDate) + "</td>" +
+          "<td class=\"" + statusClass(er.status) + " strike\">" + esc(er.status || "") + "</td>" +
+          "</tr>";
+      }).join("");
+    } else {
+      remHead.hidden = true;
+      remWrap.hidden = true;
+      remBody.innerHTML = "";
+    }
+
+    if (currentPdfDate) {
+      $("current-note").textContent = "Current = PDF " + currentPdfDate +
+        (previousPdfDate ? (" vs previous " + previousPdfDate) : "") +
+        " · Status text only (no CG/PAX badge)";
+    }
     renderHistory();
     renderStats();
   }
@@ -883,14 +899,12 @@
     renderTable();
   }
 
-  async function loadHistorySeedIfEmpty() {
-    if (history.length) return false;
+  async function loadHistorySeed(force) {
     try {
-      const res = await fetch("vhhh-line-mx-history-seed.json?v=1.3");
+      const res = await fetch(SEED_URL);
       if (!res.ok) return false;
       const seed = await res.json();
       const batches = Array.isArray(seed.history) ? seed.history : [];
-      if (!batches.length) return false;
       history = batches
         .filter((b) => b && b.docDate && Array.isArray(b.items) && b.items.length)
         .map((b) => ({
@@ -901,10 +915,33 @@
         }));
       history.sort((a, b) => docDateSortKey(b.docDate) - docDateSortKey(a.docDate));
       saveHistory();
+
+      currentPdfDate = seed.currentPdfDate || "";
+      previousPdfDate = seed.previousPdfDate || "";
+      if (Array.isArray(seed.currentRows) && seed.currentRows.length) {
+        currentRows = seed.currentRows.map(enrichRow);
+      }
+      const prevRows = Array.isArray(seed.previousRows) ? seed.previousRows.map(enrichRow) : [];
+      if (currentRows.length && prevRows.length) {
+        diff = computeDiff(prevRows, currentRows);
+        saveReference({
+          reportDate: new Date().toISOString().slice(0, 10),
+          label: previousPdfDate ? ("PDF " + previousPdfDate) : "Previous week",
+          rows: prevRows,
+        });
+      } else if (currentRows.length) {
+        diff = null;
+      }
+      try { localStorage.setItem(LS_SEED_VER, String(SEED_VER)); } catch (e) { /* ignore */ }
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  async function loadHistorySeedIfEmpty() {
+    if (history.length) return false;
+    return loadHistorySeed(false);
   }
 
   async function onClearHist() {
@@ -915,8 +952,8 @@
     if (!confirm("Clear all saved difference history in this browser?")) return;
     history = [];
     saveHistory();
-    const seeded = await loadHistorySeedIfEmpty();
-    showMsg(seeded ? "Difference history cleared · reloaded seeded weekly chain." : "Difference history cleared.", true);
+    const seeded = await loadHistorySeed(true);
+    showMsg(seeded ? "Difference history cleared · reloaded seeded weekly chain (v2)." : "Difference history cleared.", true);
     renderTable();
   }
 
@@ -934,27 +971,31 @@
 
   async function init() {
     try {
-      const res = await fetch("vhhh-line-mx-baseline.json?v=1.3");
+      const res = await fetch(BASELINE_URL);
       baselinePack = await res.json();
     } catch (e) {
       showMsg("Could not load baseline JSON.", false);
       return;
     }
     mpLookup = baselinePack.mpLookup || {};
-    if (mpLookup.MP12798) {
-      mpLookup.MP12798.cgPax = mpLookup.MP12798.cgPax || "CG";
-      mpLookup.MP12798.group = mpLookup.MP12798.group || "CG";
-    }
     reference = loadReference();
+    let storedVer = 0;
+    try { storedVer = Number(localStorage.getItem(LS_SEED_VER) || "0"); } catch (e) { storedVer = 0; }
     history = loadHistory();
-    if (!history.length) {
-      const seeded = await loadHistorySeedIfEmpty();
+    const needForce = storedVer < SEED_VER || !history.length;
+    if (needForce) {
+      const seeded = await loadHistorySeed(true);
       if (seeded) {
-        showMsg("Loaded seeded weekly difference history (Aug 13 → Sep 24). Stays in this browser.", true);
+        showMsg("Loaded seeded weekly difference history v2 (Aug 6 baseline → Sep 24). Stays in this browser; canonical weeks also in Supabase hx_private.", true);
       }
+    } else if (!currentRows.length) {
+      // keep browser history; still refresh current from seed if needed
+      await loadHistorySeed(false);
     }
-    currentRows = (baselinePack.rows || []).slice().map(enrichRow);
-    diff = null;
+    if (!currentRows.length) {
+      currentRows = (baselinePack.rows || []).slice().map(enrichRow);
+      diff = null;
+    }
     updateRefNote();
     renderTable();
 

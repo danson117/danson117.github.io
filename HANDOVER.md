@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-27 本機（未有 MACHINE.md）
 
+- VHHH Line MX Weekly Auth **v1.4**：baseline＝**06 Aug 2026**；Current＝**Sep 24 vs Sep 17**（實數據 **+2 / −0**，221 vs 219 rows；Cheng Ka Yan MTA0200＋MTA0211）；Difference history seed v2 週差（Aug 13／20／27／Sep 3／10／24；Sep 17 無差唔入 history）；`localStorage` key `:v2` 強制 reload。Status **無 CG/PAX badge**。Canonical 週 snapshot → Supabase project `kcoszufshvvpxikpzlue` schema **`hx_private.vhhh_line_mx_weekly`**（8 週 report_date）＋ **`hx_private.vhhh_line_mx_meta`**（baseline／current／history JSON）；GitHub 後備 `HX/vhhh-line-mx-*.json`；browser 只係 history／reference cache。Hub `hx.html` **v12.5** `?v=1.4`。唔開 Chrome。冇寫 `hx_test`。
+
+## 2026-09-27 本機（未有 MACHINE.md）
+
 - 刪除 superseded standalone：`HX/hkg-vhhh-weekly-auth-2026-09-10.html` — **本機／origin/main 已不存在**；`hx.html`／links／HANDOVER 無殘留引用。正式頁＝`vhhh-line-mx-weekly-auth.html`。唔開 Chrome。
 
 ## 2026-09-27 本機（未有 MACHINE.md）
