@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-27 本機（未有 MACHINE.md）
 
+- VHHH Line MX Weekly Auth **v1.2**：baseline 改 **06 Aug 2026**（228 rows / 38 people，`vhhh-line-mx-baseline.json`）；Current report 欄＝**HX Staff #**＋AMOS 原序（Emp ID…Status），唔再獨立 HAECO name／CG/PAX／Dept 欄（badge 可喺 cell）；**Doc date → PDF Date**；**Import weekly chain**（多日期 paste）。本機只得 Aug-6 paste，Aug-13／20／27／Sep-3 週差未種子。MP12798＝OCG **CG** 373556。Hub `hx.html` **v12.3** `?v=1.2`。GitHub 後備；Live Vercel。唔開 Chrome。
+
+## 2026-09-27 本機（未有 MACHINE.md）
+
 - VHHH Line MX Weekly Auth **v1.1**：差異歷史常留（`localStorage`）；**Doc date** 欄（MM.DD.YYYY，如 09.17.2026）；較新文件排上；同日重 compare 會覆寫該日 batch。MP12798＝OCG **CG**（373556 KE RENTI）。Hub `hx.html` **v12.2**。GitHub 後備；Live Vercel。
 
 ## 2026-09-27 本機（未有 MACHINE.md）

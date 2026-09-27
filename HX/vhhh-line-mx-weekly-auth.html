@@ -109,6 +109,7 @@
   .tag {
     display: inline-block; font-size: 10px; font-weight: 700;
     padding: 1px 5px; border-radius: 2px; margin-right: 4px; vertical-align: middle;
+    background: #e5f4f6; color: var(--navy);
   }
   .tag-add { background: #c8ebd4; color: var(--green); }
   .tag-rem { background: #f0c8c8; color: var(--red); }
@@ -118,6 +119,7 @@
   .doc-date { font-weight: 700; color: var(--navy); white-space: nowrap; }
   .status-authorized { color: var(--green); font-weight: 600; }
   .status-qualified { color: var(--teal); font-weight: 600; }
+  .status-nonauth { color: var(--red); font-weight: 600; }
   .ref-note { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
   .msg { padding: 10px 12px; margin: 0 0 12px; border: 1px solid var(--line); background: var(--card); font-size: 12px; }
   .msg.err { border-color: #c44; background: #fff5f5; color: var(--red); }
@@ -140,15 +142,16 @@
     <h2>Paste new weekly report (plain text)</h2>
     <textarea id="paste" placeholder="Paste Line MX Weekly Auth text here (AMOS export)…"></textarea>
     <div class="field-row">
-      <label>Document date (MM.DD.YYYY)
+      <label>PDF Date (MM.DD.YYYY)
         <input id="doc-date" type="text" placeholder="09.17.2026" autocomplete="off">
       </label>
       <span style="font-size:12px;color:var(--muted)">Auto-filled from paste header when possible. Edit before Compare if needed.</span>
     </div>
     <div class="btn-row">
       <button type="button" class="primary" id="btn-compare">Compare &amp; keep differences</button>
+      <button type="button" class="primary" id="btn-import-chain">Import weekly chain (multi-date paste)</button>
       <button type="button" id="btn-set-ref">Use this paste as reference for next week</button>
-      <button type="button" id="btn-reset-ref">Reset reference to 10 Sep 2026 baseline</button>
+      <button type="button" id="btn-reset-ref">Reset reference to 06 Aug 2026 baseline</button>
       <button type="button" id="btn-clear">Clear paste</button>
       <button type="button" class="danger" id="btn-clear-hist">Clear difference history</button>
     </div>
@@ -165,7 +168,7 @@
       <option value="expiry">Expiry (overdue / ≤30 days)</option>
       <option value="changes-expiry">Latest changes + expiry</option>
     </select></label>
-    <label>Search <input type="search" id="f-q" placeholder="Emp ID / name / qual / HAECO # / doc date"></label>
+    <label>Search <input type="search" id="f-q" placeholder="Emp ID / name / qual / HX Staff # / PDF Date"></label>
   </div>
 
   <p class="legend">
@@ -182,7 +185,7 @@
     <table>
       <thead>
         <tr>
-          <th>Doc date</th>
+          <th>PDF Date</th>
           <th>Change</th>
           <th>Emp ID</th>
           <th>Name</th>
@@ -203,17 +206,17 @@
     <table>
       <thead>
         <tr>
-          <th></th>
-          <th>Emp ID</th><th>Last name</th><th>First name</th><th>Job code</th>
-          <th>HAECO #</th><th>HAECO name</th><th>CG/PAX</th><th>Dept</th>
-          <th>Qualification</th><th>Description</th><th>Issue</th><th>Due</th><th>Status</th>
+          <th>HX Staff #</th>
+          <th>Emp ID</th><th>Last Name</th><th>First Name</th><th>Job Code</th>
+          <th>Qualification</th><th>Description</th><th>Station</th>
+          <th>Issue Date</th><th>Due Date</th><th>Status</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
 
-  <p class="page-version">page-version 1.1</p>
+  <p class="page-version">page-version 1.2</p>
 </div>
 
 <script>
@@ -224,11 +227,11 @@
   const LS_HIST = "hx:vhhh-lmx-auth:history";
   const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
   const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const QUAL_TAIL = /(MT[AQ]\d{4}[A-Z]?(?:-[A-Z0-9]+)?)\s+(.+?)\s+(VHHH)\s+(\d{2}\.[A-Za-z]{3}\.\d{4})\s+(N\/A|\d{2}\.[A-Za-z]{3}\.\d{4})(?:\s+(AUTHORIZED|QUALIFIED))?\s*$/;
+  const QUAL_TAIL = /(MT[AQ]\d{4}[A-Z]?(?:-[A-Z0-9]+)?)\s+(.+?)\s+(VHHH)\s+(\d{2}\.[A-Za-z]{3}\.\d{4})\s+(N\/A|\d{2}\.[A-Za-z]{3}\.\d{4})(?:\s+(AUTHORIZED|QUALIFIED|NON-AUTHORIZED))?\s*$/;
   const EMP_START = /^MP\d+\b/;
   const PAGE_FOOTER_RE = /\s+\d{2}\.[A-Za-z]{3}\.\d{4}\s+Page\s+\d+\s+\/\s+\d+.*$/;
   const PAGE_HEADER_JUNK_RE = /MX PROVIDERSQualification Type:[\s\S]*?(?=MP\d+\b)/g;
-  const JOB_MARKERS = ["Inspector-NDT", "MX Provider Mechanic/Inspector", "Mechanic/Inspector", "MX Provider", "Inspector"];
+  const JOB_MARKERS = ["Inspector-NDT", "MX Provider Mechanic/Inspector", "Mechanic/Inspector", "MX Provider", "Inspector", "Mechanic"];
   const SKIP = ["Mx Trng", "produced by", "*FOR REFERENCE", "Emp ID", "**DOES NOT", "Qualification Type:", "Department", "MX PROVIDERS"];
 
   let baselinePack = null;
@@ -290,8 +293,23 @@
     return "";
   }
 
+  function scrubBlob(blob) {
+    return String(blob || "")
+      .replace(/\*\*DOES NOT INCLUDE ON-HOLD USERS\*\*[\s\S]*?(?=MP\d{5}\b|$)/g, " ")
+      .replace(/MX PROVIDERSQualification Type:[\s\S]*?(?=MP\d{5}\b|$)/g, " ")
+      .replace(/Qualification Type:[\s\S]*?(?=MP\d{5}\b|$)/g, " ")
+      .replace(/produced by www\.swiss-as\.com AMOS/g, " ")
+      .replace(PAGE_FOOTER_RE, " ")
+      .replace(PAGE_HEADER_JUNK_RE, " ")
+      .replace(/Mx Trng[\s\S]*?Page\s+\d+\s+\/\s+\d+/g, " ")
+      .replace(/\*FOR REFERENCE ONLY[^*]*(?:\*[^*]*)*/g, " ")
+      .replace(/\s+Department\s*$/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   function normalizeBlob(blob) {
-    return blob.replace(PAGE_FOOTER_RE, "").replace(PAGE_HEADER_JUNK_RE, "").replace(/\s+/g, " ").trim();
+    return scrubBlob(blob);
   }
 
   function parseJob(pre) {
@@ -310,12 +328,26 @@
   }
 
   function cleanLines(text) {
-    return text.split(/\r?\n/).map((l) => l.trim()).filter((line) => {
-      if (!line) return false;
-      if (/^Page \d+ /i.test(line)) return false;
-      if (/^\d+\.[A-Za-z]{3}\.\d{4}\s+\d+:\d+/.test(line)) return false;
-      return !SKIP.some((s) => line.includes(s));
-    });
+    const HEADER_CUT = /Emp ID Last Name \*? First Name \*?\*? Job Code Qualification \*?\*?\*? Description Station Issue Date \*?\*?\*?\*? Due Date Status\s*/i;
+    const out = [];
+    for (let line of String(text || "").split(/\r?\n/)) {
+      line = line.trim();
+      if (!line) continue;
+      if (/^Page \d+ /i.test(line)) continue;
+      if (/^\d+\.[A-Za-z]{3}\.\d{4}\s+\d+:\d+/.test(line)) continue;
+      // page-as-one-line paste: cut header, keep body from first MP
+      if (HEADER_CUT.test(line) || line.includes("Mx Trng")) {
+        const cut = line.split(HEADER_CUT);
+        line = cut.length > 1 ? cut.slice(1).join(" ") : line;
+        const mi = line.search(/MP\d{5}\b/);
+        if (mi >= 0) line = line.slice(mi);
+      } else if (SKIP.some((s) => line.includes(s)) && !EMP_START.test(line)) {
+        continue;
+      }
+      line = scrubBlob(line);
+      if (line) out.push(line);
+    }
+    return out;
   }
 
   function splitRecords(text) {
@@ -328,15 +360,50 @@
         buf = [line];
       } else if (buf.length) {
         buf.push(line);
+      } else if (/MP\d{5}\b/.test(line)) {
+        // body-only page line(s)
+        buf = [line];
       }
     }
     if (buf.length) merged.push(normalizeBlob(buf.join(" ")));
     const out = [];
     for (const blob of merged) {
-      const parts = blob.split(/(?=MP\d{5}\b)/).filter(Boolean);
-      out.push(...parts.map((p) => normalizeBlob(p)));
+      const parts = scrubBlob(blob).split(/(?=MP\d{5}\b)/).filter(Boolean);
+      out.push(...parts.map((p) => normalizeBlob(p)).filter((p) => EMP_START.test(p)));
     }
     return out;
+  }
+
+  /** Split a multi-week paste into {pdfDate, text} chunks (oldest first). */
+  function splitWeeklyReports(text) {
+    const re = /(\d{2})\.([A-Za-z]{3})\.(\d{4})\s+Page\s+\d+/gi;
+    const hits = [];
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      const mo = MONTHS[m[2]];
+      if (mo === undefined) continue;
+      const pdfDate = toDocDate(new Date(Number(m[3]), mo, Number(m[1])));
+      hits.push({ index: m.index, pdfDate });
+    }
+    if (!hits.length) {
+      const d = extractDocDateFromText(text);
+      return d ? [{ pdfDate: d, text }] : [];
+    }
+    // group consecutive same-date pages
+    const groups = [];
+    let cur = { pdfDate: hits[0].pdfDate, start: hits[0].index };
+    for (let i = 1; i < hits.length; i++) {
+      if (hits[i].pdfDate !== cur.pdfDate) {
+        groups.push({ pdfDate: cur.pdfDate, start: cur.start, end: hits[i].index });
+        cur = { pdfDate: hits[i].pdfDate, start: hits[i].index };
+      }
+    }
+    groups.push({ pdfDate: cur.pdfDate, start: cur.start, end: text.length });
+    // extend start backward a bit for header on first page of each group
+    return groups.map((g, idx) => {
+      const start = idx === 0 ? 0 : Math.max(0, g.start - 80);
+      return { pdfDate: g.pdfDate, text: text.slice(start, g.end) };
+    }).sort((a, b) => docDateSortKey(a.pdfDate) - docDateSortKey(b.pdfDate));
   }
 
   function enrichRow(r) {
@@ -517,6 +584,7 @@
   function statusClass(s) {
     if (s === "AUTHORIZED") return "status-authorized";
     if (s === "QUALIFIED") return "status-qualified";
+    if (s === "NON-AUTHORIZED") return "status-nonauth";
     return "";
   }
 
@@ -598,7 +666,7 @@
     empty.hidden = true;
     wrap.hidden = false;
     const nItems = history.reduce((n, b) => n + (b.items || []).length, 0);
-    meta.textContent = nItems + " difference row(s) across " + history.length + " document(s) · newest Doc date on top · stays in this browser";
+    meta.textContent = nItems + " difference row(s) across " + history.length + " document(s) · newest PDF Date on top · stays in this browser";
     $("hist-body").innerHTML = flat.map((r) => {
       const cls = r.kind === "added" ? "diff-added" : r.kind === "removed" ? "diff-removed" : "diff-changed";
       const strike = r.kind === "removed" ? " strike" : "";
@@ -643,24 +711,26 @@
       const c = a.empId.localeCompare(b.empId);
       return c !== 0 ? c : a.qualification.localeCompare(b.qualification);
     });
-    tbody.innerHTML = sorted.filter((r) => matchFilter(r, diff)).map((r) =>
-      "<tr class=\"" + rowClass(r, diff) + "\">" +
-      "<td>" + rowTags(r, diff) + "</td>" +
-      "<td>" + esc(r.empId) + "</td>" +
-      "<td>" + esc(r.lastName) + "</td>" +
-      "<td>" + esc(r.firstName) + "</td>" +
-      "<td>" + esc(r.jobCode) + "</td>" +
-      "<td>" + esc(r.haecoStaff) + "</td>" +
-      "<td>" + esc(r.haecoName) + "</td>" +
-      "<td>" + esc(r.cgPax) + "</td>" +
-      "<td>" + esc(r.dept) + "</td>" +
-      "<td>" + esc(r.qualification) + "</td>" +
-      "<td>" + esc(r.description) + "</td>" +
-      "<td>" + esc(r.issueDate) + "</td>" +
-      "<td>" + esc(r.dueDate) + "</td>" +
-      "<td class=\"" + statusClass(r.status) + "\">" + esc(r.status) + "</td>" +
-      "</tr>"
-    ).join("");
+    tbody.innerHTML = sorted.filter((r) => matchFilter(r, diff)).map((r) => {
+      const tags = rowTags(r, diff);
+      const staffCell = esc(r.haecoStaff || "") + (tags ? " " + tags : "");
+      const statusBits = [];
+      if (r.cgPax) statusBits.push('<span class="tag">' + esc(r.cgPax) + "</span>");
+      statusBits.push('<span class="' + statusClass(r.status) + '">' + esc(r.status || "") + "</span>");
+      return "<tr class=\"" + rowClass(r, diff) + "\">" +
+        "<td>" + staffCell + "</td>" +
+        "<td>" + esc(r.empId) + "</td>" +
+        "<td>" + esc(r.lastName) + "</td>" +
+        "<td>" + esc(r.firstName) + "</td>" +
+        "<td>" + esc(r.jobCode) + "</td>" +
+        "<td>" + esc(r.qualification) + "</td>" +
+        "<td>" + esc(r.description) + "</td>" +
+        "<td>" + esc(r.station) + "</td>" +
+        "<td>" + esc(r.issueDate) + "</td>" +
+        "<td>" + esc(r.dueDate) + "</td>" +
+        "<td>" + statusBits.join(" ") + "</td>" +
+        "</tr>";
+    }).join("");
     renderHistory();
     renderStats();
   }
@@ -714,11 +784,11 @@
     }
     let docDate = parseDocDateInput($("doc-date").value) || extractDocDateFromText(text);
     if (!docDate) {
-      const typed = prompt("Document date (MM.DD.YYYY), e.g. 09.17.2026:", "");
+      const typed = prompt("PDF Date (MM.DD.YYYY), e.g. 09.17.2026:", "");
       docDate = parseDocDateInput(typed);
     }
     if (!docDate) {
-      showMsg("Need a document date like 09.17.2026 before saving differences.", false);
+      showMsg("Need a PDF Date like 09.17.2026 before saving differences.", false);
       return;
     }
     $("doc-date").value = docDate;
@@ -733,11 +803,11 @@
     const items = diffToHistoryItems(diff);
     upsertHistoryBatch(docDate, reference.label, items);
 
-    let msg = "Doc " + docDate + ": parsed " + parsed.rows.length + " rows / " + new Set(parsed.rows.map((r) => r.empId)).size + " people.";
+    let msg = "PDF Date " + docDate + ": parsed " + parsed.rows.length + " rows / " + new Set(parsed.rows.map((r) => r.empId)).size + " people.";
     if (parsed.unparsed.length) {
       msg += " " + parsed.unparsed.length + " fragment(s) skipped — check if a 'removed' row is a parse miss.";
     }
-    msg += " Saved " + items.length + " difference(s) into history (newer Doc date on top).";
+    msg += " Saved " + items.length + " difference(s) into history (newer PDF Date on top).";
     showMsg(msg, true);
     renderTable();
   }
@@ -748,7 +818,7 @@
       return;
     }
     const doc = parseDocDateInput($("doc-date").value) || "";
-    const label = prompt("Label for this reference:", doc ? ("Doc " + doc) : "Saved reference");
+    const label = prompt("Label for this reference:", doc ? ("PDF " + doc) : "Saved reference");
     saveReference({
       reportDate: new Date().toISOString().slice(0, 10),
       label: label || "Saved reference",
@@ -766,7 +836,64 @@
       rows: baselinePack.rows.slice(),
     });
     diff = currentRows.length ? computeDiff(reference.rows, currentRows) : null;
-    showMsg("Reference reset to 10 Sep 2026 baseline. History is kept.", true);
+    showMsg("Reference reset to 06 Aug 2026 baseline. History is kept.", true);
+    renderTable();
+  }
+
+  function onImportChain() {
+    hideMsg();
+    const text = $("paste").value.trim();
+    if (!text) {
+      showMsg("Paste one or more weekly Line MX reports (plain text) first.", false);
+      return;
+    }
+    const chunks = splitWeeklyReports(text);
+    if (!chunks.length) {
+      showMsg("Could not find PDF dates (dd.Mon.yyyy Page N) in the paste.", false);
+      return;
+    }
+    // Start from baseline if first chunk is the baseline date, else current reference
+    let refRows = reference.rows.slice();
+    let refLabel = reference.label;
+    const basePdf = baselinePack.pdfDate || extractDocDateFromText("") || "";
+    let totalItems = 0;
+    let lastRows = null;
+    const summaries = [];
+    for (const ch of chunks) {
+      const parsed = parseAmosText(ch.text);
+      if (!parsed.rows.length) {
+        summaries.push(ch.pdfDate + ": 0 rows (skipped)");
+        continue;
+      }
+      // If this chunk equals baseline PDF date, set as reference without history
+      if (baselinePack.pdfDate && ch.pdfDate === baselinePack.pdfDate) {
+        refRows = parsed.rows.slice();
+        refLabel = baselinePack.label;
+        lastRows = parsed.rows;
+        summaries.push(ch.pdfDate + ": baseline " + parsed.rows.length + " rows (reference set)");
+        continue;
+      }
+      const d = computeDiff(refRows, parsed.rows);
+      const items = diffToHistoryItems(d);
+      upsertHistoryBatch(ch.pdfDate, refLabel, items);
+      totalItems += items.length;
+      summaries.push(ch.pdfDate + ": +" + d.added.length + " / -" + d.removed.length + " / ~" + d.changed.length);
+      refRows = parsed.rows.slice();
+      refLabel = "PDF " + ch.pdfDate;
+      lastRows = parsed.rows;
+      diff = d;
+    }
+    if (lastRows) {
+      currentRows = lastRows;
+      saveReference({
+        reportDate: new Date().toISOString().slice(0, 10),
+        label: refLabel,
+        rows: refRows,
+      });
+    }
+    $("doc-date").value = chunks[chunks.length - 1].pdfDate;
+    showMsg("Weekly chain: " + chunks.length + " PDF date(s). " + summaries.join(" · ") +
+      " · history +" + totalItems + " row(s).", true);
     renderTable();
   }
 
@@ -784,7 +911,7 @@
 
   async function init() {
     try {
-      const res = await fetch("vhhh-line-mx-baseline.json?v=1.1");
+      const res = await fetch("vhhh-line-mx-baseline.json?v=1.2");
       baselinePack = await res.json();
     } catch (e) {
       showMsg("Could not load baseline JSON.", false);
@@ -803,6 +930,7 @@
     renderTable();
 
     $("btn-compare").addEventListener("click", onCompare);
+    $("btn-import-chain").addEventListener("click", onImportChain);
     $("btn-set-ref").addEventListener("click", onSetRef);
     $("btn-reset-ref").addEventListener("click", onResetRef);
     $("btn-clear").addEventListener("click", () => { $("paste").value = ""; hideMsg(); });
