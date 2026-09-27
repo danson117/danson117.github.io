@@ -77,7 +77,7 @@
   .stat span { color: var(--muted); font-size: 11px; }
   .stat.hot b { color: var(--hot); }
   .stat.add b { color: var(--green); }
-  .stat.rem b { color: var(--red); }
+  .stat.rem b { color: #5a6270; }
   .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; align-items: center; }
   .filters label { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
   .filters select, .filters input[type="search"] {
@@ -114,7 +114,7 @@
   .legend { font-size: 12px; color: var(--muted); margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 12px; }
   .legend i { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; border: 1px solid var(--line); }
   .sw-added { background: var(--green-bg); }
-  .sw-removed { background: var(--red-bg); }
+  .sw-removed { background: #e8eaed; }
   .sw-changed { background: var(--amber-bg); }
   .sw-overdue { background: #f4d4d0; }
   .sw-duesoon { background: #fff3b0; }
@@ -128,10 +128,10 @@
   th { background: #e5f4f6; position: sticky; top: 0; z-index: 1; }
   tbody tr:nth-child(even):not(.diff-added):not(.diff-removed):not(.diff-changed):not(.diff-due):not(.diff-status):not(.diff-issue) { background: #fafafa; }
   tr.diff-added { background: var(--green-bg) !important; }
-  tr.diff-removed { background: var(--red-bg) !important; color: var(--muted); }
+  tr.diff-removed { background: #e8eaed !important; color: var(--muted); }
   tr.diff-removed td.strike { text-decoration: line-through; }
   tr.diff-changed, tr.diff-due, tr.diff-status, tr.diff-issue { background: var(--amber-bg) !important; }
-  tr.diff-due { background: #e3f2f5 !important; }
+  tr.diff-due { background: #fdeaea !important; }
   tr.diff-status { background: #f6ebe3 !important; }
   tr.diff-issue { background: #f7f0dc !important; }
   tr.exp-overdue { box-shadow: inset 3px 0 0 var(--hot); }
@@ -142,14 +142,14 @@
     background: #e5f4f6; color: var(--navy);
   }
   .tag-add { background: #c8ebd4; color: var(--green); }
-  .tag-rem { background: #f0c8c8; color: var(--red); }
+  .tag-rem { background: #d5d8dc; color: #5a6270; }
   .tag-chg { background: #f0e0a8; color: var(--amber); }
-  .tag-due { background: #c5e4ea; color: #015260; }
+  .tag-due { background: #f0c8c8; color: var(--red); }
   .tag-status { background: #edd4c4; color: #6b3e26; }
   .tag-issue { background: #f0e0a8; color: #7a5a10; }
   .tag-hot { background: #f4d4d0; color: var(--hot); }
   .tag-soon { background: #fff3b0; color: var(--amber); }
-  .sw-due { background: #c5e4ea; }
+  .sw-due { background: #fdeaea; }
   .sw-status { background: #edd4c4; }
   .sw-issue { background: #f0e0a8; }
   .doc-date { font-weight: 700; color: var(--navy); white-space: nowrap; }
@@ -283,7 +283,7 @@
     </table>
   </div>
 
-      <p class="page-version">page-version 1.6</p>
+      <p class="page-version">page-version 1.7</p>
 </div>
 
 <script>
