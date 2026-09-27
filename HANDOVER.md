@@ -8,6 +8,18 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-27 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md` 已寫）
+
+- **Supabase `kcoszufshvvpxikpzlue`（hx-test，org plan Free）：** migration `enable_rls_hx_site_gate_and_lmx_sql_buf` — `hx_private.hx_site_gate` + `hx_private._lmx_sql_buf` **ENABLE RLS only**，**零** anon/authenticated policy（同其他 hx_private；service_role／Edge only）。Advisor 而家 INFO＝RLS enabled no policy（預期）。
+- **Edge 高階核對：** `team-board` GET 200；`/gate/public` 200（hasAdmin／hasEdit）；`POST /pin/status` 200。RLS 開咗唔影響 Edge（用 service_role）。
+- **Edge secrets（名 only）：** Function 碼用 `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`（平台注入）。閘密碼／PIN hash 喺 DB RPC，唔係額外 Edge secret 名。Dashboard Secrets 頁要 login 睇；Chrome 已開 Functions／Backups。
+- **Backups：** org＝**Free** → **無** automatic daily backups；**無** PITR。Pro 先有 daily（約 $25/mo）＋ PITR add-on（約 $100/mo／7 日，要確認 Pricing）。**未買／未 upgrade。**
+- **Branching：** Free 唔包；branch list 空；**未開** mandatory preview-DB workflow。
+- **Vercel：** 已刪 sandbox `temporary-agile-bromine-pulix9o`（無 custom domain、env=0、1 次 anonymous deploy）。剩 `danson117-github-io`＋`life-os`。Observability／付費 add-on **未買**。
+- **Skills：** `npx skills add supabase/agent-skills` 已裝（agent 側）；repo 加 `.gitignore` 擋 `.agents/`／`skills-lock.json`。
+- **E2E 速度（量度）：** Edge `team-board` GET ≈ **1.5 MB**／次（~0.8–1.0s）；TOV `SYNC_POLL_MS=5000`。解構：`ctFiles` ≈1.23M chars、`log` ≈188k、`status` ≈47k、`ual` ≈30k。LMX weekly 每週 `rows` jsonb ≈6.5 KB×8 週（已夠細，唔使改 format）。**下一步（要用戶 OK）：** poll 唔帶大檔 blob／lazy CT files／加長 poll；唔自動改 Edge。
+- GitHub：呢條 handover＋`.gitignore`。唔開新 Chrome（Dashboard 核對用過）。
+
 ## 2026-09-27 本機（未有 MACHINE.md）
 
 - Supabase project `kcoszufshvvpxikpzlue`（hx-test）：DROP unused leftover **`public.hx_test`**（migration `drop_public_hx_test`；先前 4 行測試資料＋ always-true RLS policies）。Workspace／Edge 無 runtime 引用（只規則／HANDOVER 寫「唔寫入」）。真正資料仍喺 **`hx_private`**（唔動）。Security Advisor：已無 `public.hx_test`／其 always-true policy；餘下 INFO＝`hx_private`／`life_os`「RLS enabled no policy」（預期，service_role／RPC）；另 `hx_site_gate`／`_lmx_sql_buf` RLS off（未改）。GitHub：呢條 handover。

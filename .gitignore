@@ -1,0 +1,9 @@
+# Agent / local tooling (do not publish)
+.agents/
+skills-lock.json
+__pycache__/
+*.pyc
+
+# Local leftovers / one-off scripts (keep untracked unless deliberately added)
+_lmx_sb_chunks/
+_meta_out.txt
