@@ -126,11 +126,14 @@
   table { border-collapse: collapse; width: 100%; min-width: 1100px; }
   th, td { border: 1px solid var(--line); padding: 5px 7px; vertical-align: top; text-align: left; }
   th { background: #e5f4f6; position: sticky; top: 0; z-index: 1; }
-  tbody tr:nth-child(even):not(.diff-added):not(.diff-removed):not(.diff-changed) { background: #fafafa; }
+  tbody tr:nth-child(even):not(.diff-added):not(.diff-removed):not(.diff-changed):not(.diff-due):not(.diff-status):not(.diff-issue) { background: #fafafa; }
   tr.diff-added { background: var(--green-bg) !important; }
   tr.diff-removed { background: var(--red-bg) !important; color: var(--muted); }
   tr.diff-removed td.strike { text-decoration: line-through; }
-  tr.diff-changed { background: var(--amber-bg) !important; }
+  tr.diff-changed, tr.diff-due, tr.diff-status, tr.diff-issue { background: var(--amber-bg) !important; }
+  tr.diff-due { background: #e3f2f5 !important; }
+  tr.diff-status { background: #f6ebe3 !important; }
+  tr.diff-issue { background: #f7f0dc !important; }
   tr.exp-overdue { box-shadow: inset 3px 0 0 var(--hot); }
   tr.exp-duesoon { box-shadow: inset 3px 0 0 var(--amber); }
   .tag {
@@ -141,8 +144,14 @@
   .tag-add { background: #c8ebd4; color: var(--green); }
   .tag-rem { background: #f0c8c8; color: var(--red); }
   .tag-chg { background: #f0e0a8; color: var(--amber); }
+  .tag-due { background: #c5e4ea; color: #015260; }
+  .tag-status { background: #edd4c4; color: #6b3e26; }
+  .tag-issue { background: #f0e0a8; color: #7a5a10; }
   .tag-hot { background: #f4d4d0; color: var(--hot); }
   .tag-soon { background: #fff3b0; color: var(--amber); }
+  .sw-due { background: #c5e4ea; }
+  .sw-status { background: #edd4c4; }
+  .sw-issue { background: #f0e0a8; }
   .doc-date { font-weight: 700; color: var(--navy); white-space: nowrap; }
   .status-authorized { color: var(--green); font-weight: 600; }
   .status-qualified { color: var(--teal); font-weight: 600; }
@@ -191,7 +200,9 @@
   <p class="legend">
     <span><i class="sw-added"></i>Added</span>
     <span><i class="sw-removed"></i>Removed</span>
-    <span><i class="sw-changed"></i>Changed (date / status)</span>
+    <span><i class="sw-due"></i>Due changed</span>
+    <span><i class="sw-status"></i>Status changed</span>
+    <span><i class="sw-issue"></i>Issue date changed</span>
     <span><i class="sw-overdue"></i>Overdue</span>
     <span><i class="sw-duesoon"></i>Due within 30 days</span>
   </p>
@@ -272,7 +283,7 @@
     </table>
   </div>
 
-      <p class="page-version">page-version 1.5</p>
+      <p class="page-version">page-version 1.6</p>
 </div>
 
 <script>
@@ -282,9 +293,10 @@
   const LS_REF = "hx:vhhh-lmx-auth:reference:v2";
   const LS_HIST = "hx:vhhh-lmx-auth:history:v2";
   const LS_SEED_VER = "hx:vhhh-lmx-auth:seed-ver";
-  const SEED_VER = 2;
-  const SEED_URL = "vhhh-line-mx-history-seed.json?v=1.5";
-  const BASELINE_URL = "vhhh-line-mx-baseline.json?v=1.5";
+  const SEED_VER = 3;
+  const SEED_URL = "vhhh-line-mx-history-seed.json?v=1.6";
+  const BASELINE_URL = "vhhh-line-mx-baseline.json?v=1.6";
+  const FINE_CHANGE_KINDS = { due: 1, status: 1, issue: 1, changed: 1 };
   let sortCurrent = { key: "empId", type: "text", dir: 1 };
   let sortHist = { key: "docDate", type: "docdate", dir: -1 };
   const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
@@ -484,6 +496,44 @@
     return a.issueDate !== b.issueDate || a.dueDate !== b.dueDate || a.status !== b.status;
   }
 
+  /** Priority when several fields change: status > due > issue. */
+  function refineChangeKind(was, now) {
+    if ((was.status || "") !== (now.status || "")) return "status";
+    if ((was.dueDate || "") !== (now.dueDate || "")) return "due";
+    if ((was.issueDate || "") !== (now.issueDate || "")) return "issue";
+    return "changed";
+  }
+
+  function refineChangeKindFromNote(note) {
+    const n = String(note || "");
+    if (/\bstatus\b/i.test(n)) return "status";
+    if (/\bdue\b/i.test(n)) return "due";
+    if (/\bissue\b/i.test(n)) return "issue";
+    return "changed";
+  }
+
+  function migrateHistoryKinds(batches) {
+    return (batches || []).map((batch) => {
+      const items = (batch.items || []).map((it) => {
+        if (!it || it.kind !== "changed") return it;
+        return Object.assign({}, it, { kind: refineChangeKindFromNote(it.note) });
+      });
+      return Object.assign({}, batch, { items });
+    });
+  }
+
+  function changeNote(was, now) {
+    const bits = [];
+    if (was.issueDate !== now.issueDate) bits.push("issue " + was.issueDate + " → " + now.issueDate);
+    if (was.dueDate !== now.dueDate) bits.push("due " + was.dueDate + " → " + now.dueDate);
+    if (was.status !== now.status) bits.push("status " + (was.status || "—") + " → " + (now.status || "—"));
+    return bits.join("; ");
+  }
+
+  function isFineChangeKind(kind) {
+    return !!FINE_CHANGE_KINDS[kind];
+  }
+
   function computeDiff(refRows, newRows) {
     const refMap = new Map(refRows.map((r) => [qualKey(r), r]));
     const newMap = new Map(newRows.map((r) => [qualKey(r), r]));
@@ -499,8 +549,10 @@
         added.push(r);
         tags.set(k, "added");
       } else if (rowChanged(refMap.get(k), r)) {
-        changed.push({ was: refMap.get(k), now: r });
-        tags.set(k, "changed");
+        const was = refMap.get(k);
+        const fine = refineChangeKind(was, r);
+        changed.push({ was, now: r, kind: fine });
+        tags.set(k, fine);
       }
     }
     for (const [k, r] of refMap) {
@@ -542,20 +594,16 @@
         note: "Was in previous reference; missing from this document",
       });
     });
-    d.changed.forEach(({ was, now }) => {
-      const bits = [];
-      if (was.issueDate !== now.issueDate) bits.push("issue " + was.issueDate + " → " + now.issueDate);
-      if (was.dueDate !== now.dueDate) bits.push("due " + was.dueDate + " → " + now.dueDate);
-      if (was.status !== now.status) bits.push("status " + (was.status || "—") + " → " + (now.status || "—"));
+    d.changed.forEach(({ was, now, kind }) => {
       items.push({
-        kind: "changed",
+        kind: kind || refineChangeKind(was, now),
         empId: now.empId,
         name: displayName(now),
         qualification: now.qualification,
         description: now.description,
         dueDate: now.dueDate,
         status: now.status,
-        note: bits.join("; "),
+        note: changeNote(was, now),
       });
     });
     return items;
@@ -615,6 +663,9 @@
   function kindTag(kind) {
     if (kind === "added") return '<span class="tag tag-add">ADDED</span>';
     if (kind === "removed") return '<span class="tag tag-rem">REMOVED</span>';
+    if (kind === "due") return '<span class="tag tag-due">DUE</span>';
+    if (kind === "status") return '<span class="tag tag-status">STATUS</span>';
+    if (kind === "issue") return '<span class="tag tag-issue">ISSUE</span>';
     if (kind === "changed") return '<span class="tag tag-chg">CHANGED</span>';
     return esc(kind);
   }
@@ -622,8 +673,12 @@
   function rowTags(r, d) {
     const parts = [];
     const k = qualKey(r);
-    if (d && d.tags.get(k) === "added") parts.push('<span class="tag tag-add">NEW</span>');
-    if (d && d.tags.get(k) === "changed") parts.push('<span class="tag tag-chg">CHG</span>');
+    const tag = d && d.tags.get(k);
+    if (tag === "added") parts.push('<span class="tag tag-add">NEW</span>');
+    if (tag === "due") parts.push('<span class="tag tag-due">DUE</span>');
+    if (tag === "status") parts.push('<span class="tag tag-status">STATUS</span>');
+    if (tag === "issue") parts.push('<span class="tag tag-issue">ISSUE</span>');
+    if (tag === "changed") parts.push('<span class="tag tag-chg">CHG</span>');
     const exp = dueKind(r.dueDate);
     if (exp === "overdue") parts.push('<span class="tag tag-hot">OVERDUE</span>');
     if (exp === "duesoon") parts.push('<span class="tag tag-soon">≤30d</span>');
@@ -634,8 +689,12 @@
     const cls = [];
     const k = qualKey(r);
     if (d) {
-      if (d.tags.get(k) === "added") cls.push("diff-added");
-      if (d.tags.get(k) === "changed") cls.push("diff-changed");
+      const tag = d.tags.get(k);
+      if (tag === "added") cls.push("diff-added");
+      if (tag === "due") cls.push("diff-due");
+      if (tag === "status") cls.push("diff-status");
+      if (tag === "issue") cls.push("diff-issue");
+      if (tag === "changed") cls.push("diff-changed");
     }
     const exp = dueKind(r.dueDate);
     if (exp === "overdue") cls.push("exp-overdue");
@@ -655,7 +714,8 @@
     }
     const view = $("f-view").value;
     const k = qualKey(r);
-    const isChg = d && (d.tags.get(k) === "added" || d.tags.get(k) === "changed");
+    const tag = d && d.tags.get(k);
+    const isChg = tag === "added" || isFineChangeKind(tag);
     const isExp = dueKind(r.dueDate) !== "";
     if (view === "all") return true;
     if (view === "changes") return isChg;
@@ -762,7 +822,12 @@
     const nItems = history.reduce((n, b) => n + (b.items || []).length, 0);
     meta.textContent = nItems + " difference row(s) across " + history.length + " document(s) · click headers to sort · Search under Current report also filters here · stays in this browser";
     $("hist-body").innerHTML = flat.map((r) => {
-      const cls = r.kind === "added" ? "diff-added" : r.kind === "removed" ? "diff-removed" : "diff-changed";
+      const cls = r.kind === "added" ? "diff-added"
+        : r.kind === "removed" ? "diff-removed"
+        : r.kind === "due" ? "diff-due"
+        : r.kind === "status" ? "diff-status"
+        : r.kind === "issue" ? "diff-issue"
+        : "diff-changed";
       const strike = r.kind === "removed" ? " strike" : "";
       return "<tr class=\"" + cls + "\">" +
         "<td class=\"doc-date\">" + esc(r.docDate) + "</td>" +
@@ -1022,14 +1087,16 @@
       if (!res.ok) return false;
       const seed = await res.json();
       const batches = Array.isArray(seed.history) ? seed.history : [];
-      history = batches
-        .filter((b) => b && b.docDate && Array.isArray(b.items) && b.items.length)
-        .map((b) => ({
-          docDate: b.docDate,
-          vsLabel: b.vsLabel || "",
-          comparedAt: b.comparedAt || "",
-          items: b.items,
-        }));
+      history = migrateHistoryKinds(
+        batches
+          .filter((b) => b && b.docDate && Array.isArray(b.items) && b.items.length)
+          .map((b) => ({
+            docDate: b.docDate,
+            vsLabel: b.vsLabel || "",
+            comparedAt: b.comparedAt || "",
+            items: b.items,
+          }))
+      );
       history.sort((a, b) => docDateSortKey(b.docDate) - docDateSortKey(a.docDate));
       saveHistory();
 
@@ -1098,7 +1165,7 @@
     reference = loadReference();
     let storedVer = 0;
     try { storedVer = Number(localStorage.getItem(LS_SEED_VER) || "0"); } catch (e) { storedVer = 0; }
-    history = loadHistory();
+    history = migrateHistoryKinds(loadHistory());
     const needForce = storedVer < SEED_VER || !history.length;
     if (needForce) {
       const seeded = await loadHistorySeed(true);

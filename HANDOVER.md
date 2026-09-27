@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-27 本機（未有 MACHINE.md）
 
+- VHHH Line MX Weekly Auth **v1.6**：Difference history Change 細分 **DUE**／**STATUS**／**ISSUE**（取代泛用 CHANGED；多欄同時改時優先 STATUS→DUE→ISSUE）；seed v3＋`SEED_VER=3`；Current report Search＋欄頭 sort 一齊上。Hub `hx.html` **v12.7** `?v=1.6`。GitHub 後備。唔開 Chrome。
+
+## 2026-09-27 本機（未有 MACHINE.md）
+
 - VHHH Line MX Weekly Auth **v1.5**：Current report **Search bar**（全欄 live filter；Difference history 共用）＋ **欄頭 sort**（asc／desc toggle；Issue／Due 按日期；HX Staff # 數字；Status／文字 case-insensitive）。Hub `hx.html` **v12.6** `?v=1.5`。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-27 本機（未有 MACHINE.md）

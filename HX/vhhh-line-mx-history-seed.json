@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "baselinePdfDate": "08.06.2026",
   "baselineLabel": "06 Aug 2026 (baseline)",
   "currentPdfDate": "09.24.2026",
@@ -115,7 +115,7 @@
       "comparedAt": "2026-09-27T13:00:00.000Z",
       "items": [
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12736",
           "name": "Luo Yaonan",
           "qualification": "MTA0211",
@@ -125,7 +125,7 @@
           "note": "Issue 09.Sep.2025 → 03.Sep.2026; Due 03.Sep.2026 → 26.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12620",
           "name": "NG Man Chi Hubert",
           "qualification": "MTA0211",
@@ -135,7 +135,7 @@
           "note": "Issue 16.Sep.2025 → 27.Aug.2026; Due 04.Sep.2026 → 27.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "status",
           "empId": "MP12797",
           "name": "Zhang Zhong Ping",
           "qualification": "MTA0211",
@@ -157,7 +157,7 @@
       "comparedAt": "2026-09-27T13:00:00.000Z",
       "items": [
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12611",
           "name": "Chen Xue Shan",
           "qualification": "MTA0211",
@@ -167,7 +167,7 @@
           "note": "Issue 11.Sep.2025 → 31.Aug.2026; Due 30.Aug.2026 → 17.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12798",
           "name": "Ke Ren Ti",
           "qualification": "MTA0211",
@@ -177,7 +177,7 @@
           "note": "Issue 19.Sep.2025 → 31.Aug.2026; Due 01.Sep.2026 → 24.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12614",
           "name": "Palagawong Na Ayuttaya Kitipong",
           "qualification": "MTA0211",
@@ -187,7 +187,7 @@
           "note": "Issue 19.Sep.2025 → 31.Aug.2026; Due 17.Sep.2026 → 22.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12615",
           "name": "Yang Shaopeng",
           "qualification": "MTA0900D",
@@ -197,7 +197,7 @@
           "note": "Due 13.Sep.2026 → 28.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "status",
           "empId": "MP12797",
           "name": "Zhang Zhong Ping",
           "qualification": "MTA0211",
@@ -219,7 +219,7 @@
       "comparedAt": "2026-09-27T13:00:00.000Z",
       "items": [
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12611",
           "name": "Chen Xue Shan",
           "qualification": "MTA0900D",
@@ -229,7 +229,7 @@
           "note": "Due 26.Aug.2026 → 18.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12619",
           "name": "Chung Chi",
           "qualification": "MTA0900D",
@@ -239,7 +239,7 @@
           "note": "Due 29.Aug.2026 → 25.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12798",
           "name": "Ke Ren Ti",
           "qualification": "MTA0900D",
@@ -249,7 +249,7 @@
           "note": "Due 12.Sep.2026 → 25.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12798",
           "name": "Ke Ren Ti",
           "qualification": "MTA0902",
@@ -259,7 +259,7 @@
           "note": "Due 08.Sep.2026 → 24.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12798",
           "name": "Ke Ren Ti",
           "qualification": "MTQ0902",
@@ -269,7 +269,7 @@
           "note": "Due 08.Sep.2026 → 24.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12614",
           "name": "Palagawong Na Ayuttaya Kitipong",
           "qualification": "MTA0902",
@@ -279,7 +279,7 @@
           "note": "Due 05.Sep.2026 → 22.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12614",
           "name": "Palagawong Na Ayuttaya Kitipong",
           "qualification": "MTQ0902",
@@ -289,7 +289,7 @@
           "note": "Due 05.Sep.2026 → 22.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12623",
           "name": "Tsang Wai Ching",
           "qualification": "MTA0900D",
@@ -299,7 +299,7 @@
           "note": "Due 07.Sep.2026 → 25.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12623",
           "name": "Tsang Wai Ching",
           "qualification": "MTA0902",
@@ -309,7 +309,7 @@
           "note": "Due 07.Sep.2026 → 21.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12623",
           "name": "Tsang Wai Ching",
           "qualification": "MTQ0902",
@@ -319,7 +319,7 @@
           "note": "Due 07.Sep.2026 → 21.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12615",
           "name": "Yang Shaopeng",
           "qualification": "MTA0902",
@@ -329,7 +329,7 @@
           "note": "Due 13.Sep.2026 → 22.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12615",
           "name": "Yang Shaopeng",
           "qualification": "MTQ0902",
@@ -339,7 +339,7 @@
           "note": "Due 13.Sep.2026 → 22.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12797",
           "name": "Zhang Zhong Ping",
           "qualification": "MTA0900D",
@@ -349,7 +349,7 @@
           "note": "Due 10.Sep.2026 → 22.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12797",
           "name": "Zhang Zhong Ping",
           "qualification": "MTA0902",
@@ -359,7 +359,7 @@
           "note": "Due 14.Sep.2026 → 22.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12797",
           "name": "Zhang Zhong Ping",
           "qualification": "MTQ0902",
@@ -381,7 +381,7 @@
       "comparedAt": "2026-09-27T13:00:00.000Z",
       "items": [
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12611",
           "name": "Chen Xue Shan",
           "qualification": "MTA0902",
@@ -391,7 +391,7 @@
           "note": "Due 26.Aug.2026 → 17.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12611",
           "name": "Chen Xue Shan",
           "qualification": "MTQ0902",
@@ -401,7 +401,7 @@
           "note": "Due 26.Aug.2026 → 17.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12617",
           "name": "Choy Wai Yu",
           "qualification": "MTA0900D",
@@ -411,7 +411,7 @@
           "note": "Due 23.Aug.2026 → 14.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12619",
           "name": "Chung Chi",
           "qualification": "MTA0902",
@@ -421,7 +421,7 @@
           "note": "Due 29.Aug.2026 → 16.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12619",
           "name": "Chung Chi",
           "qualification": "MTQ0902",
@@ -553,7 +553,7 @@
           "note": "Qualification missing in this document vs previous reference"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12550",
           "name": "Cen Che",
           "qualification": "MTA0900D",
@@ -563,7 +563,7 @@
           "note": "Due 30.Aug.2026 → 05.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12550",
           "name": "Cen Che",
           "qualification": "MTA0902",
@@ -573,7 +573,7 @@
           "note": "Due 24.Aug.2026 → 04.Aug.2027"
         },
         {
-          "kind": "changed",
+          "kind": "due",
           "empId": "MP12550",
           "name": "Cen Che",
           "qualification": "MTQ0902",
