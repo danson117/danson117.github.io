@@ -923,7 +923,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="3.7">v3.7</div>
+  <div class="page-version" data-version="3.8">v3.8</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1397,8 +1397,10 @@
   }
   function closeActionsHtml() {
     if (isEditorDirty()) {
+      var it = itemById(adminEditId);
+      var saveLabel = isDraftItem(it) ? "Save Draft" : "Save";
       return "<span class=\"editor-close-actions\" id=\"editor-close-actions\">" +
-        "<button type=\"button\" class=\"quiet\" data-save-draft=\"1\" title=\"Save Draft\" aria-label=\"Save Draft\">Save Draft</button>" +
+        "<button type=\"button\" class=\"quiet\" data-save-draft=\"1\" title=\"" + saveLabel + "\" aria-label=\"" + saveLabel + "\">" + saveLabel + "</button>" +
         "<button type=\"button\" class=\"quiet\" data-close-discard=\"1\" title=\"Close without saving\" aria-label=\"Close without saving\">Close without saving</button>" +
       "</span>";
     }
@@ -1434,11 +1436,12 @@
   function saveDraftAndClose() {
     var it = itemById(adminEditId);
     if (!it) { closeEditorClean(); return; }
+    var draft = isDraftItem(it);
     syncDueFromEditorField();
     save();
-    if (!isDraftItem(it)) render();
+    if (!draft) render();
     closeEditorClean();
-    paintAdminStatus("Draft saved.");
+    paintAdminStatus(draft ? "Draft saved." : "Saved.");
   }
   function closeWithoutSaving() {
     restoreEditorSnapshot();

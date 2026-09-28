@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **BRS Save vs Save Draft：** 未確認 draft 有改動 → **Save Draft**；已確認 item 再開 edit 有改動 → **Save**（同一 persist）。兩者都配 Close without saving；冇改動只 Close。BRS **v3.8**、hub **v14.8**、`hx-rules` **v7.1** 紅字。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **PIN Reset 右上 + Unsign：** PIN Reset 留喺 BRS 頁內容區右上。Admin Staff # / Group 清 Seen／Signed 掣改名 **Unsign**（唔改其他 Clear；Remove 不變）。BRS **v3.7**、hub **v14.7**、`hx-rules` **v7.0** 紅字。GitHub 後備。唔開 Chrome。
 - **同 push · TOV Detail 欄：** Overdue courses 表頭改 **Course code**；UA Employee #／Coming due 三欄同 UAL 來源一齊顯示／隱藏。TOV **v13.9**。唔開 Chrome。
 
