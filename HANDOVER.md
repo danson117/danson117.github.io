@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **刪 hub `#fth-rewrite`：** 卡片「KE FTH self-audit rewrite」已刪；頁 `HX/ke-fth-self-audit-rewrite.html` 一併刪；`links` 列、`hx-rules`／README／rules 例外提及已清。hub v13.9、`hx-rules` v6.2、`links` v2.9。
+
+## 2026-09-28 公司電腦
+
 - **UA Employee # 欄：** Detail 表只喺有揀 UAL 來源（含 All）時顯示；冇揀 UAL 就隱藏表頭同儲存格。Cards 本來冇呢欄。TOV v13.4、hub v13.8。
 
 ## 2026-09-28 公司電腦
