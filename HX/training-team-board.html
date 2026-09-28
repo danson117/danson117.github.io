@@ -84,6 +84,23 @@
     white-space: nowrap;
     min-height: 1.2em;
   }
+  /* Non-default narrowing filter hint (status red outline). */
+  .filter-narrowed,
+  input.filter-narrowed,
+  button.filter-narrowed,
+  th.team.filter-narrowed {
+    outline: 2px solid var(--out);
+    outline-offset: 2px;
+  }
+  .search-bar input.filter-narrowed {
+    outline: 2px solid var(--out);
+    outline-offset: 1px;
+  }
+  #filter-save-default,
+  #filter-restore-original {
+    font-size: 12px;
+    white-space: nowrap;
+  }
   /* Per-card ingest sync (no standing banner). Cool teal-mist card face — not sand. */
   .load.admin-block .box {
     position: relative;
@@ -1290,6 +1307,8 @@
             <button type="button" data-org="pax">PAX</button>
           </div>
         </div>
+        <button type="button" id="filter-save-default" title="Save current filters as your default">Save as default</button>
+        <button type="button" id="filter-restore-original" title="Restore factory filter settings">Restore original</button>
         <button type="button" id="access-toggle" aria-pressed="false" title="Unlock">Unlock</button>
         <button type="button" id="access-manage" title="Access management">Manage</button>
         <button type="button" id="action-log-btn" title="Action log">Log</button>
@@ -1629,7 +1648,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="14.4" aria-label="Page version 14.4">v14.4</div>
+  <div class="page-version" data-version="14.5" aria-label="Page version 14.5">v14.5</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1647,6 +1666,16 @@ const OMT_FILES = "hx:team-board:omt-files";
 const CT_CLEARED = "hx:team-board:ct-cleared";
 const OMT_CLEARED = "hx:team-board:omt-cleared";
 const UI = { org: "hx:team-board:org", src: "hx:team-board:src", role: "hx:team-board:role", team: "hx:team-board:team", q: "hx:team-board:q", sortKey: "hx:team-board:sortKey", sortDir: "hx:team-board:sortDir", listView: "hx:team-board:listView", boardOpen: "hx:team-board:boardOpen", showRecentCompleted: "hx:team-board:showRecentCompleted" };
+const FILTER_DEFAULT_BASE = "hx:team-board:filter-default";
+/** Factory picture: search empty, Sources All, Section OCG, all teams, role All, Show completed off. Table/Details is layout-only (not a count filter). Legend swatches are not checkboxes. */
+const FACTORY_FILTER_DEFAULT = {
+  q: "",
+  src: "all",
+  org: "ocg",
+  team: "",
+  role: "all",
+  showRecentCompleted: false
+};
 const COMPLETED_KEEP_DAYS = 30;
 const COURSE_STORE = "hx:course-catalog:rows";
 const COURSE_STATUS = "hx:team-board:course-status";
@@ -2599,6 +2628,98 @@ function srcLoad(saved) {
   }
   const want = parts.map((x) => String(x).trim());
   return SRC_ALL.filter((k) => want.indexOf(k) >= 0);
+}
+function filterDefaultStoreKey() {
+  const staff = hubGate && hubGate.accessStaff
+    ? String(hubGate.accessStaff).replace(/\D/g, "")
+    : "";
+  return staff ? (FILTER_DEFAULT_BASE + ":" + staff) : FILTER_DEFAULT_BASE;
+}
+function normalizeFilterSnapshot(raw) {
+  const o = raw && typeof raw === "object" ? raw : {};
+  const org = (o.org === "cg" || o.org === "pax" || o.org === "ocg") ? o.org : "ocg";
+  const role = (o.role === "cert" || o.role === "mech" || o.role === "all") ? o.role : "all";
+  const team = TEAM_KEYS.indexOf(o.team) >= 0 ? o.team : "";
+  const srcList = srcLoad(o.src == null ? "all" : o.src);
+  const src = (srcList.length === SRC_ALL.length) ? "all" : (srcList.length === 1 ? srcList[0] : srcList.join(","));
+  return {
+    q: String(o.q == null ? "" : o.q),
+    src: src,
+    org: org,
+    team: team,
+    role: role,
+    showRecentCompleted: o.showRecentCompleted === true || o.showRecentCompleted === "1"
+  };
+}
+function currentFilterSnapshot() {
+  return normalizeFilterSnapshot({
+    q: q,
+    src: srcSave(),
+    org: org,
+    team: teamFilter || "",
+    role: role,
+    showRecentCompleted: showRecentCompleted
+  });
+}
+function loadSavedFilterDefault() {
+  try {
+    const raw = lsGet(filterDefaultStoreKey());
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    return normalizeFilterSnapshot(o);
+  } catch (e) {
+    return null;
+  }
+}
+function effectiveFilterDefault() {
+  return loadSavedFilterDefault() || normalizeFilterSnapshot(FACTORY_FILTER_DEFAULT);
+}
+function applyFilterSnapshot(snap, opts) {
+  const s = normalizeFilterSnapshot(snap || FACTORY_FILTER_DEFAULT);
+  q = s.q;
+  const qEl = document.getElementById("q");
+  if (qEl) qEl.value = q;
+  srcOn = srcLoad(s.src);
+  org = s.org;
+  teamFilter = s.team || "";
+  role = s.role;
+  showRecentCompleted = !!s.showRecentCompleted;
+  if (!(opts && opts.keepPick)) pick = null;
+}
+function saveFilterDefaultFromScreen() {
+  const snap = currentFilterSnapshot();
+  try { lsSet(filterDefaultStoreKey(), JSON.stringify(snap)); } catch (e) {}
+  updateFilterNarrowHints();
+}
+function restoreOriginalFilters() {
+  applyFilterSnapshot(FACTORY_FILTER_DEFAULT);
+  paint();
+}
+function updateFilterNarrowHints() {
+  const def = effectiveFilterDefault();
+  const cur = currentFilterSnapshot();
+  const qEl = document.getElementById("q");
+  if (qEl) qEl.classList.toggle("filter-narrowed", cur.q !== def.q);
+  const srcDiff = cur.src !== def.src;
+  document.querySelectorAll("[data-src]").forEach((b) => {
+    const k = b.dataset.src;
+    const on = k === "all" ? srcIsAll() : srcHas(k);
+    b.classList.toggle("filter-narrowed", srcDiff && on);
+  });
+  document.querySelectorAll("[data-org]").forEach((b) => {
+    b.classList.toggle("filter-narrowed", cur.org !== def.org && b.dataset.org === org);
+  });
+  document.querySelectorAll("th.team[data-team]").forEach((th) => {
+    const t = th.dataset.team;
+    const narrowed = cur.team !== def.team && cur.team && cur.team === t;
+    th.classList.toggle("filter-narrowed", narrowed);
+  });
+  document.querySelectorAll("[data-role]").forEach((b) => {
+    b.classList.toggle("filter-narrowed", cur.role !== def.role && b.dataset.role === role);
+  });
+  document.querySelectorAll("[data-show-completed]").forEach((b) => {
+    b.classList.toggle("filter-narrowed", !!cur.showRecentCompleted !== !!def.showRecentCompleted);
+  });
 }
 function normCode(s) {
   return String(s || "").trim().toLowerCase();
@@ -4174,22 +4295,28 @@ function applyQueryToPerson(who, needle) {
     if (row.src && srcs.indexOf(row.src) < 0) srcs.push(row.src);
     const band = remainBand(row.remain);
     const ual = row.kind === "ual" || row.src === "ual";
-    if (band === "warn") {
+    // UAL coming-due (31–90) stays in soon columns; everything else outstanding
+    // (Manual / OMT / BRS / UAL hot / no-band) fills Course code + due + remaining.
+    if (ual && band === "warn") {
       soonRows.push(row);
       if (row.code && soonCourses.indexOf(row.code) < 0) soonCourses.push(row.code);
       const next = takeSooner(soonDue, soonRemain, row.due, row.remain);
       soonDue = next.due;
       soonRemain = next.remain;
       warn = true;
-      if (ual) ualWarn = true;
-    } else if (band === "hot") {
+      ualWarn = true;
+    } else {
       overdueRows.push(row);
       if (row.code && overdueCourses.indexOf(row.code) < 0) overdueCourses.push(row.code);
       const next = takeSooner(due, remain, row.due, row.remain);
       due = next.due;
       remain = next.remain;
-      hot = true;
-      if (ual) ualHot = true;
+      if (band === "hot") {
+        hot = true;
+        if (ual) ualHot = true;
+      } else if (band === "warn") {
+        warn = true;
+      }
     }
   });
   const keepRows = rows.filter((row) => {
@@ -4824,22 +4951,28 @@ function peopleBundle(pairs) {
       addRow(prev.courseRows);
       const ual = p.kind === "ual" || item.src === "ual";
       const band = remainBand(p.remain);
-      if (band === "warn") {
+      // UAL 31–90 → Coming due columns; Manual/OMT/BRS and UAL ≤30 / >90 / no remain
+      // → Course code + Overdue due day + Remaining (so Manual never blanks those cells).
+      if (ual && band === "warn") {
         if (course && !prev.soonCourses.includes(course)) prev.soonCourses.push(course);
         addRow(prev.soonRows);
         const next = takeSooner(prev.soonDue, prev.soonRemain, p.due, p.remain);
         prev.soonDue = next.due;
         prev.soonRemain = next.remain;
         prev.warn = true;
-        if (ual) prev.ualWarn = true;
-      } else if (band === "hot") {
+        prev.ualWarn = true;
+      } else {
         if (course && !prev.overdueCourses.includes(course)) prev.overdueCourses.push(course);
         addRow(prev.overdueRows);
         const next = takeSooner(prev.due, prev.remain, p.due, p.remain);
         prev.due = next.due;
         prev.remain = next.remain;
-        prev.hot = true;
-        if (ual) prev.ualHot = true;
+        if (band === "hot") {
+          prev.hot = true;
+          if (ual) prev.ualHot = true;
+        } else if (band === "warn") {
+          prev.warn = true;
+        }
       }
     }
     if ((p.kind === "ual" || item.src === "ual") && p.emp && !prev.emp) prev.emp = p.emp;
@@ -8156,6 +8289,7 @@ function paint() {
   paintBoard();
   paintDetail();
   paintIngestFlags();
+  updateFilterNarrowHints();
 }
 function applyBoardOpenUi() {
   const wrap = document.getElementById("board-wrap");
@@ -8342,6 +8476,12 @@ document.getElementById("org-tabs").addEventListener("click", (e) => {
   org = b.dataset.org;
   pick = null;
   paint();
+});
+document.getElementById("filter-save-default").addEventListener("click", () => {
+  saveFilterDefaultFromScreen();
+});
+document.getElementById("filter-restore-original").addEventListener("click", () => {
+  restoreOriginalFilters();
 });
 document.querySelectorAll("[data-src]").forEach((b) => {
   b.addEventListener("click", () => {
@@ -9229,17 +9369,12 @@ function addCtFromRows(name, rows, kind, uploadedAt) {
   else ctFiles.push(rec);
 }
 function restoreUi() {
-  const savedOrg = firstFilled(UI_KEYS.org);
-  if (savedOrg === "ocg" || savedOrg === "cg" || savedOrg === "pax") org = savedOrg;
-  const savedSrc = firstFilled(UI_KEYS.src);
-  if (savedSrc != null) srcOn = srcLoad(savedSrc);
-  const savedRole = firstFilled(UI_KEYS.role);
-  if (savedRole === "all" || savedRole === "cert" || savedRole === "mech") role = savedRole;
-  const savedTeam = firstFilled(UI_KEYS.team);
-  if (TEAM_KEYS.indexOf(savedTeam) >= 0) teamFilter = savedTeam;
-  else teamFilter = "";
-  const savedQ = firstFilled(UI_KEYS.q);
-  if (savedQ != null) { q = savedQ; document.getElementById("q").value = q; }
+  const savedDefault = loadSavedFilterDefault();
+  if (savedDefault) {
+    applyFilterSnapshot(savedDefault);
+  } else {
+    applyFilterSnapshot(FACTORY_FILTER_DEFAULT);
+  }
   const sk = firstFilled(UI_KEYS.sortKey);
   if (sk === "item" || sk === "out") sortKey = sk;
   else sortKey = "out";
@@ -9252,8 +9387,6 @@ function restoreUi() {
   if (savedBoard === "1") boardOpen = true;
   else if (savedBoard === "0") boardOpen = false;
   else boardOpen = false;
-  const savedShowDone = firstFilled(UI_KEYS.showRecentCompleted);
-  showRecentCompleted = savedShowDone === "1";
   applyBoardOpenUi();
 }
 function restoreUal() {
@@ -9554,6 +9687,7 @@ function wireExpireDateField() {
 function applyHubGate(msg) {
   if (!msg || typeof msg !== "object") return;
   const prevCanWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
+  const prevAccessStaff = hubGate && hubGate.accessStaff ? String(hubGate.accessStaff) : "";
   hubGate = {
     role: String(msg.role || "view").toLowerCase() || "view",
     password: String(msg.password || ""),
@@ -9563,10 +9697,17 @@ function applyHubGate(msg) {
   };
   const role = hubGate.role;
   const accessRole = hubGate.accessRole || role;
+  const staffChanged = String(hubGate.accessStaff || "") !== prevAccessStaff;
+  if (staffChanged) {
+    const snap = loadSavedFilterDefault();
+    if (snap) applyFilterSnapshot(snap);
+  }
   if (role === "view") {
     setSessionLevelId("");
     applyWriteAccess();
     paintIngestSync();
+    if (staffChanged) paint();
+    else updateFilterNarrowHints();
     return;
   }
   const isFull = accessRole === "me" || accessRole === "admin" || role === "admin";
@@ -9612,6 +9753,8 @@ function applyHubGate(msg) {
   if (nowCanWrite && !prevCanWrite && persistArmed) {
     syncIngestWithRemote();
   }
+  if (staffChanged) paint();
+  else updateFilterNarrowHints();
 }
 async function pollRemoteActions() {
   if (syncPollBusy || suppressRemoteMerge || pushBusy || ingestPushBusy) return;

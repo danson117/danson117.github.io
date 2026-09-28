@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV filter 紅框 + Manual Detail 三欄：** 非預設 narrowing filter（Search／Sources／Section／Team·Other／role／Show completed）紅外框；掣 **Save as default**／**Restore original**（廠預設：Search 空、Sources All、Section OCG、all teams、role All、Show completed off）。有效預設存 browser `localStorage`（登入後 `hx:team-board:filter-default:<staff#>`；冇 staff 用無後綴 key）。唔經新 Edge／唔寫 `hx_test`。Manual outstanding 行而家填 Course code＋due＋remaining（以前 remain 唔係 ≤30「hot」就留空）。TOV **v14.5**、hub **v15.7**、`hx-rules` **v8.0**。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Grant access 頁面拖曳次序：** Public view 同 Role pages 共用一個 `pageOrder`（拖曳即兩邊同步；Save 寫入 gate）。側欄跟已存次序。Hub **v15.6**、`hx-rules` **v7.9**。Edge `team-board` **v13** 已部署（`verify_jwt` 關；含 `pageOrder`；曾誤部署 placeholder 已即刻用完整源覆蓋）。`/gate/public` 200。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
