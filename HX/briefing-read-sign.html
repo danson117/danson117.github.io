@@ -387,46 +387,6 @@
     min-width: 0;
   }
   .brs-top-main:empty { display: none; }
-  #brs-admin #pin-vault.vault {
-    margin: 14px 0 0;
-    border: 2px solid var(--admin-border);
-    border-left: 6px solid var(--admin);
-    background: var(--admin-bg);
-    padding: 14px 12px 12px;
-  }
-  #pin-vault.vault {
-    margin: 0;
-    border: 2px solid var(--admin-border);
-    border-left: 6px solid var(--admin);
-    background: var(--admin-bg);
-    padding: 14px 12px 12px;
-  }
-  #pin-vault.vault h3 {
-    margin: 0 0 6px;
-    font-size: 14px;
-    color: var(--admin);
-    font-weight: 700;
-  }
-  #pin-vault.vault .note { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
-  #pin-vault.vault button.quiet {
-    background: #f3f4f6;
-    color: var(--btn-quiet);
-    border-color: #c5d0d8;
-  }
-  #pin-vault.vault button.quiet:hover {
-    background: #e5e7eb;
-    border-color: var(--btn-quiet);
-  }
-  #pin-vault.vault button.danger {
-    background: var(--btn-danger);
-    color: #fff;
-    border-color: var(--btn-danger);
-  }
-  #pin-vault.vault button.danger:hover {
-    background: #912018;
-    border-color: #912018;
-  }
-  #pin-vault.vault button:hover { border-color: var(--admin); }
   .admin-pick {
     margin: 0 0 4px;
   }
@@ -616,16 +576,6 @@
     color: var(--muted);
   }
   .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border: 1px solid #c5d0d8;
-    color: var(--muted);
-  }
-  .badge.set { color: var(--ok); border-color: #b7dfc8; background: var(--ok-bg); }
-  .badge.def { color: var(--out); border-color: #f0d7c4; background: var(--out-bg); }
   .pin-pop[hidden] { display: none !important; }
   .pin-pop {
     position: fixed; inset: 0; z-index: 40;
@@ -708,16 +658,6 @@
   .pin-card .msg-line { margin: 0 0 8px; color: var(--ink); font-size: 15px; font-weight: 600; }
   .pin-card .msg-line:last-child { margin-bottom: 12px; }
   #msg-pop { z-index: 50; }
-  #vault-list { max-height: 280px; overflow: auto; }
-  #pin-vault .vault-search {
-    display: block;
-    width: 100%;
-    margin: 0 0 10px;
-    font: inherit;
-    padding: 7px 10px;
-    border: 1px solid var(--line);
-    box-sizing: border-box;
-  }
   .record-panel {
     background: var(--card);
     border: 1px solid var(--line);
@@ -913,7 +853,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="4.5">v4.5</div>
+  <div class="page-version" data-version="4.6">v4.6</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -942,7 +882,6 @@
   var suppress = false;
   var suggestFor = "";
   var pinCtx = null;
-  var pinSetStaff = {};
   var pinBusy = false;
   var msgResolve = null;
   var GATE_ROLE_KEY = "hx:hub:gate-role";
@@ -950,7 +889,6 @@
   var hubRole = "view";
   var adminEditId = "";
   var adminWired = false;
-  var pinVaultWired = false;
   var openItemId = "";
   var peopleAuthPick = null;
   var authIndexCache = null;
@@ -1766,10 +1704,6 @@
     }
     return hubRole === "edit" || hubRole === "admin" || hubRole === "me";
   }
-  function canPinReset() {
-    if (hubRole === "admin" || hubRole === "me") return true;
-    return hubActions.indexOf("brs-pin-reset") >= 0;
-  }
   function applyHubGate(msg) {
     var role = normalizeGateRole(msg && msg.role);
     var pw = msg && Object.prototype.hasOwnProperty.call(msg, "password")
@@ -1790,21 +1724,9 @@
     }
     if (!isEditUnlocked()) {
       adminEditId = "";
-      pinSetStaff = {};
     }
     syncAdminDom();
     render();
-  }
-  function pinVaultHtml() {
-    return "<div class=\"vault\" id=\"pin-vault\">" +
-      "<h3>PIN Reset</h3>" +
-      "<div class=\"bar\">" +
-        "<button type=\"button\" class=\"quiet\" id=\"vault-refresh\">Refresh list</button>" +
-        "<span class=\"status\" id=\"vault-status\"></span>" +
-      "</div>" +
-      "<input type=\"search\" id=\"vault-search\" class=\"vault-search\" placeholder=\"Search staff # or name\" autocomplete=\"off\">" +
-      "<ul class=\"clean\" id=\"vault-list\"><li class=\"muted\">Click Refresh list after edit unlock.</li></ul>" +
-    "</div>";
   }
   function syncAdminDom() {
     var slot = document.getElementById("admin-slot");
@@ -1812,7 +1734,6 @@
     if (!isEditUnlocked()) {
       slot.innerHTML = "";
       adminWired = false;
-      pinVaultWired = false;
       return;
     }
     if (!document.getElementById("brs-admin")) {
@@ -1826,30 +1747,8 @@
             "</div>" +
           "</div>" +
           "<div class=\"admin-section\" id=\"admin-editor-wrap\"></div>" +
-          (canPinReset()
-            ? "<div class=\"admin-section\" id=\"pin-vault-wrap\">" + pinVaultHtml() + "</div>"
-            : "") +
         "</section>";
       wireAdminOnce();
-      if (canPinReset()) wirePinVaultOnce();
-    } else {
-      var wrap = document.getElementById("pin-vault-wrap");
-      if (canPinReset()) {
-        if (!document.getElementById("pin-vault")) {
-          if (!wrap) {
-            wrap = document.createElement("div");
-            wrap.className = "admin-section";
-            wrap.id = "pin-vault-wrap";
-            document.getElementById("brs-admin").appendChild(wrap);
-          }
-          wrap.innerHTML = pinVaultHtml();
-          pinVaultWired = false;
-          wirePinVaultOnce();
-        }
-      } else if (wrap) {
-        wrap.innerHTML = "";
-        pinVaultWired = false;
-      }
     }
     renderAdminEditor();
   }
@@ -1893,14 +1792,6 @@
     root.addEventListener("dragleave", onMatDragLeave);
     root.addEventListener("drop", onMatDrop);
     root.addEventListener("dragend", onMatDragEnd);
-  }
-  function wirePinVaultOnce() {
-    if (pinVaultWired) return;
-    var root = document.getElementById("pin-vault");
-    if (!root) return;
-    pinVaultWired = true;
-    root.addEventListener("click", onAdminClick);
-    root.addEventListener("input", onAdminInput);
   }
   var matDragId = "";
   var matDragItemId = "";
@@ -2026,7 +1917,6 @@
     }
     if (!btn) return;
     if (btn.id === "btn-new") { createItem("read-sign"); return; }
-    if (btn.id === "vault-refresh") { refreshVault(); return; }
     if (btn && btn.dataset.adminEdit) {
       if (btn.dataset.adminEdit !== adminEditId && isEditorDirty()) {
         restoreEditorSnapshot();
@@ -2125,18 +2015,10 @@
       renderAdminEditor();
       return;
     }
-    var resetBtn = e.target.closest ? e.target.closest("[data-pin-reset]") : null;
-    if (resetBtn) {
-      onVaultReset(resetBtn);
-    }
   }
   function onAdminInput(e) {
     if (!isEditUnlocked()) return;
     var t = e.target;
-    if (t && t.id === "vault-search") {
-      renderVaultList();
-      return;
-    }
     if (t.dataset && t.dataset.code) {
       var itCode = itemById(t.dataset.code);
       if (!itCode || !isDraftItem(itCode)) return;
@@ -2206,26 +2088,6 @@
       return;
     }
     showMsgPop({ mode: "alert", title: "Not added", lines: ["Not on Name List"] });
-  }
-  async function onVaultReset(btn) {
-    var staff = pad(btn.getAttribute("data-pin-reset"));
-    if (!staff) return;
-    var ok = await showMsgPop({ mode: "confirm", title: "Reset PIN", lines: [staff, "Default PIN"] });
-    if (!ok) return;
-    try {
-      if (!(await ensureAdminPassword())) return;
-      await window.HxSharedSync.pinAdminReset(staff);
-      pinSetStaff[staff] = false;
-      delete pinSetStaff[staff];
-      renderVaultList();
-      paintVaultStatus("Reset done for " + staff + ".");
-    } catch (err) {
-      if (err && err.code === "unauthorized") {
-        paintVaultStatus("HX edit unlock password required.");
-        return;
-      }
-      paintVaultStatus(String((err && err.message) || err || "Reset failed."));
-    }
   }
   function editorHtml(it) {
     var draft = isDraftItem(it);
@@ -2894,81 +2756,6 @@
     it.materials.push({ id: uid("mat"), name: label, kind: "link", href: url });
   }
 
-  function paintVaultStatus(t) {
-    var el = document.getElementById("vault-status");
-    if (el) el.textContent = t || "";
-  }
-  function renderVaultList() {
-    var ul = document.getElementById("vault-list");
-    if (!ul || !isEditUnlocked()) return;
-    var qEl = document.getElementById("vault-search");
-    var needle = String((qEl && qEl.value) || "").trim().toLowerCase();
-    var rows = roster.slice().sort(function (a, b) {
-      return a.staff.localeCompare(b.staff) || a.name.localeCompare(b.name);
-    });
-    if (needle) {
-      rows = rows.filter(function (p) {
-        return p.staff.indexOf(needle) >= 0 || String(p.name || "").toLowerCase().indexOf(needle) >= 0;
-      });
-    }
-    if (!rows.length) {
-      ul.innerHTML = needle
-        ? "<li class=\"muted\">No match.</li>"
-        : "<li class=\"muted\">No Name List people loaded.</li>";
-      return;
-    }
-    ul.innerHTML = rows.map(function (p) {
-      var set = !!pinSetStaff[p.staff];
-      var badge = set
-        ? "<span class=\"badge set\">Password set</span>"
-        : "<span class=\"badge def\">Not set</span>";
-      var reset = set
-        ? "<button type=\"button\" class=\"danger\" data-pin-reset=\"" + esc(p.staff) + "\">Reset</button>"
-        : "";
-      return "<li><span class=\"who\"><b>" + esc(p.staff) + "</b> " + esc(p.name) +
-        " <span class=\"muted\">" + esc(p.section || "") + "</span></span>" + badge + reset + "</li>";
-    }).join("");
-  }
-  async function ensureAdminPassword() {
-    if (!window.HxSharedSync) return false;
-    if (!isEditUnlocked()) {
-      paintVaultStatus("HX edit unlock required.");
-      return false;
-    }
-    if (window.HxSharedSync.getPassword()) return true;
-    try {
-      var stored = localStorage.getItem(GATE_PW_KEY);
-      if (stored) {
-        window.HxSharedSync.setPassword(stored);
-        return true;
-      }
-    } catch (e) {}
-    paintVaultStatus("Unlock HX (edit) on the hub first. No second password on this page.");
-    return false;
-  }
-  async function refreshVault() {
-    if (!window.HxSharedSync) {
-      paintVaultStatus("PIN service unavailable.");
-      return;
-    }
-    if (!(await ensureAdminPassword())) return;
-    paintVaultStatus("Loading…");
-    try {
-      var data = await window.HxSharedSync.pinAdminList();
-      pinSetStaff = {};
-      (data.set || []).forEach(function (s) { pinSetStaff[pad(s)] = true; });
-      renderVaultList();
-      paintVaultStatus("Updated. " + (data.set || []).length + " password(s) set. Secrets are not shown.");
-    } catch (e) {
-      if (e && e.code === "unauthorized") {
-        window.HxSharedSync.setPassword("");
-        paintVaultStatus("HX unlock password rejected.");
-        return;
-      }
-      paintVaultStatus(String((e && e.message) || e || "Failed to load vault."));
-    }
-  }
-
   hubRole = readStoredGateRole();
   try {
     if (window.HxSharedSync && isEditUnlocked()) {
@@ -2986,7 +2773,6 @@
     hubRole = readStoredGateRole();
     if (!isEditUnlocked()) {
       adminEditId = "";
-      pinSetStaff = {};
       if (window.HxSharedSync) window.HxSharedSync.setPassword("");
     } else if (window.HxSharedSync) {
       try {

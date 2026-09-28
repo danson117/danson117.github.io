@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **BRS 去掉重複 PIN Reset：** Briefing and R&S `#brs-admin` 入面嘅 `#pin-vault`／PIN Reset 已刪；只留 hub **Setting** 第 4 段 PIN Reset。Staff Sign／Seen PIN 對話框、Unsign、create／edit／materials 保留。BRS **v4.6**、`hx-rules` **v8.9**；hub `?v=` cache-bust（page-version 仍 **v16.1**）。GitHub 後備。唔開 Chrome。
+
+## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **BRS Sign ↔ TOV Completed：** Supabase `hx_private` only。Manual **LM00183**→**BRS20260902**：before Signed 0/73 → after **4 signed / 69 outstanding**（對齊 TOV Completed 4 / outstanding 69）。Manual **T.EE0639**→**BRS20260903**：before Signed 0/78 → after **71 signed / 7 outstanding**（對齊 TOV Completed 71 / outstanding 7）。用 Completed `done` 做 `ackAt`；只寫 BRS ack signed；**manual 未刪**（仍 73／78 行）。唔改 HTML。唔開 Chrome。
 
 - **Edge team-board 再修好：** 有人又部署咗 placeholder（`PLACEHOLDER_WILL_FAIL`，`/gate/public` 500）。已用完整 gate／pin／board 源再覆蓋（**v19**，`verify_jwt` 關）。`/gate/public` 200。GitHub 源 `HX/supabase-edge/team-board/index.ts` 已係正確版。唔開 Chrome。
