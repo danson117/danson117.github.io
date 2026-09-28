@@ -10,6 +10,11 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **TOV 完成日：** OSD 圖入面 course `LM00183`（EK Emirates eTechLog Training）寫入 Supabase status，4 個對應職員編號設為 Completed，並用圖上 Completion Date。Course List 加咗呢一科（而家 182 行）。**冇**改 UAL／CT／Mandatory／manual 行數（CT 478+3625、OMT 87、manual 147）。唔寫 `hx_test`。唔寫職員明細。
+- 呢科原本唔喺各人未完成清單。Status 已存；之後 CT 檔出現同一職員＋`LM00183` 就會當完成，唔會再當未做。GitHub 只加呢條 handover。唔開 Chrome。
+
+## 2026-09-28 公司電腦
+
 - **HX 以外唔使密碼。** 有網址就可以睇同改：Alpha／Karson、行李清單、成長記錄、乘數表、中作4、小五六作文、特快公屋。寫入走 Edge `PUT /team-board/shared`，白名單先至改到 `__hx_shared__/<docId>` 一格；唔帶 Status／Manual／UAL／CT／Mandatory 刪除。
 - **HX 以內仍要 Unlock：** Course List、Briefing & Read & Sign、Training One View。
 - **頁／版本：** `hx-shared-sync.js?v=1.4`、`hx-rules` v5.9、`hx.html` v13.1、`travel_list`／`weight`／乘數表／中作4／小五六作文／efas v1.2、Alpha v3.4、Karson v2.0。源碼 `HX/supabase-edge/team-board/index.ts`。
