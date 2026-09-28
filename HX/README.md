@@ -17,7 +17,7 @@
 - [Course List (Name / Code / Type / Interval)](hx.html#courses) — [standalone page](course-catalog.html)
 - [Future section codes (new LT families, later use)](hx.html#sections) — [standalone page](section-codes.html)
 - [OCG Name List (Crew List / Name List / Full List / Future sections)](ocg-pax-mechanics-list.html)
-- [Briefing & Read & Sign](hx.html#brs) — board + dashboard + printable record on one page ([standalone board](briefing-read-sign.html); [standalone record](ke-read-sign-record.html); old `#ke-rs` aliases to `#brs`)
+- [Briefing and R&S](hx.html#brs) — board + dashboard + printable record on one page ([standalone board](briefing-read-sign.html); [standalone record](ke-read-sign-record.html); old `#ke-rs` aliases to `#brs`)
 - [零碎筆記 / Scratch notes](scratch-notes.html)（畫面唔顯示 記下／日期時間／caption；時間喺頁內 hidden `#scratch-ledger`，問先答）
 - [HX 規矩（跨機）](hx-rules.html)（紅字＝呢部機新加；另一部機對齊用）
 

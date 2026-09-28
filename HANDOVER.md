@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Briefing and R&S：** 可見名改 Briefing and R&S。Item number 固定 `BRS`＋年月＋兩位（例 BRS20260901）；舊 BF／RS 讀入後存成 BRS。Admin：Create New BRS／Create BRS／Draft and Close／Delete BRS；Materials 只 Add link；唔再 People 標題；PIN Reset；刪三段說明 intro。BRS **v3.2**、record **v1.6**、TOV **v13.6**、hub **v14.1**、`hx-rules` **v6.4** 紅字。GitHub 後備；Live Vercel。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV 同步 banner：** 頁頂常駐提示。綠 Synchronized＝UAL／CT Reminder／Mandatory 同 Supabase 一樣；橙 Not synchronized（紅＝失敗）＝只喺呢個 browser。本機上傳時間較新時唔再被舊伺服器檔蓋過；可按 Synchronize now（要 Unlock）。關頁未同步會再問。TOV **v13.5**、hub **v14.0**、`hx-rules` **v6.3** 紅字。GitHub 後備；Live Vercel。冇改 Supabase 資料。唔開 Chrome。
 
 ## 2026-09-28 公司電腦
