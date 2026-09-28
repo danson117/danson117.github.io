@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Detail 欄寬鎖定：** Detail 表 `table-layout: fixed`＋固定 px col 寬（跟 UAL 可見時緊密佈局）。UAL 四欄只一齊 show／唔 render；隱藏時其他欄唔拉闊。可留右空或橫向 scroll。保留空格灰底 `blank`。TOV **v14.2**、hub **v15.1**、`hx-rules` **v7.4** 紅字。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Detail 空 course／due 格灰底：** Course code／Overdue due day／remaining／Coming due courses／day／remaining 空值 → class `blank`（`#e4e4e4`）。有值保持原色。唔灰 Staff #／Name／Team／Section + Crew／UA Employee #。Cards 同等空格同一規則。TOV **v14.1**、hub **v15.0**、`hx-rules` **v7.3** 紅字。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

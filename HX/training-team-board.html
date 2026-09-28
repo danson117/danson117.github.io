@@ -808,7 +808,52 @@
   .detail table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .detail th, .detail td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; }
   .detail th { background: var(--navy); color: #fff; }
-  .detail th.col-team, .detail td.col-team { white-space: nowrap; min-width: 5.6em; }
+  .detail th.col-team, .detail td.col-team { white-space: nowrap; }
+  /* Detail board: fixed col widths (UAL-visible denseness). UAL four cols omit from DOM when hidden — siblings do not stretch. */
+  .detail-table #detail-shot {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  .detail-table table {
+    table-layout: fixed;
+    width: max-content;
+    max-width: none;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .detail-table col.col-staff { width: 72px; }
+  .detail-table col.col-name { width: 120px; }
+  .detail-table col.col-team { width: 72px; }
+  .detail-table col.col-crew { width: 96px; }
+  .detail-table col.col-course { width: 140px; }
+  .detail-table col.col-due { width: 104px; }
+  .detail-table col.col-remain { width: 72px; }
+  .detail-table col.col-emp { width: 88px; }
+  .detail-table col.col-soon { width: 160px; }
+  .detail-table col.col-soon-due { width: 104px; }
+  .detail-table col.col-soon-remain { width: 72px; }
+  .detail-table col.col-completed { width: 140px; }
+  .detail-table th,
+  .detail-table td {
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    vertical-align: top;
+  }
+  .detail-table th.col-staff,
+  .detail-table td.col-staff,
+  .detail-table th.col-team,
+  .detail-table td.col-team,
+  .detail-table th.col-emp,
+  .detail-table td.col-emp,
+  .detail-table th.col-remain,
+  .detail-table td.col-remain,
+  .detail-table th.col-soon-remain,
+  .detail-table td.col-soon-remain {
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
   .detail tr.hot td { background: var(--hot-bg); color: var(--hot); }
   .detail tr.warn td { background: var(--warn-bg); color: var(--warn); }
   .detail td.soon { background: var(--warn-bg); color: var(--warn); }
@@ -1575,7 +1620,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="14.1" aria-label="Page version 14.1">v14.1</div>
+  <div class="page-version" data-version="14.2" aria-label="Page version 14.2">v14.2</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -4882,14 +4927,23 @@ function paintDetail() {
     return "<td" + (cls ? " class=\"" + cls + "\"" : "") + ">" + esc(t) + "</td>";
   };
   const completedCol = showRecentCompleted
-    ? dth("Completed (≤30 days)", "completed")
+    ? dth("Completed (≤30 days)", "completed", "col-completed")
     : "";
   const showUalCols = srcHas("ual");
   const ualColsHead = showUalCols
-    ? dth("UA Employee #", "emp") + dth("Coming due courses", "soon") + dth("Coming due day", "soonDue") + dth("Coming due remaining", "soonRemain")
+    ? dth("UA Employee #", "emp", "col-emp") + dth("Coming due courses", "soon", "col-soon") + dth("Coming due day", "soonDue", "col-soon-due") + dth("Coming due remaining", "soonRemain", "col-soon-remain")
     : "";
-  const tableShot = "<div id=\"detail-shot\"><table><thead><tr>" + dth("Staff #", "staff") + dth("Name", "name") + dth("Team", "team", "col-team") + dth("Section + Crew", "crew") +
-    dth("Course code", "overdue") + dth("Overdue or will expire due day", "due") + dth("Overdue or will expire remaining", "remain") +
+  const colgroup =
+    "<colgroup>" +
+    "<col class=\"col-staff\"><col class=\"col-name\"><col class=\"col-team\"><col class=\"col-crew\">" +
+    "<col class=\"col-course\"><col class=\"col-due\"><col class=\"col-remain\">" +
+    (showUalCols
+      ? "<col class=\"col-emp\"><col class=\"col-soon\"><col class=\"col-soon-due\"><col class=\"col-soon-remain\">"
+      : "") +
+    (showRecentCompleted ? "<col class=\"col-completed\">" : "") +
+    "</colgroup>";
+  const tableShot = "<div id=\"detail-shot\"><table>" + colgroup + "<thead><tr>" + dth("Staff #", "staff", "col-staff") + dth("Name", "name", "col-name") + dth("Team", "team", "col-team") + dth("Section + Crew", "crew", "col-crew") +
+    dth("Course code", "overdue", "col-course") + dth("Overdue or will expire due day", "due", "col-due") + dth("Overdue or will expire remaining", "remain", "col-remain") +
     ualColsHead +
     completedCol + "</tr></thead><tbody>" +
     list.map((x) => {
@@ -4904,23 +4958,23 @@ function paintDetail() {
         onlyCompleted ? "completed" : (x.hot ? "hot" : x.warn ? "warn" : ""),
         staffReasons.length ? "flagged" : ""
       ].filter(Boolean).join(" ");
-      const soonCourseCls = [soonOn, soonEmpty ? "blank" : ""].filter(Boolean).join(" ");
+      const soonCourseCls = ["col-soon", soonOn, soonEmpty ? "blank" : ""].filter(Boolean).join(" ");
       const ualColsBody = showUalCols
-        ? tdCell(x.emp, empOn) +
-          "<td" + (soonCourseCls ? " class=\"" + soonCourseCls + "\"" : "") + ">" + courseListHtml(x.soonCourses) + "</td>" +
-          tdSlot(fmtDueDate(x.soonDue), soonOn) +
-          tdSlot(remainText(x.soonRemain, true), ("remain" + (soonOn ? " " + soonOn : "")).trim())
+        ? tdCell(x.emp, ("col-emp " + (empOn || "")).trim()) +
+          "<td class=\"" + soonCourseCls + "\">" + courseListHtml(x.soonCourses) + "</td>" +
+          tdSlot(fmtDueDate(x.soonDue), ("col-soon-due " + (soonOn || "")).trim()) +
+          tdSlot(remainText(x.soonRemain, true), ("col-soon-remain remain" + (soonOn ? " " + soonOn : "")).trim())
         : "";
       return "<tr class=\"" + rowCls + "\" data-staff=\"" + sid + "\">" +
-        "<td>" + staffNoHtml(x.staff) + "</td>" +
-        "<td>" + esc(x.name || "") + flagChip(staffReasons) + "</td>" +
+        "<td class=\"col-staff\">" + staffNoHtml(x.staff) + "</td>" +
+        "<td class=\"col-name\">" + esc(x.name || "") + flagChip(staffReasons) + "</td>" +
         tdCell(teamLabel(x.team, x.home), "col-team") +
-        tdCell(x.crew || crewOf(x) || x.section || "") +
-        "<td" + (overdueEmpty ? " class=\"blank\"" : "") + ">" + courseListHtml(x.overdueCourses) + "</td>" +
-        tdSlot(fmtDueDate(x.due)) +
-        tdSlot(remainText(x.remain, Number(x.remain) > 0), "remain") +
+        tdCell(x.crew || crewOf(x) || x.section || "", "col-crew") +
+        "<td class=\"" + (overdueEmpty ? "col-course blank" : "col-course") + "\">" + courseListHtml(x.overdueCourses) + "</td>" +
+        tdSlot(fmtDueDate(x.due), "col-due") +
+        tdSlot(remainText(x.remain, Number(x.remain) > 0), "col-remain remain") +
         ualColsBody +
-        (showRecentCompleted ? "<td class=\"ok\">" + courseListHtml(x.completedCourses || []) + "</td>" : "") +
+        (showRecentCompleted ? "<td class=\"col-completed ok\">" + courseListHtml(x.completedCourses || []) + "</td>" : "") +
         "</tr>";
     }).join("") +
     "</tbody></table></div>";
