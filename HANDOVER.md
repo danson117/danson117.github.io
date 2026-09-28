@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **TOV 同步 banner：** 頁頂常駐提示。綠 Synchronized＝UAL／CT Reminder／Mandatory 同 Supabase 一樣；橙 Not synchronized（紅＝失敗）＝只喺呢個 browser。本機上傳時間較新時唔再被舊伺服器檔蓋過；可按 Synchronize now（要 Unlock）。關頁未同步會再問。TOV **v13.5**、hub **v14.0**、`hx-rules` **v6.3** 紅字。GitHub 後備；Live Vercel。冇改 Supabase 資料。唔開 Chrome。
+
 ## 2026-09-28 公司電腦
 
 - **刪 hub `#fth-rewrite`：** 卡片「KE FTH self-audit rewrite」已刪；頁 `HX/ke-fth-self-audit-rewrite.html` 一併刪；`links` 列、`hx-rules`／README／rules 例外提及已清。hub v13.9、`hx-rules` v6.2、`links` v2.9。

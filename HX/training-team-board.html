@@ -84,6 +84,51 @@
     white-space: nowrap;
     min-height: 1.2em;
   }
+  .ingest-sync {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 0 14px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 2px solid #c45c00;
+    background: #fff4e5;
+    color: #6a3200;
+  }
+  .ingest-sync-ico {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #c45c00;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .ingest-sync strong { display: block; font-size: 16px; margin: 0 0 4px; }
+  .ingest-sync p { margin: 0; font-size: 14px; line-height: 1.45; }
+  .ingest-sync button {
+    margin-top: 10px;
+    background: #6a3200;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .ingest-sync.ok { border-color: #157a3a; background: #e7f6ec; color: #0f5c2c; }
+  .ingest-sync.ok .ingest-sync-ico { background: #157a3a; font-size: 18px; }
+  .ingest-sync.busy { border-color: #00778b; background: #e7f6f8; color: #015260; }
+  .ingest-sync.busy .ingest-sync-ico { background: #00778b; font-size: 18px; }
+  .ingest-sync.fail { border-color: #b42318; background: #fee4e2; color: #7a1a12; }
+  .ingest-sync.fail .ingest-sync-ico { background: #b42318; }
+  .ingest-sync.check { border-color: #00778b; background: #e7f6f8; color: #015260; }
+  .ingest-sync.check .ingest-sync-ico { background: #00778b; font-size: 18px; }
   html.board-locked .write-zone { display: none !important; }
   html:not(.board-locked).no-ingest .load.write-zone { display: none !important; }
   html:not(.board-locked).no-manual #add-course.write-zone { display: none !important; }
@@ -1158,6 +1203,15 @@
       </div>
     </div>
 
+    <div id="ingest-sync" class="ingest-sync check" role="status" aria-live="polite">
+      <span class="ingest-sync-ico" aria-hidden="true">…</span>
+      <div>
+        <strong id="ingest-sync-title">Checking synchronization…</strong>
+        <p id="ingest-sync-detail">Comparing UAL, CT Reminder, and Mandatory with the server.</p>
+        <button type="button" id="ingest-sync-retry" hidden>Synchronize now</button>
+      </div>
+    </div>
+
     <div class="load write-zone admin-block" hidden aria-label="Admin ingest">
       <div class="box">
         <label>UAL CBT email</label>
@@ -1476,7 +1530,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="13.4" aria-label="Page version 13.4">v13.4</div>
+  <div class="page-version" data-version="13.5" aria-label="Page version 13.5">v13.5</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1544,6 +1598,7 @@ let lastRemoteActionsSig = "";
 let suppressRemoteMerge = false;
 let suppressIngestPush = false;
 let dirtyIngest = false;
+let ingestSyncFailed = false;
 let ingestPushTimer = null;
 let ingestPushBusy = false;
 let ingestPushQueued = false;
@@ -5133,17 +5188,23 @@ function applyServerIngest(data, opts) {
         Object.prototype.hasOwnProperty.call(data, "omtFiles"))) {
     return false;
   }
-  if (opts && opts.keepDirty && dirtyIngest) return false;
   const remoteHas = ingestHasContent(data);
   const localSnap = localIngestSnapshot();
   const localHas = ingestHasContent(localSnap);
+  const nextSig = ingestMetaSig(data);
+  const curSig = ingestMetaSig(localSnap);
+  if (localHas && ingestNewestAt(localSnap) > ingestNewestAt(data) && nextSig !== curSig) {
+    dirtyIngest = true;
+    return false;
+  }
+  if (opts && opts.keepDirty && dirtyIngest) return false;
   if (!remoteHas && localHas && !lastRemoteIngestHadContent && !(opts && opts.allowEmpty)) {
     return false;
   }
-  const nextSig = ingestMetaSig(data);
-  const curSig = ingestMetaSig(localSnap);
   if (nextSig && nextSig === curSig) {
     lastRemoteIngestHadContent = remoteHas;
+    dirtyIngest = false;
+    ingestSyncFailed = false;
     return false;
   }
   suppressIngestPush = true;
@@ -5191,9 +5252,11 @@ function applyServerIngest(data, opts) {
 }
 function schedulePushIngest() {
   if (!persistArmed || suppressIngestPush) return;
+  dirtyIngest = true;
+  ingestSyncFailed = false;
+  paintIngestSync();
   if (!(getBoardPassword() || getSyncKey())) return;
   if (!canRemoteWrite()) return;
-  dirtyIngest = true;
   setSaveSync("Saving…");
   if (ingestPushTimer) window.clearTimeout(ingestPushTimer);
   ingestPushTimer = window.setTimeout(() => {
@@ -5207,7 +5270,9 @@ async function pushIngestToEdge() {
   if (!headers["x-hx-board-password"] && !headers["x-hx-sync-key"]) return false;
   if (ingestPushBusy) { ingestPushQueued = true; return true; }
   ingestPushBusy = true;
+  ingestSyncFailed = false;
   setSaveSync("Saving…");
+  paintIngestSync();
   try {
     do {
       ingestPushQueued = false;
@@ -5220,30 +5285,40 @@ async function pushIngestToEdge() {
       const body = await putRes.json().catch(() => ({}));
       if (putRes.status === 401 || putRes.status === 403) {
         if (!getBoardPassword()) lsRemove(SYNC_KEY_KEY);
+        ingestSyncFailed = true;
+        dirtyIngest = true;
         showPushFail("Sync was rejected. Uploads are saved in this browser.");
-        setSaveSync("Saved");
+        setSaveSync("Not synchronized");
         return true;
       }
       if (!putRes.ok) {
+        ingestSyncFailed = true;
+        dirtyIngest = true;
         showPushFail("Could not sync uploads (" + putRes.status + "). Saved in this browser.");
-        setSaveSync("Saved");
+        setSaveSync("Not synchronized");
         return true;
       }
       dirtyIngest = false;
+      ingestSyncFailed = false;
       if (body && body.payload) {
         lastRemoteActionsSig = actionsPayloadSig(body.payload);
         actionsFileCache = body.payload;
         lastRemoteIngestHadContent = ingestHasContent(body.payload);
+        lastRemoteIngestMetaSig = ingestMetaSig(body.payload);
       } else {
         lastRemoteIngestHadContent = ingestHasContent(localIngestSnapshot());
+        lastRemoteIngestMetaSig = ingestMetaSig(localIngestSnapshot());
       }
       setSaveSync("Saved");
     } while (ingestPushQueued);
   } catch (e) {
+    ingestSyncFailed = true;
+    dirtyIngest = true;
     showPushFail("Could not reach sync server. Uploads are saved in this browser.");
-    setSaveSync("Saved");
+    setSaveSync("Not synchronized");
   } finally {
     ingestPushBusy = false;
+    paintIngestSync();
     window.setTimeout(() => { suppressRemoteMerge = false; }, 800);
     if (ingestPushQueued) {
       ingestPushQueued = false;
@@ -5286,6 +5361,7 @@ async function syncIngestWithRemote() {
       paint();
     }
   }
+  paintIngestSync();
 }
 function mergeStatusMaps() {
   const out = {};
@@ -5314,6 +5390,69 @@ function packActions() {
 function setSaveSync(msg) {
   const el = document.getElementById("save-sync");
   if (el) el.textContent = msg || "";
+}
+function ingestDiffNames() {
+  let local = {};
+  let remote = {};
+  try { local = JSON.parse(ingestMetaSig(localIngestSnapshot()) || "{}"); } catch (e) {}
+  try { remote = JSON.parse(lastRemoteIngestMetaSig || "{}"); } catch (e2) {}
+  const names = [];
+  if (String(local.ualAt || "") !== String(remote.ualAt || "") || Number(local.ualLen || 0) !== Number(remote.ualLen || 0)) names.push("UAL");
+  if (JSON.stringify(local.ct || []) !== JSON.stringify(remote.ct || [])) names.push("CT Reminder");
+  if (JSON.stringify(local.omt || []) !== JSON.stringify(remote.omt || [])) names.push("Mandatory");
+  return names;
+}
+function ingestDiffSentence(names) {
+  if (!names.length) return "";
+  if (names.length === 1) return names[0] + " is only in this browser.";
+  if (names.length === 2) return names[0] + " and " + names[1] + " are only in this browser.";
+  return names.slice(0, -1).join(", ") + ", and " + names[names.length - 1] + " are only in this browser.";
+}
+function paintIngestSync() {
+  const el = document.getElementById("ingest-sync");
+  if (!el) return;
+  const title = document.getElementById("ingest-sync-title");
+  const detail = document.getElementById("ingest-sync-detail");
+  const ico = el.querySelector(".ingest-sync-ico");
+  const btn = document.getElementById("ingest-sync-retry");
+  const names = lastRemoteIngestMetaSig ? ingestDiffNames() : [];
+  const canWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
+  let mode = "ok";
+  if (!remoteBoardConfirmed && !lastRemoteIngestMetaSig) mode = "check";
+  else if (ingestPushBusy) mode = "busy";
+  else if (!lastRemoteIngestMetaSig) mode = "check";
+  else if (names.length) mode = ingestSyncFailed ? "fail" : "warn";
+  el.className = "ingest-sync " + mode;
+  if (mode === "check") {
+    if (ico) ico.textContent = "…";
+    if (title) title.textContent = "Checking synchronization…";
+    if (detail) detail.textContent = remoteBoardConfirmed
+      ? "Comparing UAL, CT Reminder, and Mandatory with the server."
+      : "This page has not confirmed the server yet. Refresh before you rely on this browser.";
+    if (btn) btn.hidden = true;
+    return;
+  }
+  if (mode === "busy") {
+    if (ico) ico.textContent = "…";
+    if (title) title.textContent = "Synchronizing…";
+    if (detail) detail.textContent = "Sending " + (names.length ? names.join(", ") : "UAL, CT Reminder, and Mandatory") + " to the server. Keep this page open.";
+    if (btn) btn.hidden = true;
+    return;
+  }
+  if (mode === "ok") {
+    ingestSyncFailed = false;
+    if (ico) ico.textContent = "✓";
+    if (title) title.textContent = "Synchronized";
+    if (detail) detail.textContent = "UAL, CT Reminder, and Mandatory on this page match the server. Other computers can see this copy.";
+    if (btn) btn.hidden = true;
+    return;
+  }
+  if (ico) ico.textContent = "!";
+  if (title) title.textContent = mode === "fail" ? "Synchronization failed" : "Not synchronized";
+  let msg = ingestDiffSentence(names) + " Other computers still have the older copy. Keep this page open until this banner says Synchronized.";
+  if (!canWrite) msg += " Unlock (Edit or Owner) first.";
+  if (detail) detail.textContent = msg;
+  if (btn) btn.hidden = !canWrite;
 }
 function persistActionsLocal() {
   if (!persistArmed) return;
@@ -8484,6 +8623,15 @@ document.getElementById("push-fail-ok").addEventListener("click", closePushFailP
 document.getElementById("push-fail-pop").addEventListener("click", (e) => {
   if (e.target.id === "push-fail-pop") closePushFailPop();
 });
+document.getElementById("ingest-sync-retry").addEventListener("click", () => {
+  if (!(getBoardPassword() || getSyncKey()) || !canRemoteWrite()) {
+    paintIngestSync();
+    return;
+  }
+  ingestSyncFailed = false;
+  dirtyIngest = true;
+  pushIngestToEdge();
+});
 document.getElementById("ual-parse").addEventListener("click", () => {
   setUal(document.getElementById("ual-src").value, "Pasted email");
 });
@@ -9216,6 +9364,7 @@ function applyHubGate(msg) {
   if (role === "view") {
     setSessionLevelId("");
     applyWriteAccess();
+    paintIngestSync();
     return;
   }
   const wantStatus = role === "admin" || hubGate.editActions.indexOf("team-board-status") >= 0;
@@ -9250,6 +9399,7 @@ function applyHubGate(msg) {
     document.documentElement.classList.add("no-ingest");
   }
   const nowCanWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
+  paintIngestSync();
   if (nowCanWrite && !prevCanWrite && persistArmed) {
     syncIngestWithRemote();
   }
@@ -9290,6 +9440,7 @@ async function pollRemoteActions() {
       keepDirty: !!(dirtyStatusKeys.size || dirtyManualIds.size || pendingStatusDeletes.length || pendingManualDeletes.length)
     });
     paint();
+    paintIngestSync();
     setSaveSync("Updated");
     if (updatedClearTimer) window.clearTimeout(updatedClearTimer);
     updatedClearTimer = window.setTimeout(() => {
@@ -9350,15 +9501,13 @@ window.addEventListener("message", (e) => {
         lastRemoteIngestHadContent = ingestHasContent(fresh);
         remoteBoardConfirmed = true;
         setSaveSync("");
+        if (ingestDiffNames().length) dirtyIngest = true;
         if (getBoardPassword() || getSyncKey()) {
           persistActionsLocal();
           const canWrite = canRemoteWrite();
-          if (canWrite) {
-            const localSnap = localIngestSnapshot();
-            if (!lastRemoteIngestHadContent && ingestHasContent(localSnap)) {
-              await pushIngestToEdge();
-              lastRemoteIngestHadContent = ingestHasContent(localIngestSnapshot());
-            }
+          if (canWrite && ingestDiffNames().length) {
+            await pushIngestToEdge();
+            lastRemoteIngestHadContent = ingestHasContent(localIngestSnapshot());
           }
           flushActionsOut();
         }
@@ -9373,6 +9522,7 @@ window.addEventListener("message", (e) => {
     }
     document.documentElement.classList.remove("hx-waiting-remote");
     paint();
+    paintIngestSync();
     applyWriteAccess();
     if (remoteBoardConfirmed) startSyncPoll();
   } catch (e) {
@@ -9383,6 +9533,12 @@ window.addEventListener("message", (e) => {
 })();
 window.addEventListener("storage", (e) => {
   if (e.key === COURSE_STORE) paint();
+});
+window.addEventListener("beforeunload", (e) => {
+  if (!lastRemoteIngestMetaSig) return;
+  if (!ingestPushBusy && !ingestDiffNames().length) return;
+  e.preventDefault();
+  e.returnValue = "";
 });
 </script>
 </body>

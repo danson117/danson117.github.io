@@ -211,6 +211,7 @@
       <ul>
         <li>Status／Remark／Manual／UAL／CT／Mandatory 經 locked Edge <code>team-board</code> → <code>hx_private</code>。約 5 秒 poll。</li>
         <li style="color:#b00020"><b>新 · B1 lite poll + fresh-first：</b>定時 poll 用 <code>?lite=1</code>（Status／Manual＋ingest meta，<b>唔帶</b> CT／OMT／UAL 大檔／log）。開頁同 ingest meta 有變先 <code>?ingest=1</code> 拉齊檔。畫面等 Edge 確認最新先顯示（Loading latest…）；寧願多等幾秒，唔用未確認舊 local 當真相。Poll 間隔維持約 5 秒（唔做 B2 拉長）。</li>
+        <li style="color:#b00020"><b>新 · UAL／CT／Mandatory 同步提示：</b>Training One View 頂有常駐 banner。綠 <b>Synchronized</b>＝呢頁 UAL、CT Reminder、Mandatory 同伺服器一樣，其他電腦先睇到。橙 <b>Not synchronized</b>（或紅失敗）＝只喺呢個 browser；要 Unlock（Edit／Owner）並且留喺頁面，直到變綠。本機上傳時間新過伺服器時，唔好用舊伺服器檔蓋過。關頁前記住未同步會再問一次。</li>
         <li>UI：Saving…／Saved；Updating…／Updated；開頁 Loading latest…。撞車：先寫贏；後寫 409，還原伺服器版。</li>
         <li><code>HX/team-board-actions.json</code> 只係舊後備空殼；唔好用佢覆蓋 Supabase。</li>
         <li>Unlock 後保持 unlocked，直至 Lock。</li>
@@ -277,6 +278,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="6.2">v6.2</div>
+  <div class="page-version" data-version="6.3">v6.3</div>
 </body>
 </html>
