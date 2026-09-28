@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **PIN Reset 位置：** Briefing and R&S 頁內容區右上（edit unlock；唔喺 create／edit 下面；唔加 hub 頂欄）。行為不變（Refresh／search／reset；唔顯示 PIN／hash）。BRS **v3.6**、hub **v14.6**、`hx-rules` **v6.9** 紅字。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Sign with PIN：** 對話只可用 Cancel 或 × 關閉（點外面／Escape／數字鍵唔關）。錯 PIN 先顯示要搵 OCG Office reset。唔加 Forgot password。TOV **v13.8**、Briefing and R&S **v3.5**、hub **v14.5**、`hx-rules` **v6.8**。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

@@ -379,19 +379,57 @@
     margin-top: 0;
     padding-top: 0;
   }
-  .admin-block .vault {
-    margin-top: 16px;
-    border: 1px solid var(--admin-border);
-    background: var(--admin-soft);
+  .brs-top-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 16px;
+    align-items: flex-start;
+    margin: 0 0 8px;
+  }
+  .brs-top-main {
+    flex: 1 1 360px;
+    min-width: 0;
+  }
+  .brs-top-main:empty { display: none; }
+  .pin-reset-slot {
+    flex: 0 1 300px;
+    width: min(300px, 100%);
+    margin-left: auto;
+  }
+  .pin-reset-slot:empty { display: none; }
+  #pin-vault.vault {
+    margin: 0;
+    border: 2px solid var(--admin-border);
+    border-left: 6px solid var(--admin);
+    background: var(--admin-bg);
     padding: 14px 12px 12px;
   }
-  .admin-block .vault h3 {
+  #pin-vault.vault h3 {
     margin: 0 0 6px;
     font-size: 14px;
     color: var(--admin);
     font-weight: 700;
   }
-  .admin-block .vault .note { color: var(--muted); font-size: 13px; margin: 0 0 12px; max-width: 720px; }
+  #pin-vault.vault .note { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+  #pin-vault.vault button.quiet {
+    background: #f3f4f6;
+    color: var(--btn-quiet);
+    border-color: #c5d0d8;
+  }
+  #pin-vault.vault button.quiet:hover {
+    background: #e5e7eb;
+    border-color: var(--btn-quiet);
+  }
+  #pin-vault.vault button.danger {
+    background: var(--btn-danger);
+    color: #fff;
+    border-color: var(--btn-danger);
+  }
+  #pin-vault.vault button.danger:hover {
+    background: #912018;
+    border-color: #912018;
+  }
+  #pin-vault.vault button:hover { border-color: var(--admin); }
   .admin-pick {
     margin: 0 0 4px;
   }
@@ -489,7 +527,8 @@
     color: var(--admin);
     font-weight: 700;
   }
-  #admin-slot + h1 {
+  .brs-top-row:has(#brs-admin) ~ h1,
+  .brs-top-row:has(#pin-vault) ~ h1 {
     border-top: 1px solid var(--line);
     padding-top: 16px;
     margin-top: 4px;
@@ -673,14 +712,15 @@
   .pin-card .msg-line { margin: 0 0 8px; color: var(--ink); font-size: 15px; font-weight: 600; }
   .pin-card .msg-line:last-child { margin-bottom: 12px; }
   #msg-pop { z-index: 50; }
-  #vault-list { max-height: 360px; overflow: auto; }
-  .admin-block .vault .vault-search {
+  #vault-list { max-height: 280px; overflow: auto; }
+  #pin-vault .vault-search {
     display: block;
-    width: min(360px, 100%);
+    width: 100%;
     margin: 0 0 10px;
     font: inherit;
     padding: 7px 10px;
     border: 1px solid var(--line);
+    box-sizing: border-box;
   }
   .record-panel {
     background: var(--card);
@@ -771,12 +811,22 @@
   @media (max-width: 720px) {
     .mat-add { grid-template-columns: 1fr; }
     .dash { grid-template-columns: 1fr 1fr; }
+    .pin-reset-slot {
+      flex: 1 1 100%;
+      width: 100%;
+      margin-left: 0;
+    }
   }
 </style>
 </head>
 <body>
   <div class="page">
-    <div id="admin-slot"></div>
+    <div class="brs-top-row">
+      <div class="brs-top-main">
+        <div id="admin-slot"></div>
+      </div>
+      <aside id="pin-reset-slot" class="pin-reset-slot" aria-label="PIN Reset"></aside>
+    </div>
     <h1>Briefing and R&amp;S</h1>
     <div class="bar">
       <div class="seg" role="group" aria-label="Show">
@@ -873,7 +923,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="3.5">v3.5</div>
+  <div class="page-version" data-version="3.6">v3.6</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -910,6 +960,7 @@
   var hubRole = "view";
   var adminEditId = "";
   var adminWired = false;
+  var pinVaultWired = false;
   var openItemId = "";
   var peopleAuthPick = null;
   var authIndexCache = null;
@@ -1728,10 +1779,13 @@
   }
   function syncAdminDom() {
     var slot = document.getElementById("admin-slot");
+    var pinSlot = document.getElementById("pin-reset-slot");
     if (!slot) return;
     if (!isEditUnlocked()) {
       slot.innerHTML = "";
+      if (pinSlot) pinSlot.innerHTML = "";
       adminWired = false;
+      pinVaultWired = false;
       return;
     }
     if (!document.getElementById("brs-admin")) {
@@ -1745,17 +1799,21 @@
             "</div>" +
           "</div>" +
           "<div class=\"admin-section\" id=\"admin-editor-wrap\"></div>" +
-          "<div class=\"vault\" id=\"pin-vault\">" +
-            "<h3>PIN Reset</h3>" +
-            "<div class=\"bar\">" +
-              "<button type=\"button\" class=\"quiet\" id=\"vault-refresh\">Refresh list</button>" +
-              "<span class=\"status\" id=\"vault-status\"></span>" +
-            "</div>" +
-            "<input type=\"search\" id=\"vault-search\" class=\"vault-search\" placeholder=\"Search staff # or name\" autocomplete=\"off\">" +
-            "<ul class=\"clean\" id=\"vault-list\"><li class=\"muted\">Click Refresh list after edit unlock.</li></ul>" +
-          "</div>" +
         "</section>";
       wireAdminOnce();
+    }
+    if (pinSlot && !document.getElementById("pin-vault")) {
+      pinSlot.innerHTML =
+        "<div class=\"vault\" id=\"pin-vault\">" +
+          "<h3>PIN Reset</h3>" +
+          "<div class=\"bar\">" +
+            "<button type=\"button\" class=\"quiet\" id=\"vault-refresh\">Refresh list</button>" +
+            "<span class=\"status\" id=\"vault-status\"></span>" +
+          "</div>" +
+          "<input type=\"search\" id=\"vault-search\" class=\"vault-search\" placeholder=\"Search staff # or name\" autocomplete=\"off\">" +
+          "<ul class=\"clean\" id=\"vault-list\"><li class=\"muted\">Click Refresh list after edit unlock.</li></ul>" +
+        "</div>";
+      wirePinVaultOnce();
     }
     renderAdminEditor();
   }
@@ -1799,6 +1857,14 @@
     root.addEventListener("dragleave", onMatDragLeave);
     root.addEventListener("drop", onMatDrop);
     root.addEventListener("dragend", onMatDragEnd);
+  }
+  function wirePinVaultOnce() {
+    if (pinVaultWired) return;
+    var root = document.getElementById("pin-vault");
+    if (!root) return;
+    pinVaultWired = true;
+    root.addEventListener("click", onAdminClick);
+    root.addEventListener("input", onAdminInput);
   }
   var matDragId = "";
   var matDragItemId = "";
