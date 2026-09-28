@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **LM00183 係 Manual 行，唔係 CT。** 先前完成日寫咗 `staff|LM00183|ct`，所以搜尋呢科仍然 Not Started、Outstanding 仍係 73。已改寫 `staff|LM00183|manual` = Completed（同一 4 個職員、同一完成日），並刪走錯誤嘅 ct 鍵。Manual 仍 147 行；CT 478+3625、OMT 87 冇改。刷新後呢科未完成人數應為 69。唔寫職員明細。
+
+## 2026-09-28 公司電腦
+
 - **TOV 完成日：** OSD 圖入面 course `LM00183`（EK Emirates eTechLog Training）寫入 Supabase status，4 個對應職員編號設為 Completed，並用圖上 Completion Date。Course List 加咗呢一科（而家 182 行）。**冇**改 UAL／CT／Mandatory／manual 行數（CT 478+3625、OMT 87、manual 147）。唔寫 `hx_test`。唔寫職員明細。
 - 呢科原本唔喺各人未完成清單。Status 已存；之後 CT 檔出現同一職員＋`LM00183` 就會當完成，唔會再當未做。GitHub 只加呢條 handover。唔開 Chrome。
 
