@@ -21,7 +21,7 @@
     --warn-bg: #fff3b0;
     --ok-row: #e8f5e9;
     --progress-cell: #d7f3f5;
-    --blank: #d9dee6;
+    --blank: #e4e4e4;
     --admin: #6b3e26;
     --admin-bg: #f6efe6;
     --admin-border: #c4a484;
@@ -1575,7 +1575,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="14.0" aria-label="Page version 14.0">v14.0</div>
+  <div class="page-version" data-version="14.1" aria-label="Page version 14.1">v14.1</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -4869,7 +4869,16 @@ function paintDetail() {
     "</div>";
   const tdCell = (text, extra) => {
     const t = text == null ? "" : String(text);
-    const cls = [extra || "", t.trim() ? "" : "blank"].filter(Boolean).join(" ");
+    const cls = (extra || "").trim();
+    return "<td" + (cls ? " class=\"" + cls + "\"" : "") + ">" + esc(t) + "</td>";
+  };
+  const isEmptySlot = (text) => {
+    const s = String(text == null ? "" : text).trim();
+    return !s || s === "—" || s === "–" || s === "-";
+  };
+  const tdSlot = (text, extra) => {
+    const t = text == null ? "" : String(text);
+    const cls = [extra || "", isEmptySlot(t) ? "blank" : ""].filter(Boolean).join(" ");
     return "<td" + (cls ? " class=\"" + cls + "\"" : "") + ">" + esc(t) + "</td>";
   };
   const completedCol = showRecentCompleted
@@ -4887,27 +4896,29 @@ function paintDetail() {
       const soonOn = x.soonCourses.length ? "soon" : "";
       const empOn = showUalCols && x.emp && String(x.emp).trim() ? (x.ualHot ? "hot-ual" : x.ualWarn ? "soon" : "") : "";
       const sid = esc(x.staff);
-      const staffCls = String(x.staff || "").trim() ? "" : "blank";
+      const overdueEmpty = !(x.overdueCourses || []).length;
+      const soonEmpty = !(x.soonCourses || []).length;
       const staffReasons = flaggedStaffReasons(x.staff);
       const onlyCompleted = !!(x.recentCompleted && !(x.overdueCourses || []).length && !(x.soonCourses || []).length && !(x.courses || []).length);
       const rowCls = [
         onlyCompleted ? "completed" : (x.hot ? "hot" : x.warn ? "warn" : ""),
         staffReasons.length ? "flagged" : ""
       ].filter(Boolean).join(" ");
+      const soonCourseCls = [soonOn, soonEmpty ? "blank" : ""].filter(Boolean).join(" ");
       const ualColsBody = showUalCols
         ? tdCell(x.emp, empOn) +
-          "<td" + (soonOn ? " class=\"" + soonOn + "\"" : "") + ">" + courseListHtml(x.soonCourses) + "</td>" +
-          tdCell(fmtDueDate(x.soonDue), soonOn) +
-          tdCell(remainText(x.soonRemain, true), ("remain" + (soonOn ? " " + soonOn : "")).trim())
+          "<td" + (soonCourseCls ? " class=\"" + soonCourseCls + "\"" : "") + ">" + courseListHtml(x.soonCourses) + "</td>" +
+          tdSlot(fmtDueDate(x.soonDue), soonOn) +
+          tdSlot(remainText(x.soonRemain, true), ("remain" + (soonOn ? " " + soonOn : "")).trim())
         : "";
       return "<tr class=\"" + rowCls + "\" data-staff=\"" + sid + "\">" +
-        "<td" + (staffCls ? " class=\"" + staffCls + "\"" : "") + ">" + staffNoHtml(x.staff) + "</td>" +
+        "<td>" + staffNoHtml(x.staff) + "</td>" +
         "<td>" + esc(x.name || "") + flagChip(staffReasons) + "</td>" +
         tdCell(teamLabel(x.team, x.home), "col-team") +
         tdCell(x.crew || crewOf(x) || x.section || "") +
-        "<td>" + courseListHtml(x.overdueCourses) + "</td>" +
-        tdCell(fmtDueDate(x.due)) +
-        tdCell(remainText(x.remain, Number(x.remain) > 0), "remain") +
+        "<td" + (overdueEmpty ? " class=\"blank\"" : "") + ">" + courseListHtml(x.overdueCourses) + "</td>" +
+        tdSlot(fmtDueDate(x.due)) +
+        tdSlot(remainText(x.remain, Number(x.remain) > 0), "remain") +
         ualColsBody +
         (showRecentCompleted ? "<td class=\"ok\">" + courseListHtml(x.completedCourses || []) + "</td>" : "") +
         "</tr>";
@@ -7577,7 +7588,9 @@ function personCourseTableHtml(who) {
       ].filter(Boolean).join(" ");
       const td = (text, extra) => {
         const t = text == null ? "" : String(text);
-        const klass = [extra || "", t.trim() ? "" : "blank"].filter(Boolean).join(" ");
+        const s = t.trim();
+        const empty = !s || s === "—" || s === "–" || s === "-";
+        const klass = [extra || "", empty ? "blank" : ""].filter(Boolean).join(" ");
         return "<td" + (klass ? " class=\"" + klass + "\"" : "") + ">" + esc(t) + "</td>";
       };
       const srcTd = "<td>" + esc(srcLabel(r)) + "</td>";
@@ -7594,8 +7607,9 @@ function personCourseTableHtml(who) {
           ? "<button type=\"button\" class=\"manual-del\" data-manual-del=\"" + esc(r.mid) + "\">Remove</button>"
           : "") +
         "</td>";
+      const codeEmpty = !String(r.code || "").trim();
       return "<tr class=\"" + cls + "\">" +
-        "<td>" + esc(r.code || "") + flagChip(flagReasons) + "</td>" +
+        "<td" + (codeEmpty ? " class=\"blank\"" : "") + ">" + esc(r.code || "") + flagChip(flagReasons) + "</td>" +
         td(displayCourseName(r.code, r.name)) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") +
         srcTd + courseStatusCellHtml(who, r) + refTd + courseRemarkCellHtml(who, r) + actionTd + "</tr>";
     }).join("") + "</tbody></table>";

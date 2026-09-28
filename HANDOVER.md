@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Detail 空 course／due 格灰底：** Course code／Overdue due day／remaining／Coming due courses／day／remaining 空值 → class `blank`（`#e4e4e4`）。有值保持原色。唔灰 Staff #／Name／Team／Section + Crew／UA Employee #。Cards 同等空格同一規則。TOV **v14.1**、hub **v15.0**、`hx-rules` **v7.3** 紅字。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Materials 標籤（檔 vs 資料夾）：** URL／path 有副檔名 → 解碼檔名；冇副檔名／folder → 可見字 **Material Folder**。TOV 材料彈窗 + BRS detail／材料列表。TOV **v14.0**、BRS **v3.9**、hub **v14.9**、`hx-rules` **v7.2** 紅字。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

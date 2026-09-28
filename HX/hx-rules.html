@@ -229,6 +229,7 @@
         <li>而家起 UAL／CT／Mandatory 上載全機同步。舊「ignore」只係唔好特登帶舊檔。</li>
         <li>Mandatory 只留 Name List（OCG）staff。Course 缺名時跟 Course List／CT／UAL。</li>
         <li><span class="key">新 · Course List 獨立於 CSV ingest</span>：Course List（<code>course-catalog.html</code>）自己存；上 CT Reminder／Mandatory／UAL <b>唔刪、唔整份取代</b> Course List。CSV 只有 course code → 自動用 Course List 名。Code／名同存檔唔夾（同 code 唔同名，或同名唔同 code）→ 頁內 dialog 問用 Course List 定 CSV；<b>唔靜默覆寫</b>。夾嘅就用存檔名、唔彈窗。</li>
+        <li style="color:#b00020"><b>新 · Training One View · 空 course／due 格灰底：</b>Detail 表六欄——<b>Course code</b>、<b>Overdue or will expire due day</b>、<b>Overdue or will expire remaining</b>、<b>Coming due courses</b>、<b>Coming due day</b>、<b>Coming due remaining</b>——格內冇值（空白／純空白／只用 em dash 當空位）→ 中性灰底（例 <code>#e4e4e4</code>／CSS class <code>blank</code>），表示「冇嘢填」，唔係白洞。有 course code／日期／remaining／coming-due 文字嘅格保持而家樣（overdue 紅、行黃／粉、due 藍等），唔用灰蓋。唔灰 <b>Staff #</b>、<b>Name</b>、<b>Team</b>、<b>Section + Crew</b>、<b>UA Employee #</b>（鄰格空亦唔跟住灰）。唔改資料、filter、UAL 四欄顯示／隱藏、Course code 表頭。Cards／Details 同等空 course／due 格同一規則。唔改搜尋框／Admin 空欄。</li>
         <li style="color:#b00020"><b>新 · BRS／TOV materials 標籤（檔 vs 資料夾）：</b>材料列表可見字：URL／存檔名 path 最後一段<strong>有副檔名</strong>（任何 extension，唔限 pdf／xlsx）→ 解碼檔名（唔 raw URL；href 仍係真實連結）。冇副檔名＝SharePoint／library folder 或多檔 container → 可見標籤固定英文 <b>Material Folder</b>（例 <code>2. Material Folder</code>）。編號 1. 2. 3.… 不變。唔改紅字提醒、Close、Unsign、Save、Save Draft、kind badge。Training One View 材料彈窗同 Briefing and R&amp;S detail／材料列表同一規則。</li>
         <li style="color:#b00020"><b>新 · Sign／Seen with PIN 對話框：</b>Training One View 同 Briefing and R&amp;S 兩頁共用行為。對話框<strong>唔</strong>因 backdrop／外面 click、Escape、或數字鍵關閉；只可以由 <b>Cancel</b> 或對話框右上 <b>×</b> 關閉。數字鍵只入 PIN 欄（開住 dialog 時焦点唔喺欄都要導入 PIN）。Wrong PIN 紅字之後顯示英文提示：<b>If you forgot your PIN, ask OCG Office to reset it.</b>（試錯先出；唔加 Forgot password 掣／第二屏）。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · Save vs Save Draft：</b>有改動時：未確認 draft（未 <b>Create BRS</b>；item <code>draft</code>）→ 掣 <b>Save Draft</b>（只存 draft、唔 confirm／publish）；已確認／已出街 item 再開 edit → 掣 <b>Save</b>（同一 persist path 寫入現有 item，唔另開 pipeline）。兩者都配 <b>Close without saving</b>。冇改動只 <b>Close</b>。唔改 Create New BRS／Create BRS／Delete BRS／Close／Close without saving／Unsign／Remove。</li>
@@ -291,6 +292,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="7.2">v7.2</div>
+  <div class="page-version" data-version="7.3">v7.3</div>
 </body>
 </html>
