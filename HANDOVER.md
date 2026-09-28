@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Materials 標籤（檔 vs 資料夾）：** URL／path 有副檔名 → 解碼檔名；冇副檔名／folder → 可見字 **Material Folder**。TOV 材料彈窗 + BRS detail／材料列表。TOV **v14.0**、BRS **v3.9**、hub **v14.9**、`hx-rules` **v7.2** 紅字。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **BRS Save vs Save Draft：** 未確認 draft 有改動 → **Save Draft**；已確認 item 再開 edit 有改動 → **Save**（同一 persist）。兩者都配 Close without saving；冇改動只 Close。BRS **v3.8**、hub **v14.8**、`hx-rules` **v7.1** 紅字。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

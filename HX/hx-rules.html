@@ -229,6 +229,7 @@
         <li>而家起 UAL／CT／Mandatory 上載全機同步。舊「ignore」只係唔好特登帶舊檔。</li>
         <li>Mandatory 只留 Name List（OCG）staff。Course 缺名時跟 Course List／CT／UAL。</li>
         <li><span class="key">新 · Course List 獨立於 CSV ingest</span>：Course List（<code>course-catalog.html</code>）自己存；上 CT Reminder／Mandatory／UAL <b>唔刪、唔整份取代</b> Course List。CSV 只有 course code → 自動用 Course List 名。Code／名同存檔唔夾（同 code 唔同名，或同名唔同 code）→ 頁內 dialog 問用 Course List 定 CSV；<b>唔靜默覆寫</b>。夾嘅就用存檔名、唔彈窗。</li>
+        <li style="color:#b00020"><b>新 · BRS／TOV materials 標籤（檔 vs 資料夾）：</b>材料列表可見字：URL／存檔名 path 最後一段<strong>有副檔名</strong>（任何 extension，唔限 pdf／xlsx）→ 解碼檔名（唔 raw URL；href 仍係真實連結）。冇副檔名＝SharePoint／library folder 或多檔 container → 可見標籤固定英文 <b>Material Folder</b>（例 <code>2. Material Folder</code>）。編號 1. 2. 3.… 不變。唔改紅字提醒、Close、Unsign、Save、Save Draft、kind badge。Training One View 材料彈窗同 Briefing and R&amp;S detail／材料列表同一規則。</li>
         <li style="color:#b00020"><b>新 · Sign／Seen with PIN 對話框：</b>Training One View 同 Briefing and R&amp;S 兩頁共用行為。對話框<strong>唔</strong>因 backdrop／外面 click、Escape、或數字鍵關閉；只可以由 <b>Cancel</b> 或對話框右上 <b>×</b> 關閉。數字鍵只入 PIN 欄（開住 dialog 時焦点唔喺欄都要導入 PIN）。Wrong PIN 紅字之後顯示英文提示：<b>If you forgot your PIN, ask OCG Office to reset it.</b>（試錯先出；唔加 Forgot password 掣／第二屏）。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · Save vs Save Draft：</b>有改動時：未確認 draft（未 <b>Create BRS</b>；item <code>draft</code>）→ 掣 <b>Save Draft</b>（只存 draft、唔 confirm／publish）；已確認／已出街 item 再開 edit → 掣 <b>Save</b>（同一 persist path 寫入現有 item，唔另開 pipeline）。兩者都配 <b>Close without saving</b>。冇改動只 <b>Close</b>。唔改 Create New BRS／Create BRS／Delete BRS／Close／Close without saving／Unsign／Remove。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S editor（Due Date／材料／關閉掣）：</b>Title 同 Due Date 同一行對齊（同級高）。Due Date 用文字欄顯示／輸入 <b>YYYYMMDD</b>（例 20261010；可空）；內部仍存 <code>dueDate</code> 為 YYYY-MM-DD 俾 TOV。唔用 native <code>type=date</code>（避免 locale 斜槓同 focus 自動 scroll）。Focus／打字 Due Date <b>唔</b> scrollIntoView／跳視窗。材料列表（Admin create／edit、detail、TOV 材料彈窗）可見字＝解碼後檔名（path 最後一段；剝 query；decode %20）；href 仍係真實 URL。Admin 材料 ⋮⋮ drag-and-drop 要真係改 <code>materials</code> 陣列次序同編號；handle／成行可拖（唔因 text node／preventDefault 失效）。Editor 關閉掣：有改動先出 <b>Save Draft</b>（未確認 draft）或 <b>Save</b>（已確認 item）＋ <b>Close without saving</b>（還原 snapshot 後關）；冇改動只出 <b>Close</b>。刪走常駐「Draft and Close」。Delete BRS／Create BRS 不變。Snapshot＝開 editor 或上次 Save 時嘅 item。</li>
@@ -290,6 +291,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="7.1">v7.1</div>
+  <div class="page-version" data-version="7.2">v7.2</div>
 </body>
 </html>
