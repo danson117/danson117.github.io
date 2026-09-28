@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>小學五、六年級中文作文常見題型與題目雜錦</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="HX/hx-shared-sync.js?v=1.3"></script>
     <style>
       body {
         font-family:
@@ -9667,6 +9668,51 @@
     <script>
       /* vocab-bank-js */
       const VOCAB_REMOVED_KEY = "p56_vocab_removed_v1";
+      const SHARED_DOC = "p56-essay";
+      const CLOUD_KEYS = [VOCAB_REMOVED_KEY];
+      let cloudReadyP56 = false;
+      let suppressCloudPushP56 = false;
+      function packP56Doc() {
+        const keys = {};
+        CLOUD_KEYS.forEach((k) => {
+          const v = localStorage.getItem(k);
+          if (v !== null) keys[k] = v;
+        });
+        return { v: 1, updated: new Date().toISOString(), app: "p56-essay", keys: keys };
+      }
+      function p56LocalEmpty(doc) {
+        if (!doc || !doc.keys) return true;
+        return !CLOUD_KEYS.some((k) => String(doc.keys[k] || "").length > 0);
+      }
+      const scheduleP56Push = (window.HxSharedSync && window.HxSharedSync.schedule)
+        ? window.HxSharedSync.schedule(async () => {
+            if (!cloudReadyP56 || suppressCloudPushP56 || !window.HxSharedSync) return;
+            if (!window.HxSharedSync.getPassword()) return;
+            try { await window.HxSharedSync.pushDoc(SHARED_DOC, packP56Doc()); } catch (e) {}
+          }, 1200)
+        : function () {};
+      async function syncP56OnBoot() {
+        if (!window.HxSharedSync) { cloudReadyP56 = true; return; }
+        try {
+          await window.HxSharedSync.syncDoc(SHARED_DOC, {
+            getLocal: () => packP56Doc(),
+            localEmpty: p56LocalEmpty,
+            applyRemote: (doc) => {
+              suppressCloudPushP56 = true;
+              try {
+                const keys = (doc && doc.keys) || {};
+                CLOUD_KEYS.forEach((k) => {
+                  if (typeof keys[k] === "string") localStorage.setItem(k, keys[k]);
+                });
+              } finally {
+                setTimeout(() => { suppressCloudPushP56 = false; }, 100);
+              }
+            },
+            onStatus: function () {}
+          });
+        } catch (e) {}
+        cloudReadyP56 = true;
+      }
       function copyVocab(text, btn) {
         const done = () => {
           btn.classList.add("copied");
@@ -9704,6 +9750,7 @@
       }
       function saveRemovedVocabIds(ids) {
         localStorage.setItem(VOCAB_REMOVED_KEY, JSON.stringify(ids));
+        scheduleP56Push();
       }
       function updateVocabCategoryCounts() {
         document.querySelectorAll("[data-vocab-cat]").forEach((el) => {
@@ -9841,7 +9888,8 @@
           setActiveNav(location.hash);
         }
       }
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", async () => {
+        try { await syncP56OnBoot(); } catch (e) {}
         if (localStorage.getItem("essay-dark") === "true")
           document.body.classList.add("dark-mode");
         const fs = localStorage.getItem("essay-font");
@@ -9852,5 +9900,6 @@
     </script>
     <script src="essay-notes.js"></script>
     <script src="essay-read-count.js"></script>
+    <div class="page-version" data-version="1.1" aria-label="頁面版本 1.1" style="position:fixed;right:10px;bottom:8px;font:12px/1 sans-serif;opacity:.55;z-index:9999;">v1.1</div>
   </body>
 </html>

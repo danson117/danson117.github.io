@@ -8,6 +8,16 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-28 公司電腦
+
+- **Sync all 剩餘家庭／根頁共用紀錄**（公司電腦；先 `git pull` fast-forward `94b993c`→`615f915`，冇用舊檔覆蓋）。
+- 沿用 `HX/hx-shared-sync.js` + Edge `team-board` reserved key `__hx_shared__/<docId>`。**冇**清 Training One View Status／Manual／UAL／CT／Mandatory。冇寫 `hx_test`。
+- **新 doc ids：** `travel-list`、`weight-records`、`math-mistakes`、`zhongzuo4`、`p56-essay`、`efas2026-hsc`。
+- **已有（唔動）：** `course-catalog`、`alpha-learn`、`karson-learn`、`briefing-read-sign`（及 record）。
+- **頁／版本：** `travel_list` v1.1、`weight` v1.1、`乘數表`／`乘數表TEST` v1.1、`中作4` v1.1、`小五六作文範例` v1.1、`efas2026-hsc-remaining-flats` v1.1、`物品清單` v1.7（顯示用／無編輯器，清單仍喺 HTML；靠 Vercel 部署對齊）、`hx-rules` v5.8、`hx.html` v13.0。
+- **仍唔上雲：** 閃卡錄音（大檔）；純 UI（字體／暗色／篩選面板）；DICT／作文21手法／Present_vs_Past／efas shortlist 等硬編碼顯示頁（HTML＝來源）。
+- GitHub 後備 + push → Vercel `danson117-github-io` 重建。寫入仍要各裝置 HX Unlock 一次。
+
 ## 2026-09-27 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **TOV B1 + fresh-first：** Edge `team-board` **v7** — GET `?lite=1`（Status／Manual＋ingest meta，唔帶 CT／OMT／UAL blob／log）；`?ingest=1`（只拉檔）；開頁等 lite+ingest 確認先顯示（Loading latest…；唔用未確認舊 local 當板）。Poll 仍 **5s**（唔做 B2）。源碼備份 `HX/supabase-edge/team-board/index.ts`。TOV **v12.7**、hub **v12.9**、`hx-rules` **v5.7** 紅字。GitHub 後備；Live Vercel／Supabase Edge。唔開 Chrome。

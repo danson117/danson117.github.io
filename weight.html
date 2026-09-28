@@ -30,9 +30,11 @@
 </head>
 <body>
     <div id="root"></div>
+    <div class="page-version" data-version="1.1" aria-label="頁面版本 1.1" style="position:fixed;right:10px;bottom:8px;font:12px/1 sans-serif;opacity:.55;z-index:99;">v1.1</div>
+    <script src="HX/hx-shared-sync.js?v=1.3"></script>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
         const { motion, AnimatePresence } = window.Motion;
         
         const safeStorage = {
@@ -47,7 +49,8 @@
         };
 
         const KG_TO_LBS = 2.20462262;
-        const STORAGE_KEY = 'growth_records_v6_ipad_fix'; 
+        const STORAGE_KEY = 'growth_records_v6_ipad_fix';
+        const SHARED_DOC = 'weight-records'; 
         
         const PRELOAD_DATA = [
             { id: 'sw_1', date: '2026-01-09', person: 'shunwai', weight: 22.85, height: 130 },
@@ -283,12 +286,30 @@
             );
         };
 
+        function packWeightDoc(recs) {
+            return {
+                v: 1,
+                updated: new Date().toISOString(),
+                app: 'weight',
+                rows: Array.isArray(recs) ? recs : []
+            };
+        }
+
+        function weightLocalEmpty(doc) {
+            if (!doc) return true;
+            return !(Array.isArray(doc.rows) && doc.rows.length > 0);
+        }
+
         // --- 主應用 ---
         function WeightTracker() {
             const [records, setRecords] = useState(() => {
                 const saved = safeStorage.getItem(STORAGE_KEY);
                 return saved ? JSON.parse(saved) : PRELOAD_DATA;
             });
+            const [syncMsg, setSyncMsg] = useState('同步準備中…');
+            const cloudReady = useRef(false);
+            const suppressPush = useRef(false);
+            const schedulePush = useRef(null);
             
             const [sharedDate, setSharedDate] = useState(getTodayStr());
             const [inputState, setInputState] = useState({ shunwai: { weight: '', height: '' }, kaishun: { weight: '', height: '' } });
@@ -299,7 +320,70 @@
             const processedRecords = useMemo(() => recalculateRecords(records), [records]);
 
             useEffect(() => {
+                if (!schedulePush.current && window.HxSharedSync && window.HxSharedSync.schedule) {
+                    schedulePush.current = window.HxSharedSync.schedule(async () => {
+                        if (!cloudReady.current || suppressPush.current || !window.HxSharedSync) return;
+                        if (!window.HxSharedSync.getPassword()) {
+                            setSyncMsg('本機已存。開 HX Unlock 一次即可跨裝置同步。');
+                            return;
+                        }
+                        try {
+                            const raw = safeStorage.getItem(STORAGE_KEY);
+                            const recs = raw ? JSON.parse(raw) : [];
+                            await window.HxSharedSync.pushDoc(SHARED_DOC, packWeightDoc(recs));
+                            setSyncMsg('已同步到 Supabase（各裝置同一成長記錄）。');
+                        } catch (e) {
+                            setSyncMsg('本機已存；雲端稍後再同步。');
+                        }
+                    }, 1500);
+                }
+            }, []);
+
+            useEffect(() => {
+                let cancelled = false;
+                (async () => {
+                    if (!window.HxSharedSync) {
+                        setSyncMsg('本機模式（無同步腳本）。');
+                        cloudReady.current = true;
+                        return;
+                    }
+                    try {
+                        await window.HxSharedSync.syncDoc(SHARED_DOC, {
+                            getLocal: () => {
+                                const raw = safeStorage.getItem(STORAGE_KEY);
+                                const recs = raw ? JSON.parse(raw) : PRELOAD_DATA;
+                                return packWeightDoc(recs);
+                            },
+                            localEmpty: weightLocalEmpty,
+                            applyRemote: (doc) => {
+                                if (!doc || !Array.isArray(doc.rows)) return;
+                                suppressPush.current = true;
+                                safeStorage.setItem(STORAGE_KEY, JSON.stringify(doc.rows));
+                                if (!cancelled) setRecords(doc.rows);
+                                setTimeout(() => { suppressPush.current = false; }, 200);
+                            },
+                            onStatus: (s) => {
+                                if (cancelled) return;
+                                if (s === 'need-password') setSyncMsg('已載入本機。開 HX Unlock 一次即可上傳／跨裝置同步。');
+                                else if (s === 'uploaded') setSyncMsg('已把本機記錄上傳到 Supabase。');
+                                else if (s === 'synced') setSyncMsg('已從 Supabase 同步最新記錄。');
+                                else if (s === 'offline') setSyncMsg('雲端暫未能連線；使用本機記錄。');
+                                else if (s === 'empty') setSyncMsg('尚未有共用記錄。');
+                            }
+                        });
+                    } catch (e) {
+                        if (!cancelled) setSyncMsg('本機記錄（同步略過）。');
+                    }
+                    cloudReady.current = true;
+                })();
+                return () => { cancelled = true; };
+            }, []);
+
+            useEffect(() => {
                 safeStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                if (cloudReady.current && !suppressPush.current && schedulePush.current) {
+                    schedulePush.current();
+                }
             }, [records]);
 
             const getMaxLbs = (person) => {
@@ -433,7 +517,10 @@
             return (
                 <div className="min-h-screen pb-16 relative">
                     <header className="bg-white sticky top-0 z-30 px-4 py-3 shadow-sm flex justify-between items-center">
-                        <h1 className="text-lg font-bold text-gray-800">兄弟成長記錄</h1>
+                        <div>
+                          <h1 className="text-lg font-bold text-gray-800">兄弟成長記錄</h1>
+                          <p className="text-[11px] text-gray-400 mt-0.5">{syncMsg}</p>
+                        </div>
                         <button onClick={() => setHistoryModalOpen(true)} className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-bold text-gray-600 transition-colors"><Icons.List size={16}/> 歷史記錄</button>
                     </header>
                     <main className="max-w-4xl mx-auto p-4 space-y-6">

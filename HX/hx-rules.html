@@ -145,8 +145,16 @@
     <div class="card">
       <p><span class="key">已實作</span>：同一個網站、任何裝置（電腦／iPad／另一部機）見到<strong>同一效果</strong>。設置、文字、學習進度、課程表等共用紀錄寫入 locked Supabase（經 Edge <code>team-board</code> 保留位 <code>__hx_shared__/…</code>），由 Vercel 頁讀寫。唔會清 Training One View 嘅 Status／Manual／UAL／CT／Mandatory。</p>
       <ul>
-        <li><strong>Course List</strong>（<code>course-catalog.html</code>）：課程列同步。</li>
-        <li><strong>Alpha_Learn／Karson_Learn</strong>：詞庫、學生檔、練習進度同步（錄音等大檔可留本機）。</li>
+        <li><strong>Course List</strong>（<code>course-catalog</code>）：課程列同步。</li>
+        <li><strong>Alpha_Learn／Karson_Learn</strong>（<code>alpha-learn</code>／<code>karson-learn</code>）：詞庫、學生檔、練習進度同步（錄音等大檔可留本機）。</li>
+        <li><strong>Briefing &amp; Read &amp; Sign</strong>（<code>briefing-read-sign</code>）／record（<code>ke-read-sign</code>）：項目同簽收同步。</li>
+        <li><strong>行李清單</strong>（<code>travel-list</code>）：種類／項目／勾選同步。</li>
+        <li><strong>成長記錄</strong>（<code>weight-records</code>）：體重高度紀錄同步。</li>
+        <li><strong>乘數表</strong>（<code>math-mistakes</code>）：錯題庫同步（獨立頁同 Karson hub 本機 key 共用）。</li>
+        <li><strong>中作4</strong>（<code>zhongzuo4</code>）：標記／筆記／題目次序同步。</li>
+        <li><strong>小五六作文</strong>（<code>p56-essay</code>）：已移除詞彙清單同步（字體／暗色留本機）。</li>
+        <li><strong>特快公屋篩選</strong>（<code>efas2026-hsc</code>）：評分／備註／已揀同步（篩選 UI 留本機）。</li>
+        <li><strong>物品清單</strong>：顯示用、無頁內編輯器；清單寫死喺 HTML，靠 GitHub／Vercel 部署令各裝置見到同一份（未入 Supabase；有編輯器先再上雲）。</li>
         <li>開頁先拉雲端；本機有貨而伺服器空 → 上傳一次；之後以伺服器為準。空裝置唔會洗伺服器。</li>
         <li>寫入要用 HX Unlock 密碼（同閘；存在本機 <code>hx:hub:gate-pw</code>）。讀公開 GET，唔使密碼。各裝置至少 Unlock 一次先可以上傳。</li>
         <li>純 UI（字體、暗色、上次開邊頁）可留本機。</li>
@@ -260,6 +268,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#fth-rewrite</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="5.7">v5.7</div>
+  <div class="page-version" data-version="5.8">v5.8</div>
 </body>
 </html>
