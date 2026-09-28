@@ -156,7 +156,8 @@
         <li><strong>特快公屋篩選</strong>（<code>efas2026-hsc</code>）：評分／備註／已揀同步（篩選 UI 留本機）。</li>
         <li><strong>物品清單</strong>：顯示用、無頁內編輯器；清單寫死喺 HTML，靠 GitHub／Vercel 部署令各裝置見到同一份（未入 Supabase；有編輯器先再上雲）。</li>
         <li>開頁先拉雲端；本機有貨而伺服器空 → 上傳一次；之後以伺服器為準。空裝置唔會洗伺服器。</li>
-        <li>寫入要用 HX Unlock 密碼（同閘；存在本機 <code>hx:hub:gate-pw</code>）。讀公開 GET，唔使密碼。各裝置至少 Unlock 一次先可以上傳。</li>
+        <li><strong>HX 以外</strong>（Alpha／Karson、行李、成長、乘數表、中作4、小五六作文、特快公屋）：有網址就可以睇同改，<strong>唔使</strong> HX Unlock。寫入走公開 <code>PUT /shared</code>（只准改呢批 doc id）。</li>
+        <li><strong>HX 以內</strong>（Course List、Briefing &amp; Read &amp; Sign、Training One View）：寫入仍要 HX Unlock（本機 <code>hx:hub:gate-pw</code>）。讀公開 GET，唔使密碼。</li>
         <li>純 UI（字體、暗色、上次開邊頁）可留本機。</li>
         <li><strong>例外：HX／Training One View</strong>——有權限閘。訪客 view-only；解鎖先有 edit／admin。板面資料仍經 locked Edge 同步。</li>
         <li>唔寫 <code>hx_test</code>。唔把 service role／密碼寫入 HTML。</li>
@@ -268,6 +269,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#fth-rewrite</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="5.8">v5.8</div>
+  <div class="page-version" data-version="5.9">v5.9</div>
 </body>
 </html>

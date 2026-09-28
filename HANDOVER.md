@@ -10,6 +10,14 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **HX 以外唔使密碼。** 有網址就可以睇同改：Alpha／Karson、行李清單、成長記錄、乘數表、中作4、小五六作文、特快公屋。寫入走 Edge `PUT /team-board/shared`，白名單先至改到 `__hx_shared__/<docId>` 一格；唔帶 Status／Manual／UAL／CT／Mandatory 刪除。
+- **HX 以內仍要 Unlock：** Course List、Briefing & Read & Sign、Training One View。
+- **頁／版本：** `hx-shared-sync.js?v=1.4`、`hx-rules` v5.9、`hx.html` v13.1、`travel_list`／`weight`／乘數表／中作4／小五六作文／efas v1.2、Alpha v3.4、Karson v2.0。源碼 `HX/supabase-edge/team-board/index.ts`。
+- **Edge 未部署：** 呢部機冇 Supabase access token。生產 `PUT /shared` 而家仍 401（舊閘）。頁面已改走公開路徑；舊 Edge 未更新前，已 Unlock 嘅瀏覽器會暫時退回密碼寫入。要 `supabase functions deploy team-board --project-ref kcoszufshvvpxikpzlue --no-verify-jwt` 先至真正唔使密碼。
+- GitHub 後備 + push → Vercel 重建頁面。唔開 Chrome。
+
+## 2026-09-28 公司電腦
+
 - **Sync all 剩餘家庭／根頁共用紀錄**（公司電腦；先 `git pull` fast-forward `94b993c`→`615f915`，冇用舊檔覆蓋）。
 - 沿用 `HX/hx-shared-sync.js` + Edge `team-board` reserved key `__hx_shared__/<docId>`。**冇**清 Training One View Status／Manual／UAL／CT／Mandatory。冇寫 `hx_test`。
 - **新 doc ids：** `travel-list`、`weight-records`、`math-mistakes`、`zhongzuo4`、`p56-essay`、`efas2026-hsc`。

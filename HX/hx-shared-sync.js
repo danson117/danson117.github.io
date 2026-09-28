@@ -1,7 +1,9 @@
 /* Shared device sync via locked Edge team-board (hx_private).
  * Docs live in reserved status keys __hx_shared__/<docId> (remark JSON).
  * Does not wipe Training One View status/manual/ual/ct/omt.
- * Read: public GET. Write: x-hx-board-password (HX Unlock / same-origin gate-pw).
+ * Read: public GET.
+ * HX docs: write needs x-hx-board-password.
+ * Family / root docs in PUBLIC_DOCS: write needs no password (URL is enough).
  */
 (function (global) {
   "use strict";
@@ -9,6 +11,16 @@
   var EDGE_URL =
     "https://kcoszufshvvpxikpzlue.supabase.co/functions/v1/team-board";
   var META_PREFIX = "__hx_shared__/";
+  var PUBLIC_DOCS = {
+    "alpha-learn": 1,
+    "karson-learn": 1,
+    "travel-list": 1,
+    "weight-records": 1,
+    "math-mistakes": 1,
+    "zhongzuo4": 1,
+    "p56-essay": 1,
+    "efas2026-hsc": 1,
+  };
   var GATE_PW_KEY = "hx:hub:gate-pw";
   var GATE_ROLE_KEY = "hx:hub:gate-role";
 
@@ -84,7 +96,34 @@
     return readDocFromBoard(board, docId);
   }
 
+  function isPublicDoc(docId) {
+    return !!PUBLIC_DOCS[String(docId || "").trim()];
+  }
+
   async function pushDoc(docId, docObj) {
+    var payloadDoc = Object.assign({}, docObj || {});
+    if (!payloadDoc.updated) payloadDoc.updated = new Date().toISOString();
+    if (!payloadDoc.v) payloadDoc.v = 1;
+    if (isPublicDoc(docId)) {
+      var pubRes = await fetch(EDGE_URL + "/shared", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ docId: String(docId || "").trim(), doc: payloadDoc }),
+      });
+      var pubData = await pubRes.json().catch(function () { return {}; });
+      if (pubRes.status === 409 || (pubData && pubData.conflict)) {
+        var e409p = new Error("conflict");
+        e409p.code = "conflict";
+        e409p.payload = pubData.payload || null;
+        throw e409p;
+      }
+      // Old Edge (no /shared) returns 401/405. Fall back only if this browser already unlocked HX.
+      if (pubRes.status !== 401 && pubRes.status !== 405) {
+        if (!pubRes.ok) throw new Error("shared-sync PUT " + pubRes.status);
+        return readDocFromBoard(pubData.payload || (await fetchBoard()), docId);
+      }
+      if (!getPassword()) throw new Error("shared-sync PUT " + pubRes.status);
+    }
     var pw = getPassword();
     if (!pw) {
       var err = new Error("need-password");
@@ -94,9 +133,6 @@
     var board = await fetchBoard();
     var existing = board.status && board.status[metaKey(docId)];
     var baseV = existing ? Math.max(0, parseInt(existing.v, 10) || 0) : 0;
-    var payloadDoc = Object.assign({}, docObj || {});
-    if (!payloadDoc.updated) payloadDoc.updated = new Date().toISOString();
-    if (!payloadDoc.v) payloadDoc.v = 1;
     var remark = JSON.stringify(payloadDoc);
     var body = {
       v: 1,
@@ -174,7 +210,7 @@
     var remoteHas = docHasContent(remote);
 
     if (!remoteHas && localHas) {
-      if (!getPassword()) {
+      if (!isPublicDoc(docId) && !getPassword()) {
         onStatus("need-password");
         return { ok: false, reason: "need-password", local: local };
       }

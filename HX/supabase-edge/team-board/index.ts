@@ -317,7 +317,61 @@ Deno.serve(async (req: Request) => {
     return json(200, full);
   }
 
-  if (req.method === "PUT" && !path.includes("/gate") && !path.includes("/pin/")) {
+  // Family / root pages: URL is enough to read and edit. HX board writes stay behind the password.
+  const PUBLIC_SHARED_DOCS = new Set([
+    "alpha-learn",
+    "karson-learn",
+    "travel-list",
+    "weight-records",
+    "math-mistakes",
+    "zhongzuo4",
+    "p56-essay",
+    "efas2026-hsc",
+  ]);
+  if (path.endsWith("/shared") && req.method === "PUT") {
+    const body = await req.json().catch(() => ({})) as any;
+    const docId = String(body.docId || "").trim();
+    if (!PUBLIC_SHARED_DOCS.has(docId)) return json(403, { error: "doc not public" });
+    if (!body.doc || typeof body.doc !== "object" || Array.isArray(body.doc)) {
+      return json(400, { error: "doc required" });
+    }
+    const remark = JSON.stringify(body.doc);
+    if (remark.length > 1_500_000) return json(413, { error: "too large" });
+    const { data: current, error: getErr } = await admin.rpc("hx_team_board_get");
+    if (getErr) return json(500, { error: getErr.message });
+    const full = (current && typeof current === "object")
+      ? current as Record<string, any>
+      : {};
+    const key = "__hx_shared__/" + docId;
+    const existing = full.status && full.status[key];
+    const baseV = existing ? Math.max(0, parseInt(existing.v, 10) || 0) : 0;
+    const updated = new Date().toISOString();
+    const rec = {
+      status: "Not Started",
+      remark,
+      done: "",
+      v: baseV,
+      baseV,
+      updated,
+    };
+    const payload = {
+      v: 1,
+      updated,
+      status: { [key]: rec },
+      manual: [],
+      _statusDeleted: [],
+      _manualDeleted: [],
+      log: Array.isArray(full.log) ? full.log : [],
+    };
+    const { data, error } = await admin.rpc("hx_team_board_put", { p: payload });
+    if (error) return json(500, { error: error.message });
+    if (data && typeof data === "object" && (data as any).conflict) {
+      return json(409, data);
+    }
+    return json(200, data);
+  }
+
+  if (req.method === "PUT" && !path.includes("/gate") && !path.includes("/pin/") && !path.endsWith("/shared")) {
     if (!canWrite) return json(401, { error: "unauthorized" });
     const payload = await req.json();
     const { data, error } = await admin.rpc("hx_team_board_put", { p: payload });
