@@ -1320,7 +1320,6 @@
         <button type="button" id="filter-restore-original" title="Restore factory filter settings">Restore original</button>
         <button type="button" id="access-toggle" aria-pressed="false" title="Unlock">Unlock</button>
         <button type="button" id="access-manage" title="Access management">Manage</button>
-        <button type="button" id="action-log-btn" title="Action log">Log</button>
         <span id="access-level" aria-live="polite"></span>
         <span id="save-sync" aria-live="polite"></span>
       </div>
@@ -1658,7 +1657,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="14.8" aria-label="Page version 14.8">v14.8</div>
+  <div class="page-version" data-version="14.9" aria-label="Page version 14.9">v14.9</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -8987,7 +8986,6 @@ document.addEventListener("keydown", (e) => {
 });
 document.getElementById("access-toggle").addEventListener("click", toggleBoardAccess);
 document.getElementById("access-manage").addEventListener("click", openManagePop);
-document.getElementById("action-log-btn").addEventListener("click", openActionLogPop);
 document.getElementById("action-log-close").addEventListener("click", closeActionLogPop);
 document.getElementById("action-log-pop").addEventListener("click", (e) => {
   if (e.target.id === "action-log-pop") closeActionLogPop();
@@ -9880,6 +9878,21 @@ window.addEventListener("message", (e) => {
   const msg = e.data || {};
   if (!msg || typeof msg !== "object") return;
   if (msg.type === "hx-gate") applyHubGate(msg);
+  if (msg.type === "hx-action-log" && window.parent && window.parent !== window) {
+    if (msg.op === "undo" && msg.logId) undoActionLogEntry(msg.logId);
+    const entries = actionLog.map((row) => ({
+      id: row.id,
+      at: row.at,
+      who: row.who,
+      what: row.what,
+      undone: !!row.undone,
+      undoNote: row.undoNote || "",
+      canUndo: canUndoActionEntry(row)
+    }));
+    try {
+      window.parent.postMessage({ type: "hx-action-log-data", requestId: msg.requestId, entries: entries }, "*");
+    } catch (err) {}
+  }
 });
 (async function init() {
   try {

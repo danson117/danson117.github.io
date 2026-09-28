@@ -432,6 +432,23 @@
       #gate-perms-pop .gate-section-title {
         color: #6b3e26;
       }
+      .setting-log-list {
+        list-style: none;
+        margin: 8px 0 0;
+        padding: 0;
+        max-height: 280px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .setting-log-list li {
+        border-bottom: 1px solid #e4d5c4;
+        padding-bottom: 6px;
+      }
+      .setting-log-list .log-meta { font-size: 12px; color: #5c4a3a; }
+      .setting-log-list .log-what { margin: 2px 0; }
+      .setting-log-list .log-undone { opacity: 0.55; }
       .pop-card h2 {
         margin: 0 0 6px;
         font-size: 16px;
@@ -581,7 +598,7 @@
         <div class="bar-actions">
           <span id="gate-role" title="Current access">view</span>
           <button type="button" id="gate-unlock">Log in</button>
-          <button type="button" id="gate-perms" hidden>Grant access</button>
+          <button type="button" id="gate-perms" hidden>Setting</button>
           <a
             id="solo"
             href="authorization-training-process.html"
@@ -640,7 +657,7 @@
 
     <div id="gate-perms-pop" class="pop hidden" hidden>
       <div class="pop-card wide" role="dialog" aria-modal="true" aria-labelledby="gate-perms-title">
-        <h2 id="gate-perms-title">Grant access roles</h2>
+        <h2 id="gate-perms-title">Setting</h2>
         <p class="hint">
           Public view, role pages, and accounts are separate. Owner - Siu Chung can open every page. Passwords stay 6 digits. Hashes stay on the locked server only.
         </p>
@@ -686,6 +703,12 @@
           <input id="grant-pin-search" type="text" autocomplete="off" />
           <ul id="grant-pin-list"><li class="muted">Click Refresh list.</li></ul>
         </div>
+        <div class="gate-block">
+          <div class="gate-section-title">5. Log</div>
+          <p class="hint">WHO · WHEN · WHAT for Training One View edits. Undo works while that page is open. Latest 200 entries. No passwords.</p>
+          <ul id="setting-log-list" class="setting-log-list"></ul>
+          <p class="hint" id="setting-log-empty">No actions logged yet.</p>
+        </div>
         <p class="err" id="gate-perms-err" hidden></p>
         <div class="pop-actions">
           <button type="button" id="gate-perms-cancel">Close</button>
@@ -707,7 +730,7 @@
       </div>
     </div>
 
-    <div class="page-version" data-version="16.0">v16.0</div>
+    <div class="page-version" data-version="16.1">v16.1</div>
     <script src="ocg-pax-data.js?v=1"></script>
     <script src="ocg-pax-data-unpack.js?v=1"></script>
     <script>
@@ -763,7 +786,7 @@
         },
         {
           id: "team-board",
-          file: "training-team-board.html?v=14.8",
+          file: "training-team-board.html?v=14.9",
           title: "Training One View",
           blurb: "UAL / CT / Mandatory / Manual · live sync",
         },
@@ -805,7 +828,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=8.7",
+          file: "hx-rules.html?v=8.8",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -850,7 +873,7 @@
         },
         {
           id: "grant-access",
-          label: "Grant access roles (Owner)",
+          label: "Setting (Owner)",
         },
       ];
       const GATE_EDGE =
@@ -1157,6 +1180,13 @@
         if (!msg || typeof msg !== "object") return;
         if (msg.type === "hx-gate-request") {
           notifyFrameGate();
+          return;
+        }
+        if (msg.type === "hx-action-log-data") {
+          if (msg.requestId === settingLogReq) {
+            if (settingLogTimer) window.clearTimeout(settingLogTimer);
+            paintSettingLog(msg.entries || []);
+          }
           return;
         }
         if (msg.type === "hx-store-get") {
@@ -1893,13 +1923,86 @@
         }).join("");
       }
 
+      function escSetting(s) {
+        return String(s == null ? "" : s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+      function readSettingLogLocal() {
+        try {
+          const raw = localStorage.getItem("hx:team-board:action-log");
+          const rows = JSON.parse(raw);
+          return Array.isArray(rows) ? rows : [];
+        } catch (e) {
+          return [];
+        }
+      }
+      function paintSettingLog(rows) {
+        const list = document.getElementById("setting-log-list");
+        const empty = document.getElementById("setting-log-empty");
+        if (!list) return;
+        const items = Array.isArray(rows) ? rows.slice(0, 200) : [];
+        if (!items.length) {
+          list.innerHTML = "";
+          if (empty) empty.hidden = false;
+          return;
+        }
+        if (empty) empty.hidden = true;
+        const onBoard = /training-team-board/.test(frame.getAttribute("src") || "");
+        list.innerHTML = items.map((row) => {
+          const when = row.at ? String(row.at).replace("T", " ").slice(0, 19) : "";
+          const undo = onBoard && row.canUndo
+            ? "<button type=\"button\" data-log-undo=\"" + escSetting(row.id) + "\">Undo</button>"
+            : "";
+          const note = row.undone
+            ? "<div class=\"log-meta\">Undone</div>"
+            : (row.undoNote ? "<div class=\"log-meta\">" + escSetting(row.undoNote) + "</div>" : "");
+          return "<li class=\"" + (row.undone ? "log-undone" : "") + "\">" +
+            "<div class=\"log-meta\">" + escSetting(row.who || "—") + " · " + escSetting(when) + "</div>" +
+            "<p class=\"log-what\">" + escSetting(row.what || "") + "</p>" +
+            note + undo + "</li>";
+        }).join("");
+      }
+      let settingLogReq = 0;
+      let settingLogTimer = 0;
+      function requestSettingLog() {
+        const requestId = ++settingLogReq;
+        const src = frame.getAttribute("src") || "";
+        if (settingLogTimer) window.clearTimeout(settingLogTimer);
+        if (/training-team-board/.test(src) && frame.contentWindow) {
+          try {
+            frame.contentWindow.postMessage({ type: "hx-action-log", op: "list", requestId: requestId }, "*");
+          } catch (e) {}
+          settingLogTimer = window.setTimeout(() => {
+            if (settingLogReq === requestId) paintSettingLog(readSettingLogLocal());
+          }, 600);
+          return;
+        }
+        paintSettingLog(readSettingLogLocal());
+      }
       gatePermsBtn.addEventListener("click", () => {
         setPermsErr("");
         paintPermsForm();
+        requestSettingLog();
         showPop("gate-perms-pop", true);
       });
       document.getElementById("gate-perms-cancel").addEventListener("click", () => {
         showPop("gate-perms-pop", false);
+      });
+      document.getElementById("setting-log-list").addEventListener("click", (e) => {
+        const btn = e.target && e.target.closest ? e.target.closest("[data-log-undo]") : null;
+        if (!btn || !frame.contentWindow) return;
+        const requestId = ++settingLogReq;
+        try {
+          frame.contentWindow.postMessage({
+            type: "hx-action-log",
+            op: "undo",
+            logId: btn.getAttribute("data-log-undo"),
+            requestId: requestId
+          }, "*");
+        } catch (err) {}
       });
       document.getElementById("gate-accounts").addEventListener("click", (e) => {
         const btn = e.target && e.target.closest ? e.target.closest("[data-pick-staff]") : null;
