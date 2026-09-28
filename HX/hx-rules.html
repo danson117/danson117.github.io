@@ -191,6 +191,7 @@
     <h2 id="hx-gate">6. HX 公開閘同權限</h2>
     <div class="card">
       <ul>
+        <li style="color:#b00020"><b>新 · Role pages 欄頭 Staff → Public：</b>Grant access「2. Role pages」第三欄可見標籤由 <b>Staff</b> 改 <b>Public</b>（role id 仍／改為 <code>public</code>；讀舊 <code>staff</code> 當 public；Save 寫 <code>public</code>）。Accounts 下拉、帳戶列表、頂欄 role 名同一規則。唔改 Staff #／staff name／PIN／「ask OCG Office」。Owner／Admin／DM/DIC 標籤不變；Owner 仍唔入呢欄。</li>
         <li style="color:#b00020"><b>新 · Public role ＋ public BRS 簽收密碼（4–6 位）：</b>舊 role <b>Staff</b> 改名 <b>Public</b>（顯示名 Public；role id <code>public</code>；讀入舊 <code>staff</code> 當 <code>public</code>）。Role pages 欄頭、Accounts 下拉、帳戶標籤跟住改。只有 <b>Admin</b>／<b>DM/DIC</b>／<b>Owner - Siu Chung</b>（<code>me</code>）用 hub <b>Log in</b>（Staff #＋6 位登入密碼；唔改 Owner 登入密碼）。Public <b>唔</b>用 hub login——未登入訪客開 public pages。Public 喺 Briefing and R&amp;S 或 TOV outstanding Sign／Seen：首次要打<strong>該行 staff #</strong>（唔夾就唔簽）；成功後即刻 popup 設新密碼——<b>最少 4 位、最多 6 位</b>、只數字、唔可以等於 staff #、確認一次；之後用呢個密碼簽（錯密碼唔簽）。對話只 Cancel／× 關；唔加 Forgot password；忘咗就 ask OCG Office reset。Grant access <b>4. PIN Reset</b>：Name List 列出 <b>Password set</b>／<b>Not set</b>；只 Reset（清返 Not set；下次又要 staff # 再設）；永不顯示密碼／hash。DM/DIC 登入後簽收稍後再定。Admin／Owner 已登入嘅 BRS admin／PIN Reset 唔逼行 public 首次簽 popup。</li>
         <li>入口：<code>https://danson117-github-io.vercel.app/HX/hx.html</code>（Pages 只係備份）。</li>
         <li>預設 <b>view</b> = 只讀；大家見到同一側欄（Me 開俾公眾嘅頁）。</li>
@@ -209,7 +210,7 @@
       </ul>
       <h3>同步</h3>
       <ul>
-        <li style="color:#b00020"><b>新 · Push failed 紅 WARNING + 進行中橙 ×：</b>GitHub push failed 對話框保留「Uploads are saved in this browser」句，另加紅字英文 <b>WARNING: Until sync succeeds, the numbers on this page are not accurate.</b>（同一 dialog，唔另彈）。UAL／CT／Mandatory 卡右下：同步進行中＝橙底 <b>×</b>（約 <code>#c45c00</code>，唔用 …）；已同步＝綠 ✓；未同步＝橙卡＋「Upload not synchronized yet.」。</li>
+        <li style="color:#b00020"><b>新 · Save failed 紅 WARNING + 進行中橙 ×：</b>對話框標題 <b>Save failed</b>；正文 <b>Could not reach the server. This upload is saved in this browser only.</b>；另加紅字英文 <b>WARNING: The information on this page is not accurate yet.</b>（同一 dialog，唔另彈；唔寫 GitHub／push／sync server）。UAL／CT／Mandatory 卡右下：同步進行中＝橙底 <b>×</b>（約 <code>#c45c00</code>，唔用 …）；已同步＝綠 ✓；未同步＝橙卡＋「Upload not synchronized yet.」。</li>
         <li style="color:#b00020"><b>新 · UAL／CT／Mandatory 同步喺三張上載卡：</b>唔再用頁頂大 banner。UAL CBT／CT Reminder／Mandatory 各自一卡：未同步 → 該卡轉橙＋一句英文 <b>Upload not synchronized yet.</b>；右下細 sync icon：綠＝該來源已同伺服器一樣，橙 ×＝上載／同步進行中，橙感嘆＝未同步。細掣 <b>Synchronize now</b>（可寫入時）。跟 <code>ingestDiffNames</code> 逐源（UAL／CT Reminder／Mandatory）；已同步嘅卡唔好標橙。成功唔彈窗。本機上傳時間新過伺服器時唔好用舊伺服器檔蓋過；關頁未同步仍會問。</li>
         <li>Status／Remark／Manual／UAL／CT／Mandatory 經 locked Edge <code>team-board</code> → <code>hx_private</code>。約 5 秒 poll。</li>
         <li style="color:#b00020"><b>新 · B1 lite poll + fresh-first：</b>定時 poll 用 <code>?lite=1</code>（Status／Manual＋ingest meta，<b>唔帶</b> CT／OMT／UAL 大檔／log）。開頁同 ingest meta 有變先 <code>?ingest=1</code> 拉齊檔。畫面等 Edge 確認最新先顯示（Loading latest…）；寧願多等幾秒，唔用未確認舊 local 當真相。Poll 間隔維持約 5 秒（唔做 B2 拉長）。</li>
@@ -305,6 +306,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="8.5">v8.5</div>
+  <div class="page-version" data-version="8.7">v8.7</div>
 </body>
 </html>

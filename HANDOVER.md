@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Hub role Staff → Public（欄頭／id）+ Edge 修復：** Grant「2. Role pages」第三欄可見標籤 **Public**（唔再 Staff）；Accounts 下拉／帳戶列表／頂欄 role 名同一規則；role id `public`；讀舊 `staff` 當 public；Save 寫 `public`。唔改 Staff #／staff name／PIN。BRS 可見標籤 **BRS Ref. No.**（存檔 `code`／編號規則不變；TOV 欄頭仍 Course code）。Public 簽收 4–6 位密碼／PIN Reset Password set／Not set 保留。誤部署 Edge placeholder 已用完整 `team-board` 源覆蓋（**v16**，`verify_jwt` 關；`/gate/public` 200）。hub **v16.0**、BRS **v4.5**、`hx-rules` **v8.7**、TOV **v14.8**（含並行 sync 文案微調）。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV sync feedback + Team 頭 + Completed 規矩：** Push-failed dialog 加紅字 `WARNING: Until sync succeeds, the numbers on this page are not accurate.`（保留 browser-saved 句）。進行中卡右下 icon＝橙 ×（唔用 …）。揀中 Team／Other 表頭亮青綠 `#00a8ad`、暫時唔用紅外框；未揀 `#015260`。Completed：畫面約 30 日；背底永久（已只係隱藏，冇刪）。TOV **v14.7**、hub **v15.9**、`hx-rules` **v8.5**。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

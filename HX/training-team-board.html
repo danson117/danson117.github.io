@@ -1574,9 +1574,9 @@
   </div>
   <div id="push-fail-pop" class="pop hidden" hidden>
     <div class="pop-card access-card ingest-card" role="dialog" aria-modal="true" aria-labelledby="push-fail-title">
-      <h4 id="push-fail-title">GitHub push failed</h4>
+      <h4 id="push-fail-title">Save failed</h4>
       <p class="note" id="push-fail-lead"></p>
-      <p class="push-fail-warn" id="push-fail-warn">WARNING: Until sync succeeds, the numbers on this page are not accurate.</p>
+      <p class="push-fail-warn" id="push-fail-warn">WARNING: The information on this page is not accurate yet.</p>
       <div class="toolbar">
         <button type="button" class="primary" id="push-fail-ok">OK</button>
       </div>
@@ -1658,7 +1658,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="14.7" aria-label="Page version 14.7">v14.7</div>
+  <div class="page-version" data-version="14.8" aria-label="Page version 14.8">v14.8</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -5668,7 +5668,7 @@ async function pushIngestToEdge() {
   } catch (e) {
     ingestSyncFailed = true;
     dirtyIngest = true;
-    showPushFail("Could not reach sync server. Uploads are saved in this browser.");
+    showPushFail("Could not reach the server. This upload is saved in this browser only.");
     setSaveSync("Not synchronized");
   } finally {
     ingestPushBusy = false;
@@ -5855,7 +5855,7 @@ function closePushFailPop() {
 }
 function showPushFail(msg) {
   const lead = document.getElementById("push-fail-lead");
-  if (lead) lead.textContent = msg || "Could not push Status to GitHub.";
+  if (lead) lead.textContent = msg || "Could not reach the server. This upload is saved in this browser only.";
   const pop = document.getElementById("push-fail-pop");
   if (!pop) return;
   pop.hidden = false;
@@ -5913,7 +5913,7 @@ async function pushActionsToEdge() {
       setSaveSync("Saved");
     } while (pushQueued);
   } catch (e) {
-    showPushFail("Could not reach sync server. Status is saved in this browser.");
+    showPushFail("Could not reach the server. This upload is saved in this browser only.");
     setSaveSync("Saved");
   } finally {
     pushBusy = false;
@@ -9751,11 +9751,17 @@ function applyHubGate(msg) {
   const prevCanWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
   const prevAccessStaff = hubGate && hubGate.accessStaff ? String(hubGate.accessStaff) : "";
   hubGate = {
-    role: String(msg.role || "view").toLowerCase() || "view",
+    role: (function (r) {
+      r = String(r || "view").toLowerCase() || "view";
+      return r === "staff" ? "public" : r;
+    })(msg.role),
     password: String(msg.password || ""),
     editActions: Array.isArray(msg.editActions) ? msg.editActions.map(String) : [],
     accessStaff: String(msg.accessStaff || ""),
-    accessRole: String(msg.accessRole || msg.role || "view").toLowerCase()
+    accessRole: (function (r) {
+      r = String(r || "view").toLowerCase() || "view";
+      return r === "staff" ? "public" : r;
+    })(msg.accessRole || msg.role)
   };
   const role = hubGate.role;
   const accessRole = hubGate.accessRole || role;
