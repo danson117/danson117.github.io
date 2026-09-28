@@ -604,12 +604,41 @@
     border: 1px solid var(--line);
     padding: 16px 18px 18px;
     box-shadow: 0 10px 28px rgba(1, 82, 96, 0.18);
+    position: relative;
   }
+  .pin-card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 6px;
+  }
+  .pin-card-head h3 { margin: 0; flex: 1 1 auto; font-size: 17px; color: var(--teal-deep); }
+  .pin-x {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    margin: -4px -6px 0 0;
+    padding: 0;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .pin-x:hover { color: var(--teal-deep); border-color: #c5d0d8; }
   .pin-card h3 { margin: 0 0 6px; font-size: 17px; color: var(--teal-deep); }
   .pin-card .note { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
   .pin-card .field { margin: 0 0 10px; }
   .pin-card .pin-hint { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
   .pin-card .pin-hint[hidden] { display: none !important; }
+  .pin-card .pin-forgot-hint {
+    margin: -2px 0 10px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .pin-card .pin-forgot-hint[hidden] { display: none !important; }
   .pin-wrap {
     position: relative;
     display: block;
@@ -787,8 +816,11 @@
   </div>
 
   <div id="pin-pop" class="pin-pop" hidden>
-    <div class="pin-card" role="dialog" aria-labelledby="pin-pop-title">
-      <h3 id="pin-pop-title">Confirm with PIN</h3>
+    <div class="pin-card" role="dialog" aria-modal="true" aria-labelledby="pin-pop-title">
+      <div class="pin-card-head">
+        <h3 id="pin-pop-title">Confirm with PIN</h3>
+        <button type="button" class="pin-x" id="pin-close" aria-label="Close" title="Close">×</button>
+      </div>
       <p class="note" id="pin-pop-who"></p>
       <div class="field" id="pin-step-current">
         <label for="pin-current">6-digit PIN</label>
@@ -822,6 +854,7 @@
         </div>
       </div>
       <p class="err" id="pin-err"></p>
+      <p class="pin-forgot-hint" id="pin-forgot-hint" hidden>If you forgot your PIN, ask OCG Office to reset it.</p>
       <div class="actions">
         <button type="button" class="primary" id="pin-ok">Confirm</button>
         <button type="button" id="pin-cancel">Cancel</button>
@@ -840,7 +873,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="3.4">v3.4</div>
+  <div class="page-version" data-version="3.5">v3.5</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -2340,6 +2373,22 @@
   function setPinErr(msg) {
     var el = document.getElementById("pin-err");
     if (el) el.textContent = msg || "";
+    var forgot = document.getElementById("pin-forgot-hint");
+    if (forgot) forgot.hidden = !/Wrong PIN/i.test(String(msg || ""));
+  }
+  function isPinPopOpen() {
+    var pop = document.getElementById("pin-pop");
+    return !!(pop && !pop.hidden);
+  }
+  function activePinInput() {
+    if (!pinCtx) return document.getElementById("pin-current");
+    if (pinCtx.phase === "change") {
+      var n1 = document.getElementById("pin-new");
+      var n2 = document.getElementById("pin-new2");
+      if (n1 && digitsFromInput(n1).length < 6) return n1;
+      return n2 || n1;
+    }
+    return document.getElementById("pin-current");
   }
   function closePinPop() {
     pinCtx = null;
@@ -2554,9 +2603,9 @@
   });
 
   document.getElementById("pin-cancel").onclick = closePinPop;
+  document.getElementById("pin-close").onclick = closePinPop;
   document.getElementById("pin-ok").onclick = function () { submitPinFlow(); };
   document.getElementById("pin-pop").addEventListener("click", function (e) {
-    if (e.target.id === "pin-pop") closePinPop();
     var eye = e.target.closest ? e.target.closest("[data-pin-eye]") : null;
     if (eye) {
       e.preventDefault();
@@ -2583,8 +2632,28 @@
       e.preventDefault();
       submitPinFlow();
     }
-    if (e.key === "Escape") closePinPop();
   });
+  document.addEventListener("keydown", function (e) {
+    if (!isPinPopOpen()) return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (!/^[0-9]$/.test(e.key)) return;
+    var active = document.activeElement;
+    var inPinField = !!(active && active.closest && active.closest("#pin-pop") &&
+      (active.id === "pin-current" || active.id === "pin-new" || active.id === "pin-new2"));
+    if (inPinField) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var target = activePinInput();
+    if (!target) return;
+    var next = (String(target.value || "").replace(/\D/g, "") + e.key).slice(0, 6);
+    target.value = next;
+    target.focus();
+    onPinFieldInput({ target: target });
+  }, true);
 
   function showSuggest(itemId, q) {
     var ul = document.querySelector('#brs-admin [data-suggest="' + itemId + '"]') ||

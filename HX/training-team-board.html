@@ -1147,13 +1147,31 @@
     padding: 16px;
   }
   .pin-card {
+    position: relative;
     width: min(420px, 100%);
     background: #fff;
     border: 1px solid var(--line);
     padding: 16px 18px 18px;
     box-shadow: 0 10px 28px rgba(1, 82, 96, 0.18);
   }
-  .pin-card h3 { margin: 0 0 6px; font-size: 17px; color: var(--navy); }
+  .pin-x {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 1;
+  }
+  .pin-x:hover { color: var(--navy); border-color: var(--line); }
+  .pin-card h3 { margin: 0 28px 6px 0; font-size: 17px; color: var(--navy); }
   .pin-card .note { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
   .pin-card .field { margin: 0 0 10px; }
   .pin-card .pin-hint { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
@@ -1493,7 +1511,8 @@
     </div>
   </div>
   <div id="pin-pop" class="pin-pop" hidden>
-    <div class="pin-card" role="dialog" aria-labelledby="pin-pop-title">
+    <div class="pin-card" role="dialog" aria-labelledby="pin-pop-title" aria-modal="true">
+      <button type="button" class="pin-x" id="pin-x" aria-label="Close">×</button>
       <h3 id="pin-pop-title">Confirm with PIN</h3>
       <p class="note" id="pin-pop-who"></p>
       <div class="field" id="pin-step-current">
@@ -1528,6 +1547,7 @@
         </div>
       </div>
       <p class="err" id="pin-err"></p>
+      <p class="pin-hint" id="pin-office-hint" hidden>If you forgot your PIN, ask OCG Office to reset it.</p>
       <div class="actions">
         <button type="button" class="primary" id="pin-ok">Confirm</button>
         <button type="button" id="pin-cancel">Cancel</button>
@@ -1555,7 +1575,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="13.7" aria-label="Page version 13.7">v13.7</div>
+  <div class="page-version" data-version="13.8" aria-label="Page version 13.8">v13.8</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -4216,9 +4236,25 @@ function digitsFromPinInput(el) {
   if (el.value !== v) el.value = v;
   return v;
 }
-function setBrsPinErr(msg) {
+function setBrsPinErr(msg, opts) {
   const el = document.getElementById("pin-err");
   if (el) el.textContent = msg || "";
+  const office = document.getElementById("pin-office-hint");
+  if (office) office.hidden = !(opts && opts.office);
+}
+function isBrsPinPopOpen() {
+  const pop = document.getElementById("pin-pop");
+  return !!(pop && !pop.hidden);
+}
+function activeBrsPinInput() {
+  if (!brsPinCtx) return document.getElementById("pin-current");
+  if (brsPinCtx.phase === "change") {
+    const n1 = document.getElementById("pin-new");
+    const n2 = document.getElementById("pin-new2");
+    if (n1 && digitsFromPinInput(n1).length < 6) return n1;
+    return n2 || n1;
+  }
+  return document.getElementById("pin-current");
 }
 function closeBrsPinPop() {
   brsPinCtx = null;
@@ -4289,7 +4325,7 @@ async function submitBrsPinFlow() {
       }
       const check = await window.HxSharedSync.pinCheck(staff, pin);
       if (!check.ok) {
-        setBrsPinErr("Wrong PIN. Signature was not recorded.");
+        setBrsPinErr("Wrong PIN. Signature was not recorded.", { office: true });
         return;
       }
       brsPinCtx.currentPin = pin;
@@ -8422,9 +8458,9 @@ document.getElementById("course-pop").addEventListener("click", (e) => {
   if (e.target.id === "course-pop") closeCoursePop();
 });
 document.getElementById("pin-cancel").addEventListener("click", closeBrsPinPop);
+document.getElementById("pin-x").addEventListener("click", closeBrsPinPop);
 document.getElementById("pin-ok").addEventListener("click", () => { submitBrsPinFlow(); });
 document.getElementById("pin-pop").addEventListener("click", (e) => {
-  if (e.target.id === "pin-pop") closeBrsPinPop();
   const eye = e.target.closest ? e.target.closest("[data-pin-eye]") : null;
   if (eye) {
     e.preventDefault();
@@ -8451,8 +8487,27 @@ document.getElementById("pin-pop").addEventListener("keydown", (e) => {
     e.preventDefault();
     submitBrsPinFlow();
   }
-  if (e.key === "Escape") closeBrsPinPop();
 });
+document.addEventListener("keydown", (e) => {
+  if (!isBrsPinPopOpen()) return;
+  if (e.key === "Escape") {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+  if (!/^[0-9]$/.test(e.key)) return;
+  const active = document.activeElement;
+  const inPinField = !!(active && active.closest && active.closest("#pin-pop") &&
+    (active.id === "pin-current" || active.id === "pin-new" || active.id === "pin-new2"));
+  if (inPinField) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const target = activeBrsPinInput();
+  if (!target) return;
+  target.value = (String(target.value || "").replace(/\D/g, "") + e.key).slice(0, 6);
+  target.focus();
+  onBrsPinFieldInput({ target });
+}, true);
 document.getElementById("manual-form").addEventListener("submit", (e) => {
   e.preventDefault();
   addManualCourse();
@@ -8577,6 +8632,10 @@ document.getElementById("detail").addEventListener("focusin", applyCourseRemarkE
 document.getElementById("course-pop").addEventListener("focusin", applyCourseRemarkEvent);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
+    if (isBrsPinPopOpen()) {
+      e.preventDefault();
+      return;
+    }
     const openTa = document.querySelector(".typeahead:not([hidden]), .code-suggest:not([hidden])");
     if (openTa) {
       hideAllTypeahead();

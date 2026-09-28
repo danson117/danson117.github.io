@@ -229,6 +229,7 @@
         <li>而家起 UAL／CT／Mandatory 上載全機同步。舊「ignore」只係唔好特登帶舊檔。</li>
         <li>Mandatory 只留 Name List（OCG）staff。Course 缺名時跟 Course List／CT／UAL。</li>
         <li><span class="key">新 · Course List 獨立於 CSV ingest</span>：Course List（<code>course-catalog.html</code>）自己存；上 CT Reminder／Mandatory／UAL <b>唔刪、唔整份取代</b> Course List。CSV 只有 course code → 自動用 Course List 名。Code／名同存檔唔夾（同 code 唔同名，或同名唔同 code）→ 頁內 dialog 問用 Course List 定 CSV；<b>唔靜默覆寫</b>。夾嘅就用存檔名、唔彈窗。</li>
+        <li style="color:#b00020"><b>新 · Sign with PIN 視窗：</b>Training One View 同 Briefing and R&amp;S 嘅 PIN 對話只可以用 <b>Cancel</b> 或交叉 <b>×</b> 關閉。點外面、Escape、數字鍵都唔關閉。錯 PIN 先顯示：<b>If you forgot your PIN, ask OCG Office to reset it.</b> 唔加 Forgot password 掣或第二個畫面。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S editor（Due Date／材料／關閉掣）：</b>Title 同 Due Date 同一行對齊（同級高）。Due Date 用文字欄顯示／輸入 <b>YYYYMMDD</b>（例 20261010；可空）；內部仍存 <code>dueDate</code> 為 YYYY-MM-DD 俾 TOV。唔用 native <code>type=date</code>（避免 locale 斜槓同 focus 自動 scroll）。Focus／打字 Due Date <b>唔</b> scrollIntoView／跳視窗。材料列表（Admin create／edit、detail、TOV 材料彈窗）可見字＝解碼後檔名（path 最後一段；剝 query；decode %20）；href 仍係真實 URL。Admin 材料 ⋮⋮ drag-and-drop 要真係改 <code>materials</code> 陣列次序同編號；handle／成行可拖（唔因 text node／preventDefault 失效）。Editor 關閉掣：有改動先出 <b>Save Draft</b>（存然後關）＋ <b>Close without saving</b>（還原 snapshot 後關）；冇改動只出 <b>Close</b>。刪走常駐「Draft and Close」。Delete BRS／Create BRS 不變。Snapshot＝開 editor 或上次 Save 時嘅 item。</li>
         <li><span class="key">新 · Briefing and R&amp;S materials（紅字提醒／編號／拖曳）</span>：Training One View 材料彈窗同 Briefing and R&amp;S detail 唔再寫「Materials only here…」。改紅字英文提醒：<b>After you finish reading, remember to Sign.</b>（狀態紅 <code>#b42318</code>，唔用 admin 銅棕）。每份 material 顯示 1. 2. 3.…（而家陣列次序，唔存獨立號）；項目之間要明顯分隔。Admin create／edit 材料表可 drag-and-drop 改次序；放下後即改 <code>materials</code> 陣列（Save Draft 先寫入共用 doc）。可見標籤用解碼檔名，唔顯示 raw URL。</li>
         <li><span class="key">新 · Briefing and R&amp;S · Due Date</span>：Create／edit 表有 <b>Due Date</b>（可空）。畫面／輸入 <b>YYYYMMDD</b>；存 item <code>dueDate</code>（YYYY-MM-DD）。Training One View 板「Overdue or will expire due day」跟呢個欄。空＝該 BRS 行唔顯示 due／唔計 remaining。唔改現有 Completion Date → +2 年 due 規則（只適用已有 completion 規則嘅課程行）。</li>
@@ -284,6 +285,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="6.7">v6.7</div>
+  <div class="page-version" data-version="6.8">v6.8</div>
 </body>
 </html>

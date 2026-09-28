@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Sign with PIN：** 對話只可用 Cancel 或 × 關閉（點外面／Escape／數字鍵唔關）。錯 PIN 先顯示要搵 OCG Office reset。唔加 Forgot password。TOV **v13.8**、Briefing and R&S **v3.5**、hub **v14.5**、`hx-rules` **v6.8**。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **BRS editor 修訂：** Title／Due Date 同行對齊；Due Date 改文字欄 YYYYMMDD（內部仍存 YYYY-MM-DD）；打字唔再自動 scroll。材料顯示解碼檔名（Admin／detail；TOV 本來已係）。Drag 重排 materials 修復。關閉掣：有改動＝Save Draft＋Close without saving；冇改動＝Close（刪 Draft and Close）。BRS **v3.4**、hub **v14.4**、`hx-rules` **v6.7** 紅字。GitHub 後備；Live Vercel。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
