@@ -8,6 +8,9 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **TOV Save failed 文案 + Edge sync：** Dialog 標題 **Save failed**；正文 **Could not reach the server. This upload is saved in this browser only.**；紅字 **WARNING: The information on this page is not accurate yet.**（`is`／information，唔用 numbers／are）。原因：頁面 PUT Supabase Edge `team-board`；`catch`＝fetch 丟錯（CORS／WORKER_ERROR）。Live 曾被 placeholder／壞 bootstrap 蓋成 500；而家 `/gate/public` 同 lite GET **200**，OPTIONS 200，PUT 無 auth＝401。TOV **v14.9**（文案已喺盤）。唔開 Chrome。
 ## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **BRS 去掉重複 PIN Reset：** Briefing and R&S `#brs-admin` 入面嘅 `#pin-vault`／PIN Reset 已刪；只留 hub **Setting** 第 4 段 PIN Reset。Staff Sign／Seen PIN 對話框、Unsign、create／edit／materials 保留。BRS **v4.6**、`hx-rules` **v8.9**；hub `?v=` cache-bust（page-version 仍 **v16.1**）。GitHub 後備。唔開 Chrome。
