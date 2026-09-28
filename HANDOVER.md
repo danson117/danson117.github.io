@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **Training One View 材料彈窗：** 刪咗「Open Briefing & Read & Sign」同「Open record」。材料連結同 Close 留低。TOV v13.0、hub v13.4。
+
+## 2026-09-28 公司電腦
+
 - **Copy layout：** 標題有 Staff # 時，複製圖唔再把編號同姓名畫疊，職員編號保持 6 位數字。Training One View v12.9、hub v13.3。唔寫職員明細。
 
 ## 2026-09-28 公司電腦
