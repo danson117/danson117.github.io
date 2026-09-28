@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **BRS editor · Add link 在上：** Create／edit 材料區 **Add a link**／**Add link** 移到 **Materials** 列表上面（行為不變、唔 drop 檔）。BRS **v4.1**、`hx-rules` **v8.1**；hub cache-bust `?v=` 對齊（hub page-version 仍 **v15.7**）。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV filter 紅框 + Manual Detail 三欄：** 非預設 narrowing filter（Search／Sources／Section／Team·Other／role／Show completed）紅外框；掣 **Save as default**／**Restore original**（廠預設：Search 空、Sources All、Section OCG、all teams、role All、Show completed off）。有效預設存 browser `localStorage`（登入後 `hx:team-board:filter-default:<staff#>`；冇 staff 用無後綴 key）。唔經新 Edge／唔寫 `hx_test`。Manual outstanding 行而家填 Course code＋due＋remaining（以前 remain 唔係 ≤30「hot」就留空）。TOV **v14.5**、hub **v15.7**、`hx-rules` **v8.0**。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

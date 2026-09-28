@@ -225,6 +225,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Briefing and R&amp;S editor · Add link 在上：</b>Create／edit 材料區：<b>Add a link</b>（輸入＋綠色 <b>Add link</b>）喺 <b>Materials</b> 列表上面。行為不變（只 Add link、唔 drop 檔；列表仍可 drag 改次序）。英文標籤／掣名唔改。</li>
         <li style="color:#b00020"><b>新 · Training One View · 非預設 narrowing filter 紅框：</b>Search／Sources／Section／Team·Other／role（All／Certifiers／Mechanics／Show completed）同有效預設唔同時，該控件外框紅（status red）。有效預設＝已 <b>Save as default</b> 嘅 snapshot；冇就用廠預設（Search 空、Sources All、Section OCG、all teams、role All、Show completed off）。掣標籤固定英文 <b>Save as default</b>／<b>Restore original</b>（Restore＝廠預設畫面；唔刪已存 default）。Table／Details 只係版面、唔當人數 filter。存 localStorage（登入後按 staff #：<code>hx:team-board:filter-default:&lt;staff&gt;</code>）。唔改訓練列／Manual／BRS。</li>
         <li style="color:#b00020"><b>新 · Training One View · Manual Detail 三欄：</b>Manual（同非 UAL coming-due）outstanding 行一定填 <b>Course code</b>、有 due 就填 <b>Overdue or will expire due day</b> 同 <b>remaining</b>；唔再因為 remain &gt;30／&gt;90 就留空灰格。UAL 31–90 日仍只入 Coming due 四欄。冇 due 嘅 Manual 仍顯示 code，due／remaining 可空。</li>
         <li style="color:#b00020"><b>新 · Training One View · Detail 欄寬／Section (Crew)：</b>表頭 <b>Section (Crew)</b>（原 Section + Crew）。格顯示 <code>LTA1 (1E)</code> 式（section＋括號內 crew／shift）；只改可見字，唔改存檔 section／shift。<b>Course code</b> 闊約 +33%（140→186px）；其餘因 equalize／縮欄騰出嘅 px 加喺 Course code 上面。<b>Overdue／Coming due remaining</b> 兩欄闊度同對應 due-day 欄（而家 104px）。<code>table-layout: fixed</code>＋固定 px；UAL 四欄一齊 show／唔 render，隱藏時其他欄唔拉闊。空格灰底 <code>blank</code> 保留。上載三卡卡面用淡青綠灰（唔用沙色 <code>#f6efe6</code>）；未同步卡轉橙。</li>
@@ -299,6 +300,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="8.0">v8.0</div>
+  <div class="page-version" data-version="8.1">v8.1</div>
 </body>
 </html>
