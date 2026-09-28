@@ -923,7 +923,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="3.6">v3.6</div>
+  <div class="page-version" data-version="3.7">v3.7</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -2196,7 +2196,7 @@
     var people = (it.people || []).map(function (p) {
       var done = p.ack ? (p.ack === "signed" ? "Signed" : "Seen") + (p.ackAt ? " · " + p.ackAt : "") : "Outstanding";
       var clear = p.ack
-        ? "<button type=\"button\" class=\"clear\" data-clear=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\">Clear</button>"
+        ? "<button type=\"button\" class=\"clear\" data-clear=\"" + esc(p.staff) + "\" data-item=\"" + esc(it.id) + "\" title=\"Unsign\" aria-label=\"Unsign\">Unsign</button>"
         : "";
       return "<li><span class=\"who\"><b>" + esc(p.staff) + "</b> " + esc(p.name || "") +
         " <span class=\"muted\">" + esc(p.section || "") + " · " + done + "</span></span>" +
