@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **T.EE0639 Manual：** 用 `C:\Cursor_Work\T_EE0639_Completions.xlsx` 的 Completion Date 更新已在板上的 Manual 行。狀態 Completed；新 Due = 完成日 + 2 年。73 行入面更新 70；3 行唔喺檔案，Due 仍 2026-10-02、未改狀態。檔案有 11 個職員唔喺 Manual 名單，冇加新行。Manual 仍 147。CT 478+3625、OMT 87 冇改。唔寫職員明細。
+
+## 2026-09-28 公司電腦
+
 - **LM00183 係 Manual 行，唔係 CT。** 先前完成日寫咗 `staff|LM00183|ct`，所以搜尋呢科仍然 Not Started、Outstanding 仍係 73。已改寫 `staff|LM00183|manual` = Completed（同一 4 個職員、同一完成日），並刪走錯誤嘅 ct 鍵。Manual 仍 147 行；CT 478+3625、OMT 87 冇改。刷新後呢科未完成人數應為 69。唔寫職員明細。
 
 ## 2026-09-28 公司電腦
