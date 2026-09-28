@@ -130,8 +130,8 @@
   tr.diff-added { background: var(--green-bg) !important; }
   tr.diff-removed { background: #e8eaed !important; color: var(--muted); }
   tr.diff-removed td.strike { text-decoration: line-through; }
-  tr.diff-changed, tr.diff-due, tr.diff-status, tr.diff-issue { background: var(--amber-bg) !important; }
-  tr.diff-due { background: #fdeaea !important; }
+  tr.diff-changed, tr.diff-status, tr.diff-issue { background: var(--amber-bg) !important; }
+  tr.diff-due { background: #e7f0fa !important; }
   tr.diff-status { background: #f6ebe3 !important; }
   tr.diff-issue { background: #f7f0dc !important; }
   tr.exp-overdue { box-shadow: inset 3px 0 0 var(--hot); }
@@ -144,12 +144,12 @@
   .tag-add { background: #c8ebd4; color: var(--green); }
   .tag-rem { background: #d5d8dc; color: #5a6270; }
   .tag-chg { background: #f0e0a8; color: var(--amber); }
-  .tag-due { background: #f0c8c8; color: var(--red); }
+  .tag-due { background: #d6e6f5; color: #1d4e89; border: 1px solid #a8c4e0; }
   .tag-status { background: #edd4c4; color: #6b3e26; }
   .tag-issue { background: #f0e0a8; color: #7a5a10; }
   .tag-hot { background: #f4d4d0; color: var(--hot); }
   .tag-soon { background: #fff3b0; color: var(--amber); }
-  .sw-due { background: #fdeaea; }
+  .sw-due { background: #e7f0fa; }
   .sw-status { background: #edd4c4; }
   .sw-issue { background: #f0e0a8; }
   .doc-date { font-weight: 700; color: var(--navy); white-space: nowrap; }
@@ -200,7 +200,7 @@
   <p class="legend">
     <span><i class="sw-added"></i>Added</span>
     <span><i class="sw-removed"></i>Removed</span>
-    <span><i class="sw-due"></i>Due changed</span>
+    <span><i class="sw-due"></i>Due Date</span>
     <span><i class="sw-status"></i>Status changed</span>
     <span><i class="sw-issue"></i>Issue date changed</span>
     <span><i class="sw-overdue"></i>Overdue</span>
@@ -283,7 +283,7 @@
     </table>
   </div>
 
-      <p class="page-version">page-version 1.7</p>
+      <p class="page-version">page-version 1.8</p>
 </div>
 
 <script>
@@ -663,7 +663,7 @@
   function kindTag(kind) {
     if (kind === "added") return '<span class="tag tag-add">ADDED</span>';
     if (kind === "removed") return '<span class="tag tag-rem">REMOVED</span>';
-    if (kind === "due") return '<span class="tag tag-due">DUE</span>';
+    if (kind === "due") return '<span class="tag tag-due">Due Date</span>';
     if (kind === "status") return '<span class="tag tag-status">STATUS</span>';
     if (kind === "issue") return '<span class="tag tag-issue">ISSUE</span>';
     if (kind === "changed") return '<span class="tag tag-chg">CHANGED</span>';
@@ -675,7 +675,7 @@
     const k = qualKey(r);
     const tag = d && d.tags.get(k);
     if (tag === "added") parts.push('<span class="tag tag-add">NEW</span>');
-    if (tag === "due") parts.push('<span class="tag tag-due">DUE</span>');
+    if (tag === "due") parts.push('<span class="tag tag-due">Due Date</span>');
     if (tag === "status") parts.push('<span class="tag tag-status">STATUS</span>');
     if (tag === "issue") parts.push('<span class="tag tag-issue">ISSUE</span>');
     if (tag === "changed") parts.push('<span class="tag tag-chg">CHG</span>');

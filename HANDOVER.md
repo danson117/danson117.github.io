@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **VHHH Line MX Weekly Auth · Due Date badge：** Difference history Change 標籤 DUE→**Due Date**；行／badge／legend 由紅粉改藍（`#1d4e89`／`#e7f0fa`），唔當 overdue。比較數據唔改。頁 **v1.8**、hub **v14.3**、`hx-rules` **v6.6** 紅字。GitHub 後備；Live Vercel。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **BRS materials + Due Date：** 材料紅字「After you finish reading, remember to Sign.」；材料 1. 2. 3.…＋分隔；Admin 可 drag 改次序並 save。Create／edit 加可空 Due Date（`dueDate`）→ TOV due day 欄。Add course 標籤改 Due Date（原 Expire date）。BRS **v3.3**、TOV **v13.7**、hub **v14.2**、`hx-rules` **v6.5**。GitHub 後備；Live Vercel。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
