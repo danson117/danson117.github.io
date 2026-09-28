@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-29 公司電腦
+
+- **Uploaded 日期時間顯示：** CT／Mandatory／UAL 檔列表同 ingest 狀態嘅 `formatUploadedAt` 由 `DD-MM-YY HH:MM` 改為 `DD-MM-YYYY HH:MM`（本地時間；標籤仍係 Uploaded）。唔改 course due 日期格式。TOV **v15.1**、hub **v16.2**（`?v=15.1`）。GitHub 後備 → Vercel。唔開 Chrome。
+
 ## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **TOV Detail 欄 grow／scroll + sync：** Overdue remaining min **52px**（原 104 一半）；Coming due remaining 仍 104。闊窗 `width:100%` 按比例拉；窄窗唔縮欄、橫向 scroll。Owner `me` 可寫 Edge；冇 GH token 唔當 Save failed。Sync 失敗根因：Edge 曾 500／WORKER_ERROR（壞 bootstrap／placeholder）；而家 `/gate/public`＋lite **200**（Edge **v22**，`verify_jwt` 關）。**SYN ALL：** 伺服器已有完整板（UAL＋CT×2＋OMT×1＋manual＋status）；agent 無密碼唔 PUT、唔發明資料。TOV **v15.0**、`hx-rules` **v9.0**；hub `?v=` cache-bust（page-version 仍 **v16.1**）。GitHub 後備。唔開 Chrome。

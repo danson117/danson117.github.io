@@ -1661,7 +1661,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.0" aria-label="Page version 15.0">v15.0</div>
+  <div class="page-version" data-version="15.1" aria-label="Page version 15.1">v15.1</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -2605,7 +2605,7 @@ function formatUploadedAt(iso) {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "Uploaded —";
   const p = (n) => String(n).padStart(2, "0");
-  return "Uploaded " + p(d.getDate()) + "-" + p(d.getMonth() + 1) + "-" + String(d.getFullYear()).slice(-2) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+  return "Uploaded " + p(d.getDate()) + "-" + p(d.getMonth() + 1) + "-" + d.getFullYear() + " " + p(d.getHours()) + ":" + p(d.getMinutes());
 }
 function parseUalSaved(raw) {
   const s = String(raw || "");
