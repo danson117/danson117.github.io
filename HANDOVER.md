@@ -14,6 +14,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **T.EE0639 已過新到期日：** 完成日 + 2 年若已到（4 人，Due 2026-04-17），狀態由 Completed 改回 Not Started，Remark 仍 `EK Audit Check`，Due 冇改。Outstanding 會再顯示。未到到期日嘅 Completed 保持收起。Manual 行數冇改。CT／OMT 冇改。唔寫職員明細。
+
+## 2026-09-28 公司電腦
+
 - **Manual remark：** LM00183（73）同 T.EE0639（73）嘅 Remark 全部改為 `EK Audit Check`。已有 Completed 同完成日保留（74）。Manual 仍 147。CT／OMT 冇改。唔寫職員明細。
 
 ## 2026-09-28 公司電腦
