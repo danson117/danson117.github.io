@@ -43,3 +43,8 @@ Authorization List 同 License Records：
 - **出街顯示（HTML 表／counters）：** 只 Name List 嘅人。Staff #、Section、Team、CG/PAX 跟 Name List roster。**唔好**用 CSV Department 做 Section／Team。
 - **背底 stage：** CSV 有但唔喺 Name List 嘅人／行，留喺 packed `stage`（慳位、唔丟欄）。唔寫入出街表；問起上嚟先用。
 - 唔好因為 CSV 有人就加去出街 Name List／Crew List。
+
+## Training One View · Completed（顯示 vs 背底）
+
+- **出街／畫面：** Completed 約 30 日可顯示（預設隱藏；Show completed ≤30 days）。超過約 30 日可離開畫面列表。
+- **背底：** Status／completion date／course／staff 永久保留（`hx_private.team_board_actions` 等）。唔好當過期就刪或清。問「當時情況」要仍搵到。

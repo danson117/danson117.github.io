@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV sync feedback + Team 頭 + Completed 規矩：** Push-failed dialog 加紅字 `WARNING: Until sync succeeds, the numbers on this page are not accurate.`（保留 browser-saved 句）。進行中卡右下 icon＝橙 ×（唔用 …）。揀中 Team／Other 表頭亮青綠 `#00a8ad`、暫時唔用紅外框；未揀 `#015260`。Completed：畫面約 30 日；背底永久（已只係隱藏，冇刪）。TOV **v14.7**、hub **v15.9**、`hx-rules` **v8.5**。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **BRS 標籤：BRS Number／Course name：** Create／edit／list／Admin 可見標籤 Item number→**BRS Number**、Title→**Course name**（存檔 `code`／`title` 同編號規則不變）。TOV 欄頭仍 **Course code**。Due Date YYYY-MM-DD（`c576864`）保留。BRS **v4.3**、`hx-rules` **v8.3**；hub cache-bust `?v=`（hub page-version 仍 **v15.7**）。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

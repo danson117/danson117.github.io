@@ -863,9 +863,9 @@
       </div>
       <p class="note" id="pin-pop-who"></p>
       <div class="field" id="pin-step-current">
-        <label for="pin-current">6-digit PIN</label>
+        <label for="pin-current" id="pin-current-label">Staff number or password</label>
         <div class="pin-wrap">
-          <input id="pin-current" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Enter PIN">
+          <input id="pin-current" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Enter digits">
           <button type="button" class="pin-eye" data-pin-eye="pin-current" aria-label="Show PIN" aria-pressed="false" title="Show PIN">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>
           </button>
@@ -873,18 +873,18 @@
       </div>
       <p class="pin-hint" id="pin-default-hint" hidden></p>
       <div id="pin-step-change" hidden>
-        <p class="note">First-time default accepted. Choose a new 6-digit PIN that is not your staff number. Signature is recorded only after the new PIN is saved.</p>
+        <p class="note">Staff number accepted. Set a new password now (4–6 digits, digits only, not your staff number). Confirm once. Signature is recorded only after the password is saved.</p>
         <div class="field">
-          <label for="pin-new">New PIN</label>
+          <label for="pin-new">New password</label>
           <div class="pin-wrap">
-            <input id="pin-new" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="New 6-digit PIN">
+            <input id="pin-new" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="4–6 digits">
             <button type="button" class="pin-eye" data-pin-eye="pin-new" aria-label="Show PIN" aria-pressed="false" title="Show PIN">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>
             </button>
           </div>
         </div>
         <div class="field">
-          <label for="pin-new2">Confirm new PIN</label>
+          <label for="pin-new2">Confirm new password</label>
           <div class="pin-wrap">
             <input id="pin-new2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="Enter again">
             <button type="button" class="pin-eye" data-pin-eye="pin-new2" aria-label="Show PIN" aria-pressed="false" title="Show PIN">
@@ -913,7 +913,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="4.3">v4.3</div>
+  <div class="page-version" data-version="4.4">v4.4</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1131,7 +1131,7 @@
     it.code = code;
     var parsed = parseItemCode(code);
     if (!code || !parsed) {
-      paintAdminStatus("Enter a valid BRS Number (BRS + YYYYMM + two digits).");
+      paintAdminStatus("Enter a valid BRS Ref. No. (BRS + YYYYMM + two digits).");
       return;
     }
     if (codeUsedOnList(code, it.id)) {
@@ -2248,7 +2248,7 @@
     }).join("") || "<li class=\"muted\">No people yet. Search the Name List.</li>";
     var numTitle = draft
       ? "Auto-filled. You can edit before Create BRS."
-      : "Confirmed BRS Number.";
+      : "Confirmed BRS Ref. No.";
     var headLabel = draft ? "New item (not confirmed)" : "Edit item";
     var codeInput = draft
       ? "<input type=\"text\" data-code=\"" + esc(it.id) + "\" value=\"" + esc(it.code || "") + "\" autocomplete=\"off\" spellcheck=\"false\" maxlength=\"12\" title=\"" + esc(numTitle) + "\">"
@@ -2265,7 +2265,7 @@
       "<div class=\"admin-section\">" +
         "<div class=\"bar\"><h3 style=\"margin:0;flex:1\">" + headLabel + "</h3></div>" +
         "<div class=\"card-top\">" +
-          "<div><label>BRS Number</label>" + codeInput + "</div>" +
+          "<div><label>BRS Ref. No.</label>" + codeInput + "</div>" +
           "<div><label>Type</label><div class=\"seg\">" +
             "<button type=\"button\" data-type=\"briefing\" data-item=\"" + esc(it.id) + "\"" + (it.type !== "read-sign" ? " class=\"on\"" : "") + ">Briefing</button>" +
             "<button type=\"button\" data-type=\"read-sign\" data-item=\"" + esc(it.id) + "\"" + (it.type === "read-sign" ? " class=\"on\"" : "") + ">Read &amp; Sign</button>" +
@@ -2359,7 +2359,7 @@
     var body = items.map(summaryPairHtml).join("");
     document.getElementById("list").innerHTML =
       "<table class=\"brs-board\" aria-label=\"Briefing and R&amp;S summary\">" +
-        "<thead><tr><th>Type</th><th>BRS Number</th><th>Progress</th><th></th></tr></thead>" +
+        "<thead><tr><th>Type</th><th>BRS Ref. No.</th><th>Progress</th><th></th></tr></thead>" +
         "<tbody>" + body + "</tbody></table>";
   }
 
@@ -2495,10 +2495,29 @@
     if (pinCtx.phase === "change") {
       var n1 = document.getElementById("pin-new");
       var n2 = document.getElementById("pin-new2");
-      if (n1 && digitsFromInput(n1).length < 6) return n1;
+      if (n1 && digitsFromInput(n1).length < 4) return n1;
+      if (n1 && digitsFromInput(n1).length < 6 && digitsFromInput(n2 || { value: "" }).length === 0) return n1;
       return n2 || n1;
     }
     return document.getElementById("pin-current");
+  }
+  function isPinPasswordLen(v) {
+    return /^[0-9]{4,6}$/.test(String(v || ""));
+  }
+  function syncPinCurrentLabel() {
+    var lab = document.getElementById("pin-current-label");
+    var inp = document.getElementById("pin-current");
+    if (!lab || !inp) return;
+    if (pinCtx && pinCtx.pinSet === false) {
+      lab.textContent = "Staff number (this row)";
+      inp.placeholder = "Enter this row's staff #";
+    } else if (pinCtx && pinCtx.pinSet === true) {
+      lab.textContent = "Password (4–6 digits)";
+      inp.placeholder = "Enter password";
+    } else {
+      lab.textContent = "Staff number or password";
+      inp.placeholder = "Enter digits";
+    }
   }
   function closePinPop() {
     pinCtx = null;
@@ -2531,6 +2550,7 @@
     if (hint) { hint.hidden = true; hint.textContent = ""; }
     resetPinEyes();
     setPinErr("");
+    syncPinCurrentLabel();
     document.getElementById("pin-pop").hidden = false;
     setTimeout(function () { document.getElementById("pin-current").focus(); }, 30);
     if (!window.HxSharedSync || typeof window.HxSharedSync.pinStatus !== "function") {
@@ -2541,14 +2561,16 @@
       if (!pinCtx || pinCtx.staff !== who.staff) return;
       pinCtx.autoVerify = true;
       pinCtx.pinSet = !!st.set;
+      syncPinCurrentLabel();
       if (!st.set && hint) {
         hint.hidden = false;
-        hint.textContent = "You are entering the default PIN. The default PIN is your staff number: " + who.staff + ".";
+        hint.textContent = "First time: type this row's staff number (" + who.staff + "), then set a 4–6 digit password.";
       }
     } catch (e) {
       if (!pinCtx || pinCtx.staff !== who.staff) return;
       pinCtx.autoVerify = false;
       pinCtx.pinSet = null;
+      syncPinCurrentLabel();
     }
   }
   function applyAck(itemId, staff) {
@@ -2575,13 +2597,25 @@
     try {
       if (pinCtx.phase === "check") {
         var pin = digitsFromInput(document.getElementById("pin-current"));
-        if (!/^[0-9]{6}$/.test(pin)) {
-          setPinErr("Enter exactly 6 digits.");
+        if (pinCtx.pinSet === false) {
+          if (pin !== staff) {
+            setPinErr("Staff number does not match this row. Signature was not recorded.");
+            return;
+          }
+        } else if (pinCtx.pinSet === true) {
+          if (!isPinPasswordLen(pin)) {
+            setPinErr("Enter your 4–6 digit password.");
+            return;
+          }
+        } else if (!/^[0-9]{4,6}$/.test(pin)) {
+          setPinErr("Enter 4–6 digits.");
           return;
         }
         var check = await window.HxSharedSync.pinCheck(staff, pin);
         if (!check.ok) {
-          setPinErr("Wrong PIN. Signature was not recorded.");
+          setPinErr(pinCtx.pinSet === false
+            ? "Staff number does not match this row. Signature was not recorded."
+            : "Wrong PIN. Signature was not recorded.");
           return;
         }
         pinCtx.currentPin = pin;
@@ -2601,16 +2635,16 @@
       if (pinCtx.phase === "change") {
         var neu = digitsFromInput(document.getElementById("pin-new"));
         var neu2 = digitsFromInput(document.getElementById("pin-new2"));
-        if (!/^[0-9]{6}$/.test(neu) || !/^[0-9]{6}$/.test(neu2)) {
-          setPinErr("New PIN must be exactly 6 digits.");
+        if (!isPinPasswordLen(neu) || !isPinPasswordLen(neu2)) {
+          setPinErr("New password must be 4–6 digits.");
           return;
         }
         if (neu !== neu2) {
-          setPinErr("New PIN entries do not match.");
+          setPinErr("New password entries do not match.");
           return;
         }
         if (neu === staff) {
-          setPinErr("New PIN must not equal the staff number.");
+          setPinErr("New password must not equal the staff number.");
           return;
         }
         await window.HxSharedSync.pinSet(staff, pinCtx.currentPin, neu);
@@ -2630,6 +2664,22 @@
     if (t.id !== "pin-current" && t.id !== "pin-new" && t.id !== "pin-new2") return;
     var v = digitsFromInput(t);
     if (pinCtx.phase === "check" && t.id === "pin-current") {
+      if (pinCtx.pinSet === false) {
+        if (v.length < 6) {
+          if (document.getElementById("pin-err").textContent) setPinErr("");
+          return;
+        }
+        if (pinCtx.autoVerify && v.length === 6) submitPinFlow();
+        return;
+      }
+      if (pinCtx.pinSet === true) {
+        if (v.length < 4) {
+          if (document.getElementById("pin-err").textContent) setPinErr("");
+          return;
+        }
+        if (pinCtx.autoVerify && v.length === 6) submitPinFlow();
+        return;
+      }
       if (v.length < 6) {
         if (document.getElementById("pin-err").textContent) setPinErr("");
         return;
@@ -2640,17 +2690,17 @@
     if (pinCtx.phase === "change" && (t.id === "pin-new" || t.id === "pin-new2")) {
       var neu = digitsFromInput(document.getElementById("pin-new"));
       var neu2 = digitsFromInput(document.getElementById("pin-new2"));
-      if (neu.length === 6 && neu2.length === 6) {
+      if (isPinPasswordLen(neu) && isPinPasswordLen(neu2) && neu.length === neu2.length) {
         if (neu !== neu2) {
-          setPinErr("New PIN entries do not match.");
+          setPinErr("New password entries do not match.");
           return;
         }
         if (neu === pinCtx.staff) {
-          setPinErr("New PIN must not equal the staff number.");
+          setPinErr("New password must not equal the staff number.");
           return;
         }
         setPinErr("");
-        submitPinFlow();
+        if (neu.length === 6) submitPinFlow();
         return;
       }
       if (document.getElementById("pin-err").textContent) setPinErr("");
@@ -2869,10 +2919,10 @@
     ul.innerHTML = rows.map(function (p) {
       var set = !!pinSetStaff[p.staff];
       var badge = set
-        ? "<span class=\"badge set\">Custom PIN set</span>"
-        : "<span class=\"badge def\">Still default</span>";
+        ? "<span class=\"badge set\">Password set</span>"
+        : "<span class=\"badge def\">Not set</span>";
       var reset = set
-        ? "<button type=\"button\" class=\"danger\" data-pin-reset=\"" + esc(p.staff) + "\">Remove / reset</button>"
+        ? "<button type=\"button\" class=\"danger\" data-pin-reset=\"" + esc(p.staff) + "\">Reset</button>"
         : "";
       return "<li><span class=\"who\"><b>" + esc(p.staff) + "</b> " + esc(p.name) +
         " <span class=\"muted\">" + esc(p.section || "") + "</span></span>" + badge + reset + "</li>";
@@ -2907,7 +2957,7 @@
       pinSetStaff = {};
       (data.set || []).forEach(function (s) { pinSetStaff[pad(s)] = true; });
       renderVaultList();
-      paintVaultStatus("Updated. " + (data.set || []).length + " custom PIN(s). Hashes are not shown.");
+      paintVaultStatus("Updated. " + (data.set || []).length + " password(s) set. Secrets are not shown.");
     } catch (e) {
       if (e && e.code === "unauthorized") {
         window.HxSharedSync.setPassword("");

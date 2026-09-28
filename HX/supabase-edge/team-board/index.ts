@@ -44,9 +44,22 @@ function randomSalt() {
 
 function normalizeAccountRole(r: unknown) {
   const s = String(r || "").toLowerCase();
-  if (s === "me" || s === "admin" || s === "dm" || s === "staff") return s;
+  if (s === "me" || s === "admin" || s === "dm" || s === "public") return s;
+  if (s === "staff") return "public"; // migrate old Staff → Public
   if (s === "dm/dic" || s === "dic") return "dm";
-  return "staff";
+  return "public";
+}
+
+function normalizeRolePages(raw: unknown) {
+  const src = raw && typeof raw === "object" ? raw as Record<string, unknown> : {};
+  const publicPages = Array.isArray(src.public)
+    ? src.public.map(String)
+    : (Array.isArray(src.staff) ? src.staff.map(String) : []);
+  return {
+    admin: Array.isArray(src.admin) ? src.admin.map(String) : [],
+    dm: Array.isArray(src.dm) ? src.dm.map(String) : [],
+    public: publicPages,
+  };
 }
 
 function allActions() {
@@ -101,12 +114,7 @@ function stripAuth(cfg: Record<string, unknown> | null) {
   })).filter((a) => a.staff);
   out.hasMe = accounts.some((a) => normalizeAccountRole(a && a.role) === "me" && a && a.hash);
   if (cfg && (cfg as any).rolePages && typeof (cfg as any).rolePages === "object") {
-    const rolePages = (cfg as any).rolePages as Record<string, unknown>;
-    out.rolePages = {
-      admin: Array.isArray(rolePages.admin) ? rolePages.admin.map(String) : [],
-      dm: Array.isArray(rolePages.dm) ? rolePages.dm.map(String) : [],
-      staff: Array.isArray(rolePages.staff) ? rolePages.staff.map(String) : [],
-    };
+    out.rolePages = normalizeRolePages((cfg as any).rolePages);
   }
   if (Array.isArray((cfg as any)?.pageOrder)) {
     out.pageOrder = ((cfg as any).pageOrder as unknown[]).map(String);
@@ -259,11 +267,18 @@ Deno.serve(async (req: Request) => {
     if (!s || (s.kind === "legacy" && !s.staff)) {
       return json(401, { error: "unauthorized", role: "view", hint: "If you forgot your password, ask Owner to reset it." });
     }
+    // Public (old Staff) does not use hub login — open the site as a visitor.
+    if (s.role === "public") {
+      return json(403, {
+        error: "Public users do not log in. Open the site without signing in.",
+        role: "view",
+      });
+    }
     let loginPages = s.pages || [];
     const acc = findAccount(cfg, s.staff);
     if (s.role !== "me" && !(acc && (acc as any).customPages)) {
-      const rp = (cfg as any).rolePages;
-      if (rp && typeof rp === "object" && Array.isArray(rp[s.role])) loginPages = rp[s.role].map(String);
+      const rp = normalizeRolePages((cfg as any).rolePages);
+      if (Array.isArray((rp as any)[s.role])) loginPages = (rp as any)[s.role].map(String);
     }
     return json(200, {
       role: s.role, staff: s.staff, pages: loginPages, actions: s.actions,
@@ -381,12 +396,7 @@ Deno.serve(async (req: Request) => {
     }
     const next: Record<string, unknown> = { ...cfg, accounts: nextAccounts };
     if (body.rolePages && typeof body.rolePages === "object") {
-      const src = body.rolePages as Record<string, unknown>;
-      next.rolePages = {
-        admin: Array.isArray(src.admin) ? src.admin.map(String) : [],
-        dm: Array.isArray(src.dm) ? src.dm.map(String) : [],
-        staff: Array.isArray(src.staff) ? src.staff.map(String) : [],
-      };
+      next.rolePages = normalizeRolePages(body.rolePages);
     }
     if (Array.isArray(body.publicPages)) next.publicPages = body.publicPages;
     if (Array.isArray(body.editActions)) next.editActions = body.editActions;

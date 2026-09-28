@@ -84,11 +84,10 @@
     white-space: nowrap;
     min-height: 1.2em;
   }
-  /* Non-default narrowing filter hint (status red outline). */
+  /* Non-default narrowing filter hint (status red outline). Team/Other headers use bright teal instead. */
   .filter-narrowed,
   input.filter-narrowed,
-  button.filter-narrowed,
-  th.team.filter-narrowed {
+  button.filter-narrowed {
     outline: 2px solid var(--out);
     outline-offset: 2px;
   }
@@ -161,7 +160,15 @@
   .box-sync-ico.warn,
   .box-sync-ico.busy,
   .box-sync-ico.fail { background: #c45c00; }
+  .box-sync-ico.busy { font-size: 16px; font-weight: 900; line-height: 1; }
   .box-sync-ico.check { background: #00778b; }
+  .push-fail-warn {
+    margin: 10px 0 0;
+    color: #b00020;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.35;
+  }
   #ingest-sync { display: none !important; }
   html.board-locked .write-zone { display: none !important; }
   html:not(.board-locked).no-ingest .load.write-zone { display: none !important; }
@@ -599,8 +606,9 @@
     cursor: pointer;
     font-size: 0;
   }
-  .board th.team { cursor: pointer; }
-  .board th.team.on { background: var(--navy); color: #fff; }
+  .board th.team { cursor: pointer; background: var(--navy); color: #fff; }
+  /* Selected Team/Other header: bright HAECO teal (no red outline). Unselected stay darker teal. */
+  .board th.team.on { background: #00a8ad; color: #fff; }
   .load {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -791,8 +799,9 @@
   .board th { background: #f8fafc; color: var(--navy); font-weight: 650; position: sticky; top: 0; z-index: 2; }
   .board th.item, .board td.item { position: sticky; left: 0; background: #fff; z-index: 1; min-width: 280px; text-align: left; }
   .board th.item { z-index: 3; }
-  .board th.team { text-align: center; min-width: 110px; cursor: pointer; }
-  .board th.team:hover { background: var(--navy-soft); }
+  .board th.team { text-align: center; min-width: 110px; cursor: pointer; background: var(--navy); color: #fff; }
+  .board th.team:hover { background: #00778b; color: #fff; }
+  .board th.team.on { background: #00a8ad; color: #fff; }
   .board td.cell { padding: 4px 6px; cursor: pointer; }
   .board td.cell:hover { outline: 2px solid var(--navy); outline-offset: -2px; }
   .board td.cell.on { background: #eef4fb; }
@@ -1567,6 +1576,7 @@
     <div class="pop-card access-card ingest-card" role="dialog" aria-modal="true" aria-labelledby="push-fail-title">
       <h4 id="push-fail-title">GitHub push failed</h4>
       <p class="note" id="push-fail-lead"></p>
+      <p class="push-fail-warn" id="push-fail-warn">WARNING: Until sync succeeds, the numbers on this page are not accurate.</p>
       <div class="toolbar">
         <button type="button" class="primary" id="push-fail-ok">OK</button>
       </div>
@@ -1589,9 +1599,9 @@
       <h3 id="pin-pop-title">Confirm with PIN</h3>
       <p class="note" id="pin-pop-who"></p>
       <div class="field" id="pin-step-current">
-        <label for="pin-current">6-digit PIN</label>
+        <label for="pin-current" id="pin-current-label">Staff number or password</label>
         <div class="pin-wrap">
-          <input id="pin-current" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Enter PIN">
+          <input id="pin-current" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Enter digits">
           <button type="button" class="pin-eye" data-pin-eye="pin-current" aria-label="Show PIN" aria-pressed="false" title="Show PIN">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>
           </button>
@@ -1599,18 +1609,18 @@
       </div>
       <p class="pin-hint" id="pin-default-hint" hidden></p>
       <div id="pin-step-change" hidden>
-        <p class="note">First-time default accepted. Choose a new 6-digit PIN that is not your staff number. Signature is recorded only after the new PIN is saved.</p>
+        <p class="note">Staff number accepted. Set a new password now (4–6 digits, digits only, not your staff number). Confirm once. Signature is recorded only after the password is saved.</p>
         <div class="field">
-          <label for="pin-new">New PIN</label>
+          <label for="pin-new">New password</label>
           <div class="pin-wrap">
-            <input id="pin-new" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="New 6-digit PIN">
+            <input id="pin-new" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="4–6 digits">
             <button type="button" class="pin-eye" data-pin-eye="pin-new" aria-label="Show PIN" aria-pressed="false" title="Show PIN">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5c-5.5 0-9.5 4.5-10.5 6.2a1.2 1.2 0 0 0 0 1.2C2.5 14.5 6.5 19 12 19s9.5-4.5 10.5-6.2a1.2 1.2 0 0 0 0-1.2C21.5 9.5 17.5 5 12 5zm0 12c-3.7 0-6.8-2.8-8.1-4.5C5.2 10.8 8.3 8 12 8s6.8 2.8 8.1 4.5C18.8 14.2 15.7 17 12 17zm0-7.5A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm0 5A1.5 1.5 0 1 1 13.5 13 1.5 1.5 0 0 1 12 14.5z"/></svg>
             </button>
           </div>
         </div>
         <div class="field">
-          <label for="pin-new2">Confirm new PIN</label>
+          <label for="pin-new2">Confirm new password</label>
           <div class="pin-wrap">
             <input id="pin-new2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="Enter again">
             <button type="button" class="pin-eye" data-pin-eye="pin-new2" aria-label="Show PIN" aria-pressed="false" title="Show PIN">
@@ -1648,7 +1658,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="14.5" aria-label="Page version 14.5">v14.5</div>
+  <div class="page-version" data-version="14.7" aria-label="Page version 14.7">v14.7</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -2710,9 +2720,7 @@ function updateFilterNarrowHints() {
     b.classList.toggle("filter-narrowed", cur.org !== def.org && b.dataset.org === org);
   });
   document.querySelectorAll("th.team[data-team]").forEach((th) => {
-    const t = th.dataset.team;
-    const narrowed = cur.team !== def.team && cur.team && cur.team === t;
-    th.classList.toggle("filter-narrowed", narrowed);
+    th.classList.remove("filter-narrowed");
   });
   document.querySelectorAll("[data-role]").forEach((b) => {
     b.classList.toggle("filter-narrowed", cur.role !== def.role && b.dataset.role === role);
@@ -4476,7 +4484,7 @@ async function openBrsPinPop(itemId, staff) {
   const want = padStaff(staff);
   if (!it || !want) return;
   const who = personOf(want) || { staff: want, name: "" };
-  brsPinCtx = { itemId: it.id, staff: want, currentPin: "", phase: "check", autoVerify: false };
+  brsPinCtx = { itemId: it.id, staff: want, currentPin: "", phase: "check", autoVerify: false, pinSet: null };
   document.getElementById("pin-pop-title").textContent = it.type === "read-sign" ? "Sign with PIN" : "Seen with PIN";
   document.getElementById("pin-pop-who").textContent = want + (who.name ? " · " + who.name : "");
   document.getElementById("pin-step-change").hidden = true;
@@ -4487,6 +4495,7 @@ async function openBrsPinPop(itemId, staff) {
   if (hint) { hint.hidden = true; hint.textContent = ""; }
   resetBrsPinEyes();
   setBrsPinErr("");
+  syncBrsPinCurrentLabel();
   document.getElementById("pin-pop").hidden = false;
   setTimeout(function () { document.getElementById("pin-current").focus(); }, 30);
   if (!window.HxSharedSync || typeof window.HxSharedSync.pinStatus !== "function") return;
@@ -4494,13 +4503,35 @@ async function openBrsPinPop(itemId, staff) {
     const st = await window.HxSharedSync.pinStatus(want);
     if (!brsPinCtx || brsPinCtx.staff !== want) return;
     brsPinCtx.autoVerify = true;
+    brsPinCtx.pinSet = !!st.set;
+    syncBrsPinCurrentLabel();
     if (!st.set && hint) {
       hint.hidden = false;
-      hint.textContent = "You are entering the default PIN. The default PIN is your staff number: " + want + ".";
+      hint.textContent = "First time: type this row's staff number (" + want + "), then set a 4–6 digit password.";
     }
   } catch (e) {
     if (!brsPinCtx || brsPinCtx.staff !== want) return;
     brsPinCtx.autoVerify = false;
+    brsPinCtx.pinSet = null;
+    syncBrsPinCurrentLabel();
+  }
+}
+function isBrsPinPasswordLen(v) {
+  return /^[0-9]{4,6}$/.test(String(v || ""));
+}
+function syncBrsPinCurrentLabel() {
+  const lab = document.getElementById("pin-current-label");
+  const inp = document.getElementById("pin-current");
+  if (!lab || !inp) return;
+  if (brsPinCtx && brsPinCtx.pinSet === false) {
+    lab.textContent = "Staff number (this row)";
+    inp.placeholder = "Enter this row's staff #";
+  } else if (brsPinCtx && brsPinCtx.pinSet === true) {
+    lab.textContent = "Password (4–6 digits)";
+    inp.placeholder = "Enter password";
+  } else {
+    lab.textContent = "Staff number or password";
+    inp.placeholder = "Enter digits";
   }
 }
 async function submitBrsPinFlow() {
@@ -4516,13 +4547,28 @@ async function submitBrsPinFlow() {
   try {
     if (brsPinCtx.phase === "check") {
       const pin = digitsFromPinInput(document.getElementById("pin-current"));
-      if (!/^[0-9]{6}$/.test(pin)) {
-        setBrsPinErr("Enter exactly 6 digits.");
+      if (brsPinCtx.pinSet === false) {
+        if (pin !== staff) {
+          setBrsPinErr("Staff number does not match this row. Signature was not recorded.", { office: false });
+          return;
+        }
+      } else if (brsPinCtx.pinSet === true) {
+        if (!isBrsPinPasswordLen(pin)) {
+          setBrsPinErr("Enter your 4–6 digit password.");
+          return;
+        }
+      } else if (!/^[0-9]{4,6}$/.test(pin)) {
+        setBrsPinErr("Enter 4–6 digits.");
         return;
       }
       const check = await window.HxSharedSync.pinCheck(staff, pin);
       if (!check.ok) {
-        setBrsPinErr("Wrong PIN. Signature was not recorded.", { office: true });
+        setBrsPinErr(
+          brsPinCtx.pinSet === false
+            ? "Staff number does not match this row. Signature was not recorded."
+            : "Wrong PIN. Signature was not recorded.",
+          { office: brsPinCtx.pinSet !== false }
+        );
         return;
       }
       brsPinCtx.currentPin = pin;
@@ -4546,16 +4592,16 @@ async function submitBrsPinFlow() {
     if (brsPinCtx.phase === "change") {
       const neu = digitsFromPinInput(document.getElementById("pin-new"));
       const neu2 = digitsFromPinInput(document.getElementById("pin-new2"));
-      if (!/^[0-9]{6}$/.test(neu) || !/^[0-9]{6}$/.test(neu2)) {
-        setBrsPinErr("New PIN must be exactly 6 digits.");
+      if (!isBrsPinPasswordLen(neu) || !isBrsPinPasswordLen(neu2)) {
+        setBrsPinErr("New password must be 4–6 digits.");
         return;
       }
       if (neu !== neu2) {
-        setBrsPinErr("New PIN entries do not match.");
+        setBrsPinErr("New password entries do not match.");
         return;
       }
       if (neu === staff) {
-        setBrsPinErr("New PIN must not equal the staff number.");
+        setBrsPinErr("New password must not equal the staff number.");
         return;
       }
       await window.HxSharedSync.pinSet(staff, brsPinCtx.currentPin, neu);
@@ -4579,6 +4625,22 @@ function onBrsPinFieldInput(e) {
   if (t.id !== "pin-current" && t.id !== "pin-new" && t.id !== "pin-new2") return;
   const v = digitsFromPinInput(t);
   if (brsPinCtx.phase === "check" && t.id === "pin-current") {
+    if (brsPinCtx.pinSet === false) {
+      if (v.length < 6) {
+        if (document.getElementById("pin-err").textContent) setBrsPinErr("");
+        return;
+      }
+      if (brsPinCtx.autoVerify && v.length === 6) submitBrsPinFlow();
+      return;
+    }
+    if (brsPinCtx.pinSet === true) {
+      if (v.length < 4) {
+        if (document.getElementById("pin-err").textContent) setBrsPinErr("");
+        return;
+      }
+      if (brsPinCtx.autoVerify && v.length === 6) submitBrsPinFlow();
+      return;
+    }
     if (v.length < 6) {
       if (document.getElementById("pin-err").textContent) setBrsPinErr("");
       return;
@@ -4589,17 +4651,17 @@ function onBrsPinFieldInput(e) {
   if (brsPinCtx.phase === "change" && (t.id === "pin-new" || t.id === "pin-new2")) {
     const neu = digitsFromPinInput(document.getElementById("pin-new"));
     const neu2 = digitsFromPinInput(document.getElementById("pin-new2"));
-    if (neu.length === 6 && neu2.length === 6) {
+    if (isBrsPinPasswordLen(neu) && isBrsPinPasswordLen(neu2) && neu.length === neu2.length) {
       if (neu !== neu2) {
-        setBrsPinErr("New PIN entries do not match.");
+        setBrsPinErr("New password entries do not match.");
         return;
       }
       if (neu === brsPinCtx.staff) {
-        setBrsPinErr("New PIN must not equal the staff number.");
+        setBrsPinErr("New password must not equal the staff number.");
         return;
       }
       setBrsPinErr("");
-      submitBrsPinFlow();
+      if (neu.length === 6) submitBrsPinFlow();
       return;
     }
     if (document.getElementById("pin-err").textContent) setBrsPinErr("");
@@ -5061,12 +5123,12 @@ function paintDetail() {
   ).join("");
   const completedBtn = "<button type=\"button\" data-show-completed=\"" + (showRecentCompleted ? "1" : "0") + "\"" +
     (showRecentCompleted ? " class=\"on\"" : "") +
-    " title=\"Completed records are kept for 30 days. Default hidden.\">" +
+    " title=\"On-screen Completed rows show for about 30 days (default hidden). Stored completions are kept permanently.\">" +
     (showRecentCompleted ? "Hide completed (≤30 days)" : "Show completed (≤30 days)") + "</button>";
   const colorLegend = "<div class=\"row-legend\" aria-label=\"Row colors\">" +
     "<span><i class=\"swatch hot\"></i>Overdue or will expire (≤30 days)</span>" +
     "<span><i class=\"swatch warn\"></i>Coming due (&gt;30 and ≤90 days)</span>" +
-    "<span><i class=\"swatch ok\"></i>Completed (kept 30 days; default hidden)</span>" +
+    "<span><i class=\"swatch ok\"></i>Completed (shown ≤30 days on screen; stored permanently)</span>" +
     "<span><i class=\"swatch progress\"></i>In Progress (Status cell)</span>" +
     "<span class=\"flag-ov\" title=\"Override\">OV</span> override: flagged person / course" +
     "</div>";
@@ -5731,7 +5793,7 @@ function paintIngestSync() {
     }
     if (mode === "busy" && (dirty || !names.length)) {
       box.classList.add("ingest-busy");
-      if (ico) { ico.className = "box-sync-ico busy"; ico.textContent = "…"; ico.title = "Synchronizing…"; }
+      if (ico) { ico.className = "box-sync-ico busy"; ico.textContent = "×"; ico.title = "Synchronizing…"; }
       if (hint) { hint.hidden = false; hint.textContent = "Synchronizing…"; }
       if (btn) btn.hidden = true;
       return;

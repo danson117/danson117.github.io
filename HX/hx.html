@@ -378,17 +378,48 @@
         list-style: none;
         margin: 8px 0 0;
         padding: 0;
-        max-height: 160px;
+        max-height: 280px;
         overflow: auto;
+        background: #fff;
+        border: 1px solid #eadfd2;
+        border-radius: 4px;
       }
       #grant-pin-list li {
         display: flex;
         justify-content: space-between;
         gap: 8px;
         align-items: center;
-        padding: 4px 0;
-        border-bottom: 1px solid #eadfD2;
+        flex-wrap: wrap;
+        padding: 6px 8px;
+        border-bottom: 1px solid #eadfd2;
         font-size: 12px;
+      }
+      #grant-pin-list li:last-child { border-bottom: none; }
+      #grant-pin-list .who { flex: 1 1 140px; min-width: 0; }
+      #grant-pin-list .who b { margin-right: 4px; }
+      #grant-pin-list .muted { color: #6b7280; font-size: 11px; }
+      #grant-pin-list .badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid;
+        white-space: nowrap;
+      }
+      #grant-pin-list .badge.set {
+        color: #067647;
+        border-color: #b7dfc8;
+        background: #ecfdf3;
+      }
+      #grant-pin-list .badge.def {
+        color: #b54708;
+        border-color: #f0d7c4;
+        background: #fffaeb;
+      }
+      #grant-pin-list button[data-pin-reset] {
+        font-size: 12px;
+        padding: 3px 8px;
       }
       #gate-perms-pop .pop-card {
         background: #f6efe6;
@@ -634,12 +665,12 @@
             <input id="grant-staff" type="text" inputmode="numeric" maxlength="6" autocomplete="off" />
             <label for="grant-role">Role</label>
             <select id="grant-role">
-              <option value="staff">Staff</option>
+              <option value="public">Public</option>
               <option value="dm">DM/DIC</option>
               <option value="admin">Admin</option>
               <option value="me">Owner - Siu Chung</option>
             </select>
-            <label class="gate-check"><input type="checkbox" id="grant-reset-pw" /> Reset password to staff # (must change on next login)</label>
+            <label class="gate-check"><input type="checkbox" id="grant-reset-pw" /> Reset password to staff # (must change on next login; login roles only)</label>
             <div class="pop-actions" style="justify-content:flex-start;margin-top:8px">
               <button type="button" class="primary" id="grant-upsert">Add account</button>
               <button type="button" id="grant-remove">Remove account</button>
@@ -648,11 +679,12 @@
         </div>
         <div class="gate-block">
           <div class="gate-section-title">4. PIN Reset</div>
-          <p class="hint">Reset a Briefing and R&amp;S PIN back to the staff #. The PIN is not shown.</p>
+          <p class="hint">Name List: who has set a Briefing and R&amp;S password, and who has not. Reset clears the password (next sign asks for staff # again). The password and hash are never shown.</p>
           <button type="button" id="grant-pin-refresh">Refresh list</button>
-          <label for="grant-pin-search">Search staff #</label>
-          <input id="grant-pin-search" type="text" inputmode="numeric" maxlength="6" autocomplete="off" />
-          <ul id="grant-pin-list"><li>Click Refresh list.</li></ul>
+          <span class="hint" id="grant-pin-status" style="margin-left:8px"></span>
+          <label for="grant-pin-search">Search staff # or name</label>
+          <input id="grant-pin-search" type="text" autocomplete="off" />
+          <ul id="grant-pin-list"><li class="muted">Click Refresh list.</li></ul>
         </div>
         <p class="err" id="gate-perms-err" hidden></p>
         <div class="pop-actions">
@@ -675,8 +707,11 @@
       </div>
     </div>
 
-    <div class="page-version" data-version="15.7">v15.7</div>
+    <div class="page-version" data-version="15.9">v15.9</div>
+    <script src="ocg-pax-data.js?v=1"></script>
+    <script src="ocg-pax-data-unpack.js?v=1"></script>
     <script>
+      try { if (typeof hxUnpackRoster === "function") hxUnpackRoster(); } catch (e) {}
       const TOPICS = [
         {
           id: "links",
@@ -728,7 +763,7 @@
         },
         {
           id: "team-board",
-          file: "training-team-board.html?v=14.5",
+          file: "training-team-board.html?v=14.7",
           title: "Training One View",
           blurb: "UAL / CT / Mandatory / Manual · live sync",
         },
@@ -758,7 +793,7 @@
         },
         {
           id: "brs",
-          file: "briefing-read-sign.html?v=4.3",
+          file: "briefing-read-sign.html?v=4.4",
           title: "Briefing and R&S",
           blurb: "Board · dashboard · printable record",
         },
@@ -770,7 +805,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=8.3",
+          file: "hx-rules.html?v=8.5",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -896,27 +931,32 @@
       }
       function normalizeRole(r) {
         r = String(r || "view").toLowerCase();
-        if (r === "me" || r === "admin" || r === "dm" || r === "staff" || r === "edit") return r;
+        if (r === "me" || r === "admin" || r === "dm" || r === "public" || r === "edit") return r;
+        if (r === "staff") return "public"; // migrate old Staff → Public
         return "view";
       }
       const ROLE_MATRIX = [
         { id: "admin", label: "Admin" },
         { id: "dm", label: "DM/DIC" },
-        { id: "staff", label: "Staff" },
+        { id: "public", label: "Public" },
       ];
       function defaultRolePages() {
         return {
           admin: ALL_TOPIC_IDS.slice(),
           dm: ["team-board", "brs", "ocg-pax", "auth-list", "lic-records"],
-          staff: ["team-board", "brs"],
+          public: ["team-board", "brs"],
         };
       }
       function normalizeRolePages(raw) {
         const base = defaultRolePages();
         const src = raw && typeof raw === "object" ? raw : {};
         ROLE_MATRIX.forEach((col) => {
-          if (src && Object.prototype.hasOwnProperty.call(src, col.id) && Array.isArray(src[col.id])) {
-            base[col.id] = src[col.id].map(String).filter((id) => ALL_TOPIC_IDS.indexOf(id) >= 0);
+          const key = col.id;
+          const legacy = key === "public" && !Object.prototype.hasOwnProperty.call(src, "public")
+            ? src.staff
+            : src[key];
+          if (Array.isArray(legacy)) {
+            base[key] = legacy.map(String).filter((id) => ALL_TOPIC_IDS.indexOf(id) >= 0);
           }
         });
         return base;
@@ -932,7 +972,7 @@
         if (r === "me") return "Owner - Siu Chung";
         if (r === "admin") return "Admin";
         if (r === "dm") return "DM/DIC";
-        if (r === "staff") return "Staff";
+        if (r === "public" || r === "staff") return "Public";
         if (r === "edit") return "edit";
         return "view";
       }
@@ -990,8 +1030,7 @@
           gateRole === "me" ||
           gateRole === "admin" ||
           gateRole === "edit" ||
-          gateRole === "dm" ||
-          gateRole === "staff"
+          gateRole === "dm"
         ) && !!gatePassword;
       }
       function canGrant() {
@@ -1368,7 +1407,7 @@
           : "Log in";
         document.getElementById("gate-unlock-hint").textContent = needBootstrap
           ? "First time: set the manager password (same as Training One View manage). Then log in with Staff # + that password to become Owner and set a 6-digit password."
-          : "Enter Staff # and password. First password is your Staff # until you change it. Access stays until Log out.";
+          : "Only Admin, DM/DIC, and Owner log in (Staff # + password). Public users open the site without signing in.";
         document.getElementById("gate-staff").hidden = !!needBootstrap;
         document.querySelector("label[for='gate-staff']").hidden = !!needBootstrap;
         document.getElementById("gate-pw").removeAttribute("maxLength");
@@ -1549,7 +1588,7 @@
       document.getElementById("gate-force-ok").addEventListener("click", submitForcePw);
 
       let pendingGrant = null;
-      let pinRows = [];
+      let pinSetStaff = {};
       let draftPageOrder = ALL_TOPIC_IDS.slice();
       let grantDragId = "";
       let grantDragWired = false;
@@ -1567,7 +1606,7 @@
         return publicPages;
       }
       function readRoleMatrix() {
-        const out = { admin: [], dm: [], staff: [] };
+        const out = { admin: [], dm: [], public: [] };
         document.querySelectorAll("#role-matrix input[data-role]").forEach((el) => {
           if (!el.checked) return;
           const role = el.getAttribute("data-role");
@@ -1741,7 +1780,7 @@
         paintRoleMatrix(gateCfg.rolePages);
         paintAccountsList();
         document.getElementById("grant-staff").value = "";
-        document.getElementById("grant-role").value = "staff";
+        document.getElementById("grant-role").value = "public";
         document.getElementById("grant-reset-pw").checked = false;
         paintPinList();
         wireGrantDragOnce();
@@ -1806,17 +1845,51 @@
         }
         showPop("grant-pages-pop", true);
       }
+      function grantPinRoster() {
+        const people = Array.isArray(window.PEOPLE) ? window.PEOPLE : [];
+        return people.map((p) => {
+          const staff = padStaff(p && p.staff);
+          return {
+            staff: staff,
+            name: String((p && p.name) || ""),
+            section: String((p && (p.home || p.section || p.current)) || ""),
+          };
+        }).filter((p) => p.staff);
+      }
       function paintPinList() {
         const ul = document.getElementById("grant-pin-list");
         if (!ul) return;
-        const q = String((document.getElementById("grant-pin-search") || {}).value || "").replace(/\D/g, "");
-        const rows = pinRows.filter((s) => !q || String(s).indexOf(q) >= 0);
+        const qRaw = String((document.getElementById("grant-pin-search") || {}).value || "").trim().toLowerCase();
+        const qDigits = qRaw.replace(/\D/g, "");
+        let rows = grantPinRoster().slice().sort((a, b) =>
+          a.staff.localeCompare(b.staff) || a.name.localeCompare(b.name)
+        );
+        if (qRaw) {
+          rows = rows.filter((p) =>
+            (qDigits && p.staff.indexOf(qDigits) >= 0) ||
+            String(p.name || "").toLowerCase().indexOf(qRaw) >= 0
+          );
+        }
         if (!rows.length) {
-          ul.innerHTML = "<li>" + (pinRows.length ? "No match." : "Click Refresh list.") + "</li>";
+          ul.innerHTML = "<li class=\"muted\">" +
+            (grantPinRoster().length ? "No match." : "Name List not loaded. Click Refresh list.") +
+            "</li>";
           return;
         }
-        ul.innerHTML = rows.map((s) => {
-          return "<li><span>" + s + "</span><button type=\"button\" data-pin-reset=\"" + s + "\">Reset</button></li>";
+        ul.innerHTML = rows.map((p) => {
+          const set = !!pinSetStaff[p.staff];
+          const badge = set
+            ? "<span class=\"badge set\">Password set</span>"
+            : "<span class=\"badge def\">Not set</span>";
+          const reset = set
+            ? "<button type=\"button\" data-pin-reset=\"" + p.staff + "\">Reset</button>"
+            : "";
+          return (
+            "<li><span class=\"who\"><b>" + p.staff + "</b> " +
+            (p.name || "") +
+            (p.section ? " <span class=\"muted\">" + p.section + "</span>" : "") +
+            "</span>" + badge + reset + "</li>"
+          );
         }).join("");
       }
 
@@ -1841,7 +1914,7 @@
       });
       document.getElementById("grant-upsert").addEventListener("click", () => {
         const staff = padStaff(document.getElementById("grant-staff").value || "");
-        const role = normalizeRole(document.getElementById("grant-role").value || "staff");
+        const role = normalizeRole(document.getElementById("grant-role").value || "public");
         if (!staff) {
           setPermsErr("Enter Staff #.");
           return;
@@ -1895,16 +1968,27 @@
       });
       document.getElementById("grant-pin-refresh").addEventListener("click", async () => {
         setPermsErr("");
+        const st = document.getElementById("grant-pin-status");
+        if (st) st.textContent = "Loading…";
         try {
+          if (typeof hxUnpackRoster === "function") hxUnpackRoster();
           const res = await fetch(GATE_EDGE + "/pin/admin-list", { cache: "no-store", headers: gateHeaders() });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) {
+            if (st) st.textContent = "";
             setPermsErr((data && data.error) || "Could not load PIN list.");
             return;
           }
-          pinRows = Array.isArray(data.set) ? data.set.map((s) => padStaff(s)).filter(Boolean) : [];
+          pinSetStaff = {};
+          (Array.isArray(data.set) ? data.set : []).forEach((s) => {
+            const id = padStaff(s);
+            if (id) pinSetStaff[id] = true;
+          });
           paintPinList();
+          const n = Object.keys(pinSetStaff).length;
+          if (st) st.textContent = "Updated. " + n + " password(s) set. Secrets are not shown.";
         } catch (e) {
+          if (st) st.textContent = "";
           setPermsErr("Could not reach the server.");
         }
       });
@@ -1925,8 +2009,10 @@
             setPermsErr((data && data.error) || "Could not reset PIN.");
             return;
           }
-          pinRows = pinRows.filter((s) => s !== staff);
+          delete pinSetStaff[staff];
           paintPinList();
+          const st = document.getElementById("grant-pin-status");
+          if (st) st.textContent = "Reset done for " + staff + ". Next sign asks for staff # again.";
           setPermsErr("");
         } catch (err) {
           setPermsErr("Could not reach the server.");
