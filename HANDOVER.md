@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **BRS editor 修訂：** Title／Due Date 同行對齊；Due Date 改文字欄 YYYYMMDD（內部仍存 YYYY-MM-DD）；打字唔再自動 scroll。材料顯示解碼檔名（Admin／detail；TOV 本來已係）。Drag 重排 materials 修復。關閉掣：有改動＝Save Draft＋Close without saving；冇改動＝Close（刪 Draft and Close）。BRS **v3.4**、hub **v14.4**、`hx-rules` **v6.7** 紅字。GitHub 後備；Live Vercel。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **VHHH Line MX Weekly Auth · Due Date badge：** Difference history Change 標籤 DUE→**Due Date**；行／badge／legend 由紅粉改藍（`#1d4e89`／`#e7f0fa`），唔當 overdue。比較數據唔改。頁 **v1.8**、hub **v14.3**、`hx-rules` **v6.6** 紅字。GitHub 後備；Live Vercel。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

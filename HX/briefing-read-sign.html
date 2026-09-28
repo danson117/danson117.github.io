@@ -66,6 +66,32 @@
   .card.is-done { background: var(--ok-bg); border-color: #b7dfc8; }
   .card.is-out { background: var(--out-bg); border-color: #f0d7c4; }
   .card-top { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; }
+  .title-due-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+    align-items: flex-end;
+    width: 100%;
+  }
+  .title-due-row .grow { flex: 1 1 auto; min-width: 0; }
+  .title-due-row .due-field {
+    flex: 0 0 132px;
+    width: 132px;
+  }
+  .title-due-row label {
+    margin: 0 0 3px;
+    line-height: 1.2;
+    min-height: 1.2em;
+  }
+  .title-due-row input {
+    height: 34px;
+    min-height: 34px;
+    max-height: 34px;
+    padding: 6px 8px;
+    line-height: 1.2;
+    box-sizing: border-box;
+    vertical-align: bottom;
+  }
   .grow { flex: 1 1 220px; min-width: 0; }
   label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--teal-deep); margin: 0 0 3px; }
   input[type="text"], input[type="url"], input[type="password"], select {
@@ -76,6 +102,7 @@
     background: #fff;
     padding: 6px 8px;
   }
+  .editor-close-actions { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .seg { display: inline-flex; border: 1px solid #c5d0d8; background: #fff; }
   .seg button { border: 0; }
   .seg button + button { border-left: 1px solid #c5d0d8; }
@@ -224,6 +251,7 @@
   .mat-drop .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
   .mat-drop input[type="file"] { display: none; }
   .row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; justify-content: space-between; align-items: center; }
+  .row-actions .editor-close-actions { margin-left: auto; margin-right: auto; }
   .page-version {
     position: fixed; right: 12px; bottom: 8px;
     font-size: 11px; color: #6d7c82;
@@ -309,15 +337,27 @@
     background: #e5e7eb;
     border-color: var(--btn-quiet);
   }
-  .admin-block button.quiet[data-admin-close] {
+  .admin-block button.quiet[data-admin-close],
+  .admin-block button.quiet[data-save-draft],
+  .admin-block button.quiet[data-close-discard] {
     background: #6b7280;
     color: #fff;
     border-color: #4b5563;
   }
-  .admin-block button.quiet[data-admin-close]:hover {
+  .admin-block button.quiet[data-admin-close]:hover,
+  .admin-block button.quiet[data-save-draft]:hover,
+  .admin-block button.quiet[data-close-discard]:hover {
     background: #4b5563;
     color: #fff;
     border-color: #374151;
+  }
+  .admin-block button.quiet[data-save-draft] {
+    background: #0f766e;
+    border-color: #0f766e;
+  }
+  .admin-block button.quiet[data-save-draft]:hover {
+    background: #0b5f59;
+    border-color: #0b5f59;
   }
   .admin-block .auth-pick-head span { color: var(--admin); }
   .admin-block .mat-drop {
@@ -800,7 +840,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="3.3">v3.3</div>
+  <div class="page-version" data-version="3.4">v3.4</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1026,12 +1066,11 @@
     }
     rememberIssuedCode(code);
     delete it.draft;
-    adminEditId = it.id;
+    syncDueFromEditorField();
     filter = "all";
     save();
     render();
-    renderAdminEditor();
-    paintAdminStatus("Item " + code + " added.");
+    openEditorFor(it.id, "Item " + code + " added.");
   }
   function paintDash() {
     var briefOut = 0;
@@ -1172,6 +1211,163 @@
     if (k === "pdf") return "PDF";
     if (k === "link") return "Link";
     return "File";
+  }
+  function dueToDisplay(iso) {
+    var s = String(iso || "").trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s.replace(/-/g, "");
+    if (/^\d{8}$/.test(s)) return s;
+    return s.replace(/\D/g, "").slice(0, 8);
+  }
+  function dueDigitsToIso(raw) {
+    var d = String(raw || "").replace(/\D/g, "").slice(0, 8);
+    if (!d) return { ok: true, iso: "", digits: "" };
+    if (d.length !== 8) return { ok: false, iso: null, digits: d };
+    var y = Number(d.slice(0, 4));
+    var m = Number(d.slice(4, 6));
+    var day = Number(d.slice(6, 8));
+    if (!y || m < 1 || m > 12 || day < 1 || day > 31) return { ok: false, iso: null, digits: d };
+    var dt = new Date(Date.UTC(y, m - 1, day));
+    if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== (m - 1) || dt.getUTCDate() !== day) {
+      return { ok: false, iso: null, digits: d };
+    }
+    return {
+      ok: true,
+      iso: d.slice(0, 4) + "-" + d.slice(4, 6) + "-" + d.slice(6, 8),
+      digits: d
+    };
+  }
+  function fileNameFromUrl(raw) {
+    var s = String(raw || "").trim();
+    if (!s) return "";
+    try {
+      var path = s.split("#")[0].split("?")[0];
+      if (/^https?:\/\//i.test(path)) {
+        path = (new URL(path)).pathname || "";
+      }
+      try { path = decodeURIComponent(path); } catch (err) { /* keep */ }
+      var segs = path.split("/").filter(Boolean).filter(function (seg) {
+        return !/^:[a-z]:$/i.test(seg);
+      });
+      var withExt = segs.filter(function (seg) { return /\.[a-z0-9]{2,8}$/i.test(seg); });
+      if (withExt.length) return withExt[withExt.length - 1];
+      return segs.length ? segs[segs.length - 1] : "";
+    } catch (err) {
+      return "";
+    }
+  }
+  function materialDisplayName(m) {
+    if (!m) return "Material";
+    var stored = [m.fileName, m.file_name, m.originalName, m.title, m.name];
+    for (var i = 0; i < stored.length; i++) {
+      var t = String(stored[i] || "").trim();
+      if (t && !/^https?:\/\//i.test(t)) return t;
+    }
+    return fileNameFromUrl(m.href) || fileNameFromUrl(m.name) || "Material";
+  }
+  var editorSnapshotItem = null;
+  function cloneItem(it) {
+    return it ? JSON.parse(JSON.stringify(it)) : null;
+  }
+  function takeEditorSnapshot(it) {
+    editorSnapshotItem = cloneItem(it);
+  }
+  function restoreEditorSnapshot() {
+    if (!adminEditId || !editorSnapshotItem) return;
+    for (var i = 0; i < doc.items.length; i++) {
+      if (doc.items[i] && doc.items[i].id === adminEditId) {
+        doc.items[i] = cloneItem(editorSnapshotItem);
+        return;
+      }
+    }
+  }
+  function liveLinkDraft() {
+    if (!adminEditId) return "";
+    var box = document.querySelector('#brs-admin [data-link="' + adminEditId + '"]');
+    return box ? String(box.value || "").trim() : "";
+  }
+  function liveDueDigits() {
+    if (!adminEditId) return "";
+    var el = document.querySelector('#brs-admin [data-due="' + adminEditId + '"]');
+    if (el) return String(el.value || "").replace(/\D/g, "").slice(0, 8);
+    var it = itemById(adminEditId);
+    return dueToDisplay(it && it.dueDate);
+  }
+  function itemEditFingerprint(it, dueDigits, linkDraft) {
+    return JSON.stringify({
+      code: String((it && it.code) || ""),
+      type: String((it && it.type) || ""),
+      title: String((it && it.title) || ""),
+      due: String(dueDigits || ""),
+      materials: (it && it.materials) || [],
+      people: (it && it.people) || [],
+      linkDraft: String(linkDraft || "")
+    });
+  }
+  function isEditorDirty() {
+    if (!adminEditId || !editorSnapshotItem) return false;
+    var it = itemById(adminEditId);
+    if (!it) return false;
+    var now = itemEditFingerprint(it, liveDueDigits(), liveLinkDraft());
+    var was = itemEditFingerprint(editorSnapshotItem, dueToDisplay(editorSnapshotItem.dueDate), "");
+    return now !== was;
+  }
+  function closeActionsHtml() {
+    if (isEditorDirty()) {
+      return "<span class=\"editor-close-actions\" id=\"editor-close-actions\">" +
+        "<button type=\"button\" class=\"quiet\" data-save-draft=\"1\" title=\"Save Draft\" aria-label=\"Save Draft\">Save Draft</button>" +
+        "<button type=\"button\" class=\"quiet\" data-close-discard=\"1\" title=\"Close without saving\" aria-label=\"Close without saving\">Close without saving</button>" +
+      "</span>";
+    }
+    return "<span class=\"editor-close-actions\" id=\"editor-close-actions\">" +
+      "<button type=\"button\" class=\"quiet\" data-admin-close=\"1\" title=\"Close\" aria-label=\"Close\">Close</button>" +
+    "</span>";
+  }
+  function paintCloseActions() {
+    var slot = document.getElementById("editor-close-actions");
+    if (!slot || !adminEditId) return;
+    var wrap = document.createElement("div");
+    wrap.innerHTML = closeActionsHtml();
+    var next = wrap.firstChild;
+    if (next) slot.replaceWith(next);
+  }
+  function applyDueFromInput(it, raw) {
+    if (!it) return;
+    var parsed = dueDigitsToIso(raw);
+    if (parsed.ok) it.dueDate = parsed.iso;
+  }
+  function syncDueFromEditorField() {
+    var it = itemById(adminEditId);
+    if (!it) return;
+    applyDueFromInput(it, liveDueDigits());
+  }
+  function closeEditorClean() {
+    adminEditId = "";
+    editorSnapshotItem = null;
+    clearPeopleAuthPick();
+    renderAdminEditor();
+    paintAdminStatus("");
+  }
+  function saveDraftAndClose() {
+    var it = itemById(adminEditId);
+    if (!it) { closeEditorClean(); return; }
+    syncDueFromEditorField();
+    save();
+    if (!isDraftItem(it)) render();
+    closeEditorClean();
+    paintAdminStatus("Draft saved.");
+  }
+  function closeWithoutSaving() {
+    restoreEditorSnapshot();
+    if (editorSnapshotItem && !isDraftItem(editorSnapshotItem)) render();
+    closeEditorClean();
+    paintAdminStatus("Closed without saving.");
+  }
+  function openEditorFor(id, statusMsg) {
+    adminEditId = id || "";
+    var it = itemById(adminEditId);
+    takeEditorSnapshot(it);
+    renderAdminEditor();
+    if (statusMsg) paintAdminStatus(statusMsg);
   }
   function authFieldLabel(field) {
     if (field === "op") return "Operator";
@@ -1460,8 +1656,6 @@
       showMsgPop({ mode: "alert", title: "Not added", lines: ["Already on item", "or none selected"] });
       return;
     }
-    save();
-    render();
     clearPeopleAuthPick();
     renderAdminEditor();
     setPeopleHint(itemId, "Added " + added + (skipped ? " (" + skipped + " skipped)" : "") + ".");
@@ -1538,6 +1732,9 @@
   }
   function createItem(type) {
     if (!isEditUnlocked()) return;
+    if (adminEditId && isEditorDirty()) {
+      restoreEditorSnapshot();
+    }
     var kind = type === "briefing" ? "briefing" : "read-sign";
     var code = peekNextItemCode();
     if (!code) return;
@@ -1552,11 +1749,9 @@
       draft: true
     };
     doc.items.unshift(it);
-    adminEditId = it.id;
     filter = "all";
     save();
-    renderAdminEditor();
-    paintAdminStatus("Preview " + code + ". Confirm with Create BRS.");
+    openEditorFor(it.id, "Preview " + code + ". Confirm with Create BRS.");
   }
   function wireAdminOnce() {
     if (adminWired) return;
@@ -1574,14 +1769,23 @@
   }
   var matDragId = "";
   var matDragItemId = "";
+  function eventEl(t) {
+    if (!t) return null;
+    return t.nodeType === 1 ? t : t.parentElement;
+  }
   function matListItem(el) {
-    return el && el.closest ? el.closest(".mat-list li[data-mat-id]") : null;
+    var node = eventEl(el);
+    return node && node.closest ? node.closest(".mat-list li[data-mat-id]") : null;
   }
   function onMatDragStart(e) {
     if (!isEditUnlocked()) return;
-    var handle = e.target.closest ? e.target.closest(".mat-handle") : null;
-    var li = matListItem(e.target);
-    if (!handle || !li) {
+    var node = eventEl(e.target);
+    if (node && node.closest && node.closest("a, button, input, textarea, label")) {
+      if (e.preventDefault) e.preventDefault();
+      return;
+    }
+    var li = matListItem(node);
+    if (!li) {
       if (e.preventDefault) e.preventDefault();
       return;
     }
@@ -1608,7 +1812,7 @@
   function onMatDragLeave(e) {
     var li = matListItem(e.target);
     if (!li) return;
-    var related = e.relatedTarget;
+    var related = eventEl(e.relatedTarget);
     if (related && li.contains(related)) return;
     li.classList.remove("drag-over");
   }
@@ -1619,6 +1823,7 @@
     var toId = li.getAttribute("data-mat-id") || "";
     if (!itemId || itemId !== matDragItemId || !toId || toId === matDragId) return;
     e.preventDefault();
+    e.stopPropagation();
     reorderMaterials(itemId, matDragId, toId);
     matDragId = "";
     matDragItemId = "";
@@ -1646,8 +1851,6 @@
     var moved = list.splice(from, 1)[0];
     list.splice(to, 0, moved);
     it.materials = list;
-    save();
-    if (!isDraftItem(it)) render();
   }
   function onAdminClick(e) {
     if (!isEditUnlocked()) return;
@@ -1689,16 +1892,23 @@
     if (!btn) return;
     if (btn.id === "btn-new") { createItem("read-sign"); return; }
     if (btn.id === "vault-refresh") { refreshVault(); return; }
-    if (btn.dataset.adminEdit) {
-      adminEditId = btn.dataset.adminEdit;
-      renderAdminEditor();
-      paintAdminStatus(isDraftItem(itemById(adminEditId)) ? "Editing draft." : "Editing item.");
+    if (btn && btn.dataset.adminEdit) {
+      if (btn.dataset.adminEdit !== adminEditId && isEditorDirty()) {
+        restoreEditorSnapshot();
+      }
+      openEditorFor(btn.dataset.adminEdit, isDraftItem(itemById(btn.dataset.adminEdit)) ? "Editing draft." : "Editing item.");
       return;
     }
-    if (btn.dataset.adminClose) {
-      adminEditId = "";
-      renderAdminEditor();
-      paintAdminStatus("");
+    if (btn && btn.dataset.saveDraft) {
+      saveDraftAndClose();
+      return;
+    }
+    if (btn && btn.dataset.closeDiscard) {
+      closeWithoutSaving();
+      return;
+    }
+    if (btn && btn.dataset.adminClose) {
+      closeEditorClean();
       return;
     }
     if (btn.dataset.confirmItem) {
@@ -1721,8 +1931,6 @@
       /* Code stays BRS + same suffix; type only changes Briefing vs Read & Sign. */
       if (it.code) it.code = normalizeItemCode(it.code);
       it.type = nextType;
-      save();
-      if (!draft) render();
       renderAdminEditor();
       paintAdminStatus(draft
         ? ("Preview " + (it.code || "") + ". Confirm with Create BRS.")
@@ -1736,7 +1944,10 @@
       var delCode = delIt && delIt.code ? String(delIt.code) : "";
       if (delDraft) {
         doc.items = doc.items.filter(function (x) { return x.id !== delId; });
-        if (adminEditId === delId) adminEditId = "";
+        if (adminEditId === delId) {
+          adminEditId = "";
+          editorSnapshotItem = null;
+        }
         save();
         renderAdminEditor();
         paintAdminStatus("Draft deleted. Number not reserved.");
@@ -1750,7 +1961,10 @@
         if (!ok) return;
         doc.items = doc.items.filter(function (x) { return x.id !== delId; });
         rebuildIssuedFromItems();
-        if (adminEditId === delId) adminEditId = "";
+        if (adminEditId === delId) {
+          adminEditId = "";
+          editorSnapshotItem = null;
+        }
         save();
         render();
         renderAdminEditor();
@@ -1761,8 +1975,6 @@
       var itm = itemById(btn.dataset.item);
       if (!itm) return;
       itm.materials = (itm.materials || []).filter(function (m) { return m.id !== btn.dataset.delMat; });
-      save();
-      render();
       renderAdminEditor();
       return;
     }
@@ -1775,8 +1987,6 @@
       var itp = itemById(btn.dataset.item);
       if (!itp) return;
       itp.people = (itp.people || []).filter(function (p) { return p.staff !== btn.dataset.delPerson; });
-      save();
-      render();
       renderAdminEditor();
       return;
     }
@@ -1796,22 +2006,27 @@
       var itCode = itemById(t.dataset.code);
       if (!itCode || !isDraftItem(itCode)) return;
       itCode.code = normalizeItemCode(t.value);
-      save();
+      paintCloseActions();
       return;
     }
     if (t.dataset && t.dataset.title) {
       var it = itemById(t.dataset.title);
       if (!it) return;
       it.title = t.value;
-      save();
+      paintCloseActions();
       return;
     }
     if (t.dataset && t.dataset.due) {
       var itDue = itemById(t.dataset.due);
       if (!itDue) return;
-      itDue.dueDate = String(t.value || "").trim();
-      save();
-      if (!isDraftItem(itDue)) render();
+      var digits = String(t.value || "").replace(/\D/g, "").slice(0, 8);
+      if (t.value !== digits) t.value = digits;
+      applyDueFromInput(itDue, digits);
+      paintCloseActions();
+      return;
+    }
+    if (t.dataset && t.dataset.link) {
+      paintCloseActions();
       return;
     }
     if (t.dataset && t.dataset.find) {
@@ -1872,10 +2087,11 @@
     var draft = isDraftItem(it);
     var mats = (it.materials || []).map(function (m, idx) {
       var open = m.href ? "<a href=\"" + esc(m.href) + "\" target=\"_blank\" rel=\"noopener\">Open</a>" : "";
+      var label = materialDisplayName(m);
       return "<li draggable=\"true\" data-mat-id=\"" + esc(m.id) + "\" data-item=\"" + esc(it.id) + "\">" +
         "<span class=\"mat-handle\" title=\"Drag to reorder\" aria-hidden=\"true\">⋮⋮</span>" +
         "<span class=\"mat-num\">" + (idx + 1) + ".</span>" +
-        "<span class=\"who\"><b>" + esc(kindLabel(m.kind)) + "</b> · " + esc(m.name || "Material") + "</span>" +
+        "<span class=\"who\"><b>" + esc(kindLabel(m.kind)) + "</b> · " + esc(label) + "</span>" +
         open + "<button type=\"button\" class=\"danger\" data-del-mat=\"" + esc(m.id) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
     }).join("") || "<li class=\"muted\">No materials yet.</li>";
     var people = (it.people || []).map(function (p) {
@@ -1897,7 +2113,7 @@
     var actions =
       "<div class=\"admin-section row-actions\">" +
         "<button type=\"button\" class=\"danger\" data-del-item=\"" + esc(it.id) + "\" title=\"Delete BRS\" aria-label=\"Delete BRS\">Delete BRS</button>" +
-        "<button type=\"button\" class=\"quiet\" data-admin-close=\"1\" title=\"Draft and Close\" aria-label=\"Draft and Close\">Draft and Close</button>" +
+        closeActionsHtml() +
         (draft
           ? "<button type=\"button\" class=\"add\" data-confirm-item=\"" + esc(it.id) + "\" title=\"Create BRS\" aria-label=\"Create BRS\">Create BRS</button>"
           : "") +
@@ -1911,10 +2127,12 @@
             "<button type=\"button\" data-type=\"briefing\" data-item=\"" + esc(it.id) + "\"" + (it.type !== "read-sign" ? " class=\"on\"" : "") + ">Briefing</button>" +
             "<button type=\"button\" data-type=\"read-sign\" data-item=\"" + esc(it.id) + "\"" + (it.type === "read-sign" ? " class=\"on\"" : "") + ">Read &amp; Sign</button>" +
           "</div></div>" +
-          "<div class=\"grow\"><label for=\"title-" + esc(it.id) + "\">Title</label>" +
-            "<input id=\"title-" + esc(it.id) + "\" type=\"text\" data-title=\"" + esc(it.id) + "\" value=\"" + esc(it.title || "") + "\" placeholder=\"Course or notice name\"></div>" +
-          "<div><label for=\"due-" + esc(it.id) + "\">Due Date</label>" +
-            "<input id=\"due-" + esc(it.id) + "\" type=\"date\" data-due=\"" + esc(it.id) + "\" value=\"" + esc(it.dueDate || "") + "\" title=\"Optional due date (YYYY-MM-DD)\"></div>" +
+          "<div class=\"title-due-row\">" +
+            "<div class=\"grow\"><label for=\"title-" + esc(it.id) + "\">Title</label>" +
+              "<input id=\"title-" + esc(it.id) + "\" type=\"text\" data-title=\"" + esc(it.id) + "\" value=\"" + esc(it.title || "") + "\" placeholder=\"Course or notice name\" autocomplete=\"off\"></div>" +
+            "<div class=\"due-field\"><label for=\"due-" + esc(it.id) + "\">Due Date</label>" +
+              "<input id=\"due-" + esc(it.id) + "\" type=\"text\" inputmode=\"numeric\" data-due=\"" + esc(it.id) + "\" value=\"" + esc(dueToDisplay(it.dueDate)) + "\" placeholder=\"YYYYMMDD\" maxlength=\"8\" autocomplete=\"off\" spellcheck=\"false\" title=\"Optional due date as YYYYMMDD (e.g. 20261010)\"></div>" +
+          "</div>" +
         "</div>" +
       "</div>" +
       "<div class=\"admin-section\">" +
@@ -2000,10 +2218,6 @@
       "<table class=\"brs-board\" aria-label=\"Briefing and R&amp;S summary\">" +
         "<thead><tr><th>Type</th><th>Item</th><th>Progress</th><th></th></tr></thead>" +
         "<tbody>" + body + "</tbody></table>";
-    if (openItemId) {
-      var node = document.getElementById("item-" + openItemId);
-      if (node) node.scrollIntoView({ block: "nearest" });
-    }
   }
 
   function doneAssigned(it) {
@@ -2049,7 +2263,7 @@
       "<table class=\"detail-mats\"><thead><tr><th>#</th><th>Kind</th><th>" + esc(matLabel) + "</th><th></th></tr></thead><tbody>" +
       mats.map(function (m, idx) {
         var open = m.href ? "<a href=\"" + esc(m.href) + "\" target=\"_blank\" rel=\"noopener\">Open</a>" : "";
-        return "<tr><td>" + (idx + 1) + ".</td><td>" + esc(kindLabel(m.kind)) + "</td><td>" + esc(m.name || "Material") + "</td><td>" + open + "</td></tr>";
+        return "<tr><td>" + (idx + 1) + ".</td><td>" + esc(kindLabel(m.kind)) + "</td><td>" + esc(materialDisplayName(m)) + "</td><td>" + open + "</td></tr>";
       }).join("") + "</tbody></table>";
   }
 
@@ -2083,7 +2297,7 @@
       "<td><span class=\"type-badge\">" + typeLabel + "</span></td>" +
       "<td><b>" + esc(it.code || itemLabel(it)) + "</b>" +
         (it.title && it.code ? "<br><span class=\"muted\">" + esc(it.title) + "</span>" : "") +
-        (it.dueDate ? "<br><span class=\"muted\">Due " + esc(it.dueDate) + "</span>" : "") +
+        (it.dueDate ? "<br><span class=\"muted\">Due " + esc(dueToDisplay(it.dueDate) || it.dueDate) + "</span>" : "") +
       "</td>" +
       "<td><span class=\"frac\">" + esc(progressText) + "</span> <span class=\"muted\">" + esc(progressNote) + "</span></td>" +
       "<td class=\"chev\">" + (open ? "Hide ▴" : "Open ▾") + "</td>" +
@@ -2319,11 +2533,13 @@
         e.preventDefault();
         e.stopPropagation();
         if (!isEditUnlocked()) return;
-        adminEditId = btn.dataset.adminGoto;
+        if (adminEditId && adminEditId !== btn.dataset.adminGoto && isEditorDirty()) {
+          restoreEditorSnapshot();
+        }
         syncAdminDom();
+        openEditorFor(btn.dataset.adminGoto, "Editing from summary detail.");
         var admin = document.getElementById("brs-admin");
         if (admin) admin.scrollIntoView({ block: "start", behavior: "smooth" });
-        paintAdminStatus("Editing from summary detail.");
         return;
       }
       return;
@@ -2427,8 +2643,6 @@
     if ((it.people || []).some(function (p) { return p.staff === who.staff; })) return;
     it.people = it.people || [];
     it.people.push({ staff: who.staff, name: who.name, section: who.section, team: who.team, ack: "", ackAt: "" });
-    save();
-    render();
   }
   function acknowledgeClear(itemId, staff) {
     if (!isEditUnlocked()) return;
@@ -2438,8 +2652,6 @@
     if (!p) return;
     p.ack = "";
     p.ackAt = "";
-    save();
-    render();
   }
   function addLink(itemId, href) {
     if (!isEditUnlocked()) return;
@@ -2448,9 +2660,8 @@
     var it = itemById(itemId);
     if (!it) return;
     it.materials = it.materials || [];
-    it.materials.push({ id: uid("mat"), name: url, kind: "link", href: url });
-    save();
-    render();
+    var label = fileNameFromUrl(url) || url;
+    it.materials.push({ id: uid("mat"), name: label, kind: "link", href: url });
   }
 
   function paintVaultStatus(t) {
