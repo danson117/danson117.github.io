@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **BRS materials + Due Date：** 材料紅字「After you finish reading, remember to Sign.」；材料 1. 2. 3.…＋分隔；Admin 可 drag 改次序並 save。Create／edit 加可空 Due Date（`dueDate`）→ TOV due day 欄。Add course 標籤改 Due Date（原 Expire date）。BRS **v3.3**、TOV **v13.7**、hub **v14.2**、`hx-rules` **v6.5**。GitHub 後備；Live Vercel。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Briefing and R&S：** 可見名改 Briefing and R&S。Item number 固定 `BRS`＋年月＋兩位（例 BRS20260901）；舊 BF／RS 讀入後存成 BRS。Admin：Create New BRS／Create BRS／Draft and Close／Delete BRS；Materials 只 Add link；唔再 People 標題；PIN Reset；刪三段說明 intro。BRS **v3.2**、record **v1.6**、TOV **v13.6**、hub **v14.1**、`hx-rules` **v6.4** 紅字。GitHub 後備；Live Vercel。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

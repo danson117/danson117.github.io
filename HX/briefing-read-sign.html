@@ -144,6 +144,69 @@
   .auth-pick ul.clean { max-height: 220px; overflow: auto; margin: 0; }
   .auth-pick li.off { opacity: 0.45; }
   .mat-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+  .mat-list {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .mat-list li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--admin-border);
+    background: #fff;
+    border-radius: 4px;
+  }
+  .mat-list li.dragging { opacity: 0.55; }
+  .mat-list li.drag-over { outline: 2px solid var(--teal); }
+  .mat-handle {
+    flex: 0 0 auto;
+    cursor: grab;
+    user-select: none;
+    color: var(--muted);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    padding: 2px 4px;
+  }
+  .mat-handle:active { cursor: grabbing; }
+  .mat-num {
+    flex: 0 0 auto;
+    min-width: 1.6em;
+    font-weight: 700;
+    color: var(--teal-deep);
+  }
+  .sign-remind {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--btn-danger);
+    background: var(--btn-danger-bg);
+    color: var(--btn-danger);
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .detail-mats { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+  .detail-mats thead th { background: var(--teal-deep); color: #fff; padding: 6px 8px; text-align: left; }
+  .detail-mats tbody tr td {
+    border: 1px solid var(--line);
+    border-left: 0;
+    border-right: 0;
+    padding: 10px 8px;
+    background: #fff;
+    vertical-align: top;
+  }
+  .detail-mats tbody tr td:first-child {
+    border-left: 1px solid var(--line);
+    font-weight: 700;
+    color: var(--teal-deep);
+    width: 2.5em;
+  }
+  .detail-mats tbody tr td:last-child { border-right: 1px solid var(--line); }
   .mat-drop {
     border: 2px dashed var(--teal);
     background: #eef8f9;
@@ -737,7 +800,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="3.2">v3.2</div>
+  <div class="page-version" data-version="3.3">v3.3</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1483,6 +1546,7 @@
       code: code,
       type: kind,
       title: "",
+      dueDate: "",
       materials: [],
       people: [],
       draft: true
@@ -1502,6 +1566,88 @@
     root.addEventListener("click", onAdminClick);
     root.addEventListener("input", onAdminInput);
     root.addEventListener("keydown", onAdminKeydown);
+    root.addEventListener("dragstart", onMatDragStart);
+    root.addEventListener("dragover", onMatDragOver);
+    root.addEventListener("dragleave", onMatDragLeave);
+    root.addEventListener("drop", onMatDrop);
+    root.addEventListener("dragend", onMatDragEnd);
+  }
+  var matDragId = "";
+  var matDragItemId = "";
+  function matListItem(el) {
+    return el && el.closest ? el.closest(".mat-list li[data-mat-id]") : null;
+  }
+  function onMatDragStart(e) {
+    if (!isEditUnlocked()) return;
+    var handle = e.target.closest ? e.target.closest(".mat-handle") : null;
+    var li = matListItem(e.target);
+    if (!handle || !li) {
+      if (e.preventDefault) e.preventDefault();
+      return;
+    }
+    matDragId = li.getAttribute("data-mat-id") || "";
+    matDragItemId = li.getAttribute("data-item") || "";
+    if (!matDragId || !matDragItemId) {
+      if (e.preventDefault) e.preventDefault();
+      return;
+    }
+    li.classList.add("dragging");
+    try {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", matDragId);
+    } catch (err) {}
+  }
+  function onMatDragOver(e) {
+    var li = matListItem(e.target);
+    if (!li || !matDragId) return;
+    if ((li.getAttribute("data-item") || "") !== matDragItemId) return;
+    e.preventDefault();
+    try { e.dataTransfer.dropEffect = "move"; } catch (err) {}
+    li.classList.add("drag-over");
+  }
+  function onMatDragLeave(e) {
+    var li = matListItem(e.target);
+    if (!li) return;
+    var related = e.relatedTarget;
+    if (related && li.contains(related)) return;
+    li.classList.remove("drag-over");
+  }
+  function onMatDrop(e) {
+    var li = matListItem(e.target);
+    if (!li || !matDragId) return;
+    var itemId = li.getAttribute("data-item") || "";
+    var toId = li.getAttribute("data-mat-id") || "";
+    if (!itemId || itemId !== matDragItemId || !toId || toId === matDragId) return;
+    e.preventDefault();
+    reorderMaterials(itemId, matDragId, toId);
+    matDragId = "";
+    matDragItemId = "";
+    renderAdminEditor();
+  }
+  function onMatDragEnd() {
+    matDragId = "";
+    matDragItemId = "";
+    document.querySelectorAll(".mat-list li.dragging, .mat-list li.drag-over").forEach(function (n) {
+      n.classList.remove("dragging");
+      n.classList.remove("drag-over");
+    });
+  }
+  function reorderMaterials(itemId, fromId, toId) {
+    var it = itemById(itemId);
+    if (!it || !Array.isArray(it.materials)) return;
+    var list = it.materials.slice();
+    var from = -1;
+    var to = -1;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === fromId) from = i;
+      if (list[i] && list[i].id === toId) to = i;
+    }
+    if (from < 0 || to < 0 || from === to) return;
+    var moved = list.splice(from, 1)[0];
+    list.splice(to, 0, moved);
+    it.materials = list;
+    save();
+    if (!isDraftItem(it)) render();
   }
   function onAdminClick(e) {
     if (!isEditUnlocked()) return;
@@ -1660,6 +1806,14 @@
       save();
       return;
     }
+    if (t.dataset && t.dataset.due) {
+      var itDue = itemById(t.dataset.due);
+      if (!itDue) return;
+      itDue.dueDate = String(t.value || "").trim();
+      save();
+      if (!isDraftItem(itDue)) render();
+      return;
+    }
     if (t.dataset && t.dataset.find) {
       suggestFor = t.dataset.find;
       showSuggest(t.dataset.find, t.value, true);
@@ -1716,9 +1870,12 @@
   }
   function editorHtml(it) {
     var draft = isDraftItem(it);
-    var mats = (it.materials || []).map(function (m) {
+    var mats = (it.materials || []).map(function (m, idx) {
       var open = m.href ? "<a href=\"" + esc(m.href) + "\" target=\"_blank\" rel=\"noopener\">Open</a>" : "";
-      return "<li><span class=\"who\"><b>" + esc(kindLabel(m.kind)) + "</b> · " + esc(m.name || "Material") + "</span>" +
+      return "<li draggable=\"true\" data-mat-id=\"" + esc(m.id) + "\" data-item=\"" + esc(it.id) + "\">" +
+        "<span class=\"mat-handle\" title=\"Drag to reorder\" aria-hidden=\"true\">⋮⋮</span>" +
+        "<span class=\"mat-num\">" + (idx + 1) + ".</span>" +
+        "<span class=\"who\"><b>" + esc(kindLabel(m.kind)) + "</b> · " + esc(m.name || "Material") + "</span>" +
         open + "<button type=\"button\" class=\"danger\" data-del-mat=\"" + esc(m.id) + "\" data-item=\"" + esc(it.id) + "\">Remove</button></li>";
     }).join("") || "<li class=\"muted\">No materials yet.</li>";
     var people = (it.people || []).map(function (p) {
@@ -1756,10 +1913,12 @@
           "</div></div>" +
           "<div class=\"grow\"><label for=\"title-" + esc(it.id) + "\">Title</label>" +
             "<input id=\"title-" + esc(it.id) + "\" type=\"text\" data-title=\"" + esc(it.id) + "\" value=\"" + esc(it.title || "") + "\" placeholder=\"Course or notice name\"></div>" +
+          "<div><label for=\"due-" + esc(it.id) + "\">Due Date</label>" +
+            "<input id=\"due-" + esc(it.id) + "\" type=\"date\" data-due=\"" + esc(it.id) + "\" value=\"" + esc(it.dueDate || "") + "\" title=\"Optional due date (YYYY-MM-DD)\"></div>" +
         "</div>" +
       "</div>" +
       "<div class=\"admin-section\">" +
-        "<h2>Materials</h2><ul class=\"clean\">" + mats + "</ul>" +
+        "<h2>Materials</h2><ul class=\"mat-list\" data-mat-list=\"" + esc(it.id) + "\">" + mats + "</ul>" +
         "<div class=\"mat-add\">" +
           "<div class=\"grow\"><label for=\"link-" + esc(it.id) + "\">Add a link</label>" +
             "<input id=\"link-" + esc(it.id) + "\" type=\"url\" data-link=\"" + esc(it.id) + "\" placeholder=\"https://…\" autocomplete=\"off\"></div>" +
@@ -1884,11 +2043,13 @@
   function detailMatsTable(it) {
     var matLabel = it.type === "read-sign" ? "Read & Sign material" : "Briefing material";
     var mats = it.materials || [];
-    if (!mats.length) return "<p class=\"muted\">No materials yet.</p>";
-    return "<table class=\"detail-mats\"><thead><tr><th>Kind</th><th>" + esc(matLabel) + "</th><th></th></tr></thead><tbody>" +
-      mats.map(function (m) {
+    var remind = "<p class=\"sign-remind\">After you finish reading, remember to Sign.</p>";
+    if (!mats.length) return remind + "<p class=\"muted\">No materials yet.</p>";
+    return remind +
+      "<table class=\"detail-mats\"><thead><tr><th>#</th><th>Kind</th><th>" + esc(matLabel) + "</th><th></th></tr></thead><tbody>" +
+      mats.map(function (m, idx) {
         var open = m.href ? "<a href=\"" + esc(m.href) + "\" target=\"_blank\" rel=\"noopener\">Open</a>" : "";
-        return "<tr><td>" + esc(kindLabel(m.kind)) + "</td><td>" + esc(m.name || "Material") + "</td><td>" + open + "</td></tr>";
+        return "<tr><td>" + (idx + 1) + ".</td><td>" + esc(kindLabel(m.kind)) + "</td><td>" + esc(m.name || "Material") + "</td><td>" + open + "</td></tr>";
       }).join("") + "</tbody></table>";
   }
 
@@ -1922,6 +2083,7 @@
       "<td><span class=\"type-badge\">" + typeLabel + "</span></td>" +
       "<td><b>" + esc(it.code || itemLabel(it)) + "</b>" +
         (it.title && it.code ? "<br><span class=\"muted\">" + esc(it.title) + "</span>" : "") +
+        (it.dueDate ? "<br><span class=\"muted\">Due " + esc(it.dueDate) + "</span>" : "") +
       "</td>" +
       "<td><span class=\"frac\">" + esc(progressText) + "</span> <span class=\"muted\">" + esc(progressNote) + "</span></td>" +
       "<td class=\"chev\">" + (open ? "Hide ▴" : "Open ▾") + "</td>" +
