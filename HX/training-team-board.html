@@ -1476,7 +1476,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="12.8" aria-label="Page version 12.8">v12.8</div>
+  <div class="page-version" data-version="12.9" aria-label="Page version 12.9">v12.9</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -7350,7 +7350,18 @@ function markCopyBtn(ok, btn, note) {
 function isClearColor(c) {
   return !c || c === "transparent" || c === "rgba(0, 0, 0, 0)";
 }
-function fillWrappedText(ctx, text, x, y, maxW, boxH, lineH) {
+function canvasSafeFont(cs) {
+  const size = (cs && cs.fontSize) || "15px";
+  const weightNum = parseInt(cs && cs.fontWeight, 10) || 400;
+  const weight = weightNum >= 600 ? "bold" : "normal";
+  const italic = cs && cs.fontStyle === "italic" ? "italic " : "";
+  return italic + weight + " " + size + " Arial, sans-serif";
+}
+function fillWrappedText(ctx, text, x, y, maxW, boxH, lineH, singleLine) {
+  if (singleLine) {
+    ctx.fillText(String(text || ""), x, y + boxH / 2);
+    return;
+  }
   const raw = String(text || "");
   const lines = [];
   let cur = "";
@@ -7536,20 +7547,34 @@ function drawNodeToCanvas(root, widthCap) {
     if (bw.btm) { ctx.fillStyle = cs.borderBottomColor; ctx.fillRect(x, y + b.height - bw.btm, b.width, bw.btm); }
     if (bw.l) { ctx.fillStyle = cs.borderLeftColor; ctx.fillRect(x, y, bw.l, b.height); }
     if (bw.r) { ctx.fillStyle = cs.borderRightColor; ctx.fillRect(x + b.width - bw.r, y, bw.r, b.height); }
-    const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.replace(/\s+/g, " ").trim()).filter(Boolean).join(" ");
-    if (text) {
+    const textNodes = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent && n.textContent.trim());
+    if (textNodes.length) {
       const padL = parseFloat(cs.paddingLeft) || 0;
       const padR = parseFloat(cs.paddingRight) || 0;
       ctx.save();
-      ctx.beginPath();
-      ctx.rect(x + 1, y + 1, Math.max(0, b.width - 2), Math.max(0, b.height - 2));
-      ctx.clip();
       ctx.fillStyle = cs.color;
-      ctx.font = cs.font;
+      ctx.font = canvasSafeFont(cs);
       ctx.textBaseline = "middle";
       ctx.textAlign = "left";
       const lineH = Math.max(14, parseFloat(cs.fontSize) || 12) * 1.25;
-      fillWrappedText(ctx, text, x + padL, y, Math.max(8, b.width - padL - padR), b.height, lineH);
+      if (textNodes.length === 1 && el.childElementCount === 0) {
+        ctx.beginPath();
+        ctx.rect(x + 1, y + 1, Math.max(0, b.width - 2), Math.max(0, b.height - 2));
+        ctx.clip();
+        const single = (cs.whiteSpace || "").indexOf("nowrap") === 0 || el.classList.contains("staff-no");
+        fillWrappedText(ctx, textNodes[0].textContent.replace(/\s+/g, " ").trim(), x + padL, y, Math.max(8, b.width - padL - padR), b.height, lineH, single);
+      } else {
+        textNodes.forEach((n) => {
+          const range = document.createRange();
+          range.selectNodeContents(n);
+          const rb = range.getBoundingClientRect();
+          range.detach();
+          if (rb.width <= 0 || rb.height <= 0) return;
+          const raw = n.textContent.replace(/\s+/g, " ");
+          if (!raw.trim()) return;
+          ctx.fillText(raw, rb.left - origin.left, rb.top - origin.top + rb.height / 2);
+        });
+      }
       ctx.restore();
     }
     [...el.children].forEach(paint);

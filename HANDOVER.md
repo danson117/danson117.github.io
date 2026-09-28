@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **Copy layout：** 標題有 Staff # 時，複製圖唔再把編號同姓名畫疊，職員編號保持 6 位數字。Training One View v12.9、hub v13.3。唔寫職員明細。
+
+## 2026-09-28 公司電腦
+
 - **完成日規則：** 俾 Completion Date → 新 Due 預設 +2 年（講明 +X 年就用 X）。剩餘 ≤30 日或已過期 = 紅；>30 且 ≤90 = 黃；多過 90 日由 Outstanding 移除。Manual 剩餘 ≤90 日唔因為 Completed 收起。`hx-rules` v6.0、hub v13.2、Training One View v12.8。
 - **已套用：** LM00183 四個已有完成日的人，Due 改為完成日 +2 年（2028），繼續 Completed、不在 Outstanding。T.EE0639 的 Due 原本已是 +2 年；剩餘 ≤30 日的留在名單，多過 90 日的維持 Completed。CT／OMT 冇改。唔寫職員明細。
 
