@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **BRS Due Date 跟 TOV + Add link 在上：** Create／edit Due Date 同 TOV Add course（placeholder **YYYY-MM-DD**、打數字自動連字號、可空；存仍 YYYY-MM-DD；唔 native date）。Add link 仍喺 Materials 上面。BRS **v4.2**、`hx-rules` **v8.2**；hub cache-bust `?v=`（hub page-version 仍 **v15.7**）。唔改 TOV。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **BRS editor · Add link 在上：** Create／edit 材料區 **Add a link**／**Add link** 移到 **Materials** 列表上面（行為不變、唔 drop 檔）。BRS **v4.1**、`hx-rules` **v8.1**；hub cache-bust `?v=` 對齊（hub page-version 仍 **v15.7**）。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
