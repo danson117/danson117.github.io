@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **材料彈窗檔名：** Briefing／Read & Sign 材料列表可見文字改為原檔名（`fileName`／`name` 等；URL 則抽 path 檔名），唔顯示完整 URL，亦唔用「Material Link」。href 仍開真實連結。TOV v13.2、hub v13.6。
+
+## 2026-09-28 公司電腦
+
 - **材料彈窗連結標籤：** Briefing／Read & Sign 材料列表，link 類型可見文字改為「Material Link」，唔再顯示完整 URL；href 仍開真實連結。TOV v13.1、hub v13.5。
 
 ## 2026-09-28 公司電腦
