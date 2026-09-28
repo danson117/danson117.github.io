@@ -14,6 +14,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Hub 登入：** Edge `team-board` 已部署（`verify_jwt` 關，同之前）。Me 帳戶密碼已按用戶要求重設，唔使再強制改密碼。`/gate/login` 可用。GitHub 源碼之前已 push。唔寫密碼。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Detail 欄寬鎖定：** Detail 表 `table-layout: fixed`＋固定 px col 寬（跟 UAL 可見時緊密佈局）。UAL 四欄只一齊 show／唔 render；隱藏時其他欄唔拉闊。可留右空或橫向 scroll。保留空格灰底 `blank`。TOV **v14.2**、hub **v15.1**、`hx-rules` **v7.4** 紅字。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
