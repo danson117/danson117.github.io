@@ -241,6 +241,7 @@
         <li style="color:#b00020"><b>新 · Training One View · Course code 欄：</b>Detail 表「Overdue or will expire courses」表頭改 <b>Course code</b>（英文 UI；同鄰欄 title／sentence case）。格內仍係 course code；紅色＝overdue／將到期狀態，唔係欄名。唔改資料；唔改已有叫 Course／Course code 嘅其他欄。</li>
         <li style="color:#b00020"><b>新 · Training One View · UAL 四欄一齊顯示：</b>Detail 表 <b>UA Employee #</b>、<b>Coming due courses</b>、<b>Coming due day</b>、<b>Coming due remaining</b> 四欄（表頭＋格）只喺揀咗 UAL 來源（含 All）時一齊顯示；冇揀 UAL 就一齊隱藏。唔藏其他欄。Cards／Details 若有同等欄位跟同一規則（而家 Cards 冇呢四欄 aggregate）。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · PIN Reset 位置：</b><b>PIN Reset</b>（Refresh list／Search／Remove／reset；edit unlock／有 <code>brs-pin-reset</code> 或 Me 先入 DOM；唔顯示 PIN／hash）放喺 <b>Admin 管理版面入面</b>（<code>#brs-admin</code> 內，Create New BRS／editor 下面同一銅棕區塊）。唔再獨立右上卡；唔加去 hub 頂欄。銅棕／沙色 admin 色保留。</li>
+        <li style="color:#b00020"><b>新 · Grant access 頁面次序可拖曳：</b>Public view 同 Role pages 表共用同一個頁面次序；任一處拖曳即兩邊同步。剔選狀態唔變，只改次序。Hub 側欄（未登入 public／已登入 role）跟呢個已存次序。Owner 仍然開晒所有頁，次序一樣適用。Grant <b>Save</b> 一併寫入 gate config 欄 <code>pageOrder</code>（topic id 字串陣列）。缺／唔齊就跟而家 TOPICS 預設，新 id 尾加；唔丟 TOPICS 有嘅頁。短提示 <b>Drag to reorder</b>。</li>
         <li style="color:#b00020"><b>新 · Grant access 分開四截：</b>（1）<b>Public view</b>＝未登入睇到邊啲頁。（2）<b>Role pages</b> 表：欄係 Admin／DM/DIC／Staff（唔包括 Owner），行係頁面，每格一個剔。（3）<b>Accounts</b>：加 Staff #＋role 之後先彈出嗰個人可開嘅頁。（4）<b>PIN Reset</b> 喺同一個 Grant 面板（Refresh list／搜 staff #／Reset；唔顯示 PIN）。Owner 仍然開晒所有頁。</li>
         <li style="color:#b00020"><b>新 · Owner 可見名：</b>角色 <code>me</code> 畫面顯示 <b>Owner - Siu Chung</b>（頂欄、Grant 下拉、帳戶列表）。唔再顯示 Me。其他 role 仍然係 Admin／DM/DIC／Staff。</li>
         <li style="color:#b00020"><b>新 · HX 四個 role 登入／授權：</b>角色 <b>Owner - Siu Chung</b>、<b>Admin</b>、<b>DM/DIC</b>、<b>Staff</b>。Hub <b>Log in</b>＝Staff #＋密碼（6 位，似 BRS PIN：首次預設＝staff #，強制改成唔同嘅 6 位；錯密碼唔入；對話只 Cancel／× 關；錯咗提示 ask Owner to reset）。<b>Grant access</b>（Owner）可按 staff # 授 role、可見 HTML 頁、可做動作（含 TOV Status／Manual／ingest、BRS admin、PIN Reset、grant-access）。帳戶同 hash 喺 locked gate JSON（Edge <code>team-board</code>；公開 GET 唔出 hash）。未有 Me 帳戶時：Staff #＋而家 manager 密碼先入 Me，再強制設 6 位。登出＝view，側欄跟 public pages。有 staff 帳戶時 child 頁用 actions，唔好當全 admin。</li>
@@ -296,6 +297,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="7.8">v7.8</div>
+  <div class="page-version" data-version="7.9">v7.9</div>
 </body>
 </html>

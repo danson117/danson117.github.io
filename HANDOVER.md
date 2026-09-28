@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Grant access 頁面拖曳次序：** Public view 同 Role pages 共用一個 `pageOrder`（拖曳即兩邊同步；Save 寫入 gate）。側欄跟已存次序。Hub **v15.6**、`hx-rules` **v7.9**。Edge `team-board` **v13** 已部署（`verify_jwt` 關；含 `pageOrder`；曾誤部署 placeholder 已即刻用完整源覆蓋）。`/gate/public` 200。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Edge team-board 修好：** 誤部署空／placeholder 導致 `/gate/public`／`/gate/login` WORKER_ERROR 500。已用完整 gate／pin／board 源再部署（v11，`verify_jwt` 關）。`/gate/login` Owner 帳戶驗證 OK。GitHub `HX/supabase-edge/team-board/index.ts` 對齊已部署版。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

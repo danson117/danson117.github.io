@@ -108,6 +108,9 @@ function stripAuth(cfg: Record<string, unknown> | null) {
       staff: Array.isArray(rolePages.staff) ? rolePages.staff.map(String) : [],
     };
   }
+  if (Array.isArray((cfg as any)?.pageOrder)) {
+    out.pageOrder = ((cfg as any).pageOrder as unknown[]).map(String);
+  }
   return out;
 }
 
@@ -387,6 +390,7 @@ Deno.serve(async (req: Request) => {
     }
     if (Array.isArray(body.publicPages)) next.publicPages = body.publicPages;
     if (Array.isArray(body.editActions)) next.editActions = body.editActions;
+    if (Array.isArray(body.pageOrder)) next.pageOrder = body.pageOrder.map(String);
     try {
       const saved = await saveGate(admin, next);
       return json(200, stripAuth((saved && typeof saved === "object") ? saved as any : next));
@@ -407,6 +411,7 @@ Deno.serve(async (req: Request) => {
       editActions: Array.isArray(body.editActions) ? body.editActions : cfg.editActions,
       auth,
     };
+    if (Array.isArray(body.pageOrder)) next.pageOrder = body.pageOrder.map(String);
     try {
       const saved = await saveGate(admin, next);
       return json(200, stripAuth((saved && typeof saved === "object") ? saved as any : next));

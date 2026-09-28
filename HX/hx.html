@@ -465,9 +465,42 @@
         margin: 0;
         font-size: 12.5px;
         line-height: 1.35;
+        flex: 1;
       }
       .gate-grid label input {
         margin-top: 2px;
+      }
+      .gate-page-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 2px 0;
+        cursor: grab;
+      }
+      .gate-page-row.dragging,
+      .role-matrix tbody tr.dragging {
+        opacity: 0.55;
+      }
+      .gate-page-row.drag-over,
+      .role-matrix tbody tr.drag-over {
+        outline: 2px solid #6b3e26;
+        outline-offset: -1px;
+      }
+      .gate-drag-handle {
+        flex: 0 0 auto;
+        color: #9a7b5f;
+        font-size: 12px;
+        line-height: 1.35;
+        padding: 1px 2px;
+        user-select: none;
+        cursor: grab;
+      }
+      .role-matrix tbody tr {
+        cursor: grab;
+      }
+      .role-matrix td.page-name .gate-drag-handle {
+        margin-right: 6px;
+        vertical-align: middle;
       }
       .gate-section-title {
         font-size: 13px;
@@ -582,12 +615,12 @@
         </p>
         <div class="gate-block">
           <div class="gate-section-title">1. Public view</div>
-          <p class="hint">Pages someone can open when they are logged out.</p>
+          <p class="hint">Pages someone can open when they are logged out. Drag to reorder.</p>
           <div class="gate-grid" id="gate-pages"></div>
         </div>
         <div class="gate-block">
           <div class="gate-section-title">2. Role pages</div>
-          <p class="hint">Tick the pages each role may open. Owner is not in this table.</p>
+          <p class="hint">Tick the pages each role may open. Owner is not in this table. Drag to reorder.</p>
           <div style="overflow-x:auto">
             <table class="role-matrix" id="role-matrix"></table>
           </div>
@@ -642,7 +675,7 @@
       </div>
     </div>
 
-    <div class="page-version" data-version="15.5">v15.5</div>
+    <div class="page-version" data-version="15.6">v15.6</div>
     <script>
       const TOPICS = [
         {
@@ -737,13 +770,28 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=7.8",
+          file: "hx-rules.html?v=7.9",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
       ];
 
       const ALL_TOPIC_IDS = TOPICS.map((t) => t.id);
+      function normalizePageOrder(raw) {
+        const known = new Set(ALL_TOPIC_IDS);
+        const ids = Array.isArray(raw)
+          ? raw.map(String).filter((id) => known.has(id))
+          : [];
+        ALL_TOPIC_IDS.forEach((id) => {
+          if (ids.indexOf(id) < 0) ids.push(id);
+        });
+        return ids;
+      }
+      function topicsInOrder(order) {
+        return normalizePageOrder(order)
+          .map((id) => TOPICS.find((t) => t.id === id))
+          .filter(Boolean);
+      }
       const EDIT_ACTION_DEFS = [
         {
           id: "team-board-status",
@@ -781,6 +829,7 @@
 
       const DEFAULT_GATE = {
         publicPages: ALL_TOPIC_IDS.slice(),
+        pageOrder: ALL_TOPIC_IDS.slice(),
         editActions: EDIT_ACTION_DEFS.map((a) => a.id),
         auth: { hasAdmin: false, hasEdit: false },
         accounts: [],
@@ -902,6 +951,7 @@
         const pages = Array.isArray(o.publicPages)
           ? o.publicPages.map(String).filter((id) => ALL_TOPIC_IDS.indexOf(id) >= 0)
           : DEFAULT_GATE.publicPages.slice();
+        const pageOrder = normalizePageOrder(o.pageOrder);
         const actions = Array.isArray(o.editActions)
           ? o.editActions
               .map(String)
@@ -920,6 +970,7 @@
           : [];
         return {
           publicPages: pages.length ? pages : DEFAULT_GATE.publicPages.slice(),
+          pageOrder: pageOrder,
           editActions: actions,
           auth: o.auth && typeof o.auth === "object" ? o.auth : { hasAdmin: false, hasEdit: false },
           accounts: accounts,
@@ -932,6 +983,7 @@
         try {
           lsSet(GATE_CFG_KEY, JSON.stringify(gateCfg));
         } catch (e) {}
+        saveOrder(gateCfg.pageOrder);
       }
       function isUnlocked() {
         return (
@@ -1133,21 +1185,21 @@
       if (lsGetAny(["hx:hub:nav", "hx-nav"], "1") === "0") setNav(false);
 
       function loadOrder() {
+        if (gateCfg && Array.isArray(gateCfg.pageOrder) && gateCfg.pageOrder.length) {
+          return normalizePageOrder(gateCfg.pageOrder);
+        }
         let ids = [];
         try {
           ids = JSON.parse(lsGetAny(["hx:hub:order", "hx-order"], "[]") || "[]");
         } catch (e) {}
-        const known = new Set(ALL_TOPIC_IDS);
-        ids = ids.filter((id) => known.has(id));
-        ALL_TOPIC_IDS.forEach((id) => {
-          if (!ids.includes(id)) ids.push(id);
-        });
-        return ids;
+        return normalizePageOrder(ids);
       }
       function saveOrder(ids) {
-        const raw = JSON.stringify(ids);
+        const n = normalizePageOrder(ids);
+        const raw = JSON.stringify(n);
         lsSet("hx:hub:order", raw);
         lsSet("hx-order", raw);
+        if (gateCfg) gateCfg.pageOrder = n;
       }
       function loadPins() {
         let ids = [];
@@ -1498,11 +1550,21 @@
 
       let pendingGrant = null;
       let pinRows = [];
+      let draftPageOrder = ALL_TOPIC_IDS.slice();
+      let grantDragId = "";
+      let grantDragWired = false;
 
       function sameIdList(a, b) {
         const left = (a || []).slice().sort().join("|");
         const right = (b || []).slice().sort().join("|");
         return left === right;
+      }
+      function readPublicPages() {
+        const publicPages = [];
+        document.querySelectorAll("#gate-pages [data-page]").forEach((el) => {
+          if (el.checked) publicPages.push(el.getAttribute("data-page"));
+        });
+        return publicPages;
       }
       function readRoleMatrix() {
         const out = { admin: [], dm: [], staff: [] };
@@ -1514,6 +1576,26 @@
         });
         return out;
       }
+      function paintPublicPages(pubSet) {
+        const pages = document.getElementById("gate-pages");
+        if (!pages) return;
+        const pub = pubSet || new Set(gateCfg.publicPages || []);
+        pages.innerHTML = topicsInOrder(draftPageOrder).map((t) => {
+          return (
+            "<div class=\"gate-page-row\" draggable=\"true\" data-page=\"" +
+            t.id +
+            "\">" +
+            "<span class=\"gate-drag-handle\" title=\"Drag to reorder\" aria-hidden=\"true\">⋮⋮</span>" +
+            "<label><input type=\"checkbox\" data-page=\"" +
+            t.id +
+            "\"" +
+            (pub.has(t.id) ? " checked" : "") +
+            "> " +
+            t.title +
+            "</label></div>"
+          );
+        }).join("");
+      }
       function paintRoleMatrix(map) {
         const table = document.getElementById("role-matrix");
         if (!table) return;
@@ -1523,8 +1605,13 @@
           html += "<th>" + col.label + "</th>";
         });
         html += "</tr></thead><tbody>";
-        TOPICS.forEach((t) => {
-          html += "<tr><td class=\"page-name\">" + t.title + "</td>";
+        topicsInOrder(draftPageOrder).forEach((t) => {
+          html +=
+            "<tr draggable=\"true\" data-page=\"" +
+            t.id +
+            "\"><td class=\"page-name\"><span class=\"gate-drag-handle\" title=\"Drag to reorder\" aria-hidden=\"true\">⋮⋮</span>" +
+            t.title +
+            "</td>";
           ROLE_MATRIX.forEach((col) => {
             const on = (pages[col.id] || []).indexOf(t.id) >= 0;
             html +=
@@ -1545,20 +1632,102 @@
         html += "</tbody>";
         table.innerHTML = html;
       }
+      function paintGrantLists() {
+        const pub = new Set(readPublicPages());
+        if (!document.querySelectorAll("#gate-pages [data-page]").length) {
+          (gateCfg.publicPages || []).forEach((id) => pub.add(id));
+        }
+        const roleMap = document.querySelectorAll("#role-matrix input[data-role]").length
+          ? readRoleMatrix()
+          : normalizeRolePages(gateCfg.rolePages);
+        paintPublicPages(pub);
+        paintRoleMatrix(roleMap);
+      }
+      function reorderDraftPage(fromId, toId) {
+        if (!fromId || !toId || fromId === toId) return;
+        const list = normalizePageOrder(draftPageOrder);
+        const from = list.indexOf(fromId);
+        const to = list.indexOf(toId);
+        if (from < 0 || to < 0 || from === to) return;
+        const moved = list.splice(from, 1)[0];
+        list.splice(to, 0, moved);
+        draftPageOrder = list;
+        paintGrantLists();
+      }
+      function grantDragRow(el) {
+        const node = el && el.nodeType === 1 ? el : el && el.parentElement;
+        if (!node || !node.closest) return null;
+        return node.closest(".gate-page-row[data-page], #role-matrix tbody tr[data-page]");
+      }
+      function onGrantDragStart(e) {
+        const node = e.target && e.target.nodeType === 1 ? e.target : e.target && e.target.parentElement;
+        if (node && node.closest && node.closest("input, button, textarea, select, a")) {
+          if (e.preventDefault) e.preventDefault();
+          return;
+        }
+        const row = grantDragRow(node);
+        if (!row) {
+          if (e.preventDefault) e.preventDefault();
+          return;
+        }
+        grantDragId = row.getAttribute("data-page") || "";
+        if (!grantDragId) {
+          if (e.preventDefault) e.preventDefault();
+          return;
+        }
+        row.classList.add("dragging");
+        try {
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", grantDragId);
+        } catch (err) {}
+      }
+      function onGrantDragOver(e) {
+        const row = grantDragRow(e.target);
+        if (!row || !grantDragId) return;
+        e.preventDefault();
+        try { e.dataTransfer.dropEffect = "move"; } catch (err) {}
+        row.classList.add("drag-over");
+      }
+      function onGrantDragLeave(e) {
+        const row = grantDragRow(e.target);
+        if (!row) return;
+        const related = e.relatedTarget && e.relatedTarget.nodeType === 1
+          ? e.relatedTarget
+          : e.relatedTarget && e.relatedTarget.parentElement;
+        if (related && row.contains(related)) return;
+        row.classList.remove("drag-over");
+      }
+      function onGrantDrop(e) {
+        const row = grantDragRow(e.target);
+        if (!row || !grantDragId) return;
+        const toId = row.getAttribute("data-page") || "";
+        if (!toId || toId === grantDragId) return;
+        e.preventDefault();
+        e.stopPropagation();
+        reorderDraftPage(grantDragId, toId);
+        grantDragId = "";
+      }
+      function onGrantDragEnd() {
+        grantDragId = "";
+        document.querySelectorAll(".gate-page-row.dragging, .gate-page-row.drag-over, #role-matrix tbody tr.dragging, #role-matrix tbody tr.drag-over").forEach((n) => {
+          n.classList.remove("dragging");
+          n.classList.remove("drag-over");
+        });
+      }
+      function wireGrantDragOnce() {
+        if (grantDragWired) return;
+        const root = document.getElementById("gate-perms-pop");
+        if (!root) return;
+        grantDragWired = true;
+        root.addEventListener("dragstart", onGrantDragStart);
+        root.addEventListener("dragover", onGrantDragOver);
+        root.addEventListener("dragleave", onGrantDragLeave);
+        root.addEventListener("drop", onGrantDrop);
+        root.addEventListener("dragend", onGrantDragEnd);
+      }
       function paintPermsForm() {
-        const pages = document.getElementById("gate-pages");
-        const pub = new Set(gateCfg.publicPages || []);
-        pages.innerHTML = TOPICS.map((t) => {
-          return (
-            "<label><input type=\"checkbox\" data-page=\"" +
-            t.id +
-            "\"" +
-            (pub.has(t.id) ? " checked" : "") +
-            "> " +
-            t.title +
-            "</label>"
-          );
-        }).join("");
+        draftPageOrder = normalizePageOrder(gateCfg.pageOrder);
+        paintPublicPages(new Set(gateCfg.publicPages || []));
         draftAccounts = (gateCfg.accounts || []).map((a) => ({
           staff: a.staff,
           role: a.role,
@@ -1575,6 +1744,7 @@
         document.getElementById("grant-role").value = "staff";
         document.getElementById("grant-reset-pw").checked = false;
         paintPinList();
+        wireGrantDragOnce();
       }
       function paintAccountsList() {
         const boxAcc = document.getElementById("gate-accounts");
@@ -1615,7 +1785,9 @@
         document.getElementById("grant-pages-hint").textContent =
           roleLabel(role) + ". Tick the pages this person may open.";
         const pageSet = new Set(preset);
-        document.getElementById("grant-pages").innerHTML = TOPICS.map((t) => {
+        document.getElementById("grant-pages").innerHTML = topicsInOrder(
+          draftPageOrder.length ? draftPageOrder : gateCfg.pageOrder
+        ).map((t) => {
           return (
             "<label><input type=\"checkbox\" data-grant-page=\"" +
             t.id +
@@ -1765,15 +1937,13 @@
           setPermsErr("Owner login required.");
           return;
         }
-        const publicPages = [];
-        document.querySelectorAll("#gate-pages [data-page]").forEach((el) => {
-          if (el.checked) publicPages.push(el.getAttribute("data-page"));
-        });
+        const publicPages = readPublicPages();
         const rolePages = readRoleMatrix();
         draftAccounts.forEach((a) => {
           if (a.role === "me" || a.customPages) return;
           if (rolePages[a.role]) a.pages = rolePages[a.role].slice();
         });
+        const pageOrder = normalizePageOrder(draftPageOrder);
         try {
           const res = await fetch(GATE_EDGE + "/gate/accounts", {
             method: "PUT",
@@ -1781,6 +1951,7 @@
             body: JSON.stringify({
               publicPages: publicPages,
               rolePages: rolePages,
+              pageOrder: pageOrder,
               accounts: draftAccounts.map((a) => ({
                 staff: a.staff,
                 role: a.role,
