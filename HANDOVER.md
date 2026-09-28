@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Edge team-board 修好：** 誤部署空／placeholder 導致 `/gate/public`／`/gate/login` WORKER_ERROR 500。已用完整 gate／pin／board 源再部署（v11，`verify_jwt` 關）。`/gate/login` Owner 帳戶驗證 OK。GitHub `HX/supabase-edge/team-board/index.ts` 對齊已部署版。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **BRS from manuals：** 由 Manual courses **LM00183**、**T.EE0639** 各建一個已確認 BRS（`BRS20260902`／`BRS20260903`）；人手／title 跟 manual；未 Seen／Signed；**manual 未刪**。Supabase `hx_private`（`__hx_shared__/briefing-read-sign`）。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
