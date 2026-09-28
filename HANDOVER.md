@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **T.EE0639 Manual 補 5 行：** Downloads `EE0639.xlsx` 有、截圖 Excel 冇嘅 5 個職員，加 Manual 行＋Completed；Due＝完成日+2年；Remark `EK Audit Check`。截圖多出嘅 2024 完成紀錄 ignore（+2年已過期）。EE0639 Manual 73→78；全 Manual 147→152。仍未完成 3 人（Due 2026-10-02）。CT／OMT 冇改。唔寫職員明細。
+
+## 2026-09-28 公司電腦
+
 - **Manual remark：** LM00183（73）同 T.EE0639（73）嘅 Remark 全部改為 `EK Audit Check`。已有 Completed 同完成日保留（74）。Manual 仍 147。CT／OMT 冇改。唔寫職員明細。
 
 ## 2026-09-28 公司電腦
