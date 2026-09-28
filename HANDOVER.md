@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **Edge team-board 再修好：** 有人又部署咗 placeholder（`PLACEHOLDER_WILL_FAIL`，`/gate/public` 500）。已用完整 gate／pin／board 源再覆蓋（**v19**，`verify_jwt` 關）。`/gate/public` 200。GitHub 源 `HX/supabase-edge/team-board/index.ts` 已係正確版。唔開 Chrome。
+
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **Setting：** Hub 頂欄 **Grant access** 改名 **Setting**。TOV 工具列 **Log** 搬入 Setting 第 5 段（開住 Training One View 先 Undo）。Manage 仍係 TOV 舊 browser-only access levels。Hub **v16.1**、TOV **v14.9**、`hx-rules` **v8.8**。GitHub 後備。唔開 Chrome。
