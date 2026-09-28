@@ -344,7 +344,51 @@
         display: none !important;
       }
       .pop-card.wide {
-        max-width: 640px;
+        max-width: 920px;
+      }
+      .role-matrix {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin: 0 0 14px;
+        background: #fff;
+      }
+      .role-matrix th,
+      .role-matrix td {
+        border-bottom: 1px solid #e4d5c4;
+        padding: 5px 8px;
+      }
+      .role-matrix th {
+        text-align: center;
+        color: #6b3e26;
+      }
+      .role-matrix th.page-name,
+      .role-matrix td.page-name {
+        text-align: left;
+      }
+      .role-matrix td {
+        text-align: center;
+      }
+      .gate-block {
+        margin: 0 0 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e4d5c4;
+      }
+      #grant-pin-list {
+        list-style: none;
+        margin: 8px 0 0;
+        padding: 0;
+        max-height: 160px;
+        overflow: auto;
+      }
+      #grant-pin-list li {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+        padding: 4px 0;
+        border-bottom: 1px solid #eadfD2;
+        font-size: 12px;
       }
       #gate-perms-pop .pop-card {
         background: #f6efe6;
@@ -534,42 +578,71 @@
       <div class="pop-card wide" role="dialog" aria-modal="true" aria-labelledby="gate-perms-title">
         <h2 id="gate-perms-title">Grant access roles</h2>
         <p class="hint">
-          Roles: <b>Owner - Siu Chung</b>, <b>Admin</b>, <b>DM/DIC</b>, <b>Staff</b>. Grant a Staff # a role, which HTML pages they may open, and which actions they may do. Passwords are 6 digits (default = staff # until they change). Hashes stay on the locked server only.
+          Public view, role pages, and accounts are separate. Owner - Siu Chung can open every page. Passwords stay 6 digits. Hashes stay on the locked server only.
         </p>
-        <div class="gate-section-title">Pages visible when logged out (public view)</div>
-        <div class="gate-grid" id="gate-pages"></div>
-        <div class="gate-section-title">Accounts</div>
-        <div id="gate-accounts" class="gate-accounts"></div>
-        <div class="gate-section-title">Add / update account</div>
-        <div class="gate-grant-form">
-          <label for="grant-staff">Staff #</label>
-          <input id="grant-staff" type="text" inputmode="numeric" maxlength="6" autocomplete="off" />
-          <label for="grant-role">Role</label>
-          <select id="grant-role">
-            <option value="staff">Staff</option>
-            <option value="dm">DM/DIC</option>
-            <option value="admin">Admin</option>
-            <option value="me">Owner - Siu Chung</option>
-          </select>
-          <div class="gate-section-title">Pages this account may open</div>
-          <div class="gate-grid" id="grant-pages"></div>
-          <div class="gate-section-title">Actions</div>
-          <div class="gate-grid" id="grant-actions"></div>
-          <label class="gate-check"><input type="checkbox" id="grant-reset-pw" /> Reset password to staff # (must change on next login)</label>
-          <div class="pop-actions" style="justify-content:flex-start;margin-top:8px">
-            <button type="button" class="primary" id="grant-upsert">Save account</button>
-            <button type="button" id="grant-remove">Remove account</button>
+        <div class="gate-block">
+          <div class="gate-section-title">1. Public view</div>
+          <p class="hint">Pages someone can open when they are logged out.</p>
+          <div class="gate-grid" id="gate-pages"></div>
+        </div>
+        <div class="gate-block">
+          <div class="gate-section-title">2. Role pages</div>
+          <p class="hint">Tick the pages each role may open. Owner is not in this table.</p>
+          <div style="overflow-x:auto">
+            <table class="role-matrix" id="role-matrix"></table>
           </div>
+        </div>
+        <div class="gate-block">
+          <div class="gate-section-title">3. Accounts</div>
+          <p class="hint">Add a Staff # and a role. A page list opens for that person.</p>
+          <div id="gate-accounts" class="gate-accounts"></div>
+          <div class="gate-grant-form">
+            <label for="grant-staff">Staff #</label>
+            <input id="grant-staff" type="text" inputmode="numeric" maxlength="6" autocomplete="off" />
+            <label for="grant-role">Role</label>
+            <select id="grant-role">
+              <option value="staff">Staff</option>
+              <option value="dm">DM/DIC</option>
+              <option value="admin">Admin</option>
+              <option value="me">Owner - Siu Chung</option>
+            </select>
+            <label class="gate-check"><input type="checkbox" id="grant-reset-pw" /> Reset password to staff # (must change on next login)</label>
+            <div class="pop-actions" style="justify-content:flex-start;margin-top:8px">
+              <button type="button" class="primary" id="grant-upsert">Add account</button>
+              <button type="button" id="grant-remove">Remove account</button>
+            </div>
+          </div>
+        </div>
+        <div class="gate-block">
+          <div class="gate-section-title">4. PIN Reset</div>
+          <p class="hint">Reset a Briefing and R&amp;S PIN back to the staff #. The PIN is not shown.</p>
+          <button type="button" id="grant-pin-refresh">Refresh list</button>
+          <label for="grant-pin-search">Search staff #</label>
+          <input id="grant-pin-search" type="text" inputmode="numeric" maxlength="6" autocomplete="off" />
+          <ul id="grant-pin-list"><li>Click Refresh list.</li></ul>
         </div>
         <p class="err" id="gate-perms-err" hidden></p>
         <div class="pop-actions">
           <button type="button" id="gate-perms-cancel">Close</button>
-          <button type="button" class="primary" id="gate-perms-save">Save public pages</button>
+          <button type="button" class="primary" id="gate-perms-save">Save</button>
         </div>
       </div>
     </div>
 
-    <div class="page-version" data-version="15.3">v15.3</div>
+    <div id="grant-pages-pop" class="pop hidden" hidden>
+      <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="grant-pages-title">
+        <h2 id="grant-pages-title">Pages</h2>
+        <p class="hint" id="grant-pages-hint"></p>
+        <div class="gate-grid" id="grant-pages"></div>
+        <p class="err" id="grant-pages-err" hidden></p>
+        <div class="pop-actions">
+          <button type="button" id="grant-pages-cancel">Cancel</button>
+          <button type="button" class="primary" id="grant-pages-ok">Save pages</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-version" data-version="15.5">v15.5</div>
     <script>
       const TOPICS = [
         {
@@ -622,7 +695,7 @@
         },
         {
           id: "team-board",
-          file: "training-team-board.html?v=14.3",
+          file: "training-team-board.html?v=14.4",
           title: "Training One View",
           blurb: "UAL / CT / Mandatory / Manual · live sync",
         },
@@ -664,7 +737,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=7.6",
+          file: "hx-rules.html?v=7.8",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -777,6 +850,35 @@
         if (r === "me" || r === "admin" || r === "dm" || r === "staff" || r === "edit") return r;
         return "view";
       }
+      const ROLE_MATRIX = [
+        { id: "admin", label: "Admin" },
+        { id: "dm", label: "DM/DIC" },
+        { id: "staff", label: "Staff" },
+      ];
+      function defaultRolePages() {
+        return {
+          admin: ALL_TOPIC_IDS.slice(),
+          dm: ["team-board", "brs", "ocg-pax", "auth-list", "lic-records"],
+          staff: ["team-board", "brs"],
+        };
+      }
+      function normalizeRolePages(raw) {
+        const base = defaultRolePages();
+        const src = raw && typeof raw === "object" ? raw : {};
+        ROLE_MATRIX.forEach((col) => {
+          if (src && Object.prototype.hasOwnProperty.call(src, col.id) && Array.isArray(src[col.id])) {
+            base[col.id] = src[col.id].map(String).filter((id) => ALL_TOPIC_IDS.indexOf(id) >= 0);
+          }
+        });
+        return base;
+      }
+      function defaultActionsForRole(role) {
+        if (role === "me" || role === "admin") {
+          return EDIT_ACTION_DEFS.map((a) => a.id).filter((id) => id !== "grant-access" || role === "me");
+        }
+        if (role === "dm") return ["team-board-status", "brs-admin"];
+        return [];
+      }
       function roleLabel(r) {
         if (r === "me") return "Owner - Siu Chung";
         if (r === "admin") return "Admin";
@@ -813,6 +915,7 @@
               actions: Array.isArray(a && a.actions) ? a.actions.map(String) : [],
               mustChange: !!(a && a.mustChange),
               hasPassword: !!(a && a.hasPassword),
+              customPages: !!(a && a.customPages),
             })).filter((a) => a.staff)
           : [];
         return {
@@ -821,6 +924,7 @@
           auth: o.auth && typeof o.auth === "object" ? o.auth : { hasAdmin: false, hasEdit: false },
           accounts: accounts,
           hasMe: !!o.hasMe || accounts.some((a) => a.role === "me"),
+          rolePages: normalizeRolePages(o.rolePages),
         };
       }
       function cacheGate(cfg) {
@@ -1392,6 +1496,55 @@
       });
       document.getElementById("gate-force-ok").addEventListener("click", submitForcePw);
 
+      let pendingGrant = null;
+      let pinRows = [];
+
+      function sameIdList(a, b) {
+        const left = (a || []).slice().sort().join("|");
+        const right = (b || []).slice().sort().join("|");
+        return left === right;
+      }
+      function readRoleMatrix() {
+        const out = { admin: [], dm: [], staff: [] };
+        document.querySelectorAll("#role-matrix input[data-role]").forEach((el) => {
+          if (!el.checked) return;
+          const role = el.getAttribute("data-role");
+          const page = el.getAttribute("data-page");
+          if (out[role] && page) out[role].push(page);
+        });
+        return out;
+      }
+      function paintRoleMatrix(map) {
+        const table = document.getElementById("role-matrix");
+        if (!table) return;
+        const pages = map || normalizeRolePages(gateCfg.rolePages);
+        let html = "<thead><tr><th class=\"page-name\">Page</th>";
+        ROLE_MATRIX.forEach((col) => {
+          html += "<th>" + col.label + "</th>";
+        });
+        html += "</tr></thead><tbody>";
+        TOPICS.forEach((t) => {
+          html += "<tr><td class=\"page-name\">" + t.title + "</td>";
+          ROLE_MATRIX.forEach((col) => {
+            const on = (pages[col.id] || []).indexOf(t.id) >= 0;
+            html +=
+              "<td><input type=\"checkbox\" data-role=\"" +
+              col.id +
+              "\" data-page=\"" +
+              t.id +
+              "\"" +
+              (on ? " checked" : "") +
+              " aria-label=\"" +
+              col.label +
+              " " +
+              t.title +
+              "\"></td>";
+          });
+          html += "</tr>";
+        });
+        html += "</tbody>";
+        table.innerHTML = html;
+      }
       function paintPermsForm() {
         const pages = document.getElementById("gate-pages");
         const pub = new Set(gateCfg.publicPages || []);
@@ -1414,9 +1567,14 @@
           mustChange: !!a.mustChange,
           hasPassword: !!a.hasPassword,
           resetPassword: false,
+          customPages: !!a.customPages,
         }));
+        paintRoleMatrix(gateCfg.rolePages);
         paintAccountsList();
-        paintGrantForm(null);
+        document.getElementById("grant-staff").value = "";
+        document.getElementById("grant-role").value = "staff";
+        document.getElementById("grant-reset-pw").checked = false;
+        paintPinList();
       }
       function paintAccountsList() {
         const boxAcc = document.getElementById("gate-accounts");
@@ -1438,55 +1596,56 @@
           );
         }).join("");
       }
-      function paintGrantForm(acc) {
-        document.getElementById("grant-staff").value = acc ? acc.staff : "";
-        document.getElementById("grant-role").value = acc ? acc.role : "staff";
-        document.getElementById("grant-reset-pw").checked = !!(acc && acc.resetPassword);
-        const gp = document.getElementById("grant-pages");
-        const ga = document.getElementById("grant-actions");
-        const pageSet = new Set(acc && acc.pages ? acc.pages : []);
-        const actSet = new Set(acc && acc.actions ? acc.actions : []);
-        gp.innerHTML = TOPICS.map((t) => {
+      function openAccountPages(acc, isNew) {
+        const role = acc.role === "me" ? "me" : normalizeRole(acc.role);
+        const matrix = readRoleMatrix();
+        const preset = role === "me"
+          ? ALL_TOPIC_IDS.slice()
+          : (acc.pages && acc.pages.length ? acc.pages : (matrix[role] || []));
+        pendingGrant = {
+          staff: acc.staff,
+          role: role,
+          actions: (acc.actions && acc.actions.length) ? acc.actions.slice() : defaultActionsForRole(role),
+          resetPassword: !!acc.resetPassword,
+          isNew: !!isNew,
+          hasPassword: !!acc.hasPassword,
+          matrixPages: role === "me" ? ALL_TOPIC_IDS.slice() : (matrix[role] || []).slice(),
+        };
+        document.getElementById("grant-pages-title").textContent = "Pages for " + acc.staff;
+        document.getElementById("grant-pages-hint").textContent =
+          roleLabel(role) + ". Tick the pages this person may open.";
+        const pageSet = new Set(preset);
+        document.getElementById("grant-pages").innerHTML = TOPICS.map((t) => {
           return (
             "<label><input type=\"checkbox\" data-grant-page=\"" +
             t.id +
             "\"" +
             (pageSet.has(t.id) ? " checked" : "") +
+            (role === "me" ? " disabled" : "") +
             "> " +
             t.title +
             "</label>"
           );
         }).join("");
-        ga.innerHTML = EDIT_ACTION_DEFS.map((a) => {
-          return (
-            "<label><input type=\"checkbox\" data-grant-action=\"" +
-            a.id +
-            "\"" +
-            (actSet.has(a.id) ? " checked" : "") +
-            "> " +
-            a.label +
-            "</label>"
-          );
-        }).join("");
+        const err = document.getElementById("grant-pages-err");
+        if (err) {
+          err.hidden = true;
+          err.textContent = "";
+        }
+        showPop("grant-pages-pop", true);
       }
-      function readGrantForm() {
-        const staff = padStaff(document.getElementById("grant-staff").value || "");
-        const role = normalizeRole(document.getElementById("grant-role").value || "staff");
-        const pages = [];
-        document.querySelectorAll("#grant-pages [data-grant-page]").forEach((el) => {
-          if (el.checked) pages.push(el.getAttribute("data-grant-page"));
-        });
-        const actions = [];
-        document.querySelectorAll("#grant-actions [data-grant-action]").forEach((el) => {
-          if (el.checked) actions.push(el.getAttribute("data-grant-action"));
-        });
-        return {
-          staff: staff,
-          role: role,
-          pages: pages,
-          actions: actions,
-          resetPassword: !!document.getElementById("grant-reset-pw").checked,
-        };
+      function paintPinList() {
+        const ul = document.getElementById("grant-pin-list");
+        if (!ul) return;
+        const q = String((document.getElementById("grant-pin-search") || {}).value || "").replace(/\D/g, "");
+        const rows = pinRows.filter((s) => !q || String(s).indexOf(q) >= 0);
+        if (!rows.length) {
+          ul.innerHTML = "<li>" + (pinRows.length ? "No match." : "Click Refresh list.") + "</li>";
+          return;
+        }
+        ul.innerHTML = rows.map((s) => {
+          return "<li><span>" + s + "</span><button type=\"button\" data-pin-reset=\"" + s + "\">Reset</button></li>";
+        }).join("");
       }
 
       gatePermsBtn.addEventListener("click", () => {
@@ -1502,29 +1661,56 @@
         if (!btn) return;
         const staff = padStaff(btn.getAttribute("data-pick-staff"));
         const acc = draftAccounts.find((a) => a.staff === staff);
-        paintGrantForm(acc || null);
-        document.querySelectorAll("#gate-accounts button").forEach((b) => {
-          b.classList.toggle("on", b.getAttribute("data-pick-staff") === staff);
-        });
+        if (!acc) return;
+        document.getElementById("grant-staff").value = acc.staff;
+        document.getElementById("grant-role").value = acc.role;
+        document.getElementById("grant-reset-pw").checked = !!acc.resetPassword;
+        openAccountPages(acc, false);
       });
       document.getElementById("grant-upsert").addEventListener("click", () => {
-        const row = readGrantForm();
-        if (!row.staff) {
+        const staff = padStaff(document.getElementById("grant-staff").value || "");
+        const role = normalizeRole(document.getElementById("grant-role").value || "staff");
+        if (!staff) {
           setPermsErr("Enter Staff #.");
           return;
         }
-        const idx = draftAccounts.findIndex((a) => a.staff === row.staff);
+        setPermsErr("");
+        const existing = draftAccounts.find((a) => a.staff === staff);
+        openAccountPages({
+          staff: staff,
+          role: role,
+          pages: existing ? existing.pages : [],
+          actions: existing ? existing.actions : [],
+          resetPassword: !!document.getElementById("grant-reset-pw").checked,
+          hasPassword: existing ? existing.hasPassword : false,
+        }, !existing);
+      });
+      document.getElementById("grant-pages-cancel").addEventListener("click", () => {
+        pendingGrant = null;
+        showPop("grant-pages-pop", false);
+      });
+      document.getElementById("grant-pages-ok").addEventListener("click", () => {
+        if (!pendingGrant) return;
+        const pages = [];
+        document.querySelectorAll("#grant-pages [data-grant-page]").forEach((el) => {
+          if (el.checked) pages.push(el.getAttribute("data-grant-page"));
+        });
+        const customPages = pendingGrant.role !== "me" && !sameIdList(pages, pendingGrant.matrixPages);
+        const idx = draftAccounts.findIndex((a) => a.staff === pendingGrant.staff);
         const next = {
-          staff: row.staff,
-          role: row.role,
-          pages: row.pages,
-          actions: row.actions,
-          mustChange: row.resetPassword || (idx < 0),
-          hasPassword: idx >= 0 ? draftAccounts[idx].hasPassword : false,
-          resetPassword: row.resetPassword || idx < 0,
+          staff: pendingGrant.staff,
+          role: pendingGrant.role,
+          pages: pendingGrant.role === "me" ? [] : pages,
+          actions: pendingGrant.role === "me" ? defaultActionsForRole("me") : pendingGrant.actions,
+          mustChange: pendingGrant.resetPassword || pendingGrant.isNew,
+          hasPassword: pendingGrant.hasPassword,
+          resetPassword: pendingGrant.resetPassword || pendingGrant.isNew,
+          customPages: customPages,
         };
         if (idx >= 0) draftAccounts[idx] = next;
         else draftAccounts.push(next);
+        pendingGrant = null;
+        showPop("grant-pages-pop", false);
         paintAccountsList();
         setPermsErr("");
       });
@@ -1533,7 +1719,46 @@
         if (!staff) return;
         draftAccounts = draftAccounts.filter((a) => a.staff !== staff);
         paintAccountsList();
-        paintGrantForm(null);
+        document.getElementById("grant-staff").value = "";
+      });
+      document.getElementById("grant-pin-refresh").addEventListener("click", async () => {
+        setPermsErr("");
+        try {
+          const res = await fetch(GATE_EDGE + "/pin/admin-list", { cache: "no-store", headers: gateHeaders() });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            setPermsErr((data && data.error) || "Could not load PIN list.");
+            return;
+          }
+          pinRows = Array.isArray(data.set) ? data.set.map((s) => padStaff(s)).filter(Boolean) : [];
+          paintPinList();
+        } catch (e) {
+          setPermsErr("Could not reach the server.");
+        }
+      });
+      document.getElementById("grant-pin-search").addEventListener("input", paintPinList);
+      document.getElementById("grant-pin-list").addEventListener("click", async (e) => {
+        const btn = e.target && e.target.closest ? e.target.closest("[data-pin-reset]") : null;
+        if (!btn) return;
+        const staff = padStaff(btn.getAttribute("data-pin-reset"));
+        if (!staff) return;
+        try {
+          const res = await fetch(GATE_EDGE + "/pin/admin-reset", {
+            method: "POST",
+            headers: gateHeaders(),
+            body: JSON.stringify({ staff: staff }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            setPermsErr((data && data.error) || "Could not reset PIN.");
+            return;
+          }
+          pinRows = pinRows.filter((s) => s !== staff);
+          paintPinList();
+          setPermsErr("");
+        } catch (err) {
+          setPermsErr("Could not reach the server.");
+        }
       });
       document.getElementById("gate-perms-save").addEventListener("click", async () => {
         if (!canGrant() || !gatePassword) {
@@ -1544,18 +1769,25 @@
         document.querySelectorAll("#gate-pages [data-page]").forEach((el) => {
           if (el.checked) publicPages.push(el.getAttribute("data-page"));
         });
+        const rolePages = readRoleMatrix();
+        draftAccounts.forEach((a) => {
+          if (a.role === "me" || a.customPages) return;
+          if (rolePages[a.role]) a.pages = rolePages[a.role].slice();
+        });
         try {
           const res = await fetch(GATE_EDGE + "/gate/accounts", {
             method: "PUT",
             headers: gateHeaders(),
             body: JSON.stringify({
               publicPages: publicPages,
+              rolePages: rolePages,
               accounts: draftAccounts.map((a) => ({
                 staff: a.staff,
                 role: a.role,
                 pages: a.pages,
                 actions: a.actions,
                 resetPassword: !!a.resetPassword,
+                customPages: !!a.customPages,
               })),
             }),
           });

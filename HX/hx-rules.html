@@ -208,9 +208,9 @@
       </ul>
       <h3>同步</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · UAL／CT／Mandatory 同步喺三張上載卡：</b>唔再用頁頂大 banner。UAL CBT／CT Reminder／Mandatory 各自一卡：未同步 → 該卡轉橙＋一句英文 <b>Upload not synchronized yet.</b>；右下細 sync icon：綠＝該來源已同伺服器一樣，橙＝上載／同步進行中或未同步。細掣 <b>Synchronize now</b>（可寫入時）。跟 <code>ingestDiffNames</code> 逐源（UAL／CT Reminder／Mandatory）；已同步嘅卡唔好標橙。成功唔彈窗。本機上傳時間新過伺服器時唔好用舊伺服器檔蓋過；關頁未同步仍會問。</li>
         <li>Status／Remark／Manual／UAL／CT／Mandatory 經 locked Edge <code>team-board</code> → <code>hx_private</code>。約 5 秒 poll。</li>
         <li style="color:#b00020"><b>新 · B1 lite poll + fresh-first：</b>定時 poll 用 <code>?lite=1</code>（Status／Manual＋ingest meta，<b>唔帶</b> CT／OMT／UAL 大檔／log）。開頁同 ingest meta 有變先 <code>?ingest=1</code> 拉齊檔。畫面等 Edge 確認最新先顯示（Loading latest…）；寧願多等幾秒，唔用未確認舊 local 當真相。Poll 間隔維持約 5 秒（唔做 B2 拉長）。</li>
-        <li style="color:#b00020"><b>新 · UAL／CT／Mandatory 同步提示：</b>Training One View 頂有常駐 banner。綠 <b>Synchronized</b>＝呢頁 UAL、CT Reminder、Mandatory 同伺服器一樣，其他電腦先睇到。橙 <b>Not synchronized</b>（或紅失敗）＝只喺呢個 browser；要 Unlock（Edit／Owner）並且留喺頁面，直到變綠。本機上傳時間新過伺服器時，唔好用舊伺服器檔蓋過。關頁前記住未同步會再問一次。</li>
         <li>UI：Saving…／Saved；Updating…／Updated；開頁 Loading latest…。撞車：先寫贏；後寫 409，還原伺服器版。</li>
         <li><code>HX/team-board-actions.json</code> 只係舊後備空殼；唔好用佢覆蓋 Supabase。</li>
         <li>Unlock 後保持 unlocked，直至 Lock。</li>
@@ -225,11 +225,12 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Training One View · Detail 欄寬／Section (Crew)：</b>表頭 <b>Section (Crew)</b>（原 Section + Crew）。格顯示 <code>LTA1 (1E)</code> 式（section＋括號內 crew／shift）；只改可見字，唔改存檔 section／shift。<b>Course code</b> 闊約 +33%（140→186px）；其餘因 equalize／縮欄騰出嘅 px 加喺 Course code 上面。<b>Overdue／Coming due remaining</b> 兩欄闊度同對應 due-day 欄（而家 104px）。<code>table-layout: fixed</code>＋固定 px；UAL 四欄一齊 show／唔 render，隱藏時其他欄唔拉闊。空格灰底 <code>blank</code> 保留。上載三卡卡面用淡青綠灰（唔用沙色 <code>#f6efe6</code>）；未同步卡轉橙。</li>
         <li>而家起 UAL／CT／Mandatory 上載全機同步。舊「ignore」只係唔好特登帶舊檔。</li>
         <li>Mandatory 只留 Name List（OCG）staff。Course 缺名時跟 Course List／CT／UAL。</li>
         <li><span class="key">新 · Course List 獨立於 CSV ingest</span>：Course List（<code>course-catalog.html</code>）自己存；上 CT Reminder／Mandatory／UAL <b>唔刪、唔整份取代</b> Course List。CSV 只有 course code → 自動用 Course List 名。Code／名同存檔唔夾（同 code 唔同名，或同名唔同 code）→ 頁內 dialog 問用 Course List 定 CSV；<b>唔靜默覆寫</b>。夾嘅就用存檔名、唔彈窗。</li>
         <li style="color:#b00020"><b>新 · Training One View · Detail 欄寬鎖定：</b>Detail 表每欄固定闊度（<code>table-layout: fixed</code>＋明確 px／col 寬），跟 UAL 顯示時嘅緊密佈局。UAL 四欄（<b>UA Employee #</b>、<b>Coming due courses</b>、<b>Coming due day</b>、<b>Coming due remaining</b>）只係一齊顯示或一齊唔 render；隱藏時其他欄<strong>唔</strong>拉闊填滿空隙。表可窄過容器（右邊留空）或全部欄可見時橫向 scroll。唔用會令欄寬重分配嘅 <code>width:100%</code>。唔改欄出現規則、Course code 表頭、行色、filter、資料。</li>
-        <li style="color:#b00020"><b>新 · Training One View · 空 course／due 格灰底：</b>Detail 表六欄——<b>Course code</b>、<b>Overdue or will expire due day</b>、<b>Overdue or will expire remaining</b>、<b>Coming due courses</b>、<b>Coming due day</b>、<b>Coming due remaining</b>——格內冇值（空白／純空白／只用 em dash 當空位）→ 中性灰底（例 <code>#e4e4e4</code>／CSS class <code>blank</code>），表示「冇嘢填」，唔係白洞。有 course code／日期／remaining／coming-due 文字嘅格保持而家樣（overdue 紅、行黃／粉、due 藍等），唔用灰蓋。唔灰 <b>Staff #</b>、<b>Name</b>、<b>Team</b>、<b>Section + Crew</b>、<b>UA Employee #</b>（鄰格空亦唔跟住灰）。唔改資料、filter、UAL 四欄顯示／隱藏、Course code 表頭。Cards／Details 同等空 course／due 格同一規則。唔改搜尋框／Admin 空欄。</li>
+        <li style="color:#b00020"><b>新 · Training One View · 空 course／due 格灰底：</b>Detail 表六欄——<b>Course code</b>、<b>Overdue or will expire due day</b>、<b>Overdue or will expire remaining</b>、<b>Coming due courses</b>、<b>Coming due day</b>、<b>Coming due remaining</b>——格內冇值（空白／純空白／只用 em dash 當空位）→ 中性灰底（例 <code>#e4e4e4</code>／CSS class <code>blank</code>），表示「冇嘢填」，唔係白洞。有 course code／日期／remaining／coming-due 文字嘅格保持而家樣（overdue 紅、行黃／粉、due 藍等），唔用灰蓋。唔灰 <b>Staff #</b>、<b>Name</b>、<b>Team</b>、<b>Section (Crew)</b>、<b>UA Employee #</b>（鄰格空亦唔跟住灰）。唔改資料、filter、UAL 四欄顯示／隱藏、Course code 表頭。Cards／Details 同等空 course／due 格同一規則。唔改搜尋框／Admin 空欄。</li>
         <li style="color:#b00020"><b>新 · BRS／TOV materials 標籤（檔 vs 資料夾）：</b>材料列表可見字：URL／存檔名 path 最後一段<strong>有副檔名</strong>（任何 extension，唔限 pdf／xlsx）→ 解碼檔名（唔 raw URL；href 仍係真實連結）。冇副檔名＝SharePoint／library folder 或多檔 container → 可見標籤固定英文 <b>Material Folder</b>（例 <code>2. Material Folder</code>）。編號 1. 2. 3.… 不變。唔改紅字提醒、Close、Unsign、Save、Save Draft、kind badge。Training One View 材料彈窗同 Briefing and R&amp;S detail／材料列表同一規則。</li>
         <li style="color:#b00020"><b>新 · Sign／Seen with PIN 對話框：</b>Training One View 同 Briefing and R&amp;S 兩頁共用行為。對話框<strong>唔</strong>因 backdrop／外面 click、Escape、或數字鍵關閉；只可以由 <b>Cancel</b> 或對話框右上 <b>×</b> 關閉。數字鍵只入 PIN 欄（開住 dialog 時焦点唔喺欄都要導入 PIN）。Wrong PIN 紅字之後顯示英文提示：<b>If you forgot your PIN, ask OCG Office to reset it.</b>（試錯先出；唔加 Forgot password 掣／第二屏）。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · Save vs Save Draft：</b>有改動時：未確認 draft（未 <b>Create BRS</b>；item <code>draft</code>）→ 掣 <b>Save Draft</b>（只存 draft、唔 confirm／publish）；已確認／已出街 item 再開 edit → 掣 <b>Save</b>（同一 persist path 寫入現有 item，唔另開 pipeline）。兩者都配 <b>Close without saving</b>。冇改動只 <b>Close</b>。唔改 Create New BRS／Create BRS／Delete BRS／Close／Close without saving／Unsign／Remove。</li>
@@ -240,6 +241,7 @@
         <li style="color:#b00020"><b>新 · Training One View · Course code 欄：</b>Detail 表「Overdue or will expire courses」表頭改 <b>Course code</b>（英文 UI；同鄰欄 title／sentence case）。格內仍係 course code；紅色＝overdue／將到期狀態，唔係欄名。唔改資料；唔改已有叫 Course／Course code 嘅其他欄。</li>
         <li style="color:#b00020"><b>新 · Training One View · UAL 四欄一齊顯示：</b>Detail 表 <b>UA Employee #</b>、<b>Coming due courses</b>、<b>Coming due day</b>、<b>Coming due remaining</b> 四欄（表頭＋格）只喺揀咗 UAL 來源（含 All）時一齊顯示；冇揀 UAL 就一齊隱藏。唔藏其他欄。Cards／Details 若有同等欄位跟同一規則（而家 Cards 冇呢四欄 aggregate）。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · PIN Reset 位置：</b><b>PIN Reset</b>（Refresh list／Search／Remove／reset；edit unlock／有 <code>brs-pin-reset</code> 或 Me 先入 DOM；唔顯示 PIN／hash）放喺 <b>Admin 管理版面入面</b>（<code>#brs-admin</code> 內，Create New BRS／editor 下面同一銅棕區塊）。唔再獨立右上卡；唔加去 hub 頂欄。銅棕／沙色 admin 色保留。</li>
+        <li style="color:#b00020"><b>新 · Grant access 分開四截：</b>（1）<b>Public view</b>＝未登入睇到邊啲頁。（2）<b>Role pages</b> 表：欄係 Admin／DM/DIC／Staff（唔包括 Owner），行係頁面，每格一個剔。（3）<b>Accounts</b>：加 Staff #＋role 之後先彈出嗰個人可開嘅頁。（4）<b>PIN Reset</b> 喺同一個 Grant 面板（Refresh list／搜 staff #／Reset；唔顯示 PIN）。Owner 仍然開晒所有頁。</li>
         <li style="color:#b00020"><b>新 · Owner 可見名：</b>角色 <code>me</code> 畫面顯示 <b>Owner - Siu Chung</b>（頂欄、Grant 下拉、帳戶列表）。唔再顯示 Me。其他 role 仍然係 Admin／DM/DIC／Staff。</li>
         <li style="color:#b00020"><b>新 · HX 四個 role 登入／授權：</b>角色 <b>Owner - Siu Chung</b>、<b>Admin</b>、<b>DM/DIC</b>、<b>Staff</b>。Hub <b>Log in</b>＝Staff #＋密碼（6 位，似 BRS PIN：首次預設＝staff #，強制改成唔同嘅 6 位；錯密碼唔入；對話只 Cancel／× 關；錯咗提示 ask Owner to reset）。<b>Grant access</b>（Owner）可按 staff # 授 role、可見 HTML 頁、可做動作（含 TOV Status／Manual／ingest、BRS admin、PIN Reset、grant-access）。帳戶同 hash 喺 locked gate JSON（Edge <code>team-board</code>；公開 GET 唔出 hash）。未有 Me 帳戶時：Staff #＋而家 manager 密碼先入 Me，再強制設 6 位。登出＝view，側欄跟 public pages。有 staff 帳戶時 child 頁用 actions，唔好當全 admin。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · Unsign：</b>Admin Staff # / Group 已 Seen／Signed 行，清 acknowledgement 嘅掣顯示名由 <b>Clear</b> 改 <b>Unsign</b>（title／aria-label 同）。唔改其他 Clear（搜尋／Group picker／欄位）。Remove 仍係 Remove。</li>
@@ -294,6 +296,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="7.6">v7.6</div>
+  <div class="page-version" data-version="7.8">v7.8</div>
 </body>
 </html>

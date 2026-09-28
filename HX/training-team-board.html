@@ -84,51 +84,68 @@
     white-space: nowrap;
     min-height: 1.2em;
   }
-  .ingest-sync {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin: 0 0 14px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    border: 2px solid #c45c00;
+  /* Per-card ingest sync (no standing banner). Cool teal-mist card face — not sand. */
+  .load.admin-block .box {
+    position: relative;
+    background: #e8f2f4;
+    border-color: #9bb8be;
+    padding-bottom: 30px;
+  }
+  .load.admin-block .box.ingest-desync,
+  .load.admin-block .box.ingest-busy {
     background: #fff4e5;
+    border-color: #c45c00;
+  }
+  .load.admin-block .drop {
+    border-color: #9bb8be;
+    background: #fff;
+  }
+  .load.admin-block .box.ingest-desync .drop,
+  .load.admin-block .box.ingest-busy .drop {
+    border-color: #c45c00;
+  }
+  .load.admin-block .drop.on {
+    border-color: #00778b;
+    background: #e5f4f6;
+  }
+  .ingest-card-hint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    font-weight: 650;
     color: #6a3200;
   }
-  .ingest-sync-ico {
-    flex: 0 0 36px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #c45c00;
+  .ingest-card-sync {
+    margin-top: 6px;
+    background: #6a3200;
     color: #fff;
-    font-size: 22px;
+    border: 0;
+    border-radius: 5px;
+    padding: 4px 9px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .box-sync-ico {
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 13px;
     font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
+    background: #157a3a;
   }
-  .ingest-sync strong { display: block; font-size: 16px; margin: 0 0 4px; }
-  .ingest-sync p { margin: 0; font-size: 14px; line-height: 1.45; }
-  .ingest-sync button {
-    margin-top: 10px;
-    background: #6a3200;
-    color: #fff;
-    border: 0;
-    border-radius: 6px;
-    padding: 7px 12px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .ingest-sync.ok { border-color: #157a3a; background: #e7f6ec; color: #0f5c2c; }
-  .ingest-sync.ok .ingest-sync-ico { background: #157a3a; font-size: 18px; }
-  .ingest-sync.busy { border-color: #00778b; background: #e7f6f8; color: #015260; }
-  .ingest-sync.busy .ingest-sync-ico { background: #00778b; font-size: 18px; }
-  .ingest-sync.fail { border-color: #b42318; background: #fee4e2; color: #7a1a12; }
-  .ingest-sync.fail .ingest-sync-ico { background: #b42318; }
-  .ingest-sync.check { border-color: #00778b; background: #e7f6f8; color: #015260; }
-  .ingest-sync.check .ingest-sync-ico { background: #00778b; font-size: 18px; }
+  .box-sync-ico.warn,
+  .box-sync-ico.busy,
+  .box-sync-ico.fail { background: #c45c00; }
+  .box-sync-ico.check { background: #00778b; }
+  #ingest-sync { display: none !important; }
   html.board-locked .write-zone { display: none !important; }
   html:not(.board-locked).no-ingest .load.write-zone { display: none !important; }
   html:not(.board-locked).no-manual #add-course.write-zone { display: none !important; }
@@ -360,18 +377,7 @@
     gap: 10px;
     padding: 12px;
   }
-  .load.admin-block .box {
-    background: var(--admin-soft);
-    border-color: var(--admin-border);
-  }
-  .load.admin-block .drop {
-    border-color: var(--admin-border);
-    background: #fff;
-  }
-  .load.admin-block .drop.on {
-    border-color: var(--admin);
-    background: #f3e7d6;
-  }
+  /* ingest card face / drop styles: see per-card sync block above */
   .add-course.admin-block {
     background: var(--admin-bg);
     border: 2px solid var(--admin-border);
@@ -825,13 +831,14 @@
   .detail-table col.col-name { width: 120px; }
   .detail-table col.col-team { width: 72px; }
   .detail-table col.col-crew { width: 96px; }
-  .detail-table col.col-course { width: 140px; }
+  /* Course +33% (140→186). Remain cols match due-day width 104. Section label length unchanged → no crew shrink. */
+  .detail-table col.col-course { width: 186px; }
   .detail-table col.col-due { width: 104px; }
-  .detail-table col.col-remain { width: 72px; }
+  .detail-table col.col-remain { width: 104px; }
   .detail-table col.col-emp { width: 88px; }
   .detail-table col.col-soon { width: 160px; }
   .detail-table col.col-soon-due { width: 104px; }
-  .detail-table col.col-soon-remain { width: 72px; }
+  .detail-table col.col-soon-remain { width: 104px; }
   .detail-table col.col-completed { width: 140px; }
   .detail-table th,
   .detail-table td {
@@ -1291,25 +1298,21 @@
       </div>
     </div>
 
-    <div id="ingest-sync" class="ingest-sync check" role="status" aria-live="polite">
-      <span class="ingest-sync-ico" aria-hidden="true">…</span>
-      <div>
-        <strong id="ingest-sync-title">Checking synchronization…</strong>
-        <p id="ingest-sync-detail">Comparing UAL, CT Reminder, and Mandatory with the server.</p>
-        <button type="button" id="ingest-sync-retry" hidden>Synchronize now</button>
-      </div>
     </div>
 
     <div class="load write-zone admin-block" hidden aria-label="Admin ingest">
-      <div class="box">
+      <div class="box" id="ual-box" data-ingest-src="UAL">
         <label>UAL CBT email</label>
         <textarea id="ual-src" placeholder="Paste the UAL CBT reminder email."></textarea>
         <div class="toolbar" style="margin-top:6px">
           <button type="button" class="primary" id="ual-parse">Use this email</button>
         </div>
         <p class="note" id="ual-status">No UAL email yet.</p>
+        <p class="ingest-card-hint" hidden>Upload not synchronized yet.</p>
+        <button type="button" class="ingest-card-sync" data-ingest-sync hidden>Synchronize now</button>
+        <span class="box-sync-ico check" aria-hidden="true" title="Checking synchronization">…</span>
       </div>
-      <div class="box" id="ct-box">
+      <div class="box" id="ct-box" data-ingest-src="CT Reminder">
         <label for="ct-csv">CT Reminder CSV — more than one file is OK</label>
         <p class="note">Overdue: <code>LM - Daily CT Reminder (overdue)</code>. Coming due: <code>LM - Weekly CT Reminder (due in 2 weeks)</code>. You can add both; they do not overwrite each other.</p>
         <div class="drop" id="ct-drop">
@@ -1318,8 +1321,11 @@
         </div>
         <p class="note" id="ct-status">No CT CSV yet.</p>
         <ul class="file-list" id="ct-files"></ul>
+        <p class="ingest-card-hint" hidden>Upload not synchronized yet.</p>
+        <button type="button" class="ingest-card-sync" data-ingest-sync hidden>Synchronize now</button>
+        <span class="box-sync-ico check" aria-hidden="true" title="Checking synchronization">…</span>
       </div>
-      <div class="box" id="omt-box">
+      <div class="box" id="omt-box" data-ingest-src="Mandatory">
         <label for="omt-file">Outstanding Mandatory Training</label>
         <p class="note">File like <code>Outstanding mandatory training_LM_*.xlsx</code> or CSV. The board keeps OCG staff only.</p>
         <div class="drop" id="omt-drop">
@@ -1328,6 +1334,9 @@
         </div>
         <p class="note" id="omt-status">No Mandatory file yet.</p>
         <ul class="file-list" id="omt-files"></ul>
+        <p class="ingest-card-hint" hidden>Upload not synchronized yet.</p>
+        <button type="button" class="ingest-card-sync" data-ingest-sync hidden>Synchronize now</button>
+        <span class="box-sync-ico check" aria-hidden="true" title="Checking synchronization">…</span>
       </div>
     </div>
 
@@ -1620,7 +1629,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="14.3" aria-label="Page version 14.3">v14.3</div>
+  <div class="page-version" data-version="14.4" aria-label="Page version 14.4">v14.4</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -2964,8 +2973,17 @@ function personOf(staff, name) {
 function crewOf(p) {
   const sec = String((p && p.home) || "").trim();
   const sh = String((p && p.shift) || "").trim();
-  if (sec && sh) return sec + " " + sh;
+  if (sec && sh) return sec + " (" + sh + ")";
   return sec || sh;
+}
+/** Display-only: `LTA1 1E` → `LTA1 (1E)`. Does not change stored home/shift. */
+function formatSectionCrewText(raw) {
+  const s = String(raw || "").trim();
+  if (!s) return "";
+  if (/\([^)]*\)/.test(s)) return s;
+  const m = s.match(/^(\S+)\s+(\S.+)$/);
+  if (m) return m[1] + " (" + m[2].trim() + ")";
+  return s;
 }
 function teamSortRank(team, home) {
   const k = teamKey(team, home);
@@ -4949,7 +4967,7 @@ function paintDetail() {
       : "") +
     (showRecentCompleted ? "<col class=\"col-completed\">" : "") +
     "</colgroup>";
-  const tableShot = "<div id=\"detail-shot\"><table>" + colgroup + "<thead><tr>" + dth("Staff #", "staff", "col-staff") + dth("Name", "name", "col-name") + dth("Team", "team", "col-team") + dth("Section + Crew", "crew", "col-crew") +
+  const tableShot = "<div id=\"detail-shot\"><table>" + colgroup + "<thead><tr>" + dth("Staff #", "staff", "col-staff") + dth("Name", "name", "col-name") + dth("Team", "team", "col-team") + dth("Section (Crew)", "crew", "col-crew") +
     dth("Course code", "overdue", "col-course") + dth("Overdue or will expire due day", "due", "col-due") + dth("Overdue or will expire remaining", "remain", "col-remain") +
     ualColsHead +
     completedCol + "</tr></thead><tbody>" +
@@ -4976,7 +4994,7 @@ function paintDetail() {
         "<td class=\"col-staff\">" + staffNoHtml(x.staff) + "</td>" +
         "<td class=\"col-name\">" + esc(x.name || "") + flagChip(staffReasons) + "</td>" +
         tdCell(teamLabel(x.team, x.home), "col-team") +
-        tdCell(x.crew || crewOf(x) || x.section || "", "col-crew") +
+        tdCell(formatSectionCrewText(x.crew || crewOf(x) || x.section || ""), "col-crew") +
         "<td class=\"" + (overdueEmpty ? "col-course blank" : "col-course") + "\">" + courseListHtml(x.overdueCourses) + "</td>" +
         tdSlot(fmtDueDate(x.due), "col-due") +
         tdSlot(remainText(x.remain, Number(x.remain) > 0), "col-remain remain") +
@@ -5019,7 +5037,7 @@ function srcLabel(row) {
   return row.src === "ct" ? "CT Reminder" : (row.src || "");
 }
 function personCrewLabel(who) {
-  return String((who && (who.crew || crewOf(who) || who.section)) || "").trim();
+  return formatSectionCrewText((who && (who.crew || crewOf(who) || who.section)) || "");
 }
 function personCourseRows(who) {
   if (who.courseRows && who.courseRows.length) return who.courseRows;
@@ -5550,12 +5568,6 @@ function ingestDiffSentence(names) {
   return names.slice(0, -1).join(", ") + ", and " + names[names.length - 1] + " are only in this browser.";
 }
 function paintIngestSync() {
-  const el = document.getElementById("ingest-sync");
-  if (!el) return;
-  const title = document.getElementById("ingest-sync-title");
-  const detail = document.getElementById("ingest-sync-detail");
-  const ico = el.querySelector(".ingest-sync-ico");
-  const btn = document.getElementById("ingest-sync-retry");
   const names = lastRemoteIngestMetaSig ? ingestDiffNames() : [];
   const canWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
   let mode = "ok";
@@ -5563,37 +5575,55 @@ function paintIngestSync() {
   else if (ingestPushBusy) mode = "busy";
   else if (!lastRemoteIngestMetaSig) mode = "check";
   else if (names.length) mode = ingestSyncFailed ? "fail" : "warn";
-  el.className = "ingest-sync " + mode;
-  if (mode === "check") {
-    if (ico) ico.textContent = "…";
-    if (title) title.textContent = "Checking synchronization…";
-    if (detail) detail.textContent = remoteBoardConfirmed
-      ? "Comparing UAL, CT Reminder, and Mandatory with the server."
-      : "This page has not confirmed the server yet. Refresh before you rely on this browser.";
+
+  const cards = [
+    { id: "ual-box", key: "UAL" },
+    { id: "ct-box", key: "CT Reminder" },
+    { id: "omt-box", key: "Mandatory" }
+  ];
+  cards.forEach(({ id, key }) => {
+    const box = document.getElementById(id);
+    if (!box) return;
+    const ico = box.querySelector(".box-sync-ico");
+    const hint = box.querySelector(".ingest-card-hint");
+    const btn = box.querySelector("[data-ingest-sync]");
+    const dirty = names.indexOf(key) >= 0;
+    box.classList.remove("ingest-desync", "ingest-busy");
+
+    if (mode === "check") {
+      if (ico) { ico.className = "box-sync-ico check"; ico.textContent = "…"; ico.title = "Checking synchronization"; }
+      if (hint) hint.hidden = true;
+      if (btn) btn.hidden = true;
+      return;
+    }
+    if (mode === "busy" && (dirty || !names.length)) {
+      box.classList.add("ingest-busy");
+      if (ico) { ico.className = "box-sync-ico busy"; ico.textContent = "…"; ico.title = "Synchronizing…"; }
+      if (hint) { hint.hidden = false; hint.textContent = "Synchronizing…"; }
+      if (btn) btn.hidden = true;
+      return;
+    }
+    if (dirty) {
+      box.classList.add("ingest-desync");
+      if (ico) {
+        ico.className = "box-sync-ico " + (mode === "fail" ? "fail" : "warn");
+        ico.textContent = "!";
+        ico.title = mode === "fail" ? "Synchronization failed" : "Not synchronized";
+      }
+      if (hint) {
+        hint.hidden = false;
+        hint.textContent = mode === "fail"
+          ? "Sync failed — upload not on the server yet."
+          : "Upload not synchronized yet.";
+      }
+      if (btn) btn.hidden = !canWrite;
+      return;
+    }
+    if (mode === "ok") ingestSyncFailed = false;
+    if (ico) { ico.className = "box-sync-ico ok"; ico.textContent = "✓"; ico.title = "Synchronized"; }
+    if (hint) hint.hidden = true;
     if (btn) btn.hidden = true;
-    return;
-  }
-  if (mode === "busy") {
-    if (ico) ico.textContent = "…";
-    if (title) title.textContent = "Synchronizing…";
-    if (detail) detail.textContent = "Sending " + (names.length ? names.join(", ") : "UAL, CT Reminder, and Mandatory") + " to the server. Keep this page open.";
-    if (btn) btn.hidden = true;
-    return;
-  }
-  if (mode === "ok") {
-    ingestSyncFailed = false;
-    if (ico) ico.textContent = "✓";
-    if (title) title.textContent = "Synchronized";
-    if (detail) detail.textContent = "UAL, CT Reminder, and Mandatory on this page match the server. Other computers can see this copy.";
-    if (btn) btn.hidden = true;
-    return;
-  }
-  if (ico) ico.textContent = "!";
-  if (title) title.textContent = mode === "fail" ? "Synchronization failed" : "Not synchronized";
-  let msg = ingestDiffSentence(names) + " Other computers still have the older copy. Keep this page open until this banner says Synchronized.";
-  if (!canWrite) msg += " Unlock (Edit or Owner) first.";
-  if (detail) detail.textContent = msg;
-  if (btn) btn.hidden = !canWrite;
+  });
 }
 function persistActionsLocal() {
   if (!persistArmed) return;
@@ -8790,7 +8820,9 @@ document.getElementById("push-fail-ok").addEventListener("click", closePushFailP
 document.getElementById("push-fail-pop").addEventListener("click", (e) => {
   if (e.target.id === "push-fail-pop") closePushFailPop();
 });
-document.getElementById("ingest-sync-retry").addEventListener("click", () => {
+document.addEventListener("click", (e) => {
+  const syncBtn = e.target && e.target.closest && e.target.closest("[data-ingest-sync]");
+  if (!syncBtn) return;
   if (!(getBoardPassword() || getSyncKey()) || !canRemoteWrite()) {
     paintIngestSync();
     return;

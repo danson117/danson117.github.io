@@ -54,8 +54,17 @@ function stripAuth(cfg: Record<string, unknown> | null) {
     actions: Array.isArray(a && a.actions) ? a.actions.map(String) : [],
     mustChange: !!(a && a.mustChange),
     hasPassword: !!(a && a.hash),
+    customPages: !!(a && a.customPages),
   })).filter((a) => a.staff);
   out.hasMe = accounts.some((a) => normalizeAccountRole(a && a.role) === "me" && a && a.hash);
+  if (cfg && (cfg as any).rolePages && typeof (cfg as any).rolePages === "object") {
+    const rolePages = (cfg as any).rolePages as Record<string, unknown>;
+    out.rolePages = {
+      admin: Array.isArray(rolePages.admin) ? rolePages.admin.map(String) : [],
+      dm: Array.isArray(rolePages.dm) ? rolePages.dm.map(String) : [],
+      staff: Array.isArray(rolePages.staff) ? rolePages.staff.map(String) : [],
+    };
+  }
   return out;
 }
 
@@ -356,13 +365,20 @@ Deno.serve(async (req: Request) => {
       return json(401, {
         error: "unauthorized",
         role: "view",
-        hint: "If you forgot your password, ask Me to reset it.",
+        hint: "If you forgot your password, ask Owner to reset it.",
       });
+    }
+    let loginPages = s.pages || [];
+    if (s.role !== "me" && !(findAccount(cfg, s.staff) && (findAccount(cfg, s.staff) as any).customPages)) {
+      const rp = (cfg as any).rolePages;
+      if (rp && typeof rp === "object" && Array.isArray(rp[s.role])) {
+        loginPages = rp[s.role].map(String);
+      }
     }
     return json(200, {
       role: s.role,
       staff: s.staff,
-      pages: s.pages,
+      pages: loginPages,
       actions: s.actions,
       mustChange: s.mustChange,
       kind: s.kind,
@@ -382,7 +398,7 @@ Deno.serve(async (req: Request) => {
     if (!s || s.staff !== tryStaff) {
       return json(401, {
         error: "unauthorized",
-        hint: "If you forgot your password, ask Me to reset it.",
+        hint: "If you forgot your password, ask Owner to reset it.",
       });
     }
     const hashed = await hashAccountPassword(newPw);
@@ -516,9 +532,18 @@ Deno.serve(async (req: Request) => {
         salt,
         hash,
         mustChange,
+        customPages: role === "me" ? false : !!(raw && raw.customPages),
       });
     }
     const next = { ...cfg, accounts: nextAccounts };
+    if (body.rolePages && typeof body.rolePages === "object") {
+      const src = body.rolePages as Record<string, unknown>;
+      next.rolePages = {
+        admin: Array.isArray(src.admin) ? src.admin.map(String) : [],
+        dm: Array.isArray(src.dm) ? src.dm.map(String) : [],
+        staff: Array.isArray(src.staff) ? src.staff.map(String) : [],
+      };
+    }
     if (Array.isArray(body.publicPages)) next.publicPages = body.publicPages;
     if (Array.isArray(body.editActions)) next.editActions = body.editActions;
     try {

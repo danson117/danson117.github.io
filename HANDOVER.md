@@ -10,6 +10,18 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **BRS from manuals：** 由 Manual courses **LM00183**、**T.EE0639** 各建一個已確認 BRS（`BRS20260902`／`BRS20260903`）；人手／title 跟 manual；未 Seen／Signed；**manual 未刪**。Supabase `hx_private`（`__hx_shared__/briefing-read-sign`）。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **TOV Detail 欄＋三卡 sync：** 表頭 **Section (Crew)**；格 `LTA1 (1E)`（只顯示）。Course code **186px**（+33%）；remaining 兩欄＝due-day **104px**。UAL／CT／Mandatory 同步入三張上載卡（淡青綠灰卡面；未同步橙＋右下綠／橙 icon）；刪大 banner。TOV **v14.4**、hub **v15.5**、`hx-rules` **v7.8**。保留 Grant access 本機改動一齊上。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **Grant access 版面：** 分開 Public view、Role pages 表（Admin／DM/DIC／Staff × 頁面）、Accounts（加人之後先彈頁面）、PIN Reset。Hub **v15.4**、`hx-rules` **v7.7**。Edge `team-board` 會一併存 `rolePages`。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Owner 可見名：** 角色 `me` 畫面顯示 **Owner - Siu Chung**（頂欄、Grant 下拉）。Hub **v15.3**、`hx-rules` **v7.6**。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
