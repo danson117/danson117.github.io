@@ -1474,7 +1474,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="13.0" aria-label="Page version 13.0">v13.0</div>
+  <div class="page-version" data-version="13.1" aria-label="Page version 13.1">v13.1</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1491,7 +1491,8 @@ const CT_FILES = "hx:team-board:ct-files";
 const OMT_FILES = "hx:team-board:omt-files";
 const CT_CLEARED = "hx:team-board:ct-cleared";
 const OMT_CLEARED = "hx:team-board:omt-cleared";
-const UI = { org: "hx:team-board:org", src: "hx:team-board:src", role: "hx:team-board:role", team: "hx:team-board:team", q: "hx:team-board:q", sortKey: "hx:team-board:sortKey", sortDir: "hx:team-board:sortDir", listView: "hx:team-board:listView", boardOpen: "hx:team-board:boardOpen" };
+const UI = { org: "hx:team-board:org", src: "hx:team-board:src", role: "hx:team-board:role", team: "hx:team-board:team", q: "hx:team-board:q", sortKey: "hx:team-board:sortKey", sortDir: "hx:team-board:sortDir", listView: "hx:team-board:listView", boardOpen: "hx:team-board:boardOpen", showRecentCompleted: "hx:team-board:showRecentCompleted" };
+const COMPLETED_KEEP_DAYS = 30;
 const COURSE_STORE = "hx:course-catalog:rows";
 const COURSE_STATUS = "hx:team-board:course-status";
 const ACCESS_HASH = "hx:team-board:access-hash";
@@ -1573,7 +1574,8 @@ const UI_KEYS = {
   sortKey: ["hx:team-board:sortKey", "hx-team-board-sortKey", "hx:ual-cbt:sortKey"],
   sortDir: ["hx:team-board:sortDir", "hx-team-board-sortDir", "hx:ual-cbt:sortDir"],
   listView: ["hx:team-board:listView"],
-  boardOpen: ["hx:team-board:boardOpen"]
+  boardOpen: ["hx:team-board:boardOpen"],
+  showRecentCompleted: ["hx:team-board:showRecentCompleted"]
 };
 const DATE_RE = /^(\d{1,2})-([A-Za-z]{3,9})-(\d{4})$/;
 const EMP_RE = /^v\d{5,}$/i;
@@ -1604,6 +1606,7 @@ let dDir = 1;
 let detailPeople = [];
 let listView = "table";
 let boardOpen = false;
+let showRecentCompleted = false;
 let courseStatus = {};
 let manualAuthPick = null;
 let authIndexCache = null;
@@ -4363,13 +4366,16 @@ function itemsAll() {
     return it.people.some((p) => personRowMatch(p, it, s));
   });
 }
-function brsStaffAcked(staff, row) {
+function brsStaffPerson(staff, row) {
   const id = row && row.brsId;
-  if (!id) return false;
+  if (!id) return null;
   const want = padStaff(staff);
   const it = (readBrsDoc().items || []).find((x) => x && String(x.id) === String(id));
-  if (!it) return false;
-  const p = (it.people || []).find((x) => x && padStaff(x.staff) === want);
+  if (!it) return null;
+  return (it.people || []).find((x) => x && padStaff(x.staff) === want) || null;
+}
+function brsStaffAcked(staff, row) {
+  const p = brsStaffPerson(staff, row);
   return !!(p && p.ack);
 }
 function brsStatusLabel(staff, row) {
@@ -4379,6 +4385,26 @@ function manualDueRemain(row) {
   const direct = remainNum(row && row.remain);
   if (Number.isFinite(direct)) return direct;
   return remainNum(remainFromDue((row && row.due) || ""));
+}
+function utcTodayStamp() {
+  const d = new Date();
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+function completionDayStamp(raw) {
+  const done = parseDoneDate(raw || "");
+  if (done) {
+    const m = done.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  const t = Date.parse(String(raw || ""));
+  return Number.isFinite(t) ? Date.UTC(new Date(t).getUTCFullYear(), new Date(t).getUTCMonth(), new Date(t).getUTCDate()) : NaN;
+}
+function daysSinceStamp(stamp) {
+  if (!Number.isFinite(stamp)) return NaN;
+  return Math.round((utcTodayStamp() - stamp) / 86400000);
+}
+function isWithinCompletedKeepWindow(days) {
+  return Number.isFinite(days) && days >= 0 && days <= COMPLETED_KEEP_DAYS;
 }
 function completedHidesFromOutstanding(staff, row) {
   const rec = readCourseStatus(staff, row);
@@ -4391,6 +4417,20 @@ function completedHidesFromOutstanding(staff, row) {
 function courseIsCompleted(staff, row) {
   if (isBrsCourseRow(row)) return brsStaffAcked(staff, row);
   return completedHidesFromOutstanding(staff, row);
+}
+function isRecentCompleted(staff, row) {
+  if (!courseIsCompleted(staff, row)) return false;
+  if (isBrsCourseRow(row)) {
+    const p = brsStaffPerson(staff, row);
+    return isWithinCompletedKeepWindow(daysSinceStamp(completionDayStamp((p && p.ackAt) || "")));
+  }
+  const rec = readCourseStatus(staff, row);
+  const stamp = completionDayStamp(rec.done || rec.updated || "");
+  return isWithinCompletedKeepWindow(daysSinceStamp(stamp));
+}
+function personCourseStillOutOrRecent(p, item) {
+  if (personCourseStillOut(p, item)) return true;
+  return showRecentCompleted && isRecentCompleted(p.staff, personItemRow(p, item));
 }
 function personItemRow(p, item) {
   return {
@@ -8069,7 +8109,19 @@ function openBrsPop(itemId, staff) {
   const files = document.getElementById("brs-pop-files");
   const mats = it.materials || [];
   files.innerHTML = mats.length ? mats.map((m) => {
-    const label = (m.kind === "word" ? "Word" : m.kind === "excel" ? "Excel" : m.kind === "pdf" ? "PDF" : "Link") + " · " + (m.name || "Material");
+    const isHttpUrl = (s) => /^https?:\/\//i.test(String(s || "").trim());
+    const kind = String(m.kind || "").toLowerCase();
+    const name = String(m.name || "").trim();
+    const isFile = kind === "word" || kind === "excel" || kind === "pdf";
+    let label;
+    if (kind === "link" || isHttpUrl(name) || (!isFile && isHttpUrl(m.href))) {
+      label = "Material Link";
+    } else if (isFile) {
+      const type = kind === "word" ? "Word" : kind === "excel" ? "Excel" : "PDF";
+      label = name && !isHttpUrl(name) ? type + " · " + name : type;
+    } else {
+      label = "Material Link";
+    }
     return "<li><a href=\"" + esc(m.href || "#") + "\" target=\"_blank\" rel=\"noopener\">" + esc(label) + "</a></li>";
   }).join("") : "<li>No materials on this item.</li>";
   pop.hidden = false;
