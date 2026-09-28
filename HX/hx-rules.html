@@ -193,7 +193,7 @@
       <ul>
         <li>入口：<code>https://danson117-github-io.vercel.app/HX/hx.html</code>（Pages 只係備份）。</li>
         <li>預設 <b>view</b> = 只讀；大家見到同一側欄（Me 開俾公眾嘅頁）。</li>
-        <li>四個 role：<b>Me</b>／<b>Admin</b>／<b>DM/DIC</b>／<b>Staff</b>。Log in＝Staff #＋6 位密碼（似 BRS PIN）。Grant access 由 Me 授 staff #／頁／動作。</li>
+        <li>四個 role：<b>Owner - Siu Chung</b>／<b>Admin</b>／<b>DM/DIC</b>／<b>Staff</b>。Log in＝Staff #＋6 位密碼（似 BRS PIN）。Grant access 由 Owner 授 staff #／頁／動作。可見名 <b>Owner - Siu Chung</b>（內部 role 仍然係 <code>me</code>）。</li>
         <li>閘設定同帳戶 hash 喺 locked Supabase <code>hx_private</code>（Edge <code>team-board</code>）。anon 唔可以寫。公開 GET 唔出 hash。</li>
       </ul>
     </div>
@@ -240,7 +240,8 @@
         <li style="color:#b00020"><b>新 · Training One View · Course code 欄：</b>Detail 表「Overdue or will expire courses」表頭改 <b>Course code</b>（英文 UI；同鄰欄 title／sentence case）。格內仍係 course code；紅色＝overdue／將到期狀態，唔係欄名。唔改資料；唔改已有叫 Course／Course code 嘅其他欄。</li>
         <li style="color:#b00020"><b>新 · Training One View · UAL 四欄一齊顯示：</b>Detail 表 <b>UA Employee #</b>、<b>Coming due courses</b>、<b>Coming due day</b>、<b>Coming due remaining</b> 四欄（表頭＋格）只喺揀咗 UAL 來源（含 All）時一齊顯示；冇揀 UAL 就一齊隱藏。唔藏其他欄。Cards／Details 若有同等欄位跟同一規則（而家 Cards 冇呢四欄 aggregate）。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · PIN Reset 位置：</b><b>PIN Reset</b>（Refresh list／Search／Remove／reset；edit unlock／有 <code>brs-pin-reset</code> 或 Me 先入 DOM；唔顯示 PIN／hash）放喺 <b>Admin 管理版面入面</b>（<code>#brs-admin</code> 內，Create New BRS／editor 下面同一銅棕區塊）。唔再獨立右上卡；唔加去 hub 頂欄。銅棕／沙色 admin 色保留。</li>
-        <li style="color:#b00020"><b>新 · HX 四個 role 登入／授權：</b>角色 <b>Me</b>、<b>Admin</b>、<b>DM/DIC</b>、<b>Staff</b>。Hub <b>Log in</b>＝Staff #＋密碼（6 位，似 BRS PIN：首次預設＝staff #，強制改成唔同嘅 6 位；錯密碼唔入；對話只 Cancel／× 關；錯咗提示 ask Me to reset）。<b>Grant access</b>（Me）可按 staff # 授 role、可見 HTML 頁、可做動作（含 TOV Status／Manual／ingest、BRS admin、PIN Reset、grant-access）。帳戶同 hash 喺 locked gate JSON（Edge <code>team-board</code>；公開 GET 唔出 hash）。未有 Me 帳戶時：Staff #＋而家 manager 密碼先入 Me，再強制設 6 位。登出＝view，側欄跟 public pages。有 staff 帳戶時 child 頁用 actions，唔好當全 admin。</li>
+        <li style="color:#b00020"><b>新 · Owner 可見名：</b>角色 <code>me</code> 畫面顯示 <b>Owner - Siu Chung</b>（頂欄、Grant 下拉、帳戶列表）。唔再顯示 Me。其他 role 仍然係 Admin／DM/DIC／Staff。</li>
+        <li style="color:#b00020"><b>新 · HX 四個 role 登入／授權：</b>角色 <b>Owner - Siu Chung</b>、<b>Admin</b>、<b>DM/DIC</b>、<b>Staff</b>。Hub <b>Log in</b>＝Staff #＋密碼（6 位，似 BRS PIN：首次預設＝staff #，強制改成唔同嘅 6 位；錯密碼唔入；對話只 Cancel／× 關；錯咗提示 ask Owner to reset）。<b>Grant access</b>（Owner）可按 staff # 授 role、可見 HTML 頁、可做動作（含 TOV Status／Manual／ingest、BRS admin、PIN Reset、grant-access）。帳戶同 hash 喺 locked gate JSON（Edge <code>team-board</code>；公開 GET 唔出 hash）。未有 Me 帳戶時：Staff #＋而家 manager 密碼先入 Me，再強制設 6 位。登出＝view，側欄跟 public pages。有 staff 帳戶時 child 頁用 actions，唔好當全 admin。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · Unsign：</b>Admin Staff # / Group 已 Seen／Signed 行，清 acknowledgement 嘅掣顯示名由 <b>Clear</b> 改 <b>Unsign</b>（title／aria-label 同）。唔改其他 Clear（搜尋／Group picker／欄位）。Remove 仍係 Remove。</li>
         <li><span class="key">新 · Briefing and R&amp;S（顯示名）</span>：可見名 <b>Briefing and R&amp;S</b>（hub／TOV／紀錄頁同）。Item number 一律 <code>BRS</code>＋年月＋兩位（例 <code>BRS20260901</code>）；唔再分 BF／RS。舊 BF／RS 號讀入後顯示同存成 BRS、保留年月同序號。Admin 掣：<b>Create New BRS</b>、<b>Create BRS</b>、<b>Delete BRS</b>；關閉用 <b>Save Draft</b>（未確認）／<b>Save</b>（已確認）／<b>Close without saving</b>／<b>Close</b>（見上紅字）。Materials 只留 <b>Add link</b>，唔再 drop／揀檔。Admin 區唔顯示 People 標題（只留 Staff # / Group）。頁面唔顯示三段說明（Admin intro、PIN vault intro、summary intro）。PIN 區標題 <b>PIN Reset</b>（原 Admin PIN vault；位置見上紅字）。</li>
         <li><span class="key">新 · BRS item number（共用序號、可改）</span>：下一個自動號＝而家<strong>已確認列表</strong>同年月最大兩位序號 + 1（唔填空隙、唔跟舊 per-type／hidden <code>issued</code> 超前計數）。Prefix 固定 <code>BRS</code>。Item number 欄可喺 <b>Create BRS</b> 前改；確認時存欄內值；重複號 → 頁內 dialog「Number used」；空／格式錯唔確認。改 Type 唔改編號。未確認 draft 唔上摘要／TOV；冇改動時 <b>Close</b> 只收埋 editor、保留已存 draft；有改動用 <b>Save Draft</b>（draft）／<b>Save</b>（已確認）或 <b>Close without saving</b>；只有 <b>Delete BRS</b> 先刪；刪 draft 唔佔號。</li>
@@ -293,6 +294,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="7.5">v7.5</div>
+  <div class="page-version" data-version="7.6">v7.6</div>
 </body>
 </html>

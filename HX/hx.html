@@ -502,7 +502,7 @@
         <label for="gate-pw">Password</label>
         <input id="gate-pw" type="password" autocomplete="current-password" />
         <p class="err" id="gate-unlock-err" hidden></p>
-        <p class="hint" id="gate-office-hint" hidden>If you forgot your password, ask Me to reset it.</p>
+        <p class="hint" id="gate-office-hint" hidden>If you forgot your password, ask Owner to reset it.</p>
         <div class="pop-actions">
           <button type="button" id="gate-unlock-cancel">Cancel</button>
           <button type="button" class="primary" id="gate-unlock-ok">Log in</button>
@@ -534,7 +534,7 @@
       <div class="pop-card wide" role="dialog" aria-modal="true" aria-labelledby="gate-perms-title">
         <h2 id="gate-perms-title">Grant access roles</h2>
         <p class="hint">
-          Roles: <b>Me</b>, <b>Admin</b>, <b>DM/DIC</b>, <b>Staff</b>. Grant a Staff # a role, which HTML pages they may open, and which actions they may do. Passwords are 6 digits (default = staff # until they change). Hashes stay on the locked server only.
+          Roles: <b>Owner - Siu Chung</b>, <b>Admin</b>, <b>DM/DIC</b>, <b>Staff</b>. Grant a Staff # a role, which HTML pages they may open, and which actions they may do. Passwords are 6 digits (default = staff # until they change). Hashes stay on the locked server only.
         </p>
         <div class="gate-section-title">Pages visible when logged out (public view)</div>
         <div class="gate-grid" id="gate-pages"></div>
@@ -549,7 +549,7 @@
             <option value="staff">Staff</option>
             <option value="dm">DM/DIC</option>
             <option value="admin">Admin</option>
-            <option value="me">Me</option>
+            <option value="me">Owner - Siu Chung</option>
           </select>
           <div class="gate-section-title">Pages this account may open</div>
           <div class="gate-grid" id="grant-pages"></div>
@@ -569,7 +569,7 @@
       </div>
     </div>
 
-    <div class="page-version" data-version="15.2">v15.2</div>
+    <div class="page-version" data-version="15.3">v15.3</div>
     <script>
       const TOPICS = [
         {
@@ -664,7 +664,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=7.5",
+          file: "hx-rules.html?v=7.6",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -694,7 +694,7 @@
         },
         {
           id: "grant-access",
-          label: "Grant access roles (Me)",
+          label: "Grant access roles (Owner)",
         },
       ];
       const GATE_EDGE =
@@ -778,7 +778,7 @@
         return "view";
       }
       function roleLabel(r) {
-        if (r === "me") return "Me";
+        if (r === "me") return "Owner - Siu Chung";
         if (r === "admin") return "Admin";
         if (r === "dm") return "DM/DIC";
         if (r === "staff") return "Staff";
@@ -863,7 +863,7 @@
       }
       function applyGateChrome() {
         gateRoleEl.textContent = isUnlocked()
-          ? roleLabel(gateRole) + (gateStaff ? " · " + gateStaff : "")
+          ? (gateRole === "me" ? "Owner - Siu Chung" : roleLabel(gateRole) + (gateStaff ? " · " + gateStaff : ""))
           : "view";
         gateUnlockBtn.textContent = isUnlocked() ? "Log out" : "Log in";
         gateUnlockBtn.classList.toggle("on", isUnlocked());
@@ -1211,7 +1211,7 @@
           ? "Set manager password"
           : "Log in";
         document.getElementById("gate-unlock-hint").textContent = needBootstrap
-          ? "First time: set the manager password (same as Training One View manage). Then log in with Staff # + that password to become Me and set a 6-digit password."
+          ? "First time: set the manager password (same as Training One View manage). Then log in with Staff # + that password to become Owner and set a 6-digit password."
           : "Enter Staff # and password. First password is your Staff # until you change it. Access stays until Log out.";
         document.getElementById("gate-staff").hidden = !!needBootstrap;
         document.querySelector("label[for='gate-staff']").hidden = !!needBootstrap;
@@ -1270,7 +1270,7 @@
             if (data.gate) cacheGate(data.gate);
             setUnlockErr("");
             document.getElementById("gate-unlock-hint").textContent =
-              "Manager password set. Enter your Staff # and the same password to become Me, then set a 6-digit password.";
+              "Manager password set. Enter your Staff # and the same password to become Owner, then set a 6-digit password.";
             document.getElementById("gate-staff").hidden = false;
             document.querySelector("label[for='gate-staff']").hidden = false;
             document.getElementById("gate-pw").removeAttribute("maxLength");
@@ -1537,7 +1537,7 @@
       });
       document.getElementById("gate-perms-save").addEventListener("click", async () => {
         if (!canGrant() || !gatePassword) {
-          setPermsErr("Me login required.");
+          setPermsErr("Owner login required.");
           return;
         }
         const publicPages = [];

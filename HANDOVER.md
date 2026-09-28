@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Owner 可見名：** 角色 `me` 畫面顯示 **Owner - Siu Chung**（頂欄、Grant 下拉）。Hub **v15.3**、`hx-rules` **v7.6**。GitHub 後備。唔開 Chrome。
+
+## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **PIN Reset 入 Admin + 四 role 登入：** Briefing and R&S **PIN Reset** 搬入 `#brs-admin` 管理版面（唔再獨立右上）。Hub 四 role：Me／Admin／DM/DIC／Staff；Log in＝Staff #＋6 位密碼（似 BRS PIN）；Grant access 授 staff #／頁／動作。帳戶 hash 喺 gate JSON（Edge `team-board` `/gate/login` `/gate/set-password` `/gate/accounts`；CORS `x-hx-staff`）。BRS **v4.0**、TOV **v14.3**、hub **v15.2**、`hx-rules` **v7.5**。GitHub 後備。**Edge 未部署**：呢部機冇 Supabase access token（`supabase login`／`SUPABASE_ACCESS_TOKEN`）；源碼已 commit，要喺有 token 嘅機 `supabase functions deploy team-board --project-ref kcoszufshvvpxikpzlue --no-verify-jwt`。唔開 Chrome。
 
 ## 2026-09-28 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
