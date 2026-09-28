@@ -574,6 +574,8 @@
     color: var(--muted);
   }
   .row-legend span { white-space: nowrap; }
+  .detail-table tbody tr.completed td { background: var(--ok-row); color: var(--navy); }
+  .detail-table td.ok { background: var(--ok-row); color: var(--navy); }
   .board-tools {
     display: flex;
     align-items: center;
@@ -3987,8 +3989,17 @@ function applyQueryToPerson(who, needle) {
   const srcs = [];
   let due = "", remain = "", soonDue = "", soonRemain = "";
   let hot = false, warn = false, ualHot = false, ualWarn = false;
+  const completedCourses = [];
+  let recentCompleted = false;
   rows.forEach((row) => {
-    if (courseIsCompleted(who.staff, row)) return;
+    const done = courseIsCompleted(who.staff, row);
+    const recent = showRecentCompleted && isRecentCompleted(who.staff, row);
+    if (done && !recent) return;
+    if (done && recent) {
+      if (row.code && completedCourses.indexOf(row.code) < 0) completedCourses.push(row.code);
+      recentCompleted = true;
+      return;
+    }
     if (row.code && courses.indexOf(row.code) < 0) courses.push(row.code);
     if (row.src && srcs.indexOf(row.src) < 0) srcs.push(row.src);
     const band = remainBand(row.remain);
@@ -4011,14 +4022,19 @@ function applyQueryToPerson(who, needle) {
       if (ual) ualHot = true;
     }
   });
-  const openRows = rows.filter((row) => !courseIsCompleted(who.staff, row));
-  if (!openRows.length) return null;
+  const keepRows = rows.filter((row) => {
+    if (!courseIsCompleted(who.staff, row)) return true;
+    return showRecentCompleted && isRecentCompleted(who.staff, row);
+  });
+  if (!keepRows.length) return null;
   const next = Object.assign({}, who, {
-    courseRows: openRows, courses: courses, srcs: srcs,
+    courseRows: keepRows, courses: courses, srcs: srcs,
     overdueRows: overdueRows, soonRows: soonRows,
     overdueCourses: overdueCourses, soonCourses: soonCourses,
+    completedCourses: completedCourses,
     due: due, remain: remain, soonDue: soonDue, soonRemain: soonRemain,
-    hot: hot, warn: warn, ualHot: ualHot, ualWarn: ualWarn
+    hot: hot, warn: warn, ualHot: ualHot, ualWarn: ualWarn,
+    recentCompleted: recentCompleted
   });
   next.status = statusOf(next);
   return next;
@@ -4315,14 +4331,20 @@ function brsItems() {
   readBrsDoc().items.forEach((it) => {
     if (it && it.draft) return;
     const open = (it.people || []).filter((p) => p && !p.ack);
-    if (!open.length) return;
+    const recentDone = showRecentCompleted
+      ? (it.people || []).filter((p) => {
+        if (!p || !p.ack) return false;
+        return isWithinCompletedKeepWindow(daysSinceStamp(completionDayStamp(p.ackAt || "")));
+      })
+      : [];
+    if (!open.length && !recentDone.length) return;
     const code = String(it.code || "").trim();
     const title = String(it.title || "").trim() || (it.type === "read-sign" ? "Read & Sign" : "Briefing");
     const courseCode = code || title;
     const courseName = code ? title : (it.type === "read-sign" ? "Read & Sign" : "Briefing");
     const src = it.type === "read-sign" ? "rs" : "brief";
     const people = [];
-    open.forEach((p) => {
+    const pushPerson = (p, hot) => {
       const who = personOf(p.staff, p.name);
       if (!orgOk(who.group) || !roleOk(who.home)) return;
       people.push({
@@ -4340,8 +4362,13 @@ function brsItems() {
         cname: courseName,
         kind: src,
         brsId: it.id,
-        hot: true
+        hot: !!hot
       });
+    };
+    open.forEach((p) => pushPerson(p, true));
+    recentDone.forEach((p) => {
+      if (people.some((x) => padStaff(x.staff) === padStaff(p.staff))) return;
+      pushPerson(p, false);
     });
     if (!people.length) return;
     list.push({ src: src, key: "brs:" + it.id, title: code ? (code + (title && title !== code ? " · " + title : "")) : title, people: people, brsId: it.id });
@@ -4575,8 +4602,8 @@ function peopleBundle(pairs) {
     const prev = map.get(key) || {
       staff: p.staff, name: p.name, team: p.team || "", emp: "", home: p.home || "", shift: p.shift || "", crew: p.crew || crewOf(p),
       area: "", section: "",
-      courses: [], courseRows: [], overdueCourses: [], soonCourses: [], overdueRows: [], soonRows: [],
-      due: "", soonDue: "", remain: "", soonRemain: "", hot: false, warn: false, ualHot: false, ualWarn: false, srcs: []
+      courses: [], courseRows: [], overdueCourses: [], soonCourses: [], completedCourses: [], overdueRows: [], soonRows: [],
+      due: "", soonDue: "", remain: "", soonRemain: "", hot: false, warn: false, ualHot: false, ualWarn: false, recentCompleted: false, srcs: []
     };
     const course = p.code || item.title;
     const rawName = p.cname && p.cname !== course ? p.cname : "";
@@ -4594,8 +4621,15 @@ function peopleBundle(pairs) {
       if (arr.some((d) => d.code === row.code && d.due === row.due && (d.brsId || "") === (row.brsId || ""))) return;
       arr.push(row);
     };
-    const done = (item && (item.src === "brief" || item.src === "rs")) ? false : courseIsCompleted(p.staff, row);
-    if (!done) {
+    const done = courseIsCompleted(p.staff, row);
+    const recent = showRecentCompleted && isRecentCompleted(p.staff, row);
+    if (done && !recent) {
+      // completed and outside the show window — keep hidden
+    } else if (done && recent) {
+      if (course && prev.completedCourses.indexOf(course) < 0) prev.completedCourses.push(course);
+      addRow(prev.courseRows);
+      prev.recentCompleted = true;
+    } else if (!done) {
       if (course && !prev.courses.includes(course)) prev.courses.push(course);
       addRow(prev.courseRows);
       const ual = p.kind === "ual" || item.src === "ual";
@@ -4625,7 +4659,7 @@ function peopleBundle(pairs) {
     if (p.home && !prev.home) prev.home = p.home;
     if (p.shift && !prev.shift) prev.shift = p.shift;
     prev.crew = crewOf(prev) || prev.section || "";
-    if (p.hot) prev.hot = true;
+    if (p.hot && !done) prev.hot = true;
     if (item.src && !prev.srcs.includes(item.src)) prev.srcs.push(item.src);
     map.set(key, prev);
   });
@@ -4642,7 +4676,16 @@ function paintDetail() {
   items.forEach((it) => {
     if (pick && pick.id && pick.id !== itemId(it)) return;
     const teams = allTeams ? TEAM_KEYS : [team];
-    teams.forEach((t) => cellPeople(it, t).forEach((p) => pairs.push({ item: it, p })));
+    teams.forEach((t) => {
+      const seen = new Set();
+      it.people.forEach((p) => {
+        if (p.team !== t) return;
+        if (!personCourseStillOutOrRecent(p, it)) return;
+        if (seen.has(p.staff)) return;
+        seen.add(p.staff);
+        pairs.push({ item: it, p });
+      });
+    });
   });
   const s = queryNeedle();
   const list = peopleBundle(pairs).map((who) => {
@@ -4660,6 +4703,7 @@ function paintDetail() {
     if (key === "emp") return x.emp;
     if (key === "overdue") return x.overdueCourses.join(", ");
     if (key === "soon") return x.soonCourses.join(", ");
+    if (key === "completed") return (x.completedCourses || []).join(", ");
     if (key === "due") return x.due;
     if (key === "soonDue") return x.soonDue;
     if (key === "remain") return x.remain == null || x.remain === "" ? "" : String(x.remain);
@@ -4677,9 +4721,10 @@ function paintDetail() {
   });
   const picked = pick && pick.id ? items.find((it) => itemId(it) === pick.id) : null;
   const rosterN = allTeams ? TEAM_KEYS.reduce((n, t) => n + roster[t].length, 0) : roster[team].length;
+  const completedN = list.filter((x) => x.recentCompleted && !(x.overdueCourses || []).length && !(x.soonCourses || []).length && !(x.courses || []).length).length;
   const label = picked
     ? ((allTeams ? "All teams" : TEAM_LABEL[team]) + " · " + picked.title)
-    : ((allTeams ? "All teams" : TEAM_LABEL[team]) + " · all outstanding");
+    : ((allTeams ? "All teams" : TEAM_LABEL[team]) + (showRecentCompleted ? " · outstanding + completed (≤30 days)" : " · all outstanding"));
   const dth = (label, key, extra) => {
     const on = dSort === key;
     return "<th class=\"sort" + (on ? " on" : "") + (extra ? " " + extra : "") + "\" data-dsort=\"" + key + "\"" + (on ? " data-dir=\"" + (dDir > 0 ? "▲" : "▼") + "\"" : "") + ">" + label + "</th>";
@@ -4691,10 +4736,14 @@ function paintDetail() {
   const roleBtns = [["all", "All"], ["cert", "Certifiers (LTWX)"], ["mech", "Mechanics (other sections)"]].map(([k, l]) =>
     "<button type=\"button\" data-role=\"" + k + "\"" + (role === k ? " class=\"on\"" : "") + ">" + esc(l) + "</button>"
   ).join("");
+  const completedBtn = "<button type=\"button\" data-show-completed=\"" + (showRecentCompleted ? "1" : "0") + "\"" +
+    (showRecentCompleted ? " class=\"on\"" : "") +
+    " title=\"Completed records are kept for 30 days. Default hidden.\">" +
+    (showRecentCompleted ? "Hide completed (≤30 days)" : "Show completed (≤30 days)") + "</button>";
   const colorLegend = "<div class=\"row-legend\" aria-label=\"Row colors\">" +
     "<span><i class=\"swatch hot\"></i>Overdue or will expire (≤30 days)</span>" +
     "<span><i class=\"swatch warn\"></i>Coming due (&gt;30 and ≤90 days)</span>" +
-    "<span><i class=\"swatch ok\"></i>Completed</span>" +
+    "<span><i class=\"swatch ok\"></i>Completed (kept 30 days; default hidden)</span>" +
     "<span><i class=\"swatch progress\"></i>In Progress (Status cell)</span>" +
     "<span class=\"flag-ov\" title=\"Override\">OV</span> override: flagged person / course" +
     "</div>";
@@ -4703,17 +4752,25 @@ function paintDetail() {
     const cls = [extra || "", t.trim() ? "" : "blank"].filter(Boolean).join(" ");
     return "<td" + (cls ? " class=\"" + cls + "\"" : "") + ">" + esc(t) + "</td>";
   };
+  const completedCol = showRecentCompleted
+    ? dth("Completed (≤30 days)", "completed")
+    : "";
   const tableShot = "<div id=\"detail-shot\"><table><thead><tr>" + dth("Staff #", "staff") + dth("Name", "name") + dth("Team", "team", "col-team") + dth("Section + Crew", "crew") +
     dth("Overdue or will expire courses", "overdue") + dth("Overdue or will expire due day", "due") + dth("Overdue or will expire remaining", "remain") +
     dth("UA Employee #", "emp") +
-    dth("Coming due courses", "soon") + dth("Coming due day", "soonDue") + dth("Coming due remaining", "soonRemain") + "</tr></thead><tbody>" +
+    dth("Coming due courses", "soon") + dth("Coming due day", "soonDue") + dth("Coming due remaining", "soonRemain") +
+    completedCol + "</tr></thead><tbody>" +
     list.map((x) => {
       const soonOn = x.soonCourses.length ? "soon" : "";
       const empOn = x.emp && String(x.emp).trim() ? (x.ualHot ? "hot-ual" : x.ualWarn ? "soon" : "") : "";
       const sid = esc(x.staff);
       const staffCls = String(x.staff || "").trim() ? "" : "blank";
       const staffReasons = flaggedStaffReasons(x.staff);
-      const rowCls = [x.hot ? "hot" : x.warn ? "warn" : "", staffReasons.length ? "flagged" : ""].filter(Boolean).join(" ");
+      const onlyCompleted = !!(x.recentCompleted && !(x.overdueCourses || []).length && !(x.soonCourses || []).length && !(x.courses || []).length);
+      const rowCls = [
+        onlyCompleted ? "completed" : (x.hot ? "hot" : x.warn ? "warn" : ""),
+        staffReasons.length ? "flagged" : ""
+      ].filter(Boolean).join(" ");
       return "<tr class=\"" + rowCls + "\" data-staff=\"" + sid + "\">" +
         "<td" + (staffCls ? " class=\"" + staffCls + "\"" : "") + ">" + staffNoHtml(x.staff) + "</td>" +
         "<td>" + esc(x.name || "") + flagChip(staffReasons) + "</td>" +
@@ -4725,16 +4782,23 @@ function paintDetail() {
         tdCell(x.emp, empOn) +
         "<td" + (soonOn ? " class=\"" + soonOn + "\"" : "") + ">" + courseListHtml(x.soonCourses) + "</td>" +
         tdCell(fmtDueDate(x.soonDue), soonOn) +
-        tdCell(remainText(x.soonRemain, true), ("remain" + (soonOn ? " " + soonOn : "")).trim()) + "</tr>";
+        tdCell(remainText(x.soonRemain, true), ("remain" + (soonOn ? " " + soonOn : "")).trim()) +
+        (showRecentCompleted ? "<td class=\"ok\">" + courseListHtml(x.completedCourses || []) + "</td>" : "") +
+        "</tr>";
     }).join("") +
     "</tbody></table></div>";
   const cardsShot = "<div id=\"detail-shot\" class=\"person-cards\">" + list.map((x) =>
     "<section class=\"person-card\">" + personCardHeadHtml(x) + personCourseTableHtml(x) + "</section>"
   ).join("") + "</div>";
-  box.innerHTML = "<div class=\"detail-head\"><h3>" + esc(label) + " · " + list.length + " people · roster " + rosterN + "</h3>" +
-    "<div class=\"toolbar\"><div class=\"view-toggle\">" + viewBtns + "</div>" + roleBtns + layoutActionBtns("detail-copy", "detail-download") + "</div>" +
+  const emptyNote = showRecentCompleted
+    ? "<p class=\"note\">No outstanding or recent completed names.</p>"
+    : "<p class=\"note\">No outstanding names.</p>";
+  box.innerHTML = "<div class=\"detail-head\"><h3>" + esc(label) + " · " + list.length + " people" +
+    (showRecentCompleted && completedN ? " · " + completedN + " completed-only" : "") +
+    " · roster " + rosterN + "</h3>" +
+    "<div class=\"toolbar\"><div class=\"view-toggle\">" + viewBtns + "</div>" + roleBtns + completedBtn + layoutActionBtns("detail-copy", "detail-download") + "</div>" +
     colorLegend + "</div>" +
-    (list.length ? (listView === "cards" ? cardsShot : tableShot) : "<p class=\"note\">No outstanding names.</p>");
+    (list.length ? (listView === "cards" ? cardsShot : tableShot) : emptyNote);
   applyWriteAccess();
 }
 
@@ -7772,6 +7836,7 @@ function paint() {
   lsSet(UI.sortDir, String(sortDir));
   lsSet(UI.listView, listView);
   lsSet(UI.boardOpen, boardOpen ? "1" : "0");
+  lsSet(UI.showRecentCompleted, showRecentCompleted ? "1" : "0");
   applyBoardOpenUi();
   paintBoard();
   paintDetail();
@@ -7985,6 +8050,13 @@ document.getElementById("detail").addEventListener("click", (e) => {
     paint();
     return;
   }
+  const showDone = e.target.closest("[data-show-completed]");
+  if (showDone) {
+    showRecentCompleted = !showRecentCompleted;
+    lsSet(UI.showRecentCompleted, showRecentCompleted ? "1" : "0");
+    paint();
+    return;
+  }
   const b = e.target.closest("[data-role]");
   if (!b) return;
   role = b.dataset.role;
@@ -8054,7 +8126,7 @@ document.getElementById("detail").addEventListener("click", (e) => {
     downloadDetailImage(dl);
     return;
   }
-  if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]")) return;
+  if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]") || e.target.closest("[data-show-completed]")) return;
   const brsBtn = e.target.closest("[data-brs-open]");
   if (brsBtn) {
     e.preventDefault();
@@ -8810,6 +8882,8 @@ function restoreUi() {
   if (savedBoard === "1") boardOpen = true;
   else if (savedBoard === "0") boardOpen = false;
   else boardOpen = false;
+  const savedShowDone = firstFilled(UI_KEYS.showRecentCompleted);
+  showRecentCompleted = savedShowDone === "1";
   applyBoardOpenUi();
 }
 function restoreUal() {

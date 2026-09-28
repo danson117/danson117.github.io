@@ -14,6 +14,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-28 公司電腦
 
+- **Completed 保留 30 日：** Completed 預設隱藏；Detail 有 Show／Hide completed (≤30 days)。超過 30 日唔再顯示。Outstanding 人數唔計。TOV v13.1、hub v13.5、`hx-rules` v6.1。
+
+## 2026-09-28 公司電腦
+
 - **Training One View 材料彈窗：** 刪咗「Open Briefing & Read & Sign」同「Open record」。材料連結同 Close 留低。TOV v13.0、hub v13.4。
 
 ## 2026-09-28 公司電腦
