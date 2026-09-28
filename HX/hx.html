@@ -289,6 +289,59 @@
         overflow: auto;
         padding: 16px 18px 14px;
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+        position: relative;
+      }
+      .pop-card .gate-x {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        border: 0;
+        background: transparent;
+        font-size: 22px;
+        line-height: 1;
+        color: var(--muted);
+        cursor: pointer;
+        padding: 4px 8px;
+      }
+      .pop-card input[type="text"],
+      .pop-card input[type="password"],
+      .pop-card select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        font: inherit;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
+      .gate-accounts {
+        display: grid;
+        gap: 6px;
+        margin: 0 0 14px;
+        max-height: 160px;
+        overflow: auto;
+      }
+      .gate-accounts button {
+        text-align: left;
+        border: 1px solid #c4a484;
+        background: #fff;
+        padding: 6px 8px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .gate-accounts button.on {
+        border-color: #6b3e26;
+        background: #f0e4d6;
+      }
+      .gate-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        margin: 8px 0;
+      }
+      #gate-office-hint[hidden] {
+        display: none !important;
       }
       .pop-card.wide {
         max-width: 640px;
@@ -419,8 +472,8 @@
         </span>
         <div class="bar-actions">
           <span id="gate-role" title="Current access">view</span>
-          <button type="button" id="gate-unlock">Unlock</button>
-          <button type="button" id="gate-perms" hidden>Permissions</button>
+          <button type="button" id="gate-unlock">Log in</button>
+          <button type="button" id="gate-perms" hidden>Grant access</button>
           <a
             id="solo"
             href="authorization-training-process.html"
@@ -439,40 +492,84 @@
 
     <div id="gate-unlock-pop" class="pop hidden" hidden>
       <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="gate-unlock-title">
-        <h2 id="gate-unlock-title">Unlock</h2>
+        <button type="button" class="gate-x" id="gate-unlock-x" title="Close" aria-label="Close">×</button>
+        <h2 id="gate-unlock-title">Log in</h2>
         <p class="hint" id="gate-unlock-hint">
-          Enter the board password for edit access. Access stays in this browser until you click Lock.
+          Enter your Staff # and password. Access stays in this browser until you click Log out.
         </p>
+        <label for="gate-staff">Staff #</label>
+        <input id="gate-staff" type="text" inputmode="numeric" autocomplete="username" maxlength="6" />
         <label for="gate-pw">Password</label>
         <input id="gate-pw" type="password" autocomplete="current-password" />
         <p class="err" id="gate-unlock-err" hidden></p>
+        <p class="hint" id="gate-office-hint" hidden>If you forgot your password, ask Me to reset it.</p>
         <div class="pop-actions">
           <button type="button" id="gate-unlock-cancel">Cancel</button>
-          <button type="button" class="primary" id="gate-unlock-ok">Unlock</button>
+          <button type="button" class="primary" id="gate-unlock-ok">Log in</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="gate-force-pop" class="pop hidden" hidden>
+      <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="gate-force-title">
+        <h2 id="gate-force-title">Set password</h2>
+        <p class="hint">
+          First login: set a 6-digit password different from your Staff #. Same control as Briefing and R&amp;S PIN.
+        </p>
+        <label for="gate-force-staff">Staff #</label>
+        <input id="gate-force-staff" type="text" readonly />
+        <label for="gate-force-pw">New password (6 digits)</label>
+        <input id="gate-force-pw" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" />
+        <label for="gate-force-pw2">Confirm password</label>
+        <input id="gate-force-pw2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" />
+        <p class="err" id="gate-force-err" hidden></p>
+        <div class="pop-actions">
+          <button type="button" id="gate-force-cancel">Cancel</button>
+          <button type="button" class="primary" id="gate-force-ok">Save password</button>
         </div>
       </div>
     </div>
 
     <div id="gate-perms-pop" class="pop hidden" hidden>
       <div class="pop-card wide" role="dialog" aria-modal="true" aria-labelledby="gate-perms-title">
-        <h2 id="gate-perms-title">Permissions</h2>
+        <h2 id="gate-perms-title">Grant access roles</h2>
         <p class="hint">
-          Public visitors stay on role <b>view</b> (read-only). Choose which left-sidebar pages they see,
-          and which extra actions an unlocked editor may do. Saved on the locked server for every browser.
+          Roles: <b>Me</b>, <b>Admin</b>, <b>DM/DIC</b>, <b>Staff</b>. Grant a Staff # a role, which HTML pages they may open, and which actions they may do. Passwords are 6 digits (default = staff # until they change). Hashes stay on the locked server only.
         </p>
-        <div class="gate-section-title">Pages visible to the public (view)</div>
+        <div class="gate-section-title">Pages visible when logged out (public view)</div>
         <div class="gate-grid" id="gate-pages"></div>
-        <div class="gate-section-title">Extra actions for unlocked editors</div>
-        <div class="gate-grid" id="gate-actions"></div>
+        <div class="gate-section-title">Accounts</div>
+        <div id="gate-accounts" class="gate-accounts"></div>
+        <div class="gate-section-title">Add / update account</div>
+        <div class="gate-grant-form">
+          <label for="grant-staff">Staff #</label>
+          <input id="grant-staff" type="text" inputmode="numeric" maxlength="6" autocomplete="off" />
+          <label for="grant-role">Role</label>
+          <select id="grant-role">
+            <option value="staff">Staff</option>
+            <option value="dm">DM/DIC</option>
+            <option value="admin">Admin</option>
+            <option value="me">Me</option>
+          </select>
+          <div class="gate-section-title">Pages this account may open</div>
+          <div class="gate-grid" id="grant-pages"></div>
+          <div class="gate-section-title">Actions</div>
+          <div class="gate-grid" id="grant-actions"></div>
+          <label class="gate-check"><input type="checkbox" id="grant-reset-pw" /> Reset password to staff # (must change on next login)</label>
+          <div class="pop-actions" style="justify-content:flex-start;margin-top:8px">
+            <button type="button" class="primary" id="grant-upsert">Save account</button>
+            <button type="button" id="grant-remove">Remove account</button>
+          </div>
+        </div>
         <p class="err" id="gate-perms-err" hidden></p>
         <div class="pop-actions">
-          <button type="button" id="gate-perms-cancel">Cancel</button>
-          <button type="button" class="primary" id="gate-perms-save">Save</button>
+          <button type="button" id="gate-perms-cancel">Close</button>
+          <button type="button" class="primary" id="gate-perms-save">Save public pages</button>
         </div>
       </div>
     </div>
 
-    <div class="page-version" data-version="15.1">v15.1</div>
+    <div class="page-version" data-version="15.2">v15.2</div>
     <script>
       const TOPICS = [
         {
@@ -525,7 +622,7 @@
         },
         {
           id: "team-board",
-          file: "training-team-board.html?v=14.2",
+          file: "training-team-board.html?v=14.3",
           title: "Training One View",
           blurb: "UAL / CT / Mandatory / Manual · live sync",
         },
@@ -555,7 +652,7 @@
         },
         {
           id: "brs",
-          file: "briefing-read-sign.html?v=3.9",
+          file: "briefing-read-sign.html?v=4.0",
           title: "Briefing and R&S",
           blurb: "Board · dashboard · printable record",
         },
@@ -567,7 +664,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=7.4",
+          file: "hx-rules.html?v=7.5",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -587,17 +684,34 @@
           id: "team-board-ingest",
           label: "Training One View — upload / remove UAL · CT · Mandatory",
         },
+        {
+          id: "brs-admin",
+          label: "Briefing and R&S — create / edit / delete",
+        },
+        {
+          id: "brs-pin-reset",
+          label: "Briefing and R&S — PIN Reset",
+        },
+        {
+          id: "grant-access",
+          label: "Grant access roles (Me)",
+        },
       ];
       const GATE_EDGE =
         "https://kcoszufshvvpxikpzlue.supabase.co/functions/v1/team-board";
       const GATE_ROLE_KEY = "hx:hub:gate-role";
       const GATE_PW_KEY = "hx:hub:gate-pw";
       const GATE_CFG_KEY = "hx:hub:gate-cfg";
+      const GATE_STAFF_KEY = "hx:hub:gate-staff";
+      const GATE_ACTIONS_KEY = "hx:hub:gate-actions";
+      const GATE_PAGES_KEY = "hx:hub:gate-pages";
 
       const DEFAULT_GATE = {
         publicPages: ALL_TOPIC_IDS.slice(),
         editActions: EDIT_ACTION_DEFS.map((a) => a.id),
         auth: { hasAdmin: false, hasEdit: false },
+        accounts: [],
+        hasMe: false,
       };
 
       const box = document.getElementById("topics");
@@ -613,6 +727,11 @@
       let gateCfg = loadCachedGate();
       let gateRole = normalizeRole(lsGet(GATE_ROLE_KEY) || "view");
       let gatePassword = lsGet(GATE_PW_KEY) || "";
+      let gateStaff = padStaff(lsGet(GATE_STAFF_KEY) || "");
+      let gateActions = loadJsonArray(GATE_ACTIONS_KEY);
+      let gateAccountPages = loadJsonArray(GATE_PAGES_KEY);
+      let pendingForce = null;
+      let draftAccounts = [];
 
       function lsGet(key) {
         try {
@@ -638,9 +757,32 @@
         }
         return fallback;
       }
+      function loadJsonArray(key) {
+        try {
+          const raw = lsGet(key);
+          if (!raw) return [];
+          const o = JSON.parse(raw);
+          return Array.isArray(o) ? o.map(String) : [];
+        } catch (e) {
+          return [];
+        }
+      }
+      function padStaff(v) {
+        const d = String(v || "").replace(/\D/g, "");
+        if (!d) return "";
+        return d.length < 6 ? d.padStart(6, "0") : d.slice(-6);
+      }
       function normalizeRole(r) {
         r = String(r || "view").toLowerCase();
-        if (r === "admin" || r === "edit") return r;
+        if (r === "me" || r === "admin" || r === "dm" || r === "staff" || r === "edit") return r;
+        return "view";
+      }
+      function roleLabel(r) {
+        if (r === "me") return "Me";
+        if (r === "admin") return "Admin";
+        if (r === "dm") return "DM/DIC";
+        if (r === "staff") return "Staff";
+        if (r === "edit") return "edit";
         return "view";
       }
       function loadCachedGate() {
@@ -663,10 +805,22 @@
               .map(String)
               .filter((id) => EDIT_ACTION_DEFS.some((a) => a.id === id))
           : DEFAULT_GATE.editActions.slice();
+        const accounts = Array.isArray(o.accounts)
+          ? o.accounts.map((a) => ({
+              staff: padStaff(a && a.staff),
+              role: normalizeRole(a && a.role),
+              pages: Array.isArray(a && a.pages) ? a.pages.map(String) : [],
+              actions: Array.isArray(a && a.actions) ? a.actions.map(String) : [],
+              mustChange: !!(a && a.mustChange),
+              hasPassword: !!(a && a.hasPassword),
+            })).filter((a) => a.staff)
+          : [];
         return {
           publicPages: pages.length ? pages : DEFAULT_GATE.publicPages.slice(),
           editActions: actions,
           auth: o.auth && typeof o.auth === "object" ? o.auth : { hasAdmin: false, hasEdit: false },
+          accounts: accounts,
+          hasMe: !!o.hasMe || accounts.some((a) => a.role === "me"),
         };
       }
       function cacheGate(cfg) {
@@ -676,39 +830,74 @@
         } catch (e) {}
       }
       function isUnlocked() {
-        return gateRole === "edit" || gateRole === "admin";
+        return (
+          gateRole === "me" ||
+          gateRole === "admin" ||
+          gateRole === "edit" ||
+          gateRole === "dm" ||
+          gateRole === "staff"
+        ) && !!gatePassword;
+      }
+      function canGrant() {
+        return gateRole === "me" || gateActions.indexOf("grant-access") >= 0;
       }
       function hasEditAction(id) {
-        if (gateRole === "admin") return true;
-        if (gateRole !== "edit") return false;
-        return (gateCfg.editActions || []).indexOf(id) >= 0;
+        if (gateRole === "me") return true;
+        if (gateRole === "admin" && !gateStaff) return true;
+        if (!isUnlocked()) return false;
+        return gateActions.indexOf(id) >= 0;
       }
       function visibleTopicIds() {
-        if (isUnlocked()) return ALL_TOPIC_IDS.slice();
-        const set = new Set(gateCfg.publicPages || []);
-        return ALL_TOPIC_IDS.filter((id) => set.has(id));
+        if (!isUnlocked()) {
+          const set = new Set(gateCfg.publicPages || []);
+          return ALL_TOPIC_IDS.filter((id) => set.has(id));
+        }
+        if (gateRole === "me" || (gateRole === "admin" && !gateStaff)) {
+          return ALL_TOPIC_IDS.slice();
+        }
+        if (gateAccountPages && gateAccountPages.length) {
+          const set = new Set(gateAccountPages);
+          return ALL_TOPIC_IDS.filter((id) => set.has(id));
+        }
+        return ALL_TOPIC_IDS.slice();
       }
       function applyGateChrome() {
-        gateRoleEl.textContent = gateRole;
-        gateUnlockBtn.textContent = isUnlocked() ? "Lock" : "Unlock";
+        gateRoleEl.textContent = isUnlocked()
+          ? roleLabel(gateRole) + (gateStaff ? " · " + gateStaff : "")
+          : "view";
+        gateUnlockBtn.textContent = isUnlocked() ? "Log out" : "Log in";
         gateUnlockBtn.classList.toggle("on", isUnlocked());
         gateUnlockBtn.title = isUnlocked()
-          ? "Lock (return to read-only view)"
-          : "Unlock with password";
-        gatePermsBtn.hidden = gateRole !== "admin";
+          ? "Log out (return to public view)"
+          : "Log in with Staff # and password";
+        gatePermsBtn.hidden = !canGrant();
         notifyFrameGate();
       }
-      function setGateSession(role, password) {
+      function setGateSession(role, password, opts) {
+        opts = opts || {};
         gateRole = normalizeRole(role);
-        if (gateRole === "view") {
+        gateStaff = padStaff(opts.staff || "");
+        gateActions = Array.isArray(opts.actions) ? opts.actions.map(String) : [];
+        gateAccountPages = Array.isArray(opts.pages) ? opts.pages.map(String) : [];
+        if (gateRole === "view" || !password) {
           gatePassword = "";
+          gateStaff = "";
+          gateActions = [];
+          gateAccountPages = [];
           lsRemove(GATE_ROLE_KEY);
           lsRemove(GATE_PW_KEY);
+          lsRemove(GATE_STAFF_KEY);
+          lsRemove(GATE_ACTIONS_KEY);
+          lsRemove(GATE_PAGES_KEY);
         } else {
           gatePassword = String(password || "");
           lsSet(GATE_ROLE_KEY, gateRole);
           if (gatePassword) lsSet(GATE_PW_KEY, gatePassword);
           else lsRemove(GATE_PW_KEY);
+          if (gateStaff) lsSet(GATE_STAFF_KEY, gateStaff);
+          else lsRemove(GATE_STAFF_KEY);
+          lsSet(GATE_ACTIONS_KEY, JSON.stringify(gateActions));
+          lsSet(GATE_PAGES_KEY, JSON.stringify(gateAccountPages));
         }
         applyGateChrome();
         renderTopics();
@@ -720,17 +909,37 @@
       function gateHeaders() {
         const h = { "Content-Type": "application/json" };
         if (gatePassword) h["x-hx-board-password"] = gatePassword;
+        if (gateStaff) h["x-hx-staff"] = gateStaff;
         return h;
       }
       function notifyFrameGate() {
         try {
           if (!frame.contentWindow) return;
+          const childRole =
+            gateRole === "me" || (gateRole === "admin" && !gateStaff)
+              ? "admin"
+              : gateRole === "edit"
+                ? "edit"
+                : isUnlocked()
+                  ? "edit"
+                  : "view";
+          // Limited accounts: never send full admin; child pages use actions
+          const sendRole =
+            gateStaff && gateRole !== "me"
+              ? "edit"
+              : childRole;
           frame.contentWindow.postMessage(
             {
               type: "hx-gate",
-              role: gateRole,
+              role: sendRole,
+              accessRole: gateRole,
+              accessStaff: gateStaff,
               password: isUnlocked() ? gatePassword : "",
-              editActions: gateCfg.editActions || [],
+              editActions: gateStaff
+                ? gateActions.slice()
+                : gateRole === "me" || gateRole === "admin"
+                  ? EDIT_ACTION_DEFS.map((a) => a.id)
+                  : gateCfg.editActions || [],
               publicPages: gateCfg.publicPages || [],
             },
             "*",
@@ -971,11 +1180,14 @@
           pop.classList.add("hidden");
         }
       }
-      function setUnlockErr(msg) {
+      function setUnlockErr(msg, office) {
         const err = document.getElementById("gate-unlock-err");
-        if (!err) return;
-        err.hidden = !msg;
-        err.textContent = msg || "";
+        const hint = document.getElementById("gate-office-hint");
+        if (err) {
+          err.hidden = !msg;
+          err.textContent = msg || "";
+        }
+        if (hint) hint.hidden = !office;
       }
       function setPermsErr(msg) {
         const err = document.getElementById("gate-perms-err");
@@ -983,28 +1195,62 @@
         err.hidden = !msg;
         err.textContent = msg || "";
       }
+      function setForceErr(msg) {
+        const err = document.getElementById("gate-force-err");
+        if (!err) return;
+        err.hidden = !msg;
+        err.textContent = msg || "";
+      }
 
       function openUnlockPop() {
         setUnlockErr("");
+        document.getElementById("gate-staff").value = gateStaff || "";
         document.getElementById("gate-pw").value = "";
         const needBootstrap = !(gateCfg.auth && (gateCfg.auth.hasAdmin || gateCfg.auth.hasEdit));
         document.getElementById("gate-unlock-title").textContent = needBootstrap
           ? "Set manager password"
-          : "Unlock";
+          : "Log in";
         document.getElementById("gate-unlock-hint").textContent = needBootstrap
-          ? "First time: set the manager password (same password you already use for Training One View manage). It is stored only on the locked server — not in this page. Later visitors unlock with that password."
-          : "Enter the password for edit access. Access stays in this browser until you click Lock.";
+          ? "First time: set the manager password (same as Training One View manage). Then log in with Staff # + that password to become Me and set a 6-digit password."
+          : "Enter Staff # and password. First password is your Staff # until you change it. Access stays until Log out.";
+        document.getElementById("gate-staff").hidden = !!needBootstrap;
+        document.querySelector("label[for='gate-staff']").hidden = !!needBootstrap;
+        document.getElementById("gate-pw").removeAttribute("maxLength");
+        document.getElementById("gate-unlock-ok").textContent = needBootstrap ? "Set password" : "Log in";
         showPop("gate-unlock-pop", true);
-        setTimeout(() => document.getElementById("gate-pw").focus(), 0);
+        setTimeout(() => {
+          const el = needBootstrap
+            ? document.getElementById("gate-pw")
+            : document.getElementById("gate-staff");
+          if (el) el.focus();
+        }, 0);
+      }
+
+      function openForcePop(staff, currentPw, meta) {
+        pendingForce = {
+          staff: padStaff(staff),
+          currentPw: String(currentPw || ""),
+          role: (meta && meta.role) || "me",
+          pages: (meta && meta.pages) || [],
+          actions: (meta && meta.actions) || [],
+          kind: (meta && meta.kind) || "",
+        };
+        setForceErr("");
+        document.getElementById("gate-force-staff").value = pendingForce.staff;
+        document.getElementById("gate-force-pw").value = "";
+        document.getElementById("gate-force-pw2").value = "";
+        showPop("gate-force-pop", true);
+        setTimeout(() => document.getElementById("gate-force-pw").focus(), 0);
       }
 
       async function submitUnlock() {
+        const needBootstrap = !(gateCfg.auth && (gateCfg.auth.hasAdmin || gateCfg.auth.hasEdit));
         const pw = String(document.getElementById("gate-pw").value || "");
+        const staff = padStaff(document.getElementById("gate-staff").value || "");
         if (!pw) {
           setUnlockErr("Enter the password.");
           return;
         }
-        const needBootstrap = !(gateCfg.auth && (gateCfg.auth.hasAdmin || gateCfg.auth.hasEdit));
         try {
           if (needBootstrap) {
             if (pw.length < 4) {
@@ -1022,25 +1268,90 @@
               return;
             }
             if (data.gate) cacheGate(data.gate);
-            setGateSession(data.role || "admin", pw);
-            showPop("gate-unlock-pop", false);
+            setUnlockErr("");
+            document.getElementById("gate-unlock-hint").textContent =
+              "Manager password set. Enter your Staff # and the same password to become Me, then set a 6-digit password.";
+            document.getElementById("gate-staff").hidden = false;
+            document.querySelector("label[for='gate-staff']").hidden = false;
+            document.getElementById("gate-pw").removeAttribute("maxLength");
+            document.getElementById("gate-unlock-ok").textContent = "Log in";
+            document.getElementById("gate-unlock-title").textContent = "Log in";
+            document.getElementById("gate-staff").focus();
             return;
           }
-          const res = await fetch(GATE_EDGE + "/gate/unlock", {
+          if (!staff) {
+            setUnlockErr("Enter Staff #.");
+            return;
+          }
+          const res = await fetch(GATE_EDGE + "/gate/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ password: pw }),
+            body: JSON.stringify({ staff: staff, password: pw }),
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok || !data.role || data.role === "view") {
-            setUnlockErr("Wrong password.");
+            setUnlockErr("Wrong Staff # or password.", true);
             return;
           }
           if (data.gate) cacheGate(data.gate);
-          setGateSession(data.role, pw);
           showPop("gate-unlock-pop", false);
+          if (data.mustChange) {
+            openForcePop(staff, pw, data);
+            return;
+          }
+          setGateSession(data.role, pw, {
+            staff: data.staff || staff,
+            pages: data.pages || [],
+            actions: data.actions || [],
+          });
         } catch (e) {
           setUnlockErr("Could not reach the server.");
+        }
+      }
+
+      async function submitForcePw() {
+        if (!pendingForce) return;
+        const a = String(document.getElementById("gate-force-pw").value || "").replace(/\D/g, "");
+        const b = String(document.getElementById("gate-force-pw2").value || "").replace(/\D/g, "");
+        if (!/^\d{6}$/.test(a)) {
+          setForceErr("Password must be 6 digits.");
+          return;
+        }
+        if (a === pendingForce.staff) {
+          setForceErr("Password must differ from Staff #.");
+          return;
+        }
+        if (a !== b) {
+          setForceErr("Passwords do not match.");
+          return;
+        }
+        try {
+          const res = await fetch(GATE_EDGE + "/gate/set-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              staff: pendingForce.staff,
+              currentPassword: pendingForce.currentPw,
+              newPassword: a,
+              pages: pendingForce.pages,
+              actions: pendingForce.actions,
+            }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            setForceErr((data && data.error) || "Could not save password.");
+            return;
+          }
+          if (data.gate) cacheGate(data.gate);
+          showPop("gate-force-pop", false);
+          setGateSession(data.role || pendingForce.role || "me", a, {
+            staff: pendingForce.staff,
+            pages: data.pages || pendingForce.pages || [],
+            actions: data.actions || pendingForce.actions || [],
+          });
+          pendingForce = null;
+        } catch (e) {
+          setForceErr("Could not reach the server.");
         }
       }
 
@@ -1051,8 +1362,15 @@
         }
         openUnlockPop();
       });
-      document.getElementById("gate-unlock-cancel").addEventListener("click", () => {
+      function closeUnlockOnly() {
         showPop("gate-unlock-pop", false);
+      }
+      document.getElementById("gate-unlock-cancel").addEventListener("click", closeUnlockOnly);
+      document.getElementById("gate-unlock-x").addEventListener("click", closeUnlockOnly);
+      document.getElementById("gate-unlock-pop").addEventListener("click", (e) => {
+        if (e.target && e.target.id === "gate-unlock-pop") {
+          /* do not close on backdrop */
+        }
       });
       document.getElementById("gate-unlock-ok").addEventListener("click", submitUnlock);
       document.getElementById("gate-pw").addEventListener("keydown", (e) => {
@@ -1061,12 +1379,22 @@
           submitUnlock();
         }
       });
+      document.getElementById("gate-staff").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          document.getElementById("gate-pw").focus();
+        }
+      });
+      document.getElementById("gate-force-cancel").addEventListener("click", () => {
+        showPop("gate-force-pop", false);
+        pendingForce = null;
+        setGateSession("view", "");
+      });
+      document.getElementById("gate-force-ok").addEventListener("click", submitForcePw);
 
       function paintPermsForm() {
         const pages = document.getElementById("gate-pages");
-        const actions = document.getElementById("gate-actions");
         const pub = new Set(gateCfg.publicPages || []);
-        const acts = new Set(gateCfg.editActions || []);
         pages.innerHTML = TOPICS.map((t) => {
           return (
             "<label><input type=\"checkbox\" data-page=\"" +
@@ -1078,17 +1406,87 @@
             "</label>"
           );
         }).join("");
-        actions.innerHTML = EDIT_ACTION_DEFS.map((a) => {
+        draftAccounts = (gateCfg.accounts || []).map((a) => ({
+          staff: a.staff,
+          role: a.role,
+          pages: (a.pages || []).slice(),
+          actions: (a.actions || []).slice(),
+          mustChange: !!a.mustChange,
+          hasPassword: !!a.hasPassword,
+          resetPassword: false,
+        }));
+        paintAccountsList();
+        paintGrantForm(null);
+      }
+      function paintAccountsList() {
+        const boxAcc = document.getElementById("gate-accounts");
+        if (!boxAcc) return;
+        if (!draftAccounts.length) {
+          boxAcc.innerHTML = "<p class=\"hint\">No accounts yet. Add a Staff # below.</p>";
+          return;
+        }
+        boxAcc.innerHTML = draftAccounts.map((a) => {
           return (
-            "<label><input type=\"checkbox\" data-action=\"" +
+            "<button type=\"button\" data-pick-staff=\"" +
+            a.staff +
+            "\">" +
+            a.staff +
+            " · " +
+            roleLabel(a.role) +
+            (a.mustChange ? " · must change PW" : "") +
+            "</button>"
+          );
+        }).join("");
+      }
+      function paintGrantForm(acc) {
+        document.getElementById("grant-staff").value = acc ? acc.staff : "";
+        document.getElementById("grant-role").value = acc ? acc.role : "staff";
+        document.getElementById("grant-reset-pw").checked = !!(acc && acc.resetPassword);
+        const gp = document.getElementById("grant-pages");
+        const ga = document.getElementById("grant-actions");
+        const pageSet = new Set(acc && acc.pages ? acc.pages : []);
+        const actSet = new Set(acc && acc.actions ? acc.actions : []);
+        gp.innerHTML = TOPICS.map((t) => {
+          return (
+            "<label><input type=\"checkbox\" data-grant-page=\"" +
+            t.id +
+            "\"" +
+            (pageSet.has(t.id) ? " checked" : "") +
+            "> " +
+            t.title +
+            "</label>"
+          );
+        }).join("");
+        ga.innerHTML = EDIT_ACTION_DEFS.map((a) => {
+          return (
+            "<label><input type=\"checkbox\" data-grant-action=\"" +
             a.id +
             "\"" +
-            (acts.has(a.id) ? " checked" : "") +
+            (actSet.has(a.id) ? " checked" : "") +
             "> " +
             a.label +
             "</label>"
           );
         }).join("");
+      }
+      function readGrantForm() {
+        const staff = padStaff(document.getElementById("grant-staff").value || "");
+        const role = normalizeRole(document.getElementById("grant-role").value || "staff");
+        const pages = [];
+        document.querySelectorAll("#grant-pages [data-grant-page]").forEach((el) => {
+          if (el.checked) pages.push(el.getAttribute("data-grant-page"));
+        });
+        const actions = [];
+        document.querySelectorAll("#grant-actions [data-grant-action]").forEach((el) => {
+          if (el.checked) actions.push(el.getAttribute("data-grant-action"));
+        });
+        return {
+          staff: staff,
+          role: role,
+          pages: pages,
+          actions: actions,
+          resetPassword: !!document.getElementById("grant-reset-pw").checked,
+        };
       }
 
       gatePermsBtn.addEventListener("click", () => {
@@ -1099,24 +1497,67 @@
       document.getElementById("gate-perms-cancel").addEventListener("click", () => {
         showPop("gate-perms-pop", false);
       });
+      document.getElementById("gate-accounts").addEventListener("click", (e) => {
+        const btn = e.target && e.target.closest ? e.target.closest("[data-pick-staff]") : null;
+        if (!btn) return;
+        const staff = padStaff(btn.getAttribute("data-pick-staff"));
+        const acc = draftAccounts.find((a) => a.staff === staff);
+        paintGrantForm(acc || null);
+        document.querySelectorAll("#gate-accounts button").forEach((b) => {
+          b.classList.toggle("on", b.getAttribute("data-pick-staff") === staff);
+        });
+      });
+      document.getElementById("grant-upsert").addEventListener("click", () => {
+        const row = readGrantForm();
+        if (!row.staff) {
+          setPermsErr("Enter Staff #.");
+          return;
+        }
+        const idx = draftAccounts.findIndex((a) => a.staff === row.staff);
+        const next = {
+          staff: row.staff,
+          role: row.role,
+          pages: row.pages,
+          actions: row.actions,
+          mustChange: row.resetPassword || (idx < 0),
+          hasPassword: idx >= 0 ? draftAccounts[idx].hasPassword : false,
+          resetPassword: row.resetPassword || idx < 0,
+        };
+        if (idx >= 0) draftAccounts[idx] = next;
+        else draftAccounts.push(next);
+        paintAccountsList();
+        setPermsErr("");
+      });
+      document.getElementById("grant-remove").addEventListener("click", () => {
+        const staff = padStaff(document.getElementById("grant-staff").value || "");
+        if (!staff) return;
+        draftAccounts = draftAccounts.filter((a) => a.staff !== staff);
+        paintAccountsList();
+        paintGrantForm(null);
+      });
       document.getElementById("gate-perms-save").addEventListener("click", async () => {
-        if (gateRole !== "admin" || !gatePassword) {
-          setPermsErr("Admin unlock required.");
+        if (!canGrant() || !gatePassword) {
+          setPermsErr("Me login required.");
           return;
         }
         const publicPages = [];
         document.querySelectorAll("#gate-pages [data-page]").forEach((el) => {
           if (el.checked) publicPages.push(el.getAttribute("data-page"));
         });
-        const editActions = [];
-        document.querySelectorAll("#gate-actions [data-action]").forEach((el) => {
-          if (el.checked) editActions.push(el.getAttribute("data-action"));
-        });
         try {
-          const res = await fetch(GATE_EDGE + "/gate", {
+          const res = await fetch(GATE_EDGE + "/gate/accounts", {
             method: "PUT",
             headers: gateHeaders(),
-            body: JSON.stringify({ publicPages, editActions }),
+            body: JSON.stringify({
+              publicPages: publicPages,
+              accounts: draftAccounts.map((a) => ({
+                staff: a.staff,
+                role: a.role,
+                pages: a.pages,
+                actions: a.actions,
+                resetPassword: !!a.resetPassword,
+              })),
+            }),
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) {
@@ -1134,19 +1575,31 @@
 
       (async function init() {
         await fetchGatePublic();
+        gateStaff = padStaff(lsGet(GATE_STAFF_KEY) || "");
+        gateActions = loadJsonArray(GATE_ACTIONS_KEY);
+        gateAccountPages = loadJsonArray(GATE_PAGES_KEY);
         if (gateRole !== "view" && gatePassword) {
           try {
-            const res = await fetch(GATE_EDGE + "/gate/unlock", {
+            const body = gateStaff
+              ? { staff: gateStaff, password: gatePassword }
+              : { password: gatePassword };
+            const res = await fetch(GATE_EDGE + (gateStaff ? "/gate/login" : "/gate/unlock"), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ password: gatePassword }),
+              body: JSON.stringify(body),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.role || data.role === "view") {
               setGateSession("view", "");
+            } else if (data.mustChange) {
+              setGateSession("view", "");
             } else {
               if (data.gate) cacheGate(data.gate);
-              setGateSession(data.role, gatePassword);
+              setGateSession(data.role, gatePassword, {
+                staff: data.staff || gateStaff,
+                pages: data.pages || gateAccountPages,
+                actions: data.actions || gateActions,
+              });
             }
           } catch (e) {
             /* keep cached session offline */

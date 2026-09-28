@@ -23,6 +23,7 @@
   };
   var GATE_PW_KEY = "hx:hub:gate-pw";
   var GATE_ROLE_KEY = "hx:hub:gate-role";
+  var GATE_STAFF_KEY = "hx:hub:gate-staff";
 
   function metaKey(docId) {
     return META_PREFIX + String(docId || "").trim();
@@ -50,6 +51,12 @@
     return String(lsGet(GATE_PW_KEY) || "").trim();
   }
 
+  function getStaff() {
+    var d = String(lsGet(GATE_STAFF_KEY) || "").replace(/\D/g, "");
+    if (!d) return "";
+    return d.length < 6 ? d.padStart(6, "0") : d.slice(-6);
+  }
+
   function setPassword(pw) {
     pw = String(pw || "").trim();
     if (!pw) {
@@ -61,10 +68,25 @@
     lsSet(GATE_PW_KEY, pw);
   }
 
+  function setStaff(staff) {
+    staff = String(staff || "").replace(/\D/g, "");
+    if (!staff) {
+      try {
+        localStorage.removeItem(GATE_STAFF_KEY);
+      } catch (e) {}
+      return;
+    }
+    if (staff.length < 6) staff = staff.padStart(6, "0");
+    else staff = staff.slice(-6);
+    lsSet(GATE_STAFF_KEY, staff);
+  }
+
   function authHeaders(extra) {
     var h = Object.assign({}, extra || {});
     var pw = getPassword();
     if (pw) h["x-hx-board-password"] = pw;
+    var staff = getStaff();
+    if (staff && staff !== "000000") h["x-hx-staff"] = staff;
     return h;
   }
 
@@ -352,6 +374,8 @@
     metaKey: metaKey,
     getPassword: getPassword,
     setPassword: setPassword,
+    setStaff: setStaff,
+    getStaff: getStaff,
     promptPassword: promptPassword,
     fetchBoard: fetchBoard,
     pullDoc: pullDoc,

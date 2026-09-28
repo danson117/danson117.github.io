@@ -4,7 +4,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-hx-board-password, x-hx-sync-key, content-type",
+    "authorization, x-hx-board-password, x-hx-sync-key, x-hx-staff, content-type",
   "Access-Control-Allow-Methods": "GET, PUT, POST, OPTIONS",
 };
 
@@ -44,7 +44,186 @@ function stripAuth(cfg: Record<string, unknown> | null) {
     hasAdmin: !!(rawAuth.admin && rawAuth.admin.hash),
     hasEdit: !!(rawAuth.edit && rawAuth.edit.hash),
   };
+  const accounts = Array.isArray(cfg && (cfg as any).accounts)
+    ? ((cfg as any).accounts as any[])
+    : [];
+  out.accounts = accounts.map((a) => ({
+    staff: padStaff(a && a.staff),
+    role: normalizeAccountRole(a && a.role),
+    pages: Array.isArray(a && a.pages) ? a.pages.map(String) : [],
+    actions: Array.isArray(a && a.actions) ? a.actions.map(String) : [],
+    mustChange: !!(a && a.mustChange),
+    hasPassword: !!(a && a.hash),
+  })).filter((a) => a.staff);
+  out.hasMe = accounts.some((a) => normalizeAccountRole(a && a.role) === "me" && a && a.hash);
   return out;
+}
+
+function normalizeAccountRole(r: unknown) {
+  const s = String(r || "").toLowerCase();
+  if (s === "me" || s === "admin" || s === "dm" || s === "staff") return s;
+  if (s === "dm/dic" || s === "dic") return "dm";
+  return "staff";
+}
+
+function listAccounts(cfg: Record<string, unknown>) {
+  return Array.isArray((cfg as any).accounts) ? ((cfg as any).accounts as any[]) : [];
+}
+
+function hasMeAccount(cfg: Record<string, unknown>) {
+  return listAccounts(cfg).some((a) => normalizeAccountRole(a && a.role) === "me" && a && a.hash);
+}
+
+function findAccount(cfg: Record<string, unknown>, staff: string) {
+  const s = padStaff(staff);
+  if (!s) return null;
+  return listAccounts(cfg).find((a) => padStaff(a && a.staff) === s) || null;
+}
+
+function allActions() {
+  return [
+    "team-board-status",
+    "team-board-manual",
+    "team-board-ingest",
+    "brs-admin",
+    "brs-pin-reset",
+    "grant-access",
+  ];
+}
+
+function actionsForRole(role: string, listed: unknown) {
+  if (role === "me") return allActions();
+  if (Array.isArray(listed) && listed.length) {
+    return listed.map(String).filter((id) => allActions().indexOf(id) >= 0);
+  }
+  if (role === "admin") {
+    return [
+      "team-board-status",
+      "team-board-manual",
+      "team-board-ingest",
+      "brs-admin",
+      "brs-pin-reset",
+    ];
+  }
+  if (role === "dm") {
+    return ["team-board-status", "brs-admin"];
+  }
+  return [];
+}
+
+async function verifyAccountPassword(account: any, pw: string) {
+  if (!account || !pw) return false;
+  if (account.salt && account.hash) {
+    const got = await hashPassword(pw, String(account.salt));
+    return got === String(account.hash);
+  }
+  // unset custom password: default = staff #
+  const staff = padStaff(account.staff);
+  return /^\d{6}$/.test(pw) && pw === staff;
+}
+
+async function hashAccountPassword(pw: string) {
+  const salt = randomSalt();
+  const hash = await hashPassword(pw, salt);
+  return { salt, hash };
+}
+
+type Session = {
+  role: string;
+  staff: string;
+  pages: string[];
+  actions: string[];
+  mustChange: boolean;
+  kind: "account" | "legacy" | "bootstrap-me";
+};
+
+async function resolveSession(
+  cfg: Record<string, unknown>,
+  staffRaw: string,
+  pw: string,
+  legacyKey: string,
+): Promise<Session | null> {
+  const staff = padStaff(staffRaw);
+  if (staff && pw) {
+    const acc = findAccount(cfg, staff);
+    if (acc) {
+      const ok = await verifyAccountPassword(acc, pw);
+      if (ok) {
+        const role = normalizeAccountRole(acc.role);
+        return {
+          kind: "account",
+          staff,
+          role,
+          pages: Array.isArray(acc.pages) ? acc.pages.map(String) : [],
+          actions: actionsForRole(role, acc.actions),
+          mustChange: !!acc.mustChange || !(acc.hash) || pw === staff,
+        };
+      }
+    }
+    // No Me account yet: staff # + current manager password → Me, force 6-digit set
+    if (!hasMeAccount(cfg)) {
+      const legacyRole = await roleFromPassword(pw, cfg);
+      if (legacyRole === "admin") {
+        return {
+          kind: "bootstrap-me",
+          staff,
+          role: "me",
+          pages: [],
+          actions: allActions(),
+          mustChange: true,
+        };
+      }
+    }
+  }
+  // Legacy password-only unlock (manager) — still allowed when no Me yet
+  if (pw && !staff) {
+    const r = await roleFromPassword(pw, cfg);
+    if (r) {
+      return {
+        kind: "legacy",
+        staff: "",
+        role: r === "admin" ? "admin" : "edit",
+        pages: [],
+        actions: r === "admin" ? allActions() : [],
+        mustChange: false,
+      };
+    }
+  }
+  if (legacyKey && await legacyOk(legacyKey, cfg)) {
+    return {
+      kind: "legacy",
+      staff: "",
+      role: "admin",
+      pages: [],
+      actions: allActions(),
+      mustChange: false,
+    };
+  }
+  return null;
+}
+
+function sessionCanWrite(session: Session | null) {
+  if (!session || session.mustChange) return false;
+  if (session.role === "me" || session.role === "admin" || session.role === "edit") return true;
+  const acts = session.actions || [];
+  return acts.some((a) =>
+    a === "team-board-status" || a === "team-board-manual" || a === "team-board-ingest" ||
+    a === "brs-admin" || a === "brs-pin-reset" || a === "grant-access"
+  );
+}
+
+function sessionCanAdmin(session: Session | null) {
+  if (!session || session.mustChange) return false;
+  if (session.role === "me") return true;
+  if (session.role === "admin" && session.kind === "legacy") return true;
+  return (session.actions || []).indexOf("grant-access") >= 0;
+}
+
+function sessionHasAction(session: Session | null, action: string) {
+  if (!session || session.mustChange) return false;
+  if (session.role === "me") return true;
+  if (session.role === "admin" && session.kind === "legacy") return true;
+  return (session.actions || []).indexOf(action) >= 0;
 }
 
 async function loadGate(admin: ReturnType<typeof adminClient>) {
@@ -148,6 +327,7 @@ Deno.serve(async (req: Request) => {
   const path = url.pathname;
   const pw = req.headers.get("x-hx-board-password") || "";
   const legacy = req.headers.get("x-hx-sync-key") || "";
+  const staffHdr = padStaff(req.headers.get("x-hx-staff") || "");
 
   let cfg: Record<string, unknown> = {};
   try {
@@ -156,23 +336,118 @@ Deno.serve(async (req: Request) => {
     return json(500, { error: String((e as Error).message || e) });
   }
 
-  const roleFromPw = pw ? await roleFromPassword(pw, cfg) : null;
-  const isLegacy = legacy ? await legacyOk(legacy, cfg) : false;
-  const role = roleFromPw || (isLegacy ? "admin" : null);
-  const canWrite = role === "edit" || role === "admin";
-  const canAdmin = role === "admin";
+  const session = await resolveSession(cfg, staffHdr, pw, legacy);
+  const role = session ? session.role : null;
+  const canWrite = sessionCanWrite(session);
+  const canAdmin = sessionCanAdmin(session);
 
   if ((path.endsWith("/gate") || path.endsWith("/gate/public")) && req.method === "GET") {
     return json(200, stripAuth(cfg));
   }
 
+  if (path.endsWith("/gate/login") && req.method === "POST") {
+    const body = await req.json().catch(() => ({})) as any;
+    const tryStaff = padStaff(body && body.staff);
+    const tryPw = String((body && body.password) || "");
+    if (!tryStaff) return json(400, { error: "staff required", role: "view" });
+    if (!tryPw) return json(400, { error: "password required", role: "view" });
+    const s = await resolveSession(cfg, tryStaff, tryPw, "");
+    if (!s || (s.kind === "legacy" && !s.staff)) {
+      return json(401, {
+        error: "unauthorized",
+        role: "view",
+        hint: "If you forgot your password, ask Me to reset it.",
+      });
+    }
+    return json(200, {
+      role: s.role,
+      staff: s.staff,
+      pages: s.pages,
+      actions: s.actions,
+      mustChange: s.mustChange,
+      kind: s.kind,
+      gate: stripAuth(cfg),
+    });
+  }
+
+  if (path.endsWith("/gate/set-password") && req.method === "POST") {
+    const body = await req.json().catch(() => ({})) as any;
+    const tryStaff = padStaff(body && body.staff);
+    const currentPw = String((body && body.currentPassword) || "");
+    const newPw = String((body && body.newPassword) || "").replace(/\D/g, "");
+    if (!tryStaff) return json(400, { error: "staff required" });
+    if (!/^\d{6}$/.test(newPw)) return json(400, { error: "password must be 6 digits" });
+    if (newPw === tryStaff) return json(400, { error: "password must differ from staff #" });
+    const s = await resolveSession(cfg, tryStaff, currentPw, "");
+    if (!s || s.staff !== tryStaff) {
+      return json(401, {
+        error: "unauthorized",
+        hint: "If you forgot your password, ask Me to reset it.",
+      });
+    }
+    const hashed = await hashAccountPassword(newPw);
+    const accounts = listAccounts(cfg).slice();
+    const idx = accounts.findIndex((a) => padStaff(a && a.staff) === tryStaff);
+    const role = s.role === "me" || s.kind === "bootstrap-me" ? "me" : normalizeAccountRole(s.role);
+    const pages = Array.isArray(body.pages) ? body.pages.map(String) : (s.pages || []);
+    const actions = actionsForRole(role, Array.isArray(body.actions) ? body.actions : s.actions);
+    const row = {
+      staff: tryStaff,
+      role,
+      pages: role === "me" ? [] : pages,
+      actions: role === "me" ? allActions() : actions,
+      salt: hashed.salt,
+      hash: hashed.hash,
+      mustChange: false,
+    };
+    if (idx >= 0) accounts[idx] = { ...accounts[idx], ...row };
+    else accounts.push(row);
+    const next = { ...cfg, accounts };
+    try {
+      await saveGate(admin, next);
+    } catch (e) {
+      return json(500, { error: String((e as Error).message || e) });
+    }
+    return json(200, {
+      ok: true,
+      role: row.role,
+      staff: tryStaff,
+      pages: row.pages,
+      actions: row.actions,
+      mustChange: false,
+      gate: stripAuth(next),
+    });
+  }
+
   if (path.endsWith("/gate/unlock") && req.method === "POST") {
     const body = await req.json().catch(() => ({}));
     const tryPw = String((body && (body as any).password) || pw || "");
+    const tryStaff = padStaff((body && (body as any).staff) || staffHdr || "");
     if (!tryPw) return json(400, { error: "password required" });
+    if (tryStaff) {
+      const s = await resolveSession(cfg, tryStaff, tryPw, "");
+      if (!s) return json(401, { error: "unauthorized", role: "view" });
+      return json(200, {
+        role: s.role,
+        staff: s.staff,
+        pages: s.pages,
+        actions: s.actions,
+        mustChange: s.mustChange,
+        kind: s.kind,
+        gate: stripAuth(cfg),
+      });
+    }
     const r = await roleFromPassword(tryPw, cfg);
     if (!r) return json(401, { error: "unauthorized", role: "view" });
-    return json(200, { role: r, gate: stripAuth(cfg) });
+    return json(200, {
+      role: r,
+      staff: "",
+      pages: [],
+      actions: r === "admin" ? allActions() : [],
+      mustChange: false,
+      kind: "legacy",
+      gate: stripAuth(cfg),
+    });
   }
 
   if (path.endsWith("/gate/bootstrap") && req.method === "POST") {
@@ -201,8 +476,63 @@ Deno.serve(async (req: Request) => {
     return json(200, { role: "admin", gate: stripAuth(next) });
   }
 
+  if (path.endsWith("/gate/accounts") && req.method === "PUT") {
+    if (!canAdmin && !(session && session.role === "me" && !session.mustChange)) {
+      return json(401, { error: "unauthorized" });
+    }
+    const body = await req.json().catch(() => ({})) as any;
+    const incoming = Array.isArray(body.accounts) ? body.accounts : null;
+    if (!incoming) return json(400, { error: "accounts required" });
+    const prevByStaff = new Map(
+      listAccounts(cfg).map((a) => [padStaff(a && a.staff), a]),
+    );
+    const nextAccounts: any[] = [];
+    for (const raw of incoming) {
+      const staff = padStaff(raw && raw.staff);
+      if (!staff) continue;
+      const role = normalizeAccountRole(raw && raw.role);
+      const pages = Array.isArray(raw && raw.pages) ? raw.pages.map(String) : [];
+      const actions = actionsForRole(role, raw && raw.actions);
+      const prev = prevByStaff.get(staff);
+      let salt = prev && prev.salt;
+      let hash = prev && prev.hash;
+      let mustChange = prev ? !!prev.mustChange : true;
+      if (raw && raw.resetPassword) {
+        const hashed = await hashAccountPassword(staff);
+        salt = hashed.salt;
+        hash = hashed.hash;
+        mustChange = true;
+      } else if (!hash) {
+        const hashed = await hashAccountPassword(staff);
+        salt = hashed.salt;
+        hash = hashed.hash;
+        mustChange = true;
+      }
+      nextAccounts.push({
+        staff,
+        role,
+        pages: role === "me" ? [] : pages,
+        actions: role === "me" ? allActions() : actions,
+        salt,
+        hash,
+        mustChange,
+      });
+    }
+    const next = { ...cfg, accounts: nextAccounts };
+    if (Array.isArray(body.publicPages)) next.publicPages = body.publicPages;
+    if (Array.isArray(body.editActions)) next.editActions = body.editActions;
+    try {
+      const saved = await saveGate(admin, next);
+      return json(200, stripAuth((saved && typeof saved === "object") ? saved as any : next));
+    } catch (e) {
+      return json(500, { error: String((e as Error).message || e) });
+    }
+  }
+
   if (path.endsWith("/gate") && req.method === "PUT") {
-    if (!canAdmin) return json(401, { error: "unauthorized" });
+    if (!canAdmin && !(session && session.role === "me" && !session.mustChange)) {
+      return json(401, { error: "unauthorized" });
+    }
     const body = await req.json().catch(() => ({})) as any;
     const auth = (cfg.auth && typeof cfg.auth === "object")
       ? { ...(cfg.auth as Record<string, any>) }
@@ -267,7 +597,9 @@ Deno.serve(async (req: Request) => {
   }
 
   if (path.endsWith("/pin/admin-list") && req.method === "GET") {
-    if (!canAdmin) return json(401, { error: "unauthorized" });
+    if (!sessionHasAction(session, "brs-pin-reset") && !canAdmin) {
+      return json(401, { error: "unauthorized" });
+    }
     const { data, error } = await admin.rpc("hx_brs_pin_list_set");
     if (error) return json(500, { error: error.message });
     const set = Array.isArray(data) ? data.map((x: unknown) => String(x || "")).filter(Boolean) : [];
@@ -275,7 +607,9 @@ Deno.serve(async (req: Request) => {
   }
 
   if (path.endsWith("/pin/admin-reset") && req.method === "POST") {
-    if (!canAdmin) return json(401, { error: "unauthorized" });
+    if (!sessionHasAction(session, "brs-pin-reset") && !canAdmin) {
+      return json(401, { error: "unauthorized" });
+    }
     const body = await req.json().catch(() => ({})) as any;
     const staff = padStaff(body && body.staff);
     const { data, error } = await admin.rpc("hx_brs_pin_reset", { p_staff: staff });

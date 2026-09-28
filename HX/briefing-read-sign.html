@@ -380,23 +380,20 @@
     padding-top: 0;
   }
   .brs-top-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px 16px;
-    align-items: flex-start;
+    display: block;
     margin: 0 0 8px;
   }
   .brs-top-main {
-    flex: 1 1 360px;
     min-width: 0;
   }
   .brs-top-main:empty { display: none; }
-  .pin-reset-slot {
-    flex: 0 1 300px;
-    width: min(300px, 100%);
-    margin-left: auto;
+  #brs-admin #pin-vault.vault {
+    margin: 14px 0 0;
+    border: 2px solid var(--admin-border);
+    border-left: 6px solid var(--admin);
+    background: var(--admin-bg);
+    padding: 14px 12px 12px;
   }
-  .pin-reset-slot:empty { display: none; }
   #pin-vault.vault {
     margin: 0;
     border: 2px solid var(--admin-border);
@@ -527,8 +524,7 @@
     color: var(--admin);
     font-weight: 700;
   }
-  .brs-top-row:has(#brs-admin) ~ h1,
-  .brs-top-row:has(#pin-vault) ~ h1 {
+  .brs-top-row:has(#brs-admin) ~ h1 {
     border-top: 1px solid var(--line);
     padding-top: 16px;
     margin-top: 4px;
@@ -811,11 +807,6 @@
   @media (max-width: 720px) {
     .mat-add { grid-template-columns: 1fr; }
     .dash { grid-template-columns: 1fr 1fr; }
-    .pin-reset-slot {
-      flex: 1 1 100%;
-      width: 100%;
-      margin-left: 0;
-    }
   }
 </style>
 </head>
@@ -825,7 +816,6 @@
       <div class="brs-top-main">
         <div id="admin-slot"></div>
       </div>
-      <aside id="pin-reset-slot" class="pin-reset-slot" aria-label="PIN Reset"></aside>
     </div>
     <h1>Briefing and R&amp;S</h1>
     <div class="bar">
@@ -923,7 +913,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="3.9">v3.9</div>
+  <div class="page-version" data-version="4.0">v4.0</div>
   <script src="ocg-pax-data.js?v=1"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1750,9 +1740,11 @@
 
   function normalizeGateRole(r) {
     r = String(r || "view").toLowerCase();
-    if (r === "edit" || r === "admin") return r;
+    if (r === "edit" || r === "admin" || r === "me" || r === "dm" || r === "staff") return r;
     return "view";
   }
+  var hubAccessStaff = "";
+  var hubActions = [];
   function readStoredGateRole() {
     try {
       return normalizeGateRole(localStorage.getItem(GATE_ROLE_KEY) || "view");
@@ -1761,7 +1753,14 @@
     }
   }
   function isEditUnlocked() {
-    return hubRole === "edit" || hubRole === "admin";
+    if (hubAccessStaff && hubRole !== "admin") {
+      return hubActions.indexOf("brs-admin") >= 0;
+    }
+    return hubRole === "edit" || hubRole === "admin" || hubRole === "me";
+  }
+  function canPinReset() {
+    if (hubRole === "admin" || hubRole === "me") return true;
+    return hubActions.indexOf("brs-pin-reset") >= 0;
   }
   function applyHubGate(msg) {
     var role = normalizeGateRole(msg && msg.role);
@@ -1769,9 +1768,17 @@
       ? String(msg.password || "")
       : null;
     hubRole = role;
+    hubAccessStaff = String((msg && msg.accessStaff) || "").replace(/\D/g, "");
+    if (hubAccessStaff && hubAccessStaff.length < 6) hubAccessStaff = ("000000" + hubAccessStaff).slice(-6);
+    hubActions = Array.isArray(msg && msg.editActions) ? msg.editActions.map(String) : [];
     if (window.HxSharedSync) {
-      if (role === "view") window.HxSharedSync.setPassword("");
-      else if (pw != null && pw) window.HxSharedSync.setPassword(pw);
+      if (role === "view") {
+        window.HxSharedSync.setPassword("");
+        if (window.HxSharedSync.setStaff) window.HxSharedSync.setStaff("");
+      } else {
+        if (pw != null && pw) window.HxSharedSync.setPassword(pw);
+        if (window.HxSharedSync.setStaff) window.HxSharedSync.setStaff(hubAccessStaff || "");
+      }
     }
     if (!isEditUnlocked()) {
       adminEditId = "";
@@ -1780,13 +1787,22 @@
     syncAdminDom();
     render();
   }
+  function pinVaultHtml() {
+    return "<div class=\"vault\" id=\"pin-vault\">" +
+      "<h3>PIN Reset</h3>" +
+      "<div class=\"bar\">" +
+        "<button type=\"button\" class=\"quiet\" id=\"vault-refresh\">Refresh list</button>" +
+        "<span class=\"status\" id=\"vault-status\"></span>" +
+      "</div>" +
+      "<input type=\"search\" id=\"vault-search\" class=\"vault-search\" placeholder=\"Search staff # or name\" autocomplete=\"off\">" +
+      "<ul class=\"clean\" id=\"vault-list\"><li class=\"muted\">Click Refresh list after edit unlock.</li></ul>" +
+    "</div>";
+  }
   function syncAdminDom() {
     var slot = document.getElementById("admin-slot");
-    var pinSlot = document.getElementById("pin-reset-slot");
     if (!slot) return;
     if (!isEditUnlocked()) {
       slot.innerHTML = "";
-      if (pinSlot) pinSlot.innerHTML = "";
       adminWired = false;
       pinVaultWired = false;
       return;
@@ -1802,21 +1818,30 @@
             "</div>" +
           "</div>" +
           "<div class=\"admin-section\" id=\"admin-editor-wrap\"></div>" +
+          (canPinReset()
+            ? "<div class=\"admin-section\" id=\"pin-vault-wrap\">" + pinVaultHtml() + "</div>"
+            : "") +
         "</section>";
       wireAdminOnce();
-    }
-    if (pinSlot && !document.getElementById("pin-vault")) {
-      pinSlot.innerHTML =
-        "<div class=\"vault\" id=\"pin-vault\">" +
-          "<h3>PIN Reset</h3>" +
-          "<div class=\"bar\">" +
-            "<button type=\"button\" class=\"quiet\" id=\"vault-refresh\">Refresh list</button>" +
-            "<span class=\"status\" id=\"vault-status\"></span>" +
-          "</div>" +
-          "<input type=\"search\" id=\"vault-search\" class=\"vault-search\" placeholder=\"Search staff # or name\" autocomplete=\"off\">" +
-          "<ul class=\"clean\" id=\"vault-list\"><li class=\"muted\">Click Refresh list after edit unlock.</li></ul>" +
-        "</div>";
-      wirePinVaultOnce();
+      if (canPinReset()) wirePinVaultOnce();
+    } else {
+      var wrap = document.getElementById("pin-vault-wrap");
+      if (canPinReset()) {
+        if (!document.getElementById("pin-vault")) {
+          if (!wrap) {
+            wrap = document.createElement("div");
+            wrap.className = "admin-section";
+            wrap.id = "pin-vault-wrap";
+            document.getElementById("brs-admin").appendChild(wrap);
+          }
+          wrap.innerHTML = pinVaultHtml();
+          pinVaultWired = false;
+          wirePinVaultOnce();
+        }
+      } else if (wrap) {
+        wrap.innerHTML = "";
+        pinVaultWired = false;
+      }
     }
     renderAdminEditor();
   }
