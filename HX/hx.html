@@ -675,7 +675,7 @@
         </div>
         <div class="gate-block">
           <div class="gate-section-title">3. Accounts</div>
-          <p class="hint">Add a Staff # and a role. A page list opens for that person.</p>
+          <p class="hint">Click an account to edit Staff # and role, then Update account. Edit pages opens that person's page list. A new Staff # uses Add account.</p>
           <div id="gate-accounts" class="gate-accounts"></div>
           <div class="gate-grant-form">
             <label for="grant-staff">Staff #</label>
@@ -690,6 +690,7 @@
             <label class="gate-check"><input type="checkbox" id="grant-reset-pw" /> Reset password to staff # (must change on next login; login roles only)</label>
             <div class="pop-actions" style="justify-content:flex-start;margin-top:8px">
               <button type="button" class="primary" id="grant-upsert">Add account</button>
+              <button type="button" id="grant-edit-pages">Edit pages</button>
               <button type="button" id="grant-remove">Remove account</button>
             </div>
           </div>
@@ -730,7 +731,7 @@
       </div>
     </div>
 
-    <div class="page-version" data-version="16.3">v16.3</div>
+    <div class="page-version" data-version="16.4">v16.4</div>
     <script src="ocg-pax-data.js?v=1"></script>
     <script src="ocg-pax-data-unpack.js?v=1"></script>
     <script>
@@ -828,7 +829,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=9.0",
+          file: "hx-rules.html?v=9.1",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -912,6 +913,7 @@
       let gateAccountPages = loadJsonArray(GATE_PAGES_KEY);
       let pendingForce = null;
       let draftAccounts = [];
+      let editingStaff = "";
 
       function lsGet(key) {
         try {
@@ -1808,10 +1810,12 @@
           customPages: !!a.customPages,
         }));
         paintRoleMatrix(gateCfg.rolePages);
+        editingStaff = "";
         paintAccountsList();
         document.getElementById("grant-staff").value = "";
         document.getElementById("grant-role").value = "public";
         document.getElementById("grant-reset-pw").checked = false;
+        syncGrantAccountButton();
         paintPinList();
         wireGrantDragOnce();
       }
@@ -1823,10 +1827,13 @@
           return;
         }
         boxAcc.innerHTML = draftAccounts.map((a) => {
+          const on = a.staff === editingStaff ? " class=\"on\"" : "";
           return (
             "<button type=\"button\" data-pick-staff=\"" +
             a.staff +
-            "\">" +
+            "\"" +
+            on +
+            ">" +
             a.staff +
             " · " +
             roleLabel(a.role) +
@@ -1834,6 +1841,23 @@
             "</button>"
           );
         }).join("");
+        syncGrantAccountButton();
+      }
+      function syncGrantAccountButton() {
+        const btn = document.getElementById("grant-upsert");
+        if (!btn) return;
+        const staff = padStaff((document.getElementById("grant-staff") || {}).value || "");
+        const editing = !!(editingStaff && draftAccounts.some((a) => a.staff === editingStaff));
+        const known = !!(staff && draftAccounts.some((a) => a.staff === staff));
+        btn.textContent = editing || known ? "Update account" : "Add account";
+      }
+      function accountBeingEdited() {
+        if (editingStaff) {
+          const hit = draftAccounts.find((a) => a.staff === editingStaff);
+          if (hit) return hit;
+        }
+        const staff = padStaff((document.getElementById("grant-staff") || {}).value || "");
+        return draftAccounts.find((a) => a.staff === staff) || null;
       }
       function openAccountPages(acc, isNew) {
         const role = acc.role === "me" ? "me" : normalizeRole(acc.role);
@@ -1843,6 +1867,7 @@
           : (acc.pages && acc.pages.length ? acc.pages : (matrix[role] || []));
         pendingGrant = {
           staff: acc.staff,
+          originalStaff: acc.originalStaff || acc.staff,
           role: role,
           actions: (acc.actions && acc.actions.length) ? acc.actions.slice() : defaultActionsForRole(role),
           resetPassword: !!acc.resetPassword,
@@ -2010,28 +2035,89 @@
         const staff = padStaff(btn.getAttribute("data-pick-staff"));
         const acc = draftAccounts.find((a) => a.staff === staff);
         if (!acc) return;
+        editingStaff = acc.staff;
         document.getElementById("grant-staff").value = acc.staff;
         document.getElementById("grant-role").value = acc.role;
         document.getElementById("grant-reset-pw").checked = !!acc.resetPassword;
-        openAccountPages(acc, false);
+        paintAccountsList();
+        setPermsErr("");
       });
-      document.getElementById("grant-upsert").addEventListener("click", () => {
+      document.getElementById("grant-staff").addEventListener("input", () => {
+        const staff = padStaff(document.getElementById("grant-staff").value || "");
+        if (!staff) editingStaff = "";
+        syncGrantAccountButton();
+        paintAccountsList();
+      });
+      function grantFormAccount(isNewFallback) {
         const staff = padStaff(document.getElementById("grant-staff").value || "");
         const role = normalizeRole(document.getElementById("grant-role").value || "public");
-        if (!staff) {
-          setPermsErr("Enter Staff #.");
-          return;
-        }
-        setPermsErr("");
-        const existing = draftAccounts.find((a) => a.staff === staff);
-        openAccountPages({
+        const existing = accountBeingEdited();
+        return {
           staff: staff,
           role: role,
-          pages: existing ? existing.pages : [],
+          originalStaff: existing ? existing.staff : staff,
+          pages: existing && existing.role === role ? existing.pages : [],
           actions: existing ? existing.actions : [],
           resetPassword: !!document.getElementById("grant-reset-pw").checked,
           hasPassword: existing ? existing.hasPassword : false,
-        }, !existing);
+          isNew: isNewFallback ? !existing : false,
+        };
+      }
+      document.getElementById("grant-upsert").addEventListener("click", () => {
+        const form = grantFormAccount(true);
+        if (!form.staff) {
+          setPermsErr("Enter Staff #.");
+          return;
+        }
+        const existing = form.originalStaff
+          ? draftAccounts.find((a) => a.staff === form.originalStaff)
+          : null;
+        if (!existing) {
+          setPermsErr("");
+          openAccountPages(form, true);
+          return;
+        }
+        if (form.staff !== existing.staff && draftAccounts.some((a) => a.staff === form.staff)) {
+          setPermsErr("That Staff # already has an account.");
+          return;
+        }
+        const roleChanged = existing.role !== form.role;
+        const matrix = readRoleMatrix();
+        const idx = draftAccounts.findIndex((a) => a.staff === existing.staff);
+        draftAccounts[idx] = {
+          staff: form.staff,
+          role: form.role,
+          pages: form.role === "me"
+            ? []
+            : (roleChanged && !existing.customPages ? (matrix[form.role] || []).slice() : (existing.pages || []).slice()),
+          actions: form.role === "me" || roleChanged
+            ? defaultActionsForRole(form.role)
+            : (existing.actions || []).slice(),
+          mustChange: form.resetPassword ? true : !!existing.mustChange,
+          hasPassword: existing.hasPassword,
+          resetPassword: form.resetPassword ? true : !!existing.resetPassword,
+          customPages: form.role === "me" ? false : (roleChanged ? false : !!existing.customPages),
+        };
+        editingStaff = form.staff;
+        paintAccountsList();
+        setPermsErr("");
+      });
+      document.getElementById("grant-edit-pages").addEventListener("click", () => {
+        const form = grantFormAccount(false);
+        if (!form.staff) {
+          setPermsErr("Enter Staff #.");
+          return;
+        }
+        if (
+          form.originalStaff &&
+          form.staff !== form.originalStaff &&
+          draftAccounts.some((a) => a.staff === form.staff)
+        ) {
+          setPermsErr("That Staff # already has an account.");
+          return;
+        }
+        setPermsErr("");
+        openAccountPages(form, !accountBeingEdited());
       });
       document.getElementById("grant-pages-cancel").addEventListener("click", () => {
         pendingGrant = null;
@@ -2044,30 +2130,49 @@
           if (el.checked) pages.push(el.getAttribute("data-grant-page"));
         });
         const customPages = pendingGrant.role !== "me" && !sameIdList(pages, pendingGrant.matrixPages);
-        const idx = draftAccounts.findIndex((a) => a.staff === pendingGrant.staff);
+        const original = pendingGrant.originalStaff || pendingGrant.staff;
+        if (
+          pendingGrant.staff !== original &&
+          draftAccounts.some((a) => a.staff === pendingGrant.staff)
+        ) {
+          const pageErr = document.getElementById("grant-pages-err");
+          if (pageErr) {
+            pageErr.hidden = false;
+            pageErr.textContent = "That Staff # already has an account.";
+          }
+          return;
+        }
+        const idx = draftAccounts.findIndex((a) => a.staff === original);
+        const prev = idx >= 0 ? draftAccounts[idx] : null;
         const next = {
           staff: pendingGrant.staff,
           role: pendingGrant.role,
           pages: pendingGrant.role === "me" ? [] : pages,
           actions: pendingGrant.role === "me" ? defaultActionsForRole("me") : pendingGrant.actions,
-          mustChange: pendingGrant.resetPassword || pendingGrant.isNew,
+          mustChange: pendingGrant.resetPassword || pendingGrant.isNew || !!(prev && prev.mustChange),
           hasPassword: pendingGrant.hasPassword,
           resetPassword: pendingGrant.resetPassword || pendingGrant.isNew,
           customPages: customPages,
         };
         if (idx >= 0) draftAccounts[idx] = next;
         else draftAccounts.push(next);
+        editingStaff = next.staff;
         pendingGrant = null;
         showPop("grant-pages-pop", false);
         paintAccountsList();
         setPermsErr("");
       });
+      document.getElementById("grant-role").addEventListener("change", syncGrantAccountButton);
       document.getElementById("grant-remove").addEventListener("click", () => {
-        const staff = padStaff(document.getElementById("grant-staff").value || "");
+        const staff = editingStaff || padStaff(document.getElementById("grant-staff").value || "");
         if (!staff) return;
         draftAccounts = draftAccounts.filter((a) => a.staff !== staff);
+        editingStaff = "";
         paintAccountsList();
         document.getElementById("grant-staff").value = "";
+        document.getElementById("grant-role").value = "public";
+        document.getElementById("grant-reset-pw").checked = false;
+        syncGrantAccountButton();
       });
       document.getElementById("grant-pin-refresh").addEventListener("click", async () => {
         setPermsErr("");

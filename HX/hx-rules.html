@@ -191,6 +191,7 @@
     <h2 id="hx-gate">6. HX 公開閘同權限</h2>
     <div class="card">
       <ul>
+        <li style="color:#b00020"><b>新 · Accounts 可改：</b>Setting「3. Accounts」點一個帳戶＝載入 Staff # 同 role 去下面表格改（唔即刻彈頁面）。<b>Update account</b> 儲存 Staff #（可改號碼，唔好撞現有帳戶）同 role。<b>Edit pages</b> 先開嗰個人嘅頁面清單。新 Staff # 仍然係 <b>Add account</b>（先彈頁面）。最後仍要 Setting <b>Save</b> 先寫上伺服器。</li>
         <li style="color:#b00020"><b>新 · Setting：</b>Hub 頂欄 <b>Grant access</b> 改名 <b>Setting</b>（對話標題同係 Setting）。Training One View 工具列嘅 <b>Log</b> 搬入 Setting 第 5 段（WHO · WHEN · WHAT；Training One View 開住先可以 Undo）。<b>Manage</b> 仍然係 TOV 舊嘅 browser-only access levels，唔係 Setting 嗰套 role／頁／帳戶。</li>
         <li style="color:#b00020"><b>新 · Role pages 欄頭 Staff → Public：</b>Grant access「2. Role pages」第三欄可見標籤由 <b>Staff</b> 改 <b>Public</b>（role id 仍／改為 <code>public</code>；讀舊 <code>staff</code> 當 public；Save 寫 <code>public</code>）。Accounts 下拉、帳戶列表、頂欄 role 名同一規則。唔改 Staff #／staff name／PIN／「ask OCG Office」。Owner／Admin／DM/DIC 標籤不變；Owner 仍唔入呢欄。</li>
         <li style="color:#b00020"><b>新 · Public role ＋ public BRS 簽收密碼（4–6 位）：</b>舊 role <b>Staff</b> 改名 <b>Public</b>（顯示名 Public；role id <code>public</code>；讀入舊 <code>staff</code> 當 <code>public</code>）。Role pages 欄頭、Accounts 下拉、帳戶標籤跟住改。只有 <b>Admin</b>／<b>DM/DIC</b>／<b>Owner - Siu Chung</b>（<code>me</code>）用 hub <b>Log in</b>（Staff #＋6 位登入密碼；唔改 Owner 登入密碼）。Public <b>唔</b>用 hub login——未登入訪客開 public pages。Public 喺 Briefing and R&amp;S 或 TOV outstanding Sign／Seen：首次要打<strong>該行 staff #</strong>（唔夾就唔簽）；成功後即刻 popup 設新密碼——<b>最少 4 位、最多 6 位</b>、只數字、唔可以等於 staff #、確認一次；之後用呢個密碼簽（錯密碼唔簽）。對話只 Cancel／× 關；唔加 Forgot password；忘咗就 ask OCG Office reset。Setting <b>4. PIN Reset</b>：Name List 列出 <b>Password set</b>／<b>Not set</b>；只 Reset（清返 Not set；下次又要 staff # 再設）；永不顯示密碼／hash。DM/DIC 登入後簽收稍後再定。Admin／Owner 已登入嘅 BRS admin／Setting PIN Reset 唔逼行 public 首次簽 popup。</li>
@@ -308,6 +309,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="9.0">v9.0</div>
+  <div class="page-version" data-version="9.1">v9.1</div>
 </body>
 </html>
