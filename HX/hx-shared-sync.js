@@ -126,6 +126,31 @@
     var payloadDoc = Object.assign({}, docObj || {});
     if (!payloadDoc.updated) payloadDoc.updated = new Date().toISOString();
     if (!payloadDoc.v) payloadDoc.v = 1;
+    // Compare server data time before upload. Failed fetch ≠ local wins.
+    try {
+      var boardNow = await fetchBoard();
+      var remoteWrap = readDocFromBoard(boardNow, docId);
+      if (remoteWrap && remoteWrap.doc) {
+        var localAt = parseDocAt(payloadDoc.updated);
+        var remoteAt = Math.max(
+          parseDocAt(remoteWrap.doc.updated),
+          parseDocAt(remoteWrap.updated)
+        );
+        if (remoteAt > localAt) {
+          var eOld = new Error("stale-local");
+          eOld.code = "stale-local";
+          eOld.payload = boardNow;
+          eOld.remote = remoteWrap;
+          throw eOld;
+        }
+      }
+    } catch (ePre) {
+      if (ePre && ePre.code === "stale-local") throw ePre;
+      var eFetch = new Error("offline");
+      eFetch.code = "offline";
+      eFetch.cause = ePre;
+      throw eFetch;
+    }
     if (isPublicDoc(docId)) {
       var pubRes = await fetch(EDGE_URL + "/shared", {
         method: "PUT",
@@ -206,10 +231,15 @@
     return false;
   }
 
+  function parseDocAt(iso) {
+    var t = Date.parse(String(iso || "").trim());
+    return Number.isFinite(t) ? t : 0;
+  }
+
   /**
-   * First load: if server empty and local has data → upload once.
-   * Else if server has data → apply server (server wins thereafter).
-   * Empty second device must not wipe server.
+   * Compare data time (doc.updated) before upload.
+   * Local newer → may upload. Local older → apply server. Equal → no clobber upload.
+   * Failed fetch ≠ local wins. Empty second device must not wipe server.
    */
   async function syncDoc(docId, opts) {
     opts = opts || {};
@@ -230,6 +260,11 @@
     var remote = remoteWrap && remoteWrap.doc;
     var localHas = !localEmpty(local);
     var remoteHas = docHasContent(remote);
+    var localAt = parseDocAt(local && local.updated);
+    var remoteAt = Math.max(
+      parseDocAt(remote && remote.updated),
+      parseDocAt(remoteWrap && remoteWrap.updated)
+    );
 
     if (!remoteHas && localHas) {
       if (!isPublicDoc(docId) && !getPassword()) {
@@ -244,6 +279,31 @@
         onStatus(e.code || "error");
         return { ok: false, reason: e.code || "error", error: e };
       }
+    }
+
+    if (remoteHas && localHas) {
+      if (localAt > remoteAt) {
+        if (!isPublicDoc(docId) && !getPassword()) {
+          onStatus("need-password");
+          return { ok: false, reason: "need-password", local: local };
+        }
+        try {
+          await pushDoc(docId, local);
+          onStatus("uploaded");
+          return { ok: true, reason: "uploaded" };
+        } catch (e) {
+          onStatus(e.code || "error");
+          return { ok: false, reason: e.code || "error", error: e };
+        }
+      }
+      if (remoteAt > localAt) {
+        await Promise.resolve(applyRemote(remote));
+        onStatus("synced");
+        return { ok: true, reason: "pulled", remote: remote, v: remoteWrap.v };
+      }
+      // Equal timestamps: do not clobber either way.
+      onStatus("synced");
+      return { ok: true, reason: "equal", remote: remote, v: remoteWrap.v };
     }
 
     if (remoteHas) {

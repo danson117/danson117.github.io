@@ -1661,10 +1661,10 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.4" aria-label="Page version 15.4">v15.4</div>
+  <div class="page-version" data-version="15.5" aria-label="Page version 15.5">v15.5</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
-<script src="hx-shared-sync.js?v=1.3"></script>
+<script src="hx-shared-sync.js?v=1.4"></script>
 <script src="authorization-list-data.js?v=6"></script>
 <script>
 hxUnpackRoster();
@@ -5606,23 +5606,26 @@ function applyServerPayload(data, opts) {
     lastRemoteIngestMetaSig = ingestMetaSig(data);
   }
 }
-function packIngestForEdge() {
+function packIngestForEdge(plan) {
   const snap = localIngestSnapshot();
-  return {
-    _ingest: true,
-    v: 1,
-    ual: snap.ual,
-    ctFiles: (snap.ctFiles || []).map((f) => {
+  const need = (plan && plan.needPush) ? plan.needPush : { ual: true, ct: true, omt: true };
+  const body = { _ingest: true, v: 1 };
+  if (need.ual) body.ual = snap.ual;
+  if (need.ct) {
+    body.ctFiles = (snap.ctFiles || []).map((f) => {
       const rec = { name: f.name, kind: f.kind, rows: f.rows || [] };
       if (f.uploadedAt) rec.uploadedAt = f.uploadedAt;
       return rec;
-    }),
-    omtFiles: (snap.omtFiles || []).map((f) => {
+    });
+  }
+  if (need.omt) {
+    body.omtFiles = (snap.omtFiles || []).map((f) => {
       const rec = { name: f.name, rows: f.rows || [] };
       if (f.uploadedAt) rec.uploadedAt = f.uploadedAt;
       return rec;
-    })
-  };
+    });
+  }
+  return body;
 }
 function applyServerIngest(data, opts) {
   if (!data || typeof data !== "object") return false;
@@ -5742,11 +5745,30 @@ async function pushIngestToEdge() {
   try {
     do {
       ingestPushQueued = false;
+      // Re-compare data time before every upload. Failed fetch ≠ local wins.
+      const remote = await fetchLatestBoardFresh();
+      if (!remote) {
+        ingestSyncFailed = true;
+        dirtyIngest = true;
+        showPushFail("Could not reach the server. This upload is saved in this browser only.");
+        setSaveSync("Not synchronized");
+        return true;
+      }
+      const plan = planIngestByDataTime(localIngestSnapshot(), remote);
+      if (plan.anyRemote) applyServerIngest(remote, { keepDirty: true });
+      if (!plan.anyPush) {
+        dirtyIngest = false;
+        ingestSyncFailed = false;
+        lastRemoteIngestHadContent = ingestHasContent(remote);
+        lastRemoteIngestMetaSig = ingestMetaSig(remote);
+        setSaveSync("Saved");
+        return true;
+      }
       suppressRemoteMerge = true;
       const putRes = await fetch(SYNC_EDGE_URL, {
         method: "PUT",
         headers: headers,
-        body: JSON.stringify(packIngestForEdge())
+        body: JSON.stringify(packIngestForEdge(plan))
       });
       const body = await putRes.json().catch(() => ({}));
       if (putRes.status === 401 || putRes.status === 403) {
@@ -6001,6 +6023,33 @@ async function pushActionsToEdge() {
   try {
     do {
       pushQueued = false;
+      // Compare data time before upload. Failed fetch ≠ local wins.
+      const remote = await fetchLatestBoardFresh();
+      if (!remote) {
+        showPushFail("Could not reach the server. This upload is saved in this browser only.");
+        setSaveSync("Saved");
+        return true;
+      }
+      const remoteStatus = remote.status && typeof remote.status === "object" ? remote.status : {};
+      Array.from(dirtyStatusKeys).forEach((k) => {
+        if (isSharedMetaStatusKey(k)) return;
+        const localRec = courseStatus[k];
+        const remoteRec = remoteStatus[k];
+        if (!remoteRec) return;
+        if (recTime(remoteRec) > recTime(localRec)) {
+          const n = normalizeStatusRec(remoteRec);
+          if (n) courseStatus[k] = n;
+          else delete courseStatus[k];
+          dirtyStatusKeys.delete(k);
+        }
+      });
+      if (!dirtyStatusKeys.size && !dirtyManualIds.size && !pendingStatusDeletes.length && !pendingManualDeletes.length) {
+        lastRemoteActionsSig = actionsPayloadSig(remote);
+        actionsFileCache = remote;
+        persistActionsLocal();
+        setSaveSync("Saved");
+        return true;
+      }
       const payload = packActionsForEdge();
       suppressRemoteMerge = true;
       const putRes = await fetch(SYNC_EDGE_URL, {
