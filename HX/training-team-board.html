@@ -849,26 +849,26 @@
   .detail-table table {
     table-layout: fixed;
     width: 100%;
-    min-width: 702px; /* staff+name+team+crew+course+due+remain(52) */
+    min-width: 890px; /* staff+name+team+crew+course+due+remain; long headers on 2 lines */
     max-width: none;
     border-collapse: collapse;
     font-size: 12px;
   }
-  .detail-table table.has-ual-cols { min-width: 1158px; }
-  .detail-table table.has-completed-col { min-width: 842px; }
-  .detail-table table.has-ual-cols.has-completed-col { min-width: 1298px; }
+  .detail-table table.has-ual-cols { min-width: 1482px; }
+  .detail-table table.has-completed-col { min-width: 1030px; }
+  .detail-table table.has-ual-cols.has-completed-col { min-width: 1622px; }
   .detail-table col.col-staff { width: 72px; }
   .detail-table col.col-name { width: 120px; }
   .detail-table col.col-team { width: 72px; }
   .detail-table col.col-crew { width: 96px; }
-  /* Course +33% (140→186). Overdue remaining = 50% of prior 104 → 52. Coming due remaining stays 104. */
+  /* Long headers are two lines and must fit inside the cell (no overlap). */
   .detail-table col.col-course { width: 186px; }
-  .detail-table col.col-due { width: 104px; }
-  .detail-table col.col-remain { width: 52px; }
+  .detail-table col.col-due { width: 172px; }
+  .detail-table col.col-remain { width: 172px; }
   .detail-table col.col-emp { width: 88px; }
   .detail-table col.col-soon { width: 160px; }
-  .detail-table col.col-soon-due { width: 104px; }
-  .detail-table col.col-soon-remain { width: 104px; }
+  .detail-table col.col-soon-due { width: 172px; }
+  .detail-table col.col-soon-remain { width: 172px; }
   .detail-table col.col-completed { width: 140px; }
   .detail-table th,
   .detail-table td {
@@ -877,15 +877,15 @@
     word-break: break-word;
     vertical-align: top;
   }
-  .detail-table th.col-staff,
+  .detail-table th {
+    white-space: normal;
+    line-height: 1.25;
+    overflow: hidden;
+  }
   .detail-table td.col-staff,
-  .detail-table th.col-team,
   .detail-table td.col-team,
-  .detail-table th.col-emp,
   .detail-table td.col-emp,
-  .detail-table th.col-remain,
   .detail-table td.col-remain,
-  .detail-table th.col-soon-remain,
   .detail-table td.col-soon-remain {
     white-space: nowrap;
     overflow-wrap: normal;
@@ -1661,7 +1661,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.1" aria-label="Page version 15.1">v15.1</div>
+  <div class="page-version" data-version="15.2" aria-label="Page version 15.2">v15.2</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -5161,7 +5161,7 @@ function paintDetail() {
     : "";
   const showUalCols = srcHas("ual");
   const ualColsHead = showUalCols
-    ? dth("UA Employee #", "emp", "col-emp") + dth("Coming due courses", "soon", "col-soon") + dth("Coming due day", "soonDue", "col-soon-due") + dth("Coming due remaining", "soonRemain", "col-soon-remain")
+    ? dth("UA Employee #", "emp", "col-emp") + dth("Coming due<br>courses", "soon", "col-soon") + dth("Coming due<br>day", "soonDue", "col-soon-due") + dth("Coming due<br>remaining", "soonRemain", "col-soon-remain")
     : "";
   const colgroup =
     "<colgroup>" +
@@ -5177,7 +5177,7 @@ function paintDetail() {
     showRecentCompleted ? ["has-completed-col"] : []
   ).join(" ");
   const tableShot = "<div id=\"detail-shot\"><table class=\"" + tableCls + "\">" + colgroup + "<thead><tr>" + dth("Staff #", "staff", "col-staff") + dth("Name", "name", "col-name") + dth("Team", "team", "col-team") + dth("Section (Crew)", "crew", "col-crew") +
-    dth("Course code", "overdue", "col-course") + dth("Overdue or will expire due day", "due", "col-due") + dth("Overdue or will expire remaining", "remain", "col-remain") +
+    dth("Course code", "overdue", "col-course") + dth("Overdue or will expire<br>due day", "due", "col-due") + dth("Overdue or will expire<br>remaining", "remain", "col-remain") +
     ualColsHead +
     completedCol + "</tr></thead><tbody>" +
     list.map((x) => {
