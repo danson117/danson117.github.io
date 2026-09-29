@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **BRS duplicate Ref. No. while typing：** Create／edit 打字即警告 **That number is already used.**；block Create／唔存重複；自動號跳過已用；撞號 draft 清號唔覆寫已確認。BRS **v4.7**、`hx-rules` **v10.2**；hub `?v=` cache-bust（page-version 仍 **v17.4**）。GitHub 後備。唔開 Chrome。
+
 ## 2026-09-29 公司電腦
 
 - **VHHH Line MX 刪 3 行 DEMO：** Current report 表頂 3 行 dummy SAMPLE／DEMO（overdue 紅／≤14 橙／≤30 黃樣本）已移除；唔再出現。三檔到期色同 legend／tags 保留。Auth **v2.4**、hub **v17.4**（`?v=2.4`）、規矩 **v10.1**。GitHub 後備 → Vercel。唔開 Chrome。
