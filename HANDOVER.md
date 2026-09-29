@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-29 公司電腦
 
+- **Authorization List Airline 揀碼：** Airline 欄打至少一個字就列出符合嘅 operator code／航空公司名（contains）；揀一行填入 code 同全名。鍵盤 ↑↓／Enter／Esc；點外面關。冇符合先顯示 Not on this list。唔過濾表。List **v2.6**、hub **v16.8**（`?v=2.6`）、規矩 **v9.5**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-29 公司電腦
+
 - **TOV Detail 表頭：** Overdue／Coming due 長標題拆兩行，唔再疊去隔離欄。到期日同 remaining 欄加闊到第一行放得落；數字格仍一行。TOV **v15.2**、hub **v16.7**（`?v=15.2`）、規矩 **v9.4**。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-29 公司電腦

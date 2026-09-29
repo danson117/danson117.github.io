@@ -28,8 +28,18 @@
   .toolbar, .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
   .toolbar input[type="search"], .filters select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); background: #fff; }
   .toolbar input[type="search"] { flex: 1; min-width: 220px; }
+  .op-lookup { position: relative; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .op-lookup-wrap { position: relative; display: inline-block; }
   .op-lookup input { width: 7.5em; font: inherit; padding: 6px 8px; border: 1px solid var(--line); background: #fff; text-transform: uppercase; }
   .op-lookup b { color: var(--navy); font-weight: 650; }
+  .op-suggest {
+    position: absolute; left: 0; top: 100%; z-index: 30; margin: 2px 0 0; padding: 0;
+    list-style: none; max-height: 220px; overflow: auto; min-width: 280px;
+    background: var(--card); border: 1px solid var(--line); box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  }
+  .op-suggest[hidden] { display: none; }
+  .op-suggest li { padding: 6px 10px; cursor: pointer; white-space: nowrap; }
+  .op-suggest li:hover, .op-suggest li.on { background: var(--navy-soft); }
   .filters label { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
   button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--card); padding: 6px 10px; cursor: pointer; }
   button:hover { background: var(--navy-soft); }
@@ -68,7 +78,13 @@
     </div>
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search staff # / name / section / operator / aircraft / module / email">
-      <label class="op-lookup">Airline <input id="op-lookup" type="text" placeholder="Code" autocomplete="off" spellcheck="false" maxlength="12"> <b id="op-lookup-name"></b></label>
+      <label class="op-lookup">Airline
+        <span class="op-lookup-wrap">
+          <input id="op-lookup" type="text" placeholder="Code" autocomplete="off" spellcheck="false" maxlength="12" aria-autocomplete="list" aria-controls="op-lookup-suggest">
+          <ul id="op-lookup-suggest" class="op-suggest" role="listbox" hidden></ul>
+        </span>
+        <b id="op-lookup-name"></b>
+      </label>
       <button type="button" id="copy-table">Copy Table</button>
       <button type="button" id="to-xlsx">To XLSX</button>
       <button type="button" id="update-csv-btn">Update CSV</button>
@@ -101,11 +117,11 @@
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Due Red / Yellow / Red + Yellow only show module <code>--/--/AUTH/HAECO</code> rows in those windows; All stays unrestricted by module. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows. <b>Airline</b>: type an operator code to see the airline name taken from that code's auth module title (includes codes that are only in the hidden non–Name List rows).</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Due Red / Yellow / Red + Yellow only show module <code>--/--/AUTH/HAECO</code> rows in those windows; All stays unrestricted by module. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows. <b>Airline</b>: type one or more characters to see matching operator codes / airline names (contains); pick a row to fill the code and full name (from that code's auth module title, including stage-only codes). This lookup does not filter the table.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.5">v2.5</div>
+  <div class="page-version" data-version="2.6">v2.6</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=3"></script>
@@ -288,13 +304,92 @@ function ensureOpAirlineNames(){
   });
   return opAirlineNames;
 }
-function paintOpLookup(){
+let opSuggestIndex = -1;
+function hideOpSuggest(){
+  const list = document.getElementById("op-lookup-suggest");
+  if (list) {
+    list.hidden = true;
+    list.innerHTML = "";
+  }
+  opSuggestIndex = -1;
+}
+function pickOpSuggest(code){
   const input = document.getElementById("op-lookup");
   const out = document.getElementById("op-lookup-name");
   if (!input || !out) return;
-  const code = input.value.trim().toUpperCase();
-  if (!code) { out.textContent = ""; return; }
-  out.textContent = ensureOpAirlineNames()[code] || "Not on this list";
+  const key = String(code || "").trim().toUpperCase();
+  input.value = key;
+  out.textContent = ensureOpAirlineNames()[key] || "";
+  hideOpSuggest();
+}
+function paintOpLookup(){
+  const input = document.getElementById("op-lookup");
+  const out = document.getElementById("op-lookup-name");
+  const list = document.getElementById("op-lookup-suggest");
+  if (!input || !out || !list) return;
+  const raw = input.value.trim();
+  if (!raw) {
+    out.textContent = "";
+    hideOpSuggest();
+    return;
+  }
+  const q = raw.toUpperCase();
+  const map = ensureOpAirlineNames();
+  const matches = Object.keys(map)
+    .filter(code => {
+      const name = String(map[code] || "").toUpperCase();
+      return code.indexOf(q) !== -1 || name.indexOf(q) !== -1;
+    })
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+  if (!matches.length) {
+    out.textContent = "Not on this list";
+    hideOpSuggest();
+    return;
+  }
+  out.textContent = map[q] || "";
+  list.innerHTML = "";
+  opSuggestIndex = -1;
+  matches.forEach(code => {
+    const li = document.createElement("li");
+    li.setAttribute("role", "option");
+    li.dataset.code = code;
+    li.textContent = code + " · " + map[code];
+    li.addEventListener("mousedown", e => {
+      e.preventDefault();
+      pickOpSuggest(code);
+    });
+    list.appendChild(li);
+  });
+  list.hidden = false;
+}
+function onOpLookupKeydown(e){
+  const list = document.getElementById("op-lookup-suggest");
+  if (!list || list.hidden) {
+    if (e.key === "Escape") hideOpSuggest();
+    return;
+  }
+  const items = Array.prototype.slice.call(list.querySelectorAll("li"));
+  if (!items.length) return;
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    opSuggestIndex = Math.min(items.length - 1, opSuggestIndex + 1);
+    items.forEach((li, i) => li.classList.toggle("on", i === opSuggestIndex));
+    if (items[opSuggestIndex]) items[opSuggestIndex].scrollIntoView({ block: "nearest" });
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    opSuggestIndex = Math.max(0, opSuggestIndex <= 0 ? 0 : opSuggestIndex - 1);
+    items.forEach((li, i) => li.classList.toggle("on", i === opSuggestIndex));
+    if (items[opSuggestIndex]) items[opSuggestIndex].scrollIntoView({ block: "nearest" });
+  } else if (e.key === "Enter") {
+    const pick = opSuggestIndex >= 0 ? items[opSuggestIndex] : (items.length === 1 ? items[0] : null);
+    if (pick) {
+      e.preventDefault();
+      pickOpSuggest(pick.dataset.code);
+    }
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    hideOpSuggest();
+  }
 }
 function fillSelect(id, values){
   const sel = document.getElementById(id);
@@ -880,6 +975,11 @@ function bindUi(){
     if (f) handleCsvFile(f);
   });
   document.getElementById("op-lookup").addEventListener("input", paintOpLookup);
+  document.getElementById("op-lookup").addEventListener("keydown", onOpLookupKeydown);
+  document.addEventListener("click", e => {
+    const wrap = document.querySelector(".op-lookup");
+    if (wrap && !wrap.contains(e.target)) hideOpSuggest();
+  });
   document.getElementById("clear").addEventListener("click", () => {
     q = fDept = fOp = fCat = fAc = fDue = "";
     fGroup = "ocg";
