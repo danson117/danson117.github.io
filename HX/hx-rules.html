@@ -216,6 +216,7 @@
       <ul>
         <li style="color:#b00020"><b>新 · Save failed 紅 WARNING + 進行中橙 ×：</b>對話框標題 <b>Save failed</b>；正文 <b>Could not reach the server. This upload is saved in this browser only.</b>；另加紅字英文 <b>WARNING: The information on this page is not accurate yet.</b>（同一 dialog，唔另彈；唔寫 GitHub／push／sync server）。UAL／CT／Mandatory 卡右下：同步進行中＝橙底 <b>×</b>（約 <code>#c45c00</code>，唔用 …）；已同步＝綠 ✓；未同步＝橙卡＋「Upload not synchronized yet.」。</li>
         <li style="color:#b00020"><b>新 · UAL／CT／Mandatory 同步喺三張上載卡：</b>唔再用頁頂大 banner。UAL CBT／CT Reminder／Mandatory 各自一卡：未同步 → 該卡轉橙＋一句英文 <b>Upload not synchronized yet.</b>；右下細 sync icon：綠＝該來源已同伺服器一樣，橙 ×＝上載／同步進行中，橙感嘆＝未同步。細掣 <b>Synchronize now</b>（可寫入時）。跟 <code>ingestDiffNames</code> 逐源（UAL／CT Reminder／Mandatory）；已同步嘅卡唔好標橙。成功唔彈窗。本機上傳時間新過伺服器時唔好用舊伺服器檔蓋過；關頁未同步仍會問。</li>
+        <li style="color:#b00020"><b>新 · Sync 比 data 時間，唔比邊部機先開：</b>UAL／CT／Mandatory 各自用存檔 <code>uploadedAt</code>（data 時間）同伺服器比。較新嗰份贏。本機舊過伺服器 → 載入伺服器，唔好 push 舊本機蓋過。本機 <code>uploadedAt</code> 真係新過伺服器先保留再 push。時間相同 → 唔 clobber。綠 ✓ 只喺呢個 browser 同贏咗嗰份伺服器一樣。開頁 discard 咗舊本機 → 卡內一句英文 <b>Loaded newer server copy.</b>（唔大 banner）。開頁未完成同 Edge 對時間之前唔准 push（避免剛開機舊 local 蓋新公司檔）。Edge 撈唔到 → 唔當 local 贏。</li>
         <li>Status／Remark／Manual／UAL／CT／Mandatory 經 locked Edge <code>team-board</code> → <code>hx_private</code>。約 5 秒 poll。</li>
         <li style="color:#b00020"><b>新 · B1 lite poll + fresh-first：</b>定時 poll 用 <code>?lite=1</code>（Status／Manual＋ingest meta，<b>唔帶</b> CT／OMT／UAL 大檔／log）。開頁同 ingest meta 有變先 <code>?ingest=1</code> 拉齊檔。畫面等 Edge 確認最新先顯示（Loading latest…）；寧願多等幾秒，唔用未確認舊 local 當真相。Poll 間隔維持約 5 秒（唔做 B2 拉長）。</li>
         <li>UI：Saving…／Saved；Updating…／Updated；開頁 Loading latest…。撞車：先寫贏；後寫 409，還原伺服器版。</li>
@@ -318,6 +319,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.2">v10.2</div>
+  <div class="page-version" data-version="10.3">v10.3</div>
 </body>
 </html>

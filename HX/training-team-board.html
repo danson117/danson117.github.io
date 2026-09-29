@@ -1661,7 +1661,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.2" aria-label="Page version 15.2">v15.2</div>
+  <div class="page-version" data-version="15.3" aria-label="Page version 15.3">v15.3</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>
@@ -1729,7 +1729,11 @@ const SYNC_EDGE_URL = "https://kcoszufshvvpxikpzlue.supabase.co/functions/v1/tea
 const SYNC_POLL_MS = 5000;
 /** Set after Edge lite+ingest confirmed; board paint waits for this when syncing. */
 let remoteBoardConfirmed = false;
+/** False until first remote ingest time-compare finishes — blocks push of stale local on open. */
+let ingestTimeSyncDone = false;
 let lastRemoteIngestMetaSig = "";
+/** Quiet per-card notes after discarding a stale local copy (source key → English). */
+let ingestStaleNotes = {};
 const GH_REPO = "danson117/danson117.github.io";
 const GH_PATH = "HX/team-board-actions.json";
 let hubGate = { role: "view", password: "", editActions: [], accessStaff: "", accessRole: "view" };
@@ -2193,16 +2197,87 @@ function ingestHasContent(data) {
   const sig = ingestMetaSig(data);
   return !!(sig && sig !== ingestMetaSig({ ual: null, ctFiles: [], omtFiles: [] }));
 }
-function ingestNewestAt(data) {
+function parseUploadAt(iso) {
+  const t = Date.parse(String(iso || "").trim());
+  return Number.isFinite(t) ? t : 0;
+}
+function maxFileUploadAt(files) {
   let max = 0;
-  const bump = (iso) => {
-    const t = Date.parse(String(iso || "")) || 0;
+  (Array.isArray(files) ? files : []).forEach((f) => {
+    const t = parseUploadAt(f && f.uploadedAt);
     if (t > max) max = t;
-  };
-  if (data && data.ual) bump(data.ual.uploadedAt);
-  (data && Array.isArray(data.ctFiles) ? data.ctFiles : []).forEach((f) => bump(f && f.uploadedAt));
-  (data && Array.isArray(data.omtFiles) ? data.omtFiles : []).forEach((f) => bump(f && f.uploadedAt));
+  });
   return max;
+}
+/** Per-source data time only (uploadedAt). Never use session/boot/open time. */
+function ingestSourceAt(data, source) {
+  if (!data || typeof data !== "object") return 0;
+  if (source === "ual") {
+    if (!data.ual || !String(data.ual.text || "").trim()) return 0;
+    return parseUploadAt(data.ual.uploadedAt);
+  }
+  if (source === "ct") return maxFileUploadAt(data.ctFiles);
+  if (source === "omt") return maxFileUploadAt(data.omtFiles);
+  return 0;
+}
+function ingestSourceHas(data, source) {
+  if (!data || typeof data !== "object") return false;
+  if (source === "ual") return !!(data.ual && String(data.ual.text || "").trim());
+  if (source === "ct") return Array.isArray(data.ctFiles) && data.ctFiles.some((f) => f && Array.isArray(f.rows) && f.rows.length);
+  if (source === "omt") return Array.isArray(data.omtFiles) && data.omtFiles.some((f) => f && Array.isArray(f.rows) && f.rows.length);
+  return false;
+}
+function ingestNewestAt(data) {
+  return Math.max(ingestSourceAt(data, "ual"), ingestSourceAt(data, "ct"), ingestSourceAt(data, "omt"));
+}
+/**
+ * Compare local vs remote per UAL / CT / Mandatory by uploadedAt.
+ * Newer data wins. Equal time → do not clobber. Missing side loses to the side that has data.
+ * Returns which sources to take from remote, which need push, and quiet discard notes.
+ */
+function planIngestByDataTime(localSnap, remote) {
+  const sources = [
+    { key: "ual", label: "UAL" },
+    { key: "ct", label: "CT Reminder" },
+    { key: "omt", label: "Mandatory" }
+  ];
+  const takeRemote = {};
+  const needPush = {};
+  const discarded = [];
+  sources.forEach(({ key, label }) => {
+    const localHas = ingestSourceHas(localSnap, key);
+    const remoteHas = ingestSourceHas(remote, key);
+    const localAt = ingestSourceAt(localSnap, key);
+    const remoteAt = ingestSourceAt(remote, key);
+    takeRemote[key] = false;
+    needPush[key] = false;
+    if (!localHas && !remoteHas) return;
+    if (!localHas && remoteHas) {
+      takeRemote[key] = true;
+      return;
+    }
+    if (localHas && !remoteHas) {
+      needPush[key] = true;
+      return;
+    }
+    if (localAt > remoteAt) {
+      needPush[key] = true;
+      return;
+    }
+    if (remoteAt > localAt) {
+      takeRemote[key] = true;
+      discarded.push(label);
+      return;
+    }
+    // Equal timestamps: do not clobber either way.
+  });
+  return {
+    takeRemote: takeRemote,
+    needPush: needPush,
+    discarded: discarded,
+    anyPush: !!(needPush.ual || needPush.ct || needPush.omt),
+    anyRemote: !!(takeRemote.ual || takeRemote.ct || takeRemote.omt)
+  };
 }
 function actionsPayloadSig(data) {
   if (!data || typeof data !== "object") return "";
@@ -5559,25 +5634,41 @@ function applyServerIngest(data, opts) {
   const remoteHas = ingestHasContent(data);
   const localSnap = localIngestSnapshot();
   const localHas = ingestHasContent(localSnap);
+  const forceAll = !!(opts && opts.forceAll);
+  const plan = forceAll
+    ? { takeRemote: { ual: true, ct: true, omt: true }, needPush: {}, discarded: [], anyPush: false, anyRemote: true }
+    : planIngestByDataTime(localSnap, data);
+
+  if (opts && opts.keepDirty && dirtyIngest && !forceAll) {
+    // Still apply remote-winning sources; keep local-newer dirty for push.
+    if (!plan.anyRemote && plan.anyPush) {
+      dirtyIngest = true;
+      return false;
+    }
+  }
+  if (!remoteHas && localHas && !lastRemoteIngestHadContent && !(opts && opts.allowEmpty) && !forceAll) {
+    return false;
+  }
+
   const nextSig = ingestMetaSig(data);
   const curSig = ingestMetaSig(localSnap);
-  if (localHas && ingestNewestAt(localSnap) > ingestNewestAt(data) && nextSig !== curSig) {
-    dirtyIngest = true;
-    return false;
-  }
-  if (opts && opts.keepDirty && dirtyIngest) return false;
-  if (!remoteHas && localHas && !lastRemoteIngestHadContent && !(opts && opts.allowEmpty)) {
-    return false;
-  }
   if (nextSig && nextSig === curSig) {
     lastRemoteIngestHadContent = remoteHas;
     dirtyIngest = false;
     ingestSyncFailed = false;
+    ingestStaleNotes = {};
     return false;
   }
+
+  // Equal times / local newer for all: do not clobber local with remote.
+  if (!plan.anyRemote && !forceAll) {
+    if (plan.anyPush) dirtyIngest = true;
+    return false;
+  }
+
   suppressIngestPush = true;
   try {
-    if (Object.prototype.hasOwnProperty.call(data, "ual")) {
+    if (plan.takeRemote.ual && Object.prototype.hasOwnProperty.call(data, "ual")) {
       const ual = data.ual;
       if (!ual || !String(ual.text || "").trim()) {
         applyUalSnap({ text: "", uploadedAt: "" });
@@ -5588,7 +5679,7 @@ function applyServerIngest(data, opts) {
         });
       }
     }
-    if (Object.prototype.hasOwnProperty.call(data, "ctFiles")) {
+    if (plan.takeRemote.ct && Object.prototype.hasOwnProperty.call(data, "ctFiles")) {
       const list = Array.isArray(data.ctFiles) ? data.ctFiles : [];
       ctFiles = list.map(mapCtFile).filter((f) => f.rows.length);
       flattenCt();
@@ -5599,7 +5690,7 @@ function applyServerIngest(data, opts) {
       }
       paintCtFiles();
     }
-    if (Object.prototype.hasOwnProperty.call(data, "omtFiles")) {
+    if (plan.takeRemote.omt && Object.prototype.hasOwnProperty.call(data, "omtFiles")) {
       const list = Array.isArray(data.omtFiles) ? data.omtFiles : [];
       omtFiles = list.map(mapOmtFile).filter((f) => f.rows.length);
       flattenOmt();
@@ -5610,8 +5701,12 @@ function applyServerIngest(data, opts) {
       }
       paintOmtFiles();
     }
-    dirtyIngest = false;
-    lastRemoteIngestHadContent = remoteHas;
+    dirtyIngest = !!plan.anyPush;
+    lastRemoteIngestHadContent = remoteHas || ingestHasContent(localIngestSnapshot());
+    ingestStaleNotes = {};
+    (plan.discarded || []).forEach((label) => {
+      ingestStaleNotes[label] = "Loaded newer server copy.";
+    });
     mergeCatalogFromBoard();
     return true;
   } finally {
@@ -5620,6 +5715,8 @@ function applyServerIngest(data, opts) {
 }
 function schedulePushIngest() {
   if (!persistArmed || suppressIngestPush) return;
+  // Never push before the first data-time compare with the server (avoids stale local overwrite).
+  if (!ingestTimeSyncDone || !remoteBoardConfirmed) return;
   dirtyIngest = true;
   ingestSyncFailed = false;
   paintIngestSync();
@@ -5634,6 +5731,7 @@ function schedulePushIngest() {
 }
 async function pushIngestToEdge() {
   if (!canRemoteWrite()) return false;
+  if (!ingestTimeSyncDone || !remoteBoardConfirmed) return false;
   const headers = edgeAuthHeaders({ "Content-Type": "application/json" });
   if (!headers["x-hx-board-password"] && !headers["x-hx-sync-key"]) return false;
   if (ingestPushBusy) { ingestPushQueued = true; return true; }
@@ -5697,7 +5795,11 @@ async function pushIngestToEdge() {
 }
 async function syncIngestWithRemote() {
   const remote = await fetchLatestBoardFresh();
-  if (!remote) return;
+  if (!remote) {
+    // Failed sync must not fall through to "local wins".
+    ingestTimeSyncDone = false;
+    return;
+  }
   lastRemoteActionsSig = actionsPayloadSig(remote);
   lastRemoteIngestMetaSig = ingestMetaSig(remote);
   lastRemoteIngestHadContent = ingestHasContent(remote);
@@ -5705,28 +5807,23 @@ async function syncIngestWithRemote() {
   const remoteHas = lastRemoteIngestHadContent;
   const localHas = ingestHasContent(localSnap);
   const canWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
+  const plan = planIngestByDataTime(localSnap, remote);
+  ingestTimeSyncDone = true;
   if (!remoteHas && localHas && canWrite) {
+    dirtyIngest = true;
     await pushIngestToEdge();
     lastRemoteIngestHadContent = ingestHasContent(localIngestSnapshot());
+    paintIngestSync();
     return;
   }
-  if (remoteHas && !localHas) {
+  if (remoteHas || localHas) {
     applyServerIngest(remote, {});
+    lastRemoteIngestMetaSig = ingestMetaSig(remote);
     paint();
-    return;
-  }
-  if (remoteHas && localHas) {
-    const localSig = ingestMetaSig(localSnap);
-    const remoteSig = ingestMetaSig(remote);
-    if (localSig === remoteSig) return;
-    const remoteAt = ingestNewestAt(remote);
-    const localAt = ingestNewestAt(localSnap);
-    if (canWrite && localAt > remoteAt) {
+    if (canWrite && plan.anyPush) {
+      dirtyIngest = true;
       await pushIngestToEdge();
       lastRemoteIngestHadContent = true;
-    } else {
-      applyServerIngest(remote, {});
-      paint();
     }
   }
   paintIngestSync();
@@ -5829,8 +5926,16 @@ function paintIngestSync() {
       return;
     }
     if (mode === "ok") ingestSyncFailed = false;
-    if (ico) { ico.className = "box-sync-ico ok"; ico.textContent = "✓"; ico.title = "Synchronized"; }
-    if (hint) hint.hidden = true;
+    if (ico) { ico.className = "box-sync-ico check"; ico.textContent = "✓"; ico.title = "Synchronized"; }
+    const staleNote = ingestStaleNotes && ingestStaleNotes[key] ? String(ingestStaleNotes[key]) : "";
+    if (hint) {
+      if (staleNote) {
+        hint.hidden = false;
+        hint.textContent = staleNote;
+      } else {
+        hint.hidden = true;
+      }
+    }
     if (btn) btn.hidden = true;
   });
 }
@@ -9046,8 +9151,7 @@ document.addEventListener("click", (e) => {
     return;
   }
   ingestSyncFailed = false;
-  dirtyIngest = true;
-  pushIngestToEdge();
+  syncIngestWithRemote();
 });
 document.getElementById("ual-parse").addEventListener("click", () => {
   setUal(document.getElementById("ual-src").value, "Pasted email");
@@ -9927,6 +10031,10 @@ window.addEventListener("message", (e) => {
     restoreOmt();
     restoreIngestFlags();
     persistArmed = true;
+    // Block ingest push until data-time compare with Edge finishes (stale local must not win on open).
+    if (ingestPushTimer) { window.clearTimeout(ingestPushTimer); ingestPushTimer = null; }
+    suppressIngestPush = true;
+    ingestTimeSyncDone = false;
     migratePersisted();
     mergeCatalogFromBoard();
     wireExpireDateField();
@@ -9948,15 +10056,21 @@ window.addEventListener("message", (e) => {
     try {
       const fresh = await fetchLatestBoardFresh();
       if (fresh) {
+        // Status/manual from server first; ingest merged per uploadedAt (not session/open time).
         applyServerPayload(fresh, { keepDirty: false });
         lastRemoteIngestHadContent = ingestHasContent(fresh);
+        lastRemoteIngestMetaSig = ingestMetaSig(fresh);
         remoteBoardConfirmed = true;
+        ingestTimeSyncDone = true;
+        suppressIngestPush = false;
         setSaveSync("");
-        if (ingestDiffNames().length) dirtyIngest = true;
+        const plan = planIngestByDataTime(localIngestSnapshot(), fresh);
+        dirtyIngest = !!plan.anyPush;
         if (getBoardPassword() || getSyncKey()) {
           persistActionsLocal();
           const canWrite = canRemoteWrite();
-          if (canWrite && ingestDiffNames().length) {
+          // Push only when local uploadedAt is strictly newer for a source — never push on mere open.
+          if (canWrite && plan.anyPush) {
             await pushIngestToEdge();
             lastRemoteIngestHadContent = ingestHasContent(localIngestSnapshot());
           }
@@ -9964,11 +10078,15 @@ window.addEventListener("message", (e) => {
         }
       } else {
         remoteBoardConfirmed = false;
+        ingestTimeSyncDone = false;
+        suppressIngestPush = false;
         setSaveSync("Could not load latest — refresh");
       }
     } catch (syncErr) {
       try { console.error(syncErr); } catch (e2) {}
       remoteBoardConfirmed = false;
+      ingestTimeSyncDone = false;
+      suppressIngestPush = false;
       setSaveSync("Could not load latest — refresh");
     }
     document.documentElement.classList.remove("hx-waiting-remote");
