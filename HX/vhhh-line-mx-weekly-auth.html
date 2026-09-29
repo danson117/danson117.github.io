@@ -185,12 +185,8 @@
       <span style="font-size:12px;color:var(--muted)">Auto-filled from paste header when possible. Edit before Compare if needed.</span>
     </div>
     <div class="btn-row">
-      <button type="button" class="primary" id="btn-compare">Compare &amp; keep differences</button>
-      <button type="button" class="primary" id="btn-import-chain">Import weekly chain (multi-date paste)</button>
-      <button type="button" id="btn-set-ref">Use this paste as reference for next week</button>
-      <button type="button" id="btn-reset-ref">Reset reference to 06 Aug 2026 baseline</button>
-      <button type="button" id="btn-clear">Clear paste</button>
-      <button type="button" class="danger" id="btn-clear-hist">Clear difference history</button>
+      <button type="button" class="primary" id="btn-compare">COMPARE</button>
+      <button type="button" id="btn-undo">UNDO ACTION</button>
     </div>
   </div>
 
@@ -285,7 +281,7 @@
   </div>
   <p class="hist-empty" id="hist-empty">No differences saved yet.</p>
 
-      <p class="page-version">page-version 2.2</p>
+      <p class="page-version">page-version 2.3</p>
 </div>
 
 <script>
@@ -295,8 +291,10 @@
   const LS_REF = "hx:vhhh-lmx-auth:reference:v2";
   const LS_HIST = "hx:vhhh-lmx-auth:history:v2";
   const LS_WEEKS = "hx:vhhh-lmx-auth:weeks:v1";
+  const LS_UNDO = "hx:vhhh-lmx-auth:undo:v1";
   const LS_SEED_VER = "hx:vhhh-lmx-auth:seed-ver";
   const SEED_VER = 3;
+  const UNDO_MAX = 30;
   const SEED_URL = "vhhh-line-mx-history-seed.json?v=1.9";
   const BASELINE_URL = "vhhh-line-mx-baseline.json?v=1.9";
   const SNAPSHOTS_URL = "vhhh-line-mx-weekly-snapshots.json?v=1.9";
@@ -1161,6 +1159,108 @@
     };
   }
 
+  function localDayKey(isoOrDate) {
+    const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
+    if (isNaN(d.getTime())) return "";
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+
+  function todayLocalKey() {
+    return localDayKey(new Date());
+  }
+
+  function deepClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function loadUndoLog() {
+    try {
+      const raw = localStorage.getItem(LS_UNDO);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveUndoLog(log) {
+    localStorage.setItem(LS_UNDO, JSON.stringify(log));
+  }
+
+  /** Snapshot of state COMPARE is about to mutate (localStorage only). */
+  function captureCompareSnapshot() {
+    return {
+      at: new Date().toISOString(),
+      history: deepClone(history),
+      weeksByDate: deepClone(weeksByDate),
+      currentRows: deepClone(currentRows),
+      currentPdfDate: currentPdfDate || "",
+      previousPdfDate: previousPdfDate || "",
+      reference: reference ? deepClone(reference) : null,
+      docDateField: $("doc-date") ? $("doc-date").value : "",
+    };
+  }
+
+  function pushCompareUndo() {
+    const log = loadUndoLog();
+    log.push(captureCompareSnapshot());
+    while (log.length > UNDO_MAX) log.shift();
+    saveUndoLog(log);
+  }
+
+  function applyCompareSnapshot(snap) {
+    history = Array.isArray(snap.history) ? snap.history : [];
+    weeksByDate = snap.weeksByDate && typeof snap.weeksByDate === "object" ? snap.weeksByDate : {};
+    currentRows = Array.isArray(snap.currentRows) ? snap.currentRows.map(enrichRow) : [];
+    currentPdfDate = snap.currentPdfDate || "";
+    previousPdfDate = snap.previousPdfDate || "";
+    saveHistory();
+    saveWeeks();
+    if (snap.reference) {
+      saveReference(snap.reference);
+    } else if (baselinePack) {
+      saveReference({
+        reportDate: baselinePack.reportDate,
+        label: baselinePack.label,
+        rows: baselinePack.rows.slice(),
+      });
+    }
+    if (previousPdfDate && weeksByDate[previousPdfDate] && currentRows.length) {
+      diff = computeDiff(weeksByDate[previousPdfDate].rows, currentRows);
+    } else if (baselinePack && currentRows.length && currentPdfDate && !isBaselinePdfDate(currentPdfDate)) {
+      diff = computeDiff(baselinePack.rows, currentRows);
+    } else {
+      diff = null;
+    }
+    if ($("doc-date")) {
+      $("doc-date").value = snap.docDateField != null && snap.docDateField !== ""
+        ? snap.docDateField
+        : (currentPdfDate || "");
+    }
+    updateRefNote();
+    renderTable();
+  }
+
+  function onUndoAction() {
+    hideMsg();
+    const log = loadUndoLog();
+    if (!log.length) {
+      showMsg("Nothing to undo.", false);
+      return;
+    }
+    const top = log[log.length - 1];
+    const at = top && top.at;
+    if (!at || localDayKey(at) !== todayLocalKey()) {
+      showMsg("Only today's COMPARE action can be undone.", false);
+      return;
+    }
+    log.pop();
+    saveUndoLog(log);
+    applyCompareSnapshot(top);
+    showMsg("Undid today's latest COMPARE.", true);
+  }
+
   function onPasteInput() {
     const text = $("paste").value;
     const auto = extractDocDateFromText(text);
@@ -1191,6 +1291,8 @@
       showMsg("No qualification rows parsed. Check the paste is Line MX AMOS text.", false);
       return;
     }
+
+    pushCompareUndo();
 
     const datesBefore = sortedWeekDates();
     const hadSameDate = !!weeksByDate[docDate];
@@ -1425,11 +1527,7 @@
     renderTable();
 
     $("btn-compare").addEventListener("click", onCompare);
-    $("btn-import-chain").addEventListener("click", onImportChain);
-    $("btn-set-ref").addEventListener("click", onSetRef);
-    $("btn-reset-ref").addEventListener("click", onResetRef);
-    $("btn-clear").addEventListener("click", () => { $("paste").value = ""; hideMsg(); });
-    $("btn-clear-hist").addEventListener("click", onClearHist);
+    $("btn-undo").addEventListener("click", onUndoAction);
     $("paste").addEventListener("input", onPasteInput);
     $("f-view").addEventListener("change", renderTable);
     $("f-q").addEventListener("input", renderTable);
