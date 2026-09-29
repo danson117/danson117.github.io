@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-29 公司電腦
 
+- **Authorization List Airline 欄：** 打 operator code 顯示航空公司全名（來自 auth module 標題，含只喺 stage、唔上 Name List 表嘅 code）。圖上 66 個 code 資料檔都有；可見表缺 HX-NP、UA-BM（人唔喺 Name List）。List **v2.5**、hub **v16.6**（`?v=2.5`）、規矩 **v9.3**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-29 公司電腦
+
 - **Accounts Copy from 頁面剔：** Edit pages／Pages 彈窗加 **Copy from**（其他帳戶 · role）。揀一個抄有效頁面剔（自訂／role 矩陣／Owner＝全頁）；抄完可逐項改剔再 **Save pages**。目標 Owner 時 checkbox 鎖住、copy 唔減權限。hub **v16.5**、`hx-rules` **v9.2**。GitHub 後備 → Vercel。唔開 Chrome。
 
 - **Setting Accounts 可改：** 「3. Accounts」點帳戶＝載入 Staff #／role 去下面改（唔即刻彈頁面）。**Update account** 儲存 Staff #（可改號碼）同 role；**Edit pages** 先開頁面清單；新 Staff # 仍係 **Add account**。最後仍要 Setting **Save** 寫伺服器。hub **v16.4**、`hx-rules` **v9.1**。GitHub 後備 → Vercel。唔開 Chrome。

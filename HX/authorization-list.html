@@ -28,6 +28,8 @@
   .toolbar, .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
   .toolbar input[type="search"], .filters select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); background: #fff; }
   .toolbar input[type="search"] { flex: 1; min-width: 220px; }
+  .op-lookup input { width: 7.5em; font: inherit; padding: 6px 8px; border: 1px solid var(--line); background: #fff; text-transform: uppercase; }
+  .op-lookup b { color: var(--navy); font-weight: 650; }
   .filters label { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
   button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--card); padding: 6px 10px; cursor: pointer; }
   button:hover { background: var(--navy-soft); }
@@ -66,6 +68,7 @@
     </div>
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search staff # / name / section / operator / aircraft / module / email">
+      <label class="op-lookup">Airline <input id="op-lookup" type="text" placeholder="Code" autocomplete="off" spellcheck="false" maxlength="12"> <b id="op-lookup-name"></b></label>
       <button type="button" id="copy-table">Copy Table</button>
       <button type="button" id="to-xlsx">To XLSX</button>
       <button type="button" id="update-csv-btn">Update CSV</button>
@@ -98,11 +101,11 @@
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Due Red / Yellow / Red + Yellow only show module <code>--/--/AUTH/HAECO</code> rows in those windows; All stays unrestricted by module. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows.</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Due Red / Yellow / Red + Yellow only show module <code>--/--/AUTH/HAECO</code> rows in those windows; All stays unrestricted by module. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows. <b>Airline</b>: type an operator code to see the airline name taken from that code's auth module title (includes codes that are only in the hidden non–Name List rows).</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.4">v2.4</div>
+  <div class="page-version" data-version="2.5">v2.5</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=3"></script>
@@ -232,6 +235,66 @@ function unpack(){
     ));
   });
   return true;
+}
+let opAirlineNames = null;
+function cleanAirlineName(mod, op){
+  const parts = String(mod || "").split("/").map(s => s.trim()).filter(Boolean);
+  let name = parts.length ? parts[parts.length - 1] : String(mod || "").trim();
+  name = name.replace(/\s*\(LM\)\s*/ig, " ").replace(/\s+/g, " ").trim();
+  if (/air premia/i.test(name)) return "Air Premia";
+  const code = String(op || "").trim();
+  if (code) {
+    const escCode = code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const stripped = name
+      .replace(new RegExp("^" + escCode + "\\s+", "i"), "")
+      .replace(new RegExp("\\s+" + escCode + "\\s*$", "i"), "")
+      .replace(new RegExp("\\s*\\(" + escCode + "\\)\\s*$", "i"), "")
+      .replace(/\s*-\s*$/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (stripped && stripped.length >= 3 && /[A-Za-z]{3}/.test(stripped)) name = stripped;
+  }
+  return name.replace(/\s*-\s*$/, "").trim();
+}
+function ensureOpAirlineNames(){
+  if (opAirlineNames) return opAirlineNames;
+  opAirlineNames = {};
+  const pack = window.AUTH_PACK;
+  if (!pack || !pack.d) return opAirlineNames;
+  const ops = pack.d.op || [];
+  const mods = pack.d.mod || [];
+  const tallies = {};
+  function eat(rows){
+    (rows || []).forEach(r => {
+      if (!Array.isArray(r) || r.length < 6) return;
+      const op = ops[r[2]];
+      const mod = mods[r[5]];
+      if (!op || !mod) return;
+      const name = cleanAirlineName(mod, op);
+      if (!name) return;
+      const key = String(op).trim().toUpperCase();
+      if (!tallies[key]) tallies[key] = {};
+      tallies[key][name] = (tallies[key][name] || 0) + 1;
+    });
+  }
+  eat(pack.r);
+  if (pack.stage) eat(pack.stage.r);
+  Object.keys(tallies).forEach(op => {
+    let best = "", n = 0;
+    Object.keys(tallies[op]).forEach(name => {
+      if (tallies[op][name] > n) { n = tallies[op][name]; best = name; }
+    });
+    if (best) opAirlineNames[op] = best;
+  });
+  return opAirlineNames;
+}
+function paintOpLookup(){
+  const input = document.getElementById("op-lookup");
+  const out = document.getElementById("op-lookup-name");
+  if (!input || !out) return;
+  const code = input.value.trim().toUpperCase();
+  if (!code) { out.textContent = ""; return; }
+  out.textContent = ensureOpAirlineNames()[code] || "Not on this list";
 }
 function fillSelect(id, values){
   const sel = document.getElementById(id);
@@ -816,10 +879,13 @@ function bindUi(){
     const f = e.target.files && e.target.files[0];
     if (f) handleCsvFile(f);
   });
+  document.getElementById("op-lookup").addEventListener("input", paintOpLookup);
   document.getElementById("clear").addEventListener("click", () => {
     q = fDept = fOp = fCat = fAc = fDue = "";
     fGroup = "ocg";
     document.getElementById("q").value = "";
+    document.getElementById("op-lookup").value = "";
+    paintOpLookup();
     document.getElementById("f-dept").value = "";
     document.getElementById("f-op").value = "";
     document.getElementById("f-cat").value = "";
