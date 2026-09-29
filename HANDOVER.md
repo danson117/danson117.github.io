@@ -10,6 +10,8 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-29 公司電腦
 
+- **VHHH Line MX Weekly Auth · 按 report date 比較／補漏：** Compare／Import 以 PDF／report 日期排序（唔係 upload 時間）；「最新」＝已存最新日期、「上一個」＝次新日期。補入中間一週會插入日期槽，重算該週 vs 上一日、以及下一較新週 vs 補入週（例：先 10 再 24 → 24 vs 10；後補 17 → live 變 24 vs 17；history 批次掛喺較新文件日期）。同日後 upload 覆蓋該日。舊週 history（09.03／09.10 等）保留。週 archive 存 browser `localStorage` weeks＋snapshots／seed 預設。Auth **v1.9**、hub **v16.3**（`?v=1.9`）。GitHub 後備 → Vercel。唔開 Chrome。
+
 - **Uploaded 日期時間顯示：** CT／Mandatory／UAL 檔列表同 ingest 狀態嘅 `formatUploadedAt` 由 `DD-MM-YY HH:MM` 改為 `DD-MM-YYYY HH:MM`（本地時間；標籤仍係 Uploaded）。唔改 course due 日期格式。TOV **v15.1**、hub **v16.2**（`?v=15.1`）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

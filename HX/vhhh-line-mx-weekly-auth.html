@@ -169,7 +169,7 @@
 <body>
 <div class="page">
   <h1>VHHH Line MX Weekly Auth</h1>
-  <p class="subtitle">Kalitta AMOS · Training by Qualification · paste weekly text, keep difference history, expiry ≤30 days</p>
+  <p class="subtitle">Kalitta AMOS · Training by Qualification · paste weekly text, keep difference history, expiry ≤30 days · compare by report date (backfill OK)</p>
   <p class="disclaimer"><strong>FOR REFERENCE ONLY</strong> — AMOS report does not authorize, qualify, or give permit status. Hanger list not shown here.</p>
 
   <p class="ref-note" id="ref-note">Reference: loading…</p>
@@ -283,7 +283,7 @@
     </table>
   </div>
 
-      <p class="page-version">page-version 1.8</p>
+      <p class="page-version">page-version 1.9</p>
 </div>
 
 <script>
@@ -292,10 +292,12 @@
 
   const LS_REF = "hx:vhhh-lmx-auth:reference:v2";
   const LS_HIST = "hx:vhhh-lmx-auth:history:v2";
+  const LS_WEEKS = "hx:vhhh-lmx-auth:weeks:v1";
   const LS_SEED_VER = "hx:vhhh-lmx-auth:seed-ver";
   const SEED_VER = 3;
-  const SEED_URL = "vhhh-line-mx-history-seed.json?v=1.6";
-  const BASELINE_URL = "vhhh-line-mx-baseline.json?v=1.6";
+  const SEED_URL = "vhhh-line-mx-history-seed.json?v=1.9";
+  const BASELINE_URL = "vhhh-line-mx-baseline.json?v=1.9";
+  const SNAPSHOTS_URL = "vhhh-line-mx-weekly-snapshots.json?v=1.9";
   const FINE_CHANGE_KINDS = { due: 1, status: 1, issue: 1, changed: 1 };
   let sortCurrent = { key: "empId", type: "text", dir: 1 };
   let sortHist = { key: "docDate", type: "docdate", dir: -1 };
@@ -312,6 +314,8 @@
   let currentRows = [];
   let diff = null;
   let history = [];
+  /** pdfDate → { pdfDate, rows, savedAt } — ordered by report/PDF date, not upload time. */
+  let weeksByDate = {};
   let currentPdfDate = "";
   let previousPdfDate = "";
 
@@ -637,6 +641,143 @@
     }
     history.sort((a, b) => docDateSortKey(b.docDate) - docDateSortKey(a.docDate));
     saveHistory();
+  }
+
+  function loadWeeks() {
+    try {
+      const raw = localStorage.getItem(LS_WEEKS);
+      if (!raw) return {};
+      const obj = JSON.parse(raw);
+      if (!obj || typeof obj !== "object" || Array.isArray(obj)) return {};
+      const out = {};
+      Object.keys(obj).forEach((k) => {
+        const w = obj[k];
+        if (!w || !w.pdfDate || !Array.isArray(w.rows) || !w.rows.length) return;
+        out[w.pdfDate] = {
+          pdfDate: w.pdfDate,
+          rows: w.rows,
+          savedAt: w.savedAt || "",
+        };
+      });
+      return out;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveWeeks() {
+    localStorage.setItem(LS_WEEKS, JSON.stringify(weeksByDate));
+  }
+
+  /** Same report date: later upload replaces that slot (stable tie-break). */
+  function upsertWeek(pdfDate, rows) {
+    weeksByDate[pdfDate] = {
+      pdfDate,
+      rows: rows.map((r) => Object.assign({}, r)),
+      savedAt: new Date().toISOString(),
+    };
+    saveWeeks();
+  }
+
+  function sortedWeekDates() {
+    return Object.keys(weeksByDate).sort((a, b) => docDateSortKey(a) - docDateSortKey(b));
+  }
+
+  function isBaselinePdfDate(pdfDate) {
+    return !!(baselinePack && baselinePack.pdfDate && pdfDate === baselinePack.pdfDate);
+  }
+
+  /**
+   * Recompute history for pdfDate vs next-older date, and (if any) the next-newer
+   * date vs this one — so a backfilled week sits in chronological order and the
+   * newer neighbor is no longer compared against a skipped older week.
+   * Older unrelated history batches are left alone.
+   */
+  function recomputeAround(pdfDate) {
+    const dates = sortedWeekDates();
+    const i = dates.indexOf(pdfDate);
+    if (i < 0 || !weeksByDate[pdfDate]) return null;
+    let thisDiff = null;
+
+    if (isBaselinePdfDate(pdfDate)) {
+      upsertHistoryBatch(pdfDate, "", []);
+    } else if (i === 0) {
+      const basePdf = baselinePack && baselinePack.pdfDate;
+      if (basePdf && docDateSortKey(basePdf) < docDateSortKey(pdfDate) && Array.isArray(baselinePack.rows)) {
+        const d = computeDiff(baselinePack.rows, weeksByDate[pdfDate].rows);
+        thisDiff = d;
+        upsertHistoryBatch(pdfDate, baselinePack.label || ("PDF " + basePdf), diffToHistoryItems(d));
+      } else {
+        upsertHistoryBatch(pdfDate, "", []);
+      }
+    } else {
+      const prev = dates[i - 1];
+      const d = computeDiff(weeksByDate[prev].rows, weeksByDate[pdfDate].rows);
+      thisDiff = d;
+      upsertHistoryBatch(pdfDate, "PDF " + prev, diffToHistoryItems(d));
+    }
+
+    if (i < dates.length - 1) {
+      const next = dates[i + 1];
+      if (!isBaselinePdfDate(next)) {
+        const dNext = computeDiff(weeksByDate[pdfDate].rows, weeksByDate[next].rows);
+        upsertHistoryBatch(next, "PDF " + pdfDate, diffToHistoryItems(dNext));
+      }
+    }
+    return thisDiff;
+  }
+
+  /** Live view = newest report DATE stored (not latest upload time) vs previous DATE. */
+  function refreshViewFromLatest() {
+    const dates = sortedWeekDates();
+    if (!dates.length) return;
+    const latest = dates[dates.length - 1];
+    const prev = dates.length > 1 ? dates[dates.length - 2] : null;
+    currentPdfDate = latest;
+    previousPdfDate = prev || "";
+    currentRows = weeksByDate[latest].rows.map(enrichRow);
+    if (prev && weeksByDate[prev]) {
+      diff = computeDiff(weeksByDate[prev].rows, currentRows);
+      saveReference({
+        reportDate: new Date().toISOString().slice(0, 10),
+        label: "PDF " + prev,
+        rows: weeksByDate[prev].rows.map((r) => Object.assign({}, r)),
+      });
+    } else if (baselinePack && !isBaselinePdfDate(latest)) {
+      diff = computeDiff(baselinePack.rows, currentRows);
+      saveReference({
+        reportDate: baselinePack.reportDate,
+        label: baselinePack.label,
+        rows: baselinePack.rows.slice(),
+      });
+    } else {
+      diff = null;
+    }
+    $("doc-date").value = latest;
+  }
+
+  async function ensureWeeksFromSnapshots(fillMissingOnly) {
+    try {
+      const res = await fetch(SNAPSHOTS_URL);
+      if (!res.ok) return false;
+      const pack = await res.json();
+      const list = Array.isArray(pack.weeks) ? pack.weeks : [];
+      let n = 0;
+      list.forEach((w) => {
+        if (!w || !w.pdfDate || !Array.isArray(w.rows) || !w.rows.length) return;
+        if (fillMissingOnly && weeksByDate[w.pdfDate]) return;
+        weeksByDate[w.pdfDate] = {
+          pdfDate: w.pdfDate,
+          rows: w.rows.map((r) => enrichRow(Object.assign({}, r))),
+          savedAt: w.savedAt || "",
+        };
+        n++;
+      });
+      if (n) saveWeeks();
+      return n > 0;
+    } catch (e) {
+      return false;
+    }
   }
 
   function flatHistoryRows() {
@@ -993,16 +1134,37 @@
       showMsg("No qualification rows parsed. Check the paste is Line MX AMOS text.", false);
       return;
     }
-    currentRows = parsed.rows;
-    diff = computeDiff(reference.rows, currentRows);
-    const items = diffToHistoryItems(diff);
-    upsertHistoryBatch(docDate, reference.label, items);
 
-    let msg = "PDF Date " + docDate + ": parsed " + parsed.rows.length + " rows / " + new Set(parsed.rows.map((r) => r.empId)).size + " people.";
+    const datesBefore = sortedWeekDates();
+    const hadSameDate = !!weeksByDate[docDate];
+    upsertWeek(docDate, parsed.rows);
+    const thisDiff = recomputeAround(docDate);
+    refreshViewFromLatest();
+
+    const dates = sortedWeekDates();
+    const idx = dates.indexOf(docDate);
+    const prevDate = idx > 0 ? dates[idx - 1] : null;
+    const nextDate = idx >= 0 && idx < dates.length - 1 ? dates[idx + 1] : null;
+    const items = thisDiff ? diffToHistoryItems(thisDiff) : [];
+
+    let msg = "PDF Date " + docDate + ": parsed " + parsed.rows.length + " rows / " +
+      new Set(parsed.rows.map((r) => r.empId)).size + " people.";
     if (parsed.unparsed.length) {
       msg += " " + parsed.unparsed.length + " fragment(s) skipped — check if a 'removed' row is a parse miss.";
     }
-    msg += " Saved " + items.length + " difference(s) into history (newer PDF Date on top).";
+    if (hadSameDate) {
+      msg += " Same report date replaced (later upload wins).";
+    }
+    if (prevDate && nextDate && datesBefore.indexOf(docDate) < 0) {
+      msg += " Inserted between " + prevDate + " and " + nextDate + " by report date.";
+    } else if (prevDate) {
+      msg += " Compared vs previous report date " + prevDate + " → " + items.length + " difference(s).";
+    } else {
+      msg += " Stored as oldest week in this browser.";
+    }
+    msg += " Live view = latest report date " + currentPdfDate +
+      (previousPdfDate ? (" vs previous " + previousPdfDate) : "") +
+      " (not upload order).";
     showMsg(msg, true);
     renderTable();
   }
@@ -1013,14 +1175,15 @@
       return;
     }
     const doc = parseDocDateInput($("doc-date").value) || "";
+    if (doc && currentRows.length) upsertWeek(doc, currentRows);
     const label = prompt("Label for this reference:", doc ? ("PDF " + doc) : "Saved reference");
     saveReference({
       reportDate: new Date().toISOString().slice(0, 10),
       label: label || "Saved reference",
       rows: currentRows.slice(),
     });
-    diff = computeDiff(reference.rows, currentRows);
-    showMsg("Reference updated. Next compare will diff against this version. History is kept.", true);
+    refreshViewFromLatest();
+    showMsg("Week stored by report date. Live compare uses latest DATE vs previous DATE (not upload order). History is kept.", true);
     renderTable();
   }
 
@@ -1036,48 +1199,40 @@
       showMsg("Could not find PDF dates (dd.Mon.yyyy Page N) in the paste.", false);
       return;
     }
-    // Start from baseline if first chunk is the baseline date, else current reference
-    let refRows = reference.rows.slice();
-    let refLabel = reference.label;
-    const basePdf = baselinePack.pdfDate || extractDocDateFromText("") || "";
-    let totalItems = 0;
-    let lastRows = null;
     const summaries = [];
+    const imported = [];
     for (const ch of chunks) {
       const parsed = parseAmosText(ch.text);
       if (!parsed.rows.length) {
         summaries.push(ch.pdfDate + ": 0 rows (skipped)");
         continue;
       }
-      // If this chunk equals baseline PDF date, set as reference without history
-      if (baselinePack.pdfDate && ch.pdfDate === baselinePack.pdfDate) {
-        refRows = parsed.rows.slice();
-        refLabel = baselinePack.label;
-        lastRows = parsed.rows;
-        summaries.push(ch.pdfDate + ": baseline " + parsed.rows.length + " rows (reference set)");
-        continue;
+      upsertWeek(ch.pdfDate, parsed.rows);
+      imported.push(ch.pdfDate);
+      if (isBaselinePdfDate(ch.pdfDate)) {
+        summaries.push(ch.pdfDate + ": baseline " + parsed.rows.length + " rows (stored)");
+      } else {
+        summaries.push(ch.pdfDate + ": " + parsed.rows.length + " rows (stored by date)");
       }
-      const d = computeDiff(refRows, parsed.rows);
-      const items = diffToHistoryItems(d);
-      upsertHistoryBatch(ch.pdfDate, refLabel, items);
-      totalItems += items.length;
-      summaries.push(ch.pdfDate + ": +" + d.added.length + " / -" + d.removed.length + " / ~" + d.changed.length);
-      refRows = parsed.rows.slice();
-      refLabel = "PDF " + ch.pdfDate;
-      lastRows = parsed.rows;
-      diff = d;
     }
-    if (lastRows) {
-      currentRows = lastRows;
-      saveReference({
-        reportDate: new Date().toISOString().slice(0, 10),
-        label: refLabel,
-        rows: refRows,
-      });
-    }
-    $("doc-date").value = chunks[chunks.length - 1].pdfDate;
-    showMsg("Weekly chain: " + chunks.length + " PDF date(s). " + summaries.join(" · ") +
-      " · history +" + totalItems + " row(s).", true);
+    // Recompute each imported date (and its newer neighbor) in chronological order
+    imported.sort((a, b) => docDateSortKey(a) - docDateSortKey(b));
+    let totalItems = 0;
+    imported.forEach((pdfDate) => {
+      const d = recomputeAround(pdfDate);
+      if (d) totalItems += d.added.length + d.removed.length + d.changed.length;
+      if (d && !isBaselinePdfDate(pdfDate)) {
+        const i = summaries.findIndex((s) => s.startsWith(pdfDate + ":"));
+        if (i >= 0) {
+          summaries[i] = pdfDate + ": +" + d.added.length + " / -" + d.removed.length + " / ~" + d.changed.length;
+        }
+      }
+    });
+    refreshViewFromLatest();
+    showMsg("Weekly chain: " + imported.length + " PDF date(s) stored by report date. " +
+      summaries.join(" · ") + " · live = " + currentPdfDate +
+      (previousPdfDate ? (" vs " + previousPdfDate) : "") +
+      " · history touch +" + totalItems + " change(s).", true);
     renderTable();
   }
 
@@ -1100,21 +1255,34 @@
       history.sort((a, b) => docDateSortKey(b.docDate) - docDateSortKey(a.docDate));
       saveHistory();
 
-      currentPdfDate = seed.currentPdfDate || "";
-      previousPdfDate = seed.previousPdfDate || "";
-      if (Array.isArray(seed.currentRows) && seed.currentRows.length) {
-        currentRows = seed.currentRows.map(enrichRow);
+      // Snapshot weeks = date-ordered archive for backfill (fill missing; keep local same-date)
+      await ensureWeeksFromSnapshots(true);
+      if (Array.isArray(seed.currentRows) && seed.currentRows.length && seed.currentPdfDate) {
+        if (!weeksByDate[seed.currentPdfDate]) {
+          upsertWeek(seed.currentPdfDate, seed.currentRows.map(enrichRow));
+        }
       }
-      const prevRows = Array.isArray(seed.previousRows) ? seed.previousRows.map(enrichRow) : [];
-      if (currentRows.length && prevRows.length) {
-        diff = computeDiff(prevRows, currentRows);
-        saveReference({
-          reportDate: new Date().toISOString().slice(0, 10),
-          label: previousPdfDate ? ("PDF " + previousPdfDate) : "Previous week",
-          rows: prevRows,
-        });
-      } else if (currentRows.length) {
-        diff = null;
+      if (Array.isArray(seed.previousRows) && seed.previousRows.length && seed.previousPdfDate) {
+        if (!weeksByDate[seed.previousPdfDate]) {
+          upsertWeek(seed.previousPdfDate, seed.previousRows.map(enrichRow));
+        }
+      }
+      refreshViewFromLatest();
+      if (!currentPdfDate) {
+        currentPdfDate = seed.currentPdfDate || "";
+        previousPdfDate = seed.previousPdfDate || "";
+        if (Array.isArray(seed.currentRows) && seed.currentRows.length) {
+          currentRows = seed.currentRows.map(enrichRow);
+        }
+        const prevRows = Array.isArray(seed.previousRows) ? seed.previousRows.map(enrichRow) : [];
+        if (currentRows.length && prevRows.length) {
+          diff = computeDiff(prevRows, currentRows);
+          saveReference({
+            reportDate: new Date().toISOString().slice(0, 10),
+            label: previousPdfDate ? ("PDF " + previousPdfDate) : "Previous week",
+            rows: prevRows,
+          });
+        }
       }
       try { localStorage.setItem(LS_SEED_VER, String(SEED_VER)); } catch (e) { /* ignore */ }
       return true;
@@ -1163,6 +1331,7 @@
     }
     mpLookup = baselinePack.mpLookup || {};
     reference = loadReference();
+    weeksByDate = loadWeeks();
     let storedVer = 0;
     try { storedVer = Number(localStorage.getItem(LS_SEED_VER) || "0"); } catch (e) { storedVer = 0; }
     history = migrateHistoryKinds(loadHistory());
@@ -1170,11 +1339,26 @@
     if (needForce) {
       const seeded = await loadHistorySeed(true);
       if (seeded) {
-        showMsg("Loaded seeded weekly difference history v2 (Aug 6 baseline → Sep 24). Stays in this browser; canonical weeks also in Supabase hx_private.", true);
+        showMsg("Loaded seeded weekly difference history (Aug 6 baseline → Sep 24). Compare orders by report date; backfill inserts in date order. Browser + seed JSON; canonical weeks also in Supabase hx_private.", true);
       }
-    } else if (!currentRows.length) {
-      // keep browser history; still refresh current from seed if needed
-      await loadHistorySeed(false);
+    } else {
+      if (!Object.keys(weeksByDate).length) await ensureWeeksFromSnapshots(false);
+      else await ensureWeeksFromSnapshots(true);
+      if (Object.keys(weeksByDate).length) {
+        // If a middle week exists in the archive but latest history still points at an older neighbour, re-link.
+        const dates = sortedWeekDates();
+        if (dates.length >= 2) {
+          const latest = dates[dates.length - 1];
+          const prev = dates[dates.length - 2];
+          const batch = history.find((h) => h.docDate === latest);
+          if (!batch || String(batch.vsLabel || "").indexOf(prev) < 0) {
+            recomputeAround(prev);
+          }
+        }
+        refreshViewFromLatest();
+      } else if (!currentRows.length) {
+        await loadHistorySeed(false);
+      }
     }
     if (!currentRows.length) {
       currentRows = (baselinePack.rows || []).slice().map(enrichRow);
