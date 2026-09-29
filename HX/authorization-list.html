@@ -40,6 +40,13 @@
   .op-suggest[hidden] { display: none; }
   .op-suggest li { padding: 6px 10px; cursor: pointer; white-space: nowrap; }
   .op-suggest li:hover, .op-suggest li.on { background: var(--navy-soft); }
+  .ops-roster { margin: 0 0 12px; }
+  .ops-roster-title { font-size: 15px; margin: 0 0 6px; color: var(--navy); font-weight: 650; }
+  .ops-roster-wrap { overflow: auto; max-height: 42vh; border: 1px solid var(--line); background: var(--card); max-width: 520px; }
+  .ops-roster-table { width: 100%; min-width: 0; max-width: 520px; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+  .ops-roster-table th, .ops-roster-table td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ops-roster-table th { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 1; cursor: default; height: 28px; }
+  .ops-roster-table col.code { width: 7em; }
   .filters label { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
   button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--card); padding: 6px 10px; cursor: pointer; }
   button:hover { background: var(--navy-soft); }
@@ -91,6 +98,16 @@
       <input id="update-csv" type="file" accept=".csv,text/csv" hidden>
       <button type="button" id="clear">Clear filters</button>
     </div>
+    <div class="ops-roster" id="ops-roster">
+      <div class="ops-roster-title">Operators (<span id="ops-roster-n">0</span>)</div>
+      <div class="ops-roster-wrap">
+        <table class="ops-roster-table">
+          <colgroup><col class="code"><col></colgroup>
+          <thead><tr><th>Operator code</th><th>Airline name</th></tr></thead>
+          <tbody id="ops-roster-body"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="filters">
       <label>Section <select id="f-dept"><option value="">All</option></select></label>
       <label>Operator <select id="f-op"><option value="">All</option></select></label>
@@ -121,7 +138,7 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.6">v2.6</div>
+  <div class="page-version" data-version="2.7">v2.7</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=3"></script>
@@ -303,6 +320,19 @@ function ensureOpAirlineNames(){
     if (best) opAirlineNames[op] = best;
   });
   return opAirlineNames;
+}
+function paintOperatorsTable(){
+  const body = document.getElementById("ops-roster-body");
+  const nEl = document.getElementById("ops-roster-n");
+  if (!body) return;
+  const map = ensureOpAirlineNames();
+  const codes = Object.keys(map).sort((a, b) =>
+    a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
+  );
+  if (nEl) nEl.textContent = String(codes.length);
+  body.innerHTML = codes.map(code =>
+    "<tr><td>" + esc(code) + "</td><td>" + esc(map[code] || "") + "</td></tr>"
+  ).join("");
 }
 let opSuggestIndex = -1;
 function hideOpSuggest(){
@@ -803,6 +833,8 @@ function applyPack(pack){
   document.getElementById("f-op").value = fOp;
   document.getElementById("f-cat").value = fCat;
   document.getElementById("f-ac").value = fAc;
+  opAirlineNames = null;
+  paintOperatorsTable();
   paintChrome();
   rebuildView(true);
   return true;
@@ -994,6 +1026,7 @@ function bindUi(){
     rebuildView(true);
   });
   paintChrome();
+  paintOperatorsTable();
   rebuildView(true);
 }
 
