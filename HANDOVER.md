@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-29 公司電腦
 
+- **VHHH Line MX 到期色：** Current report Due Date 三檔——OVERDUE 紅、≤14 日橙、&gt;14 且 ≤30 日黃。頁頂 3 行 DEMO（唔入 history）。Auth **v2.0**、hub **v17.0**（`?v=2.0`）、規矩 **v9.7**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-29 公司電腦
+
 - **Authorization List Airline 揀碼：** Airline 欄打至少一個字就列出符合嘅 operator code／航空公司名（contains）；揀一行填入 code 同全名。鍵盤 ↑↓／Enter／Esc；點外面關。冇符合先顯示 Not on this list。唔過濾表。List **v2.6**、hub **v16.8**（`?v=2.6`）、規矩 **v9.5**。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-29 公司電腦

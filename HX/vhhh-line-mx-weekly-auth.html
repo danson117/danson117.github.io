@@ -117,6 +117,7 @@
   .sw-removed { background: #e8eaed; }
   .sw-changed { background: var(--amber-bg); }
   .sw-overdue { background: #f4d4d0; }
+  .sw-due14 { background: #ffd0a6; }
   .sw-duesoon { background: #fff3b0; }
   h2.section {
     font-size: 14px; margin: 20px 0 8px; padding: 7px 11px;
@@ -126,7 +127,7 @@
   table { border-collapse: collapse; width: 100%; min-width: 1100px; }
   th, td { border: 1px solid var(--line); padding: 5px 7px; vertical-align: top; text-align: left; }
   th { background: #e5f4f6; position: sticky; top: 0; z-index: 1; }
-  tbody tr:nth-child(even):not(.diff-added):not(.diff-removed):not(.diff-changed):not(.diff-due):not(.diff-status):not(.diff-issue) { background: #fafafa; }
+  tbody tr:nth-child(even):not(.diff-added):not(.diff-removed):not(.diff-changed):not(.diff-due):not(.diff-status):not(.diff-issue):not(.exp-overdue):not(.exp-due14):not(.exp-duesoon) { background: #fafafa; }
   tr.diff-added { background: var(--green-bg) !important; }
   tr.diff-removed { background: #e8eaed !important; color: var(--muted); }
   tr.diff-removed td.strike { text-decoration: line-through; }
@@ -134,8 +135,9 @@
   tr.diff-due { background: #e7f0fa !important; }
   tr.diff-status { background: #f6ebe3 !important; }
   tr.diff-issue { background: #f7f0dc !important; }
-  tr.exp-overdue { box-shadow: inset 3px 0 0 var(--hot); }
-  tr.exp-duesoon { box-shadow: inset 3px 0 0 var(--amber); }
+  tr.exp-overdue { background: #f4d4d0 !important; box-shadow: inset 3px 0 0 var(--hot); }
+  tr.exp-due14 { background: #ffd0a6 !important; box-shadow: inset 3px 0 0 #c45c00; }
+  tr.exp-duesoon { background: #fff3b0 !important; box-shadow: inset 3px 0 0 var(--amber); }
   .tag {
     display: inline-block; font-size: 10px; font-weight: 700;
     padding: 1px 5px; border-radius: 2px; margin-right: 4px; vertical-align: middle;
@@ -148,6 +150,7 @@
   .tag-status { background: #edd4c4; color: #6b3e26; }
   .tag-issue { background: #f0e0a8; color: #7a5a10; }
   .tag-hot { background: #f4d4d0; color: var(--hot); }
+  .tag-due14 { background: #ffd0a6; color: #9a4100; }
   .tag-soon { background: #fff3b0; color: var(--amber); }
   .sw-due { background: #e7f0fa; }
   .sw-status { background: #edd4c4; }
@@ -169,7 +172,7 @@
 <body>
 <div class="page">
   <h1>VHHH Line MX Weekly Auth</h1>
-  <p class="subtitle">Kalitta AMOS · Training by Qualification · paste weekly text, keep difference history, expiry ≤30 days · compare by report date (backfill OK)</p>
+  <p class="subtitle">Kalitta AMOS · Training by Qualification · paste weekly text, keep difference history · overdue red / ≤14d orange / ≤30d yellow · compare by report date (backfill OK)</p>
   <p class="disclaimer"><strong>FOR REFERENCE ONLY</strong> — AMOS report does not authorize, qualify, or give permit status. Hanger list not shown here.</p>
 
   <p class="ref-note" id="ref-note">Reference: loading…</p>
@@ -204,6 +207,7 @@
     <span><i class="sw-status"></i>Status changed</span>
     <span><i class="sw-issue"></i>Issue date changed</span>
     <span><i class="sw-overdue"></i>Overdue</span>
+    <span><i class="sw-due14"></i>Due within 14 days</span>
     <span><i class="sw-duesoon"></i>Due within 30 days</span>
   </p>
 
@@ -241,7 +245,7 @@
         <select id="f-view">
           <option value="all">All rows (current)</option>
           <option value="changes">Latest compare changes only</option>
-          <option value="expiry">Expiry (overdue / ≤30 days)</option>
+          <option value="expiry">Expiry (overdue / ≤14 / ≤30 days)</option>
           <option value="changes-expiry">Latest changes + expiry</option>
         </select>
       </label>
@@ -283,7 +287,7 @@
     </table>
   </div>
 
-      <p class="page-version">page-version 1.9</p>
+      <p class="page-version">page-version 2.0</p>
 </div>
 
 <script>
@@ -367,8 +371,60 @@
     today.setHours(0, 0, 0, 0);
     const diffDays = Math.floor((d - today) / 86400000);
     if (diffDays < 0) return "overdue";
+    if (diffDays <= 14) return "due14";
     if (diffDays <= 30) return "duesoon";
     return "";
+  }
+
+  function formatAmosDate(d) {
+    return pad2(d.getDate()) + "." + MONTH_ABBR[d.getMonth()] + "." + d.getFullYear();
+  }
+
+  /** Three fixed colour demos at the top of Current report (not saved to history). */
+  function demoExpiryRows() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const addDays = (n) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() + n);
+      return formatAmosDate(d);
+    };
+    const issue = formatAmosDate(new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()));
+    const base = {
+      haecoStaff: "DEMO",
+      jobCode: "MX Provider Mechanic/Inspector",
+      station: "VHHH",
+      issueDate: issue,
+      status: "AUTHORIZED",
+      haecoName: "",
+      dept: ""
+    };
+    return [
+      Object.assign({}, base, {
+        empId: "MP00001",
+        lastName: "Demo",
+        firstName: "Overdue",
+        qualification: "DEMO-RED",
+        description: "DEMO · Overdue (red)",
+        dueDate: addDays(-7)
+      }),
+      Object.assign({}, base, {
+        empId: "MP00002",
+        lastName: "Demo",
+        firstName: "Within14",
+        qualification: "DEMO-ORG",
+        description: "DEMO · Due within 14 days (orange)",
+        dueDate: addDays(10)
+      }),
+      Object.assign({}, base, {
+        empId: "MP00003",
+        lastName: "Demo",
+        firstName: "Within30",
+        qualification: "DEMO-YLW",
+        description: "DEMO · Due within 30 days (yellow)",
+        dueDate: addDays(25)
+      })
+    ];
   }
 
   function isHeaderLine(s) {
@@ -822,6 +878,7 @@
     if (tag === "changed") parts.push('<span class="tag tag-chg">CHG</span>');
     const exp = dueKind(r.dueDate);
     if (exp === "overdue") parts.push('<span class="tag tag-hot">OVERDUE</span>');
+    if (exp === "due14") parts.push('<span class="tag tag-due14">≤14d</span>');
     if (exp === "duesoon") parts.push('<span class="tag tag-soon">≤30d</span>');
     return parts.join("");
   }
@@ -839,6 +896,7 @@
     }
     const exp = dueKind(r.dueDate);
     if (exp === "overdue") cls.push("exp-overdue");
+    if (exp === "due14") cls.push("exp-due14");
     if (exp === "duesoon") cls.push("exp-duesoon");
     return cls.join(" ");
   }
@@ -991,7 +1049,7 @@
     const parts = [
       "<div class=\"stat\"><b>" + emps.size + "</b><span>People (current)</span></div>",
       "<div class=\"stat\"><b>" + currentRows.length + "</b><span>Qualification rows</span></div>",
-      "<div class=\"stat hot\"><b>" + hot + "</b><span>Overdue / ≤30 days</span></div>",
+      "<div class=\"stat hot\"><b>" + hot + "</b><span>Overdue / ≤14 / ≤30 days</span></div>",
     ];
     if (diff) {
       parts.push("<div class=\"stat add\"><b>+" + diff.added.length + "</b><span>Qual rows added</span></div>");
@@ -1016,7 +1074,8 @@
       return String(a.qualification || "").localeCompare(String(b.qualification || ""), undefined, { sensitivity: "base" });
     });
     updateSortHeaders("current-table", sortCurrent);
-    tbody.innerHTML = filtered.map((r) => {
+    const demoRows = demoExpiryRows();
+    tbody.innerHTML = demoRows.concat(filtered).map((r) => {
       const tags = rowTags(r, diff);
       const staffCell = esc(r.haecoStaff || "") + (tags ? " " + tags : "");
       return "<tr class=\"" + rowClass(r, diff) + "\">" +
