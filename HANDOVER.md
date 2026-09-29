@@ -10,7 +10,15 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-29 公司電腦
 
+- **VHHH Line MX 刪副標／disclaimer：** 刪頁頂 Kalitta 副標題同 FOR REFERENCE ONLY disclaimer；保留標題同 paste／表。Current 喺 Difference 上面；到期色三檔＋頂部 3 行 DEMO。Auth **v2.2**、hub **v17.1**（`?v=2.2`）、規矩 **v9.8**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-29 公司電腦
+
 - **VHHH Line MX 到期色：** Current report Due Date 三檔——OVERDUE 紅、≤14 日橙、&gt;14 且 ≤30 日黃。頁頂 3 行 DEMO（唔入 history）。Auth **v2.0**、hub **v17.0**（`?v=2.0`）、規矩 **v9.7**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-29 公司電腦
+
+- **VHHH Line MX Weekly Auth · Current 上移 + 到期色：** Current report（含 toolbar／表／Removed block）改喺 Difference history 上面；legend／stats 仍喺兩者之上。到期色 overdue 紅／≤14 橙／≤30 黃；Current 表頂 3 行 dummy sample（唔入 history）。Auth **v2.1**、hub **v17.0**（`?v=2.1`）、規矩 **v9.7**。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-29 公司電腦
 

@@ -172,8 +172,6 @@
 <body>
 <div class="page">
   <h1>VHHH Line MX Weekly Auth</h1>
-  <p class="subtitle">Kalitta AMOS · Training by Qualification · paste weekly text, keep difference history · overdue red / ≤14d orange / ≤30d yellow · compare by report date (backfill OK)</p>
-  <p class="disclaimer"><strong>FOR REFERENCE ONLY</strong> — AMOS report does not authorize, qualify, or give permit status. Hanger list not shown here.</p>
 
   <p class="ref-note" id="ref-note">Reference: loading…</p>
 
@@ -210,28 +208,6 @@
     <span><i class="sw-due14"></i>Due within 14 days</span>
     <span><i class="sw-duesoon"></i>Due within 30 days</span>
   </p>
-
-  <h2 class="section">Difference history (kept · newer first)</h2>
-  <p class="hist-meta" id="hist-meta">No differences saved yet. Compare a weekly paste to start the log.</p>
-  <div class="table-wrap" id="hist-wrap">
-    <table id="hist-table">
-      <thead>
-        <tr>
-          <th class="sortable" data-sort="docDate" data-type="docdate">PDF Date <span class="sort-ind"></span></th>
-          <th class="sortable" data-sort="kind" data-type="text">Change <span class="sort-ind"></span></th>
-          <th class="sortable" data-sort="empId" data-type="text">Emp ID <span class="sort-ind"></span></th>
-          <th class="sortable" data-sort="name" data-type="text">Name <span class="sort-ind"></span></th>
-          <th class="sortable" data-sort="qualification" data-type="text">Qual <span class="sort-ind"></span></th>
-          <th class="sortable" data-sort="description" data-type="text">Description <span class="sort-ind"></span></th>
-          <th class="sortable" data-sort="dueDate" data-type="amosdate">Due <span class="sort-ind"></span></th>
-          <th class="sortable" data-sort="status" data-type="text">Status <span class="sort-ind"></span></th>
-          <th class="sortable" data-sort="note" data-type="text">Note <span class="sort-ind"></span></th>
-        </tr>
-      </thead>
-      <tbody id="hist-body"></tbody>
-    </table>
-  </div>
-  <p class="hist-empty" id="hist-empty">No differences saved yet.</p>
 
   <h2 class="section" id="current-heading">Current report</h2>
   <p class="ref-note" id="current-note">Latest week vs previous week (highlights).</p>
@@ -287,7 +263,29 @@
     </table>
   </div>
 
-      <p class="page-version">page-version 2.0</p>
+  <h2 class="section">Difference history (kept · newer first)</h2>
+  <p class="hist-meta" id="hist-meta">No differences saved yet. Compare a weekly paste to start the log.</p>
+  <div class="table-wrap" id="hist-wrap">
+    <table id="hist-table">
+      <thead>
+        <tr>
+          <th class="sortable" data-sort="docDate" data-type="docdate">PDF Date <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="kind" data-type="text">Change <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="empId" data-type="text">Emp ID <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="name" data-type="text">Name <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="qualification" data-type="text">Qual <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="description" data-type="text">Description <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="dueDate" data-type="amosdate">Due <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="status" data-type="text">Status <span class="sort-ind"></span></th>
+          <th class="sortable" data-sort="note" data-type="text">Note <span class="sort-ind"></span></th>
+        </tr>
+      </thead>
+      <tbody id="hist-body"></tbody>
+    </table>
+  </div>
+  <p class="hist-empty" id="hist-empty">No differences saved yet.</p>
+
+      <p class="page-version">page-version 2.2</p>
 </div>
 
 <script>
