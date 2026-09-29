@@ -849,22 +849,22 @@
   .detail-table table {
     table-layout: fixed;
     width: 100%;
-    min-width: 890px; /* staff+name+team+crew+course+due+remain; long headers on 2 lines */
+    min-width: 770px; /* staff+name+team+crew+course+due(172)+remain(52) */
     max-width: none;
     border-collapse: collapse;
     font-size: 12px;
   }
-  .detail-table table.has-ual-cols { min-width: 1482px; }
-  .detail-table table.has-completed-col { min-width: 1030px; }
-  .detail-table table.has-ual-cols.has-completed-col { min-width: 1622px; }
+  .detail-table table.has-ual-cols { min-width: 1362px; }
+  .detail-table table.has-completed-col { min-width: 910px; }
+  .detail-table table.has-ual-cols.has-completed-col { min-width: 1502px; }
   .detail-table col.col-staff { width: 72px; }
   .detail-table col.col-name { width: 120px; }
   .detail-table col.col-team { width: 72px; }
   .detail-table col.col-crew { width: 96px; }
-  /* Long headers are two lines and must fit inside the cell (no overlap). */
+  /* Long headers are two lines and must fit inside the cell (no overlap). Overdue remaining = 50% of prior 104 → 52. */
   .detail-table col.col-course { width: 186px; }
   .detail-table col.col-due { width: 172px; }
-  .detail-table col.col-remain { width: 172px; }
+  .detail-table col.col-remain { width: 52px; }
   .detail-table col.col-emp { width: 88px; }
   .detail-table col.col-soon { width: 160px; }
   .detail-table col.col-soon-due { width: 172px; }
@@ -1661,7 +1661,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.3" aria-label="Page version 15.3">v15.3</div>
+  <div class="page-version" data-version="15.4" aria-label="Page version 15.4">v15.4</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.3"></script>

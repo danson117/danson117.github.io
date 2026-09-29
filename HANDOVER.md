@@ -10,7 +10,7 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
-- **TOV sync 比 uploadedAt，唔比邊部機先開：** 開頁唔准喺未同 Edge 對完 data 時間之前 push（修 migratePersisted 競態蓋新公司檔）。UAL／CT／Mandatory 各自 `uploadedAt` 較新贏；本機舊→載入伺服器；本機新→先保留再 push；相同時間唔 clobber。綠 ✓ 只喺同贏咗嘅伺服器一樣；discard 舊本機 → 卡內「Loaded newer server copy.」。Edge 撈唔到唔當 local 贏。`hx_private.team_board_actions` 冇 history／revision——今日公司 ingest 若已被舊本機蓋過，而家盤上仍係 Sep 28 UAL／CT＋Sep 26 OMT，**唔能還原**（唔發明資料）。Edge `/gate/public` 200。TOV **v15.3**、`hx-rules` **v10.3**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備。唔開 Chrome。
+- **TOV sync 比 uploadedAt，唔比邊部機先開：** 開頁唔准喺未同 Edge 對完 data 時間之前 push（修 migratePersisted 競態蓋新公司檔）。UAL／CT／Mandatory 各自 `uploadedAt` 較新贏；本機舊→載入伺服器；本機新→先保留再 push；相同時間唔 clobber。綠 ✓ 只喺同贏咗嘅伺服器一樣；discard 舊本機 → 卡內「Loaded newer server copy.」。Edge 撈唔到唔當 local 贏。`hx_private.team_board_actions` 冇 history／revision——今日公司 ingest 若已被舊本機蓋過，而家盤上仍係 Sep 28 UAL／CT＋Sep 26 OMT，**唔能還原**（唔發明資料）。Edge `/gate/public` 200。Overdue remaining 欄 min 維持 **52px**（grow／scroll 保留）。TOV **v15.4**、`hx-rules` **v10.3**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備。唔開 Chrome。
 
 ## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
