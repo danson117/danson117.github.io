@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-29 公司電腦
 
+- **VHHH Line MX 規矩紅字補齊：** Current report 喺 Difference history 上面；到期色 overdue 紅／≤14 橙／≤30 黃；Current 表頂 3 行 SAMPLE／DEMO（唔入 history）。Auth 仍 **v2.2**、hub **v17.2**（`?v=2.2`）、規矩 **v9.9**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-29 公司電腦
+
 - **VHHH Line MX 刪副標／disclaimer：** 刪頁頂 Kalitta 副標題同 FOR REFERENCE ONLY disclaimer；保留標題同 paste／表。Current 喺 Difference 上面；到期色三檔＋頂部 3 行 DEMO。Auth **v2.2**、hub **v17.1**（`?v=2.2`）、規矩 **v9.8**。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-29 公司電腦
