@@ -281,7 +281,7 @@
   </div>
   <p class="hist-empty" id="hist-empty">No differences saved yet.</p>
 
-      <p class="page-version">page-version 2.3</p>
+      <p class="page-version">page-version 2.4</p>
 </div>
 
 <script>
@@ -302,7 +302,6 @@
   let sortCurrent = { key: "empId", type: "text", dir: 1 };
   let sortHist = { key: "docDate", type: "docdate", dir: -1 };
   const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
-  const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const QUAL_RE = /(MP\d{5})\s+(.+?)\s+(MT[AQ]\d{4}[A-Z]?(?:-[A-Z0-9]+)?)\s+(.+?)\s+VHHH\s+(\d{2}\.[A-Za-z]{3}\.\d{4})\s+(N\/A|\d{2}\.[A-Za-z]{3}\.\d{4})(?:\s+(AUTHORIZED|QUALIFIED|NON-AUTHORIZED))?/;
   const EMP_START = /^MP\d{5}\b/;
   const JOB_MARKERS = ["Inspector-NDT", "MX Provider Mechanic/Inspector", "Mechanic/Inspector", "MX Provider", "Inspector", "Mechanic"];
@@ -370,57 +369,6 @@
     if (diffDays <= 14) return "due14";
     if (diffDays <= 30) return "duesoon";
     return "";
-  }
-
-  function formatAmosDate(d) {
-    return pad2(d.getDate()) + "." + MONTH_ABBR[d.getMonth()] + "." + d.getFullYear();
-  }
-
-  /** Three fixed colour demos at the top of Current report (not saved to history). */
-  function demoExpiryRows() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const addDays = (n) => {
-      const d = new Date(today);
-      d.setDate(d.getDate() + n);
-      return formatAmosDate(d);
-    };
-    const issue = formatAmosDate(new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()));
-    const base = {
-      haecoStaff: "DEMO",
-      jobCode: "MX Provider Mechanic/Inspector",
-      station: "VHHH",
-      issueDate: issue,
-      status: "AUTHORIZED",
-      haecoName: "",
-      dept: ""
-    };
-    return [
-      Object.assign({}, base, {
-        empId: "MP00001",
-        lastName: "Demo",
-        firstName: "Overdue",
-        qualification: "DEMO-RED",
-        description: "DEMO · Overdue (red)",
-        dueDate: addDays(-7)
-      }),
-      Object.assign({}, base, {
-        empId: "MP00002",
-        lastName: "Demo",
-        firstName: "Within14",
-        qualification: "DEMO-ORG",
-        description: "DEMO · Due within 14 days (orange)",
-        dueDate: addDays(10)
-      }),
-      Object.assign({}, base, {
-        empId: "MP00003",
-        lastName: "Demo",
-        firstName: "Within30",
-        qualification: "DEMO-YLW",
-        description: "DEMO · Due within 30 days (yellow)",
-        dueDate: addDays(25)
-      })
-    ];
   }
 
   function isHeaderLine(s) {
@@ -1070,8 +1018,7 @@
       return String(a.qualification || "").localeCompare(String(b.qualification || ""), undefined, { sensitivity: "base" });
     });
     updateSortHeaders("current-table", sortCurrent);
-    const demoRows = demoExpiryRows();
-    tbody.innerHTML = demoRows.concat(filtered).map((r) => {
+    tbody.innerHTML = filtered.map((r) => {
       const tags = rowTags(r, diff);
       const staffCell = esc(r.haecoStaff || "") + (tags ? " " + tags : "");
       return "<tr class=\"" + rowClass(r, diff) + "\">" +

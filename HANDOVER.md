@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-29 公司電腦
 
+- **VHHH Line MX 刪 3 行 DEMO：** Current report 表頂 3 行 dummy SAMPLE／DEMO（overdue 紅／≤14 橙／≤30 黃樣本）已移除；唔再出現。三檔到期色同 legend／tags 保留。Auth **v2.4**、hub **v17.4**（`?v=2.4`）、規矩 **v10.1**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-29 公司電腦
+
 - **VHHH Line MX paste → COMPARE + UNDO：** 貼新 report 後只留兩個掣——**COMPARE**（原 compare／按 report date 存 history／backfill）同 **UNDO ACTION**（localStorage undo log；只可以 undo 當日本地曆同一日嘅 COMPARE；超過一日拒絕；一掣一步由新到舊）。舊掣（import chain／set ref／reset baseline／clear paste／clear history）已從 UI 移除。Auth **v2.3**、hub **v17.3**（`?v=2.3`）、規矩 **v10.0**。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-29 公司電腦
