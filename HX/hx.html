@@ -501,6 +501,12 @@
         color: #fff;
         border-color: var(--side);
       }
+      .grant-copy-from {
+        margin: 0 0 12px;
+      }
+      .grant-copy-from .hint {
+        margin: 0 0 8px;
+      }
       .gate-grid {
         display: grid;
         gap: 6px;
@@ -675,7 +681,7 @@
         </div>
         <div class="gate-block">
           <div class="gate-section-title">3. Accounts</div>
-          <p class="hint">Click an account to edit Staff # and role, then Update account. Edit pages opens that person's page list. A new Staff # uses Add account.</p>
+          <p class="hint">Click an account to edit Staff # and role, then Update account. Edit pages opens the page list — use Copy from to copy another account's ticks, then untick items before Save pages. A new Staff # uses Add account.</p>
           <div id="gate-accounts" class="gate-accounts"></div>
           <div class="gate-grant-form">
             <label for="grant-staff">Staff #</label>
@@ -722,6 +728,13 @@
       <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="grant-pages-title">
         <h2 id="grant-pages-title">Pages</h2>
         <p class="hint" id="grant-pages-hint"></p>
+        <div class="grant-copy-from" id="grant-copy-from-wrap">
+          <label for="grant-copy-from">Copy from</label>
+          <select id="grant-copy-from">
+            <option value="">— choose account —</option>
+          </select>
+          <p class="hint" id="grant-copy-from-note" hidden></p>
+        </div>
         <div class="gate-grid" id="grant-pages"></div>
         <p class="err" id="grant-pages-err" hidden></p>
         <div class="pop-actions">
@@ -731,7 +744,7 @@
       </div>
     </div>
 
-    <div class="page-version" data-version="16.4">v16.4</div>
+    <div class="page-version" data-version="16.5">v16.5</div>
     <script src="ocg-pax-data.js?v=1"></script>
     <script src="ocg-pax-data-unpack.js?v=1"></script>
     <script>
@@ -829,7 +842,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=9.1",
+          file: "hx-rules.html?v=9.2",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -1859,6 +1872,69 @@
         const staff = padStaff((document.getElementById("grant-staff") || {}).value || "");
         return draftAccounts.find((a) => a.staff === staff) || null;
       }
+      function effectiveAccountPages(acc) {
+        if (!acc) return [];
+        const role = acc.role === "me" ? "me" : normalizeRole(acc.role);
+        if (role === "me") return ALL_TOPIC_IDS.slice();
+        if (acc.customPages) {
+          const set = new Set(
+            (Array.isArray(acc.pages) ? acc.pages : []).map(String).filter((id) => ALL_TOPIC_IDS.indexOf(id) >= 0)
+          );
+          return ALL_TOPIC_IDS.filter((id) => set.has(id));
+        }
+        const matrix = readRoleMatrix();
+        return (matrix[role] || []).slice();
+      }
+      function fillCopyFromSelect(targetStaff) {
+        const sel = document.getElementById("grant-copy-from");
+        const note = document.getElementById("grant-copy-from-note");
+        if (!sel) return;
+        if (note) {
+          note.hidden = true;
+          note.textContent = "";
+        }
+        const others = draftAccounts.filter((a) => a.staff && a.staff !== targetStaff);
+        sel.innerHTML =
+          "<option value=\"\">— choose account —</option>" +
+          others
+            .map(
+              (a) =>
+                "<option value=\"" +
+                a.staff +
+                "\">" +
+                a.staff +
+                " · " +
+                roleLabel(a.role) +
+                "</option>"
+            )
+            .join("");
+        sel.value = "";
+      }
+      function applyCopyFromAccount(sourceStaff) {
+        const note = document.getElementById("grant-copy-from-note");
+        if (!pendingGrant || !sourceStaff) return;
+        if (pendingGrant.role === "me") {
+          document.querySelectorAll("#grant-pages [data-grant-page]").forEach((el) => {
+            el.checked = true;
+          });
+          if (note) {
+            note.hidden = false;
+            note.textContent =
+              "Owner already opens every page; checkboxes stay locked and copy does not reduce Owner access.";
+          }
+          return;
+        }
+        const src = draftAccounts.find((a) => a.staff === sourceStaff);
+        if (!src) return;
+        const pageSet = new Set(effectiveAccountPages(src));
+        document.querySelectorAll("#grant-pages [data-grant-page]").forEach((el) => {
+          el.checked = pageSet.has(el.getAttribute("data-grant-page"));
+        });
+        if (note) {
+          note.hidden = false;
+          note.textContent = "Copied. Untick or tick individual items, then Save pages.";
+        }
+      }
       function openAccountPages(acc, isNew) {
         const role = acc.role === "me" ? "me" : normalizeRole(acc.role);
         const matrix = readRoleMatrix();
@@ -1877,7 +1953,7 @@
         };
         document.getElementById("grant-pages-title").textContent = "Pages for " + acc.staff;
         document.getElementById("grant-pages-hint").textContent =
-          roleLabel(role) + ". Tick the pages this person may open.";
+          roleLabel(role) + ". Tick the pages this person may open. Copy from another account, then adjust ticks before Save pages.";
         const pageSet = new Set(preset);
         document.getElementById("grant-pages").innerHTML = topicsInOrder(
           draftPageOrder.length ? draftPageOrder : gateCfg.pageOrder
@@ -1893,6 +1969,7 @@
             "</label>"
           );
         }).join("");
+        fillCopyFromSelect(acc.staff);
         const err = document.getElementById("grant-pages-err");
         if (err) {
           err.hidden = true;
@@ -2118,6 +2195,19 @@
         }
         setPermsErr("");
         openAccountPages(form, !accountBeingEdited());
+      });
+      document.getElementById("grant-copy-from").addEventListener("change", () => {
+        const sel = document.getElementById("grant-copy-from");
+        const sourceStaff = padStaff((sel && sel.value) || "");
+        if (!sourceStaff) {
+          const note = document.getElementById("grant-copy-from-note");
+          if (note) {
+            note.hidden = true;
+            note.textContent = "";
+          }
+          return;
+        }
+        applyCopyFromAccount(sourceStaff);
       });
       document.getElementById("grant-pages-cancel").addEventListener("click", () => {
         pendingGrant = null;
