@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **EK Authorization Competency Matrix：** 新頁 `HX/ek-authorization-competency-matrix.html` **v1.0**。底表能力項加 Source／Mandatory by，GOM 只係另名嘅併入 EK GOM name，GOM 先有嘅要求另開 EK add 行（DG、SMS、safety reporting、recurrent programme、training records）。FOD 留喺原行。`links.html` 有連結。未入 hub。GitHub 後備。本機 Chrome 開 file URL。
+
+## 2026-09-30 公司電腦
+
 - **CT Synchronize now 修：**/v15.9 collapse 後本機只剩較新檔、伺服器仍可有 11+12；`uploadedAt` max 相同 → 舊 plan 唔 push，但 raw 檔名 meta 仍標未 sync，掣似無反應。而家 sync／dirty 用 slot meta；伺服器同槽重複尾數 → Synchronize now 會 PUT。fetch 失敗出 Save failed。TOV **v15.10**、`hx-rules` **v10.9**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-30 公司電腦

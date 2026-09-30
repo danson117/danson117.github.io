@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EK Authorization Competency Matrix</title>
+<style>
+  :root {
+    --ink: #1c2430; --muted: #4a5564; --line: #d7dee6; --paper: #eef1f4;
+    --card: #ffffff; --navy: #015260; --navy-soft: #e5f4f6;
+    --ek: #0d6e4f; --ek-bg: #e5f6ef;
+    --hot: #7a1010; --warn: #6b5310; --warn-bg: #fff3b0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; color: var(--ink); background: var(--paper); line-height: 1.35; font-size: 13.5px; }
+  .page { max-width: 1880px; margin: 0 auto; padding: 22px 18px 64px; }
+  h1 { font-size: 22px; margin: 0 0 6px; color: var(--navy); }
+  h2 { font-size: 15px; margin: 18px 0 8px; color: var(--navy); }
+  .subtitle { margin: 0 0 8px; color: var(--muted); font-size: 13px; max-width: 1100px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+  .stat { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 10px; border: 1px solid var(--line); background: var(--card); }
+  .stat b { font-size: 15px; color: var(--navy); }
+  .stat span { color: var(--muted); font-size: 13px; }
+  .toolbar, .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
+  .toolbar input[type="search"], .filters select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); background: #fff; }
+  .toolbar input[type="search"] { flex: 1; min-width: 240px; }
+  .filters label { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--card); padding: 6px 10px; cursor: pointer; }
+  button:hover { background: var(--navy-soft); }
+  .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+  .table-wrap { overflow: auto; max-height: 70vh; border: 1px solid var(--line); background: var(--card); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1680px; }
+  th, td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 2; font-weight: 650; }
+  td.req { min-width: 280px; }
+  td.gom { min-width: 220px; color: var(--ek); }
+  td.course { min-width: 220px; }
+  tr.ek-add td { background: var(--ek-bg); }
+  tr.priority td.req { box-shadow: inset 3px 0 0 var(--ek); }
+  tr.gom-name td.gom { font-weight: 650; }
+  .pill { display: inline-block; padding: 1px 6px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .pill.p { background: #d8f3e6; color: var(--ek); }
+  .pill.add { background: var(--navy-soft); color: var(--navy); }
+  .src { font-weight: 700; white-space: nowrap; }
+  .cat { font-weight: 650; white-space: nowrap; }
+  .cat.Knowledge { color: var(--navy); }
+  .cat.Ability { color: #1a6b4a; }
+  .cat.Skill { color: #3d4f8a; }
+  .cat.Behaviour { color: #8a5a12; }
+  .cat.Additional { color: #5c3d6e; }
+  .legend, .notes { border: 1px solid var(--line); background: var(--card); padding: 10px 12px; margin: 14px 0 0; font-size: 12px; }
+  .legend table { min-width: 0; width: auto; }
+  .legend th { position: static; }
+  .notes p, .legend p { margin: 0 0 6px; }
+  .notes ul, .legend ul { margin: 0; padding-left: 18px; }
+  .notes li, .legend li { margin: 0 0 4px; }
+  .page-version { position: fixed; right: 12px; bottom: 12px; font-size: 0.72rem; font-weight: 700; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; pointer-events: none; }
+  @media print {
+    .toolbar, .filters, .page-version, button { display: none; }
+    .table-wrap { max-height: none; overflow: visible; }
+    tr[hidden] { display: none; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>EK Authorization Competency Matrix</h1>
+    <p class="subtitle">HAECO authorization competencies and the Emirates GOM extract (8 Sep 2026), in one table. A GOM line that only renames a base competency stays on that row under <b>EK GOM name</b>. A GOM requirement the base matrix does not already state is an <b>EK add</b> row.</p>
+    <p class="note">Working draft for an EK authorization package. Course codes, evidence, and source tags follow the lists supplied for this matrix.</p>
+    <div class="stats">
+      <div class="stat"><b id="count">49</b><span>rows shown</span></div>
+      <div class="stat"><b>43</b><span>base competencies</span></div>
+      <div class="stat"><b>6</b><span>EK add rows</span></div>
+      <div class="stat"><b>7</b><span>base rows with a GOM name</span></div>
+    </div>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Search requirement, course, code, evidence, source" aria-label="Search matrix">
+      <button type="button" id="clear">Clear filters</button>
+    </div>
+    <div class="filters">
+      <label>Category
+        <select id="cat">
+          <option value="all">All</option>
+          <option>Knowledge</option>
+          <option>Ability</option>
+          <option>Skill</option>
+          <option>Behaviour</option>
+          <option>Additional</option>
+        </select>
+      </label>
+      <label>Role
+        <select id="role">
+          <option value="all">All</option>
+          <option value="mechanic">Mechanic</option>
+          <option value="certifier">Certifier</option>
+          <option value="ii">II / Independent Inspector</option>
+        </select>
+      </label>
+      <label>Source
+        <select id="source">
+          <option value="all">All</option>
+          <option>CP</option>
+          <option>GOM</option>
+          <option>CP+GOM</option>
+          <option>CP+GOM+Regulator</option>
+          <option>MOE</option>
+          <option>MOE+Regulator</option>
+          <option>Regulator</option>
+          <option>Customer</option>
+          <option>AMM+Customer</option>
+          <option>Customer+AMM</option>
+          <option>CP+Customer</option>
+          <option>CP+AMM</option>
+          <option>CP+Regulator</option>
+        </select>
+      </label>
+      <label>Line
+        <select id="line">
+          <option value="all">All</option>
+          <option value="base">Base</option>
+          <option value="gom-name">Base + GOM name</option>
+          <option value="ek-add">EK add</option>
+        </select>
+      </label>
+      <label>EK focus
+        <select id="ek">
+          <option value="all">All</option>
+          <option value="priority">Priority 5 only</option>
+          <option value="marked">Priority 5 + other GOM adds</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="table-wrap">
+      <table id="matrix">
+        <thead>
+          <tr>
+            <th>Competency Requirement</th>
+            <th>EK GOM name</th>
+            <th>Competency Category</th>
+            <th>Applicable Role</th>
+            <th>HAECO Course Code</th>
+            <th>Course Name</th>
+            <th>Evidence Required</th>
+            <th>Source</th>
+            <th>Mandatory by</th>
+            <th>Line</th>
+            <th>EK focus</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-cat="Knowledge" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="gom-name" data-ek="">
+            <td class="req">Understanding of professional integrity, behaviour and attitude towards safety</td>
+            <td class="gom">Human Factors Training</td>
+            <td class="cat Knowledge">Knowledge</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F162</td>
+            <td class="course">Human Factors and SMS Training</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base + GOM name</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Knowledge" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="gom-name" data-ek="">
+            <td class="req">Understanding of human performance and limitations</td>
+            <td class="gom">Understanding of Human Factors Principles</td>
+            <td class="cat Knowledge">Knowledge</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F162</td>
+            <td class="course">Human Factors and SMS Training</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base + GOM name</td>
+            <td></td>
+          </tr>
+          <tr class="ek-add priority" data-cat="Knowledge" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="ek-add" data-ek="priority">
+            <td class="req">Safety Management System Awareness</td>
+            <td class="gom"></td>
+            <td class="cat Knowledge">Knowledge</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F162</td>
+            <td class="course">Human Factors and SMS Training</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>EK add</td>
+            <td><span class="pill p">3 SMS</span></td>
+          </tr>
+          <tr data-cat="Knowledge" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Understanding of personnel authorisations and limitations</td>
+            <td class="gom"></td>
+            <td class="cat Knowledge">Knowledge</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F102</td>
+            <td class="course">Company Procedures for Authorisation</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Knowledge" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Understanding of personnel authorisations and limitations</td>
+            <td class="gom"></td>
+            <td class="cat Knowledge">Knowledge</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.EA04</td>
+            <td class="course">Standardization Training - The FARs and HAECO MOE</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Knowledge" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Understanding critical maintenance task</td>
+            <td class="gom"></td>
+            <td class="cat Knowledge">Knowledge</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.EE0839</td>
+            <td class="course">Independent Inspection and Critical Maintenance Policy</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr class="ek-add priority" data-cat="Knowledge" data-roles="mechanic certifier ii" data-source="GOM" data-line="ek-add" data-ek="priority">
+            <td class="req">Dangerous Goods Awareness</td>
+            <td class="gom"></td>
+            <td class="cat Knowledge">Knowledge</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>MM00001E</td>
+            <td class="course">Dangerous Goods Awareness</td>
+            <td>LMS Certificate</td>
+            <td class="src">GOM</td>
+            <td>EK GOM</td>
+            <td>EK add</td>
+            <td><span class="pill p">1 DG awareness</span></td>
+          </tr>
+
+          <tr data-cat="Ability" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="base" data-ek="">
+            <td class="req">Ability to identify and rectify existing and potential unsafe conditions</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F162</td>
+            <td class="course">Human Factors and SMS Training</td>
+            <td>LMS + Assessment</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Ability" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Ability to understand work orders, work cards and maintenance data</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.EA04</td>
+            <td class="course">Standardization Training - The FARs and HAECO MOE</td>
+            <td>OJT Record</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Ability" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="base" data-ek="">
+            <td class="req">Ability to prioritise tasks and report discrepancies</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F162</td>
+            <td class="course">Human Factors and SMS Training</td>
+            <td>Supervisor Assessment</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr class="ek-add priority" data-cat="Ability" data-roles="mechanic certifier ii" data-source="GOM" data-line="ek-add" data-ek="priority">
+            <td class="req">Reporting of Safety Events and Hazards</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F162</td>
+            <td class="course">Human Factors and SMS Training</td>
+            <td>Assessment</td>
+            <td class="src">GOM</td>
+            <td>EK GOM</td>
+            <td>EK add</td>
+            <td><span class="pill p">3 Safety reporting</span></td>
+          </tr>
+          <tr data-cat="Ability" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="base" data-ek="">
+            <td class="req">Ability to process removed, uninstalled and rejected parts</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>MM00001E</td>
+            <td class="course">Dangerous Goods Awareness</td>
+            <td>OJT Record</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr class="ek-add priority" data-cat="Ability" data-roles="mechanic certifier ii" data-source="GOM" data-line="ek-add" data-ek="priority">
+            <td class="req">Dangerous Goods Incident Recognition and Reporting</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>MM00001E</td>
+            <td class="course">Dangerous Goods Awareness</td>
+            <td>Assessment</td>
+            <td class="src">GOM</td>
+            <td>EK GOM</td>
+            <td>EK add</td>
+            <td><span class="pill p">2 DG reporting</span></td>
+          </tr>
+          <tr data-cat="Ability" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Ability to recognise acceptability of parts before fitment</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.EA04</td>
+            <td class="course">Standardization Training - The FARs and HAECO MOE</td>
+            <td>OJT Record</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr class="gom-name" data-cat="Ability" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="gom-name" data-ek="">
+            <td class="req">Ability to use, control and be familiar with required tooling and equipment</td>
+            <td class="gom">Safe Use of Tools and Equipment</td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>Local Tool Training</td>
+            <td class="course">Tooling Familiarization</td>
+            <td>OJT Record</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base + GOM name</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Ability" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Ability to use information systems applicable to maintenance tasks</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>Local Course</td>
+            <td class="course">AMOS / eTechLog Training</td>
+            <td>LMS/OJT</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Ability" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Ability to confirm accomplishment of maintenance tasks</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.EE0839</td>
+            <td class="course">Independent Inspection and Critical Maintenance Policy</td>
+            <td>Assessment</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Ability" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Ability to properly record and sign work accomplished</td>
+            <td class="gom"></td>
+            <td class="cat Ability">Ability</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F102</td>
+            <td class="course">Company Procedures for Authorisation</td>
+            <td>Assessment</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+
+          <tr class="gom-name" data-cat="Skill" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="gom-name" data-ek="">
+            <td class="req">Adequate communication and literacy skills</td>
+            <td class="gom">Communication of Operational and Safety Information</td>
+            <td class="cat Skill">Skill</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F162</td>
+            <td class="course">Human Factors and SMS Training</td>
+            <td>Supervisor Assessment</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base + GOM name</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Skill" data-roles="mechanic certifier ii" data-source="CP+Customer" data-line="base" data-ek="">
+            <td class="req">Able to carry out maintenance tasks to approved data standard</td>
+            <td class="gom"></td>
+            <td class="cat Skill">Skill</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>Type Course</td>
+            <td class="course">Relevant Aircraft Type Training</td>
+            <td>Type Cert + OJT</td>
+            <td class="src">CP+Customer</td>
+            <td>HAECO CP + Customer</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Skill" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Able to verify HAECO Serviceable Label / GRN Label</td>
+            <td class="gom"></td>
+            <td class="cat Skill">Skill</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>MM Procedure Training</td>
+            <td class="course">Materials &amp; Stores Procedure</td>
+            <td>OJT</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Skill" data-roles="mechanic certifier ii" data-source="CP+AMM" data-line="base" data-ek="">
+            <td class="req">Able to verify component, standard part or material specified by maintenance data</td>
+            <td class="gom"></td>
+            <td class="cat Skill">Skill</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>IPC/AMM Familiarization</td>
+            <td class="course">Maintenance Data Usage Training</td>
+            <td>OJT</td>
+            <td class="src">CP+AMM</td>
+            <td>HAECO CP + AMM</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Skill" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="base" data-ek="">
+            <td class="req">Able to raise questions in case of uncertainty</td>
+            <td class="gom"></td>
+            <td class="cat Skill">Skill</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F162</td>
+            <td class="course">Human Factors and SMS Training</td>
+            <td>Supervisor Assessment</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+
+          <tr data-cat="Behaviour" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="base" data-ek="">
+            <td class="req">Attends to discrepancy and inconsistency</td>
+            <td class="gom"></td>
+            <td class="cat Behaviour">Behaviour</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.F162</td>
+            <td class="course">Human Factors and SMS Training</td>
+            <td>Assessment</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Behaviour" data-roles="mechanic certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Able to follow approved maintenance procedure</td>
+            <td class="gom"></td>
+            <td class="cat Behaviour">Behaviour</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>T.EA04</td>
+            <td class="course">Standardization Training - The FARs and HAECO MOE</td>
+            <td>Assessment</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr class="gom-name" data-cat="Behaviour" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="gom-name" data-ek="">
+            <td class="req">Using proper personal and product protective equipment</td>
+            <td class="gom">Compliance with Safety Procedures and PPE Requirements</td>
+            <td class="cat Behaviour">Behaviour</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>SER1110</td>
+            <td class="course">Safety &amp; PPE Training</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base + GOM name</td>
+            <td></td>
+          </tr>
+          <tr class="gom-name priority" data-cat="Behaviour" data-roles="mechanic certifier ii" data-source="CP+GOM" data-line="gom-name" data-ek="priority">
+            <td class="req">Able to perform final clearance check for FOD and debris</td>
+            <td class="gom">FOD Awareness and Prevention</td>
+            <td class="cat Behaviour">Behaviour</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>LM00082</td>
+            <td class="course">FOD Awareness Training</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base + GOM name</td>
+            <td><span class="pill p">4 FOD</span></td>
+          </tr>
+
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Certification Responsibility</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>T.F102</td>
+            <td class="course">Company Procedures for Authorisation</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Release to Service Responsibility</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>T.F102</td>
+            <td class="course">Company Procedures for Authorisation</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="MOE" data-line="base" data-ek="">
+            <td class="req">MOE Privileges and Limitations</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>T.EA04</td>
+            <td class="course">Standardization Training - The FARs and HAECO MOE</td>
+            <td>LMS Certificate</td>
+            <td class="src">MOE</td>
+            <td>HAECO MOE</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="MOE+Regulator" data-line="base" data-ek="">
+            <td class="req">Airworthiness Responsibility</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>T.EA04</td>
+            <td class="course">Standardization Training - The FARs and HAECO MOE</td>
+            <td>LMS Certificate</td>
+            <td class="src">MOE+Regulator</td>
+            <td>HAECO MOE + Regulator</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="AMM+Customer" data-line="base" data-ek="">
+            <td class="req">Maintenance Data Interpretation</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>Aircraft Type Course</td>
+            <td class="course">Aircraft Type Training</td>
+            <td>Type Cert</td>
+            <td class="src">AMM+Customer</td>
+            <td>AMM + Customer</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="AMM+Customer" data-line="base" data-ek="">
+            <td class="req">Defect Assessment</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>Aircraft Type Course</td>
+            <td class="course">Aircraft Type Training</td>
+            <td>Assessment</td>
+            <td class="src">AMM+Customer</td>
+            <td>AMM + Customer</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="Customer+AMM" data-line="base" data-ek="">
+            <td class="req">MEL/CDL Application Knowledge</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>Aircraft Type Course</td>
+            <td class="course">Aircraft Type Training</td>
+            <td>Type Cert</td>
+            <td class="src">Customer+AMM</td>
+            <td>Customer + AMM</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="CP+Customer" data-line="base" data-ek="">
+            <td class="req">Technical Log Review</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>OJT</td>
+            <td class="course">Technical Log Review Training</td>
+            <td>OJT Record</td>
+            <td class="src">CP+Customer</td>
+            <td>HAECO CP + Customer</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Independent Verification</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Independent Inspector</td>
+            <td>T.EE0839</td>
+            <td class="course">Independent Inspection and Critical Maintenance Policy</td>
+            <td>Assessment</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Critical Task Inspection</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Independent Inspector</td>
+            <td>T.EE0839</td>
+            <td class="course">Independent Inspection and Critical Maintenance Policy</td>
+            <td>Assessment</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr class="gom-name" data-cat="Additional" data-roles="certifier ii" data-source="CP+GOM+Regulator" data-line="gom-name" data-ek="">
+            <td class="req">Electrical Wiring Interconnection System Requirement</td>
+            <td class="gom">EWIS Awareness (where applicable)</td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II (Applicable Aircraft)</td>
+            <td>T.C774</td>
+            <td class="course">EWIS Awareness and Best Practices</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP+GOM+Regulator</td>
+            <td>Shared + Regulator</td>
+            <td>Base + GOM name</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="Regulator" data-line="base" data-ek="">
+            <td class="req">Electrical Wiring Interconnection System Enhanced Requirement</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II (Applicable Aircraft)</td>
+            <td>T.C775</td>
+            <td class="course">Enhanced EWIS Training</td>
+            <td>LMS Certificate</td>
+            <td class="src">Regulator</td>
+            <td>Regulator</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="Regulator" data-line="base" data-ek="">
+            <td class="req">Fuel Tank Safety Requirement</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II (Applicable Aircraft)</td>
+            <td>T.EE0131</td>
+            <td class="course">Fuel Tank Safety Phase 2</td>
+            <td>LMS Certificate</td>
+            <td class="src">Regulator</td>
+            <td>Regulator</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="CP+GOM" data-line="base" data-ek="">
+            <td class="req">Recurrent Human Factors</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>T.F162 (Recurrent)</td>
+            <td class="course">Human Factors Refresher</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP+GOM</td>
+            <td>Shared</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Company Procedures Refresher</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>T.F102 (Recurrent)</td>
+            <td class="course">Company Procedures Refresher</td>
+            <td>LMS Certificate</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr class="ek-add priority" data-cat="Additional" data-roles="certifier ii" data-source="GOM" data-line="ek-add" data-ek="priority">
+            <td class="req">Participation in Recurrent Training Programme</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier / II</td>
+            <td>Recurrent Courses</td>
+            <td class="course">HF / EWIS / FTS Recurrent</td>
+            <td>LMS Certificate</td>
+            <td class="src">GOM</td>
+            <td>EK GOM</td>
+            <td>EK add</td>
+            <td><span class="pill p">5 Recurrent</span></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="mechanic certifier ii" data-source="Customer" data-line="base" data-ek="">
+            <td class="req">Aircraft Type Knowledge</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>Customer Type Course</td>
+            <td class="course">B737 / B787 / A330 / A350 / B777 etc.</td>
+            <td>Type Certificate</td>
+            <td class="src">Customer</td>
+            <td>Customer</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="mechanic certifier ii" data-source="CP+Regulator" data-line="base" data-ek="">
+            <td class="req">Practical Experience Requirement</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>N/A</td>
+            <td class="course">OJT Experience Log</td>
+            <td>Experience Record</td>
+            <td class="src">CP+Regulator</td>
+            <td>HAECO CP + Regulator</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="mechanic" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Competency Assessment</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Mechanic</td>
+            <td>FORM02635</td>
+            <td class="course">Competency Assessment for Mechanic</td>
+            <td>Completed Form</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="certifier" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Competency Assessment</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Certifier</td>
+            <td>FORM02636</td>
+            <td class="course">Competency Assessment for Certifier</td>
+            <td>Completed Form</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr data-cat="Additional" data-roles="ii" data-source="CP" data-line="base" data-ek="">
+            <td class="req">Competency Assessment Summary</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Independent Inspector</td>
+            <td>FORM02676</td>
+            <td class="course">Independent Inspection / Critical Maintenance Assessment</td>
+            <td>Completed Form</td>
+            <td class="src">CP</td>
+            <td>HAECO CP</td>
+            <td>Base</td>
+            <td></td>
+          </tr>
+          <tr class="ek-add" data-cat="Additional" data-roles="mechanic certifier ii" data-source="GOM" data-line="ek-add" data-ek="add">
+            <td class="req">Training Records Must Remain Current and Available</td>
+            <td class="gom"></td>
+            <td class="cat Additional">Additional</td>
+            <td>Mechanic / Certifier / II</td>
+            <td>N/A</td>
+            <td class="course">Training Record Maintenance</td>
+            <td>LMS / Record Check</td>
+            <td class="src">GOM</td>
+            <td>EK GOM</td>
+            <td>EK add</td>
+            <td><span class="pill add">GOM add</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Source legend</h2>
+    <div class="legend">
+      <table>
+        <thead>
+          <tr><th>Source</th><th>Meaning</th><th>Mandatory by</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>CP</td><td>HAECO Company Procedure</td><td>HAECO CP</td></tr>
+          <tr><td>MOE</td><td>Maintenance Organisation Exposition</td><td>HAECO MOE</td></tr>
+          <tr><td>GOM</td><td>Emirates Ground Operations Manual</td><td>EK GOM</td></tr>
+          <tr><td>Customer</td><td>Customer requirement (EK / JL / CX / AC etc.)</td><td>Customer</td></tr>
+          <tr><td>AMM</td><td>Aircraft Maintenance Manual / OEM approved data</td><td>AMM</td></tr>
+          <tr><td>Regulator</td><td>HKCAD / FAA / EASA regulatory requirement</td><td>Regulator</td></tr>
+          <tr><td>CP+GOM</td><td>Both HAECO and Emirates requirement</td><td>Shared</td></tr>
+          <tr><td>CP+Customer</td><td>HAECO + customer requirement</td><td>HAECO CP + Customer</td></tr>
+          <tr><td>CP+AMM</td><td>HAECO + approved maintenance data</td><td>HAECO CP + AMM</td></tr>
+          <tr><td>CP+Regulator</td><td>HAECO procedure plus a regulatory requirement</td><td>HAECO CP + Regulator</td></tr>
+          <tr><td>MOE+Regulator</td><td>MOE requirement derived from regulations</td><td>HAECO MOE + Regulator</td></tr>
+          <tr><td>AMM+Customer / Customer+AMM</td><td>Approved data plus a customer requirement</td><td>AMM + Customer</td></tr>
+          <tr><td>CP+GOM+Regulator</td><td>Base map said Regulator; the GOM extract also said CP+GOM. Both are kept on the EWIS row.</td><td>Shared + Regulator</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>How the two lists were combined</h2>
+    <div class="notes">
+      <p>Green rows are EK adds. A green name in <b>EK GOM name</b> is a GOM title kept on the matching base row.</p>
+      <ul>
+        <li><b>Human Factors Training</b> sits on the professional-integrity row. <b>Understanding of Human Factors Principles</b> sits on the human-performance row. Same course, same LMS certificate, source CP+GOM.</li>
+        <li><b>Safe Use of Tools and Equipment</b>, <b>Compliance with Safety Procedures and PPE Requirements</b>, and <b>Communication of Operational and Safety Information</b> stay on the tooling, PPE, and communication rows. The GOM extract tagged those three titles GOM only; the base map already says CP+GOM, so Source stays CP+GOM.</li>
+        <li><b>FOD Awareness and Prevention</b> stays on the final-clearance row (LM00082, LMS certificate). Source stays CP+GOM. The shorter GOM-only list had tagged FOD as GOM; the row map and the detailed extract both say CP+GOM.</li>
+        <li><b>EWIS Awareness (where applicable)</b> stays on the T.C774 row. Source is CP+GOM+Regulator. Enhanced EWIS (T.C775) and Fuel Tank Safety (T.EE0131) stay Regulator, as in the row map.</li>
+        <li><b>Dangerous Goods Awareness</b> (LMS certificate, GOM) is separate from <b>Ability to process removed, uninstalled and rejected parts</b> (same course, OJT record, CP+GOM).</li>
+        <li><b>Participation in Recurrent Training Programme</b> is the programme-level GOM line (HF / EWIS / FTS). It does not replace Recurrent Human Factors or Company Procedures Refresher.</li>
+        <li><b>Training Records Must Remain Current and Available</b> is a GOM add. It is not one of the five priority items.</li>
+      </ul>
+      <p>Priority five: 1 Dangerous Goods Awareness, 2 DG incident recognition and reporting, 3 SMS awareness plus safety-event reporting, 4 FOD prevention, 5 recurrent training programme.</p>
+    </div>
+    <div class="page-version">v1.0</div>
+  </div>
+<script>
+(function () {
+  var q = document.getElementById("q");
+  var cat = document.getElementById("cat");
+  var role = document.getElementById("role");
+  var source = document.getElementById("source");
+  var line = document.getElementById("line");
+  var ek = document.getElementById("ek");
+  var clearBtn = document.getElementById("clear");
+  var count = document.getElementById("count");
+  var rows = Array.prototype.slice.call(document.querySelectorAll("#matrix tbody tr"));
+
+  function apply() {
+    var query = q.value.trim().toLowerCase();
+    var n = 0;
+    rows.forEach(function (tr) {
+      var roles = tr.getAttribute("data-roles").split(" ");
+      var ekVal = tr.getAttribute("data-ek");
+      var ekOk = ek.value === "all" ||
+        (ek.value === "priority" && ekVal === "priority") ||
+        (ek.value === "marked" && ekVal !== "");
+      var ok = (cat.value === "all" || tr.getAttribute("data-cat") === cat.value) &&
+        (role.value === "all" || roles.indexOf(role.value) !== -1) &&
+        (source.value === "all" || tr.getAttribute("data-source") === source.value) &&
+        (line.value === "all" || tr.getAttribute("data-line") === line.value) &&
+        ekOk &&
+        (!query || tr.textContent.toLowerCase().indexOf(query) !== -1);
+      tr.hidden = !ok;
+      if (ok) n += 1;
+    });
+    count.textContent = String(n);
+  }
+
+  [q, cat, role, source, line, ek].forEach(function (el) {
+    el.addEventListener("input", apply);
+    el.addEventListener("change", apply);
+  });
+  clearBtn.addEventListener("click", function () {
+    q.value = "";
+    cat.value = "all";
+    role.value = "all";
+    source.value = "all";
+    line.value = "all";
+    ek.value = "all";
+    apply();
+  });
+  apply();
+})();
+</script>
+</body>
+</html>
