@@ -1538,7 +1538,7 @@
     <div class="search-bar">
       <label for="q">Search</label>
       <div class="typeahead-wrap">
-        <input id="q" type="search" placeholder="Course / name / staff #" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="q-suggest" aria-expanded="false">
+        <input id="q" type="search" placeholder="Course / name / staff # (; = OR)" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="q-suggest" aria-expanded="false">
         <ul id="q-suggest" class="typeahead" hidden role="listbox" aria-label="Search suggestions"></ul>
       </div>
     </div>
@@ -1742,7 +1742,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.14" aria-label="Page version 15.14">v15.14</div>
+  <div class="page-version" data-version="15.15" aria-label="Page version 15.15">v15.15</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -4534,8 +4534,13 @@ function manualItems() {
   });
   return [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
 }
-function queryNeedle() {
-  return String(q || "").trim().toLowerCase();
+function queryNeedles() {
+  return String(q || "").split(";").map((t) => t.trim().toLowerCase()).filter(Boolean);
+}
+function queryActiveRaw() {
+  const raw = String(q || "");
+  const i = raw.lastIndexOf(";");
+  return (i < 0 ? raw : raw.slice(i + 1)).trim();
 }
 function hayHas(needle, vals) {
   if (!needle) return true;
@@ -4543,6 +4548,10 @@ function hayHas(needle, vals) {
     if (String(vals[i] == null ? "" : vals[i]).toLowerCase().indexOf(needle) >= 0) return true;
   }
   return false;
+}
+function hayHasAny(terms, vals) {
+  if (!terms || !terms.length) return true;
+  return terms.some((n) => hayHas(n, vals));
 }
 function personIdentityMatch(who, needle) {
   if (!who || !needle) return !needle;
@@ -4581,9 +4590,12 @@ function bundledPersonMatch(who, needle) {
   if ((who.courses || []).some((c) => hayHas(needle, [c]))) return true;
   return personCourseRows(who).some((r) => courseRowMatch(r, needle));
 }
-function applyQueryToPerson(who, needle) {
-  if (!needle || personIdentityMatch(who, needle)) return who;
-  const rows = personCourseRows(who).filter((r) => courseRowMatch(r, needle));
+function applyQueryToPerson(who, needleOrTerms) {
+  const terms = Array.isArray(needleOrTerms)
+    ? needleOrTerms.filter(Boolean)
+    : (needleOrTerms ? [needleOrTerms] : []);
+  if (!terms.length || terms.some((n) => personIdentityMatch(who, n))) return who;
+  const rows = personCourseRows(who).filter((r) => terms.some((n) => courseRowMatch(r, n)));
   if (!rows.length) return null;
   const overdueRows = [];
   const soonRows = [];
@@ -5129,12 +5141,12 @@ function itemsRaw() {
 }
 function itemsAll() {
   const list = itemsRaw();
-  const s = queryNeedle();
-  if (!s) return list;
-  return list.filter((it) => {
+  const terms = queryNeedles();
+  if (!terms.length) return list;
+  return list.filter((it) => terms.some((s) => {
     if (hayHas(s, [it.key, it.title])) return true;
     return it.people.some((p) => personRowMatch(p, it, s));
-  });
+  }));
 }
 function brsStaffPerson(staff, row) {
   const id = row && row.brsId;
@@ -5245,7 +5257,7 @@ function fmtCompletedDoneCell(iso, raw) {
 }
 function collectCompletedArchiveRows() {
   const wantDays = completedWindowDays();
-  const needle = queryNeedle();
+  const terms = queryNeedles();
   const team = teamFilter || "";
   const out = [];
   const seen = new Set();
@@ -5268,7 +5280,7 @@ function collectCompletedArchiveRows() {
     if (!orgOk(who.group) || !roleOk(who.home)) return;
     if (team && who.team !== team) return;
     const cname = courseNameFor(code) || code;
-    if (needle && !hayHas(needle, [
+    if (terms.length && !hayHasAny(terms, [
       who.staff, who.name, who.home, who.shift, crewOf(who),
       teamLabel(who.team, who.home), code, cname, src, completedSrcDisplay(src),
       doneIso, fmtDoneDisplay(doneIso),
@@ -5310,7 +5322,7 @@ function collectCompletedArchiveRows() {
         if (!orgOk(who.group) || !roleOk(who.home)) return;
         if (team && who.team !== team) return;
         const byLabel = formatCompletedByLabel(who.staff, who.name || p.name || "");
-        if (needle && !hayHas(needle, [
+        if (terms.length && !hayHasAny(terms, [
           who.staff, who.name, who.home, who.shift, crewOf(who),
           teamLabel(who.team, who.home), code, title, src, completedSrcDisplay(src),
           p.ackAt, byLabel
@@ -5458,13 +5470,13 @@ function paintHead() {
 function paintBoard() {
   const roster = rosterByTeam();
   const items = sortItems(itemsAll());
-  const s = queryNeedle();
+  const terms = queryNeedles();
   const nRoster = TEAM_KEYS.reduce((n, t) => n + roster[t].length, 0);
   const outPeople = new Set();
   const hotPeople = new Set();
   items.forEach((it) => it.people.forEach((p) => {
     if (!personCourseStillOut(p, it)) return;
-    if (s && !personRowMatch(p, it, s)) return;
+    if (terms.length && !terms.some((s) => personRowMatch(p, it, s))) return;
     outPeople.add(p.staff);
     if (p.hot) hotPeople.add(p.staff);
   }));
@@ -5626,11 +5638,11 @@ function paintDetail() {
       });
     });
   });
-  const s = queryNeedle();
+  const terms = queryNeedles();
   const list = peopleBundle(pairs).map((who) => {
-    if (!s) return who;
-    if (!bundledPersonMatch(who, s)) return null;
-    return applyQueryToPerson(who, s);
+    if (!terms.length) return who;
+    if (!terms.some((s) => bundledPersonMatch(who, s))) return null;
+    return applyQueryToPerson(who, terms);
   }).filter(Boolean);
   detailPeople = list;
   const val = (x, key) => {
@@ -8169,7 +8181,10 @@ function pickTypeaheadItem(field, item) {
   if (field === "q") {
     const qEl = document.getElementById("q");
     if (!qEl) return;
-    qEl.value = item.value || "";
+    const picked = item.value || "";
+    const raw = String(qEl.value || "");
+    const i = raw.lastIndexOf(";");
+    qEl.value = i < 0 ? picked : raw.slice(0, i + 1) + picked;
     q = qEl.value;
     pick = null;
     hideAllTypeahead();
@@ -8259,7 +8274,7 @@ function showCnameSuggest() {
 function showSearchSuggest() {
   const el = document.getElementById("q");
   if (!el) return;
-  openTypeahead("q", matchSearchHints(el.value));
+  openTypeahead("q", matchSearchHints(queryActiveRaw()));
 }
 function typeaheadIsOpen(field) {
   const list = document.getElementById(typeaheadListId(field));
