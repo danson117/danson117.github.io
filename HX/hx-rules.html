@@ -240,6 +240,7 @@
       <h3>上載同顯示</h3>
       <ul>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · duplicate BRS Ref. No. while typing：</b>Create／edit 嘅 <b>BRS Ref. No.</b> 欄，打字即刻檢查：號已存在（已確認 item 或另一個 draft）→ 欄旁英文短警告 <b>That number is already used.</b>；即刻 block <b>Create BRS</b>（同 Save Draft 唔寫入重複號）；唔等按 Create／confirm。Create New 自動號＝下一個未用號（唔預填已用號）。Draft 號撞已確認 → 清走 draft 嗰個號、唔覆寫已確認 item。Create 成功（自由號）後關 new-item editor（其他 dirty 關閉規則不變）。</li>
+        <li style="color:#b00020"><b>新 · Training One View · Copy layout／Download 睇晒 Staff # 同 Name：</b>Table 嘅 Copy layout 同 Download 出圖時，Staff # 同 Name 拉到全文一行（唔截最後一位、唔喺名中間斷字）。畫面欄闊不變。TOV <b>v15.13</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · 人課程表欄序：</b>人課程表（Cards／Details popup）欄序改為 <b>BRS REF. NO.</b>｜<b>Course</b>｜<b>Name</b>｜…（Course 右移一格；BRS REF. NO. 喺 Course 左邊）。唔改格值／色／欄義。TOV <b>v15.12</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · BRS 行 Course／BRS REF. NO.／Due：</b>人課程表加欄 <b>BRS REF. NO.</b>（BRS 號，例 <code>BRS20260902</code>）。<b>Course</b> 顯示同名課程碼（例 EK Emirates eTechLog Training → <code>LM00183</code>），唔再把 BRS 號放喺 Course。Due day／Remaining 抄該人同名課程（Manual／CT／Mandatory／UAL）嘅到期日；BRS 自己有 due 而搵唔到個人課程日時先用 BRS due。冇同名課程就 Course 仍顯示 BRS 號。主表欄頭仍叫 <b>Course code</b>。唔改 BRS 存檔欄（仍係 <code>code</code>／<code>title</code>／<code>dueDate</code>）。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · BRS Ref. No.／Course name 標籤：</b>Create／edit（同 list／Admin）可見標籤：原 <b>Item number</b>／後改 <b>BRS Number</b> → <b>BRS Ref. No.</b>；原 <b>Title</b> → <b>Course name</b>。存檔欄不變（仍係 <code>code</code>／<code>title</code>）；編號規則仍係 <code>BRS</code>＋年月＋兩位。人課程表 Course／BRS REF. NO. 見上面新規則。唔改 Add link 次序、Due Date YYYY-MM-DD。</li>
@@ -328,6 +329,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.12">v10.12</div>
+  <div class="page-version" data-version="10.13">v10.13</div>
 </body>
 </html>

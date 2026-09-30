@@ -947,9 +947,30 @@
   }
   .detail.capturing { overflow: visible; }
   .detail.capturing #detail-shot {
-    width: 100%;
-    max-width: 100%;
+    width: max-content;
+    max-width: none;
+    overflow: visible;
     box-sizing: border-box;
+  }
+  /* Copy layout / Download only: Staff # and Name grow to the full text (screen columns stay narrow). */
+  .detail.capturing #detail-shot > table {
+    table-layout: auto;
+    width: max-content;
+    min-width: 0;
+  }
+  .detail.capturing #detail-shot col.col-staff,
+  .detail.capturing #detail-shot col.col-name {
+    width: auto;
+  }
+  .detail.capturing #detail-shot th.col-staff,
+  .detail.capturing #detail-shot td.col-staff,
+  .detail.capturing #detail-shot th.col-name,
+  .detail.capturing #detail-shot td.col-name,
+  .detail.capturing #detail-shot .staff-no {
+    white-space: nowrap;
+    overflow: visible;
+    word-break: normal;
+    overflow-wrap: normal;
   }
   .detail td.hot-soon { background: var(--hot-bg); color: var(--hot); }
   .detail tr.hot td.hot-soon, .detail tr.warn td.hot-soon { background: var(--hot-bg); color: var(--hot); }
@@ -1721,7 +1742,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.12" aria-label="Page version 15.12">v15.12</div>
+  <div class="page-version" data-version="15.13" aria-label="Page version 15.13">v15.13</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -8857,9 +8878,12 @@ function drawNodeToCanvas(root, widthCap) {
       ctx.textAlign = "left";
       const lineH = Math.max(14, parseFloat(cs.fontSize) || 12) * 1.25;
       if (textNodes.length === 1 && el.childElementCount === 0) {
-        ctx.beginPath();
-        ctx.rect(x + 1, y + 1, Math.max(0, b.width - 2), Math.max(0, b.height - 2));
-        ctx.clip();
+        const keepFull = el.classList.contains("staff-no") || el.classList.contains("col-staff") || el.classList.contains("col-name");
+        if (!keepFull) {
+          ctx.beginPath();
+          ctx.rect(x + 1, y + 1, Math.max(0, b.width - 2), Math.max(0, b.height - 2));
+          ctx.clip();
+        }
         const single = (cs.whiteSpace || "").indexOf("nowrap") === 0 || el.classList.contains("staff-no");
         fillWrappedText(ctx, textNodes[0].textContent.replace(/\s+/g, " ").trim(), x + padL, y, Math.max(8, b.width - padL - padR), b.height, lineH, single);
       } else {
@@ -8922,19 +8946,39 @@ async function captureNodeAsImage(shot, frame, btn, mode, filename) {
     maxWidth: shot.style.maxWidth,
     boxSizing: shot.style.boxSizing
   };
-  const shotW = visibleCaptureWidth(shot);
-  const frameW = frame ? visibleCaptureWidth(frame) : shotW;
-  const widthCap = Math.max(1, Math.min(shotW, frameW));
-  let size;
+  const detailTable = shot.id === "detail-shot" ? shot.querySelector(":scope > table") : null;
+  let widthCap;
   if (frame) {
     frame.classList.add("capturing");
     frame.scrollTop = 0;
   }
-  shot.style.width = widthCap + "px";
-  shot.style.maxWidth = widthCap + "px";
-  shot.style.boxSizing = "border-box";
+  if (detailTable) {
+    shot.style.width = "max-content";
+    shot.style.maxWidth = "none";
+    shot.style.boxSizing = "border-box";
+  } else {
+    const shotW = visibleCaptureWidth(shot);
+    const frameW = frame ? visibleCaptureWidth(frame) : shotW;
+    widthCap = Math.max(1, Math.min(shotW, frameW));
+    shot.style.width = widthCap + "px";
+    shot.style.maxWidth = widthCap + "px";
+    shot.style.boxSizing = "border-box";
+  }
+  let size;
   try {
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    if (detailTable) {
+      const fullW = Math.max(
+        1,
+        Math.ceil(shot.scrollWidth || 0),
+        Math.ceil(detailTable.scrollWidth || 0),
+        Math.ceil(shot.getBoundingClientRect().width || 0)
+      );
+      shot.style.width = fullW + "px";
+      shot.style.maxWidth = "none";
+      widthCap = fullW;
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    }
     size = nodeCaptureSize(shot, widthCap);
     const canvas = drawNodeToCanvas(shot, widthCap);
     const blob = await new Promise((res, rej) => canvas.toBlob((b) => b ? res(b) : rej(new Error("blob")), "image/png"));

@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **TOV Copy layout／Download：** Table 出圖時 Staff # 同 Name 拉到全文一行，畫面欄闊不變。TOV **v15.13**、`hx-rules` **v10.13**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-30 公司電腦
+
 - **TOV 人課程表 Course 右移一格：** Cards／Details popup 欄序由 Course｜BRS REF. NO.｜Name 改為 **BRS REF. NO.｜Course｜Name**（其餘欄不變）。唔改格值／色／欄義。TOV **v15.12**、`hx-rules` **v10.12**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-30 公司電腦
