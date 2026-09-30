@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **LM00183 Outstanding 對齊圖上 STAFF NO：** Manual `LM00183` outstanding 改為圖上 **54** 人（due 仍 `2026-10-02`）；已 Completed **4** 人保留。舊 outstanding 唔再喺圖上嘅 **25** 行已刪。BRS `BRS20260902` people 同步 **58**（54＋4）。唔寫職員明細。唔改 HTML。Supabase `hx_private`。唔開 Chrome。
+
+## 2026-09-30 公司電腦
+
 - **Course List 欄闊跟內容：** 每欄闊到格內全文一行睇得晒（Name／Description 唔截斷）；字少嘅欄（Code／Issued By／Type／Interval）收到內容同表頭。總闊超過畫面就表內橫向捲。Course List **v1.8**、`hx-rules` **v10.10**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。
 
 ## 2026-09-30 公司電腦
