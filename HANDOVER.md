@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **收工：** OCG Name List UA V number 已在 `main` `fe23f78`（Name List **v3.7**、`hx-rules` **v10.16**、hub page-version 仍 **v17.4**）。冇新 HX 改動要 push。`HX/team-board-actions.json` 本機仍係 2026-09-22，同 GitHub 一樣；Training One View 板面今次冇改，共用資料以 Supabase 為準。家庭頁 Git 顯示 modified，內容同 HEAD 一樣，冇 commit。本機 `OCG_V_Number.xlsx` 唔入 GitHub。唔開 Chrome。
+
+## 2026-09-30 公司電腦
+
 - **OCG Name List UA 欄改顯示 V number：** Crew List／Full List 有 V number 的 34 人，UA 格由旗 `UA` 改為該 V number。3 人來源寫明冇 V number，格仍係 `UA`。唔改 Team／Shift／姓名／section。OCG Name List **v3.7**、`ocg-pax-data.js?v=2`、`hx-rules` **v10.16**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-09-30 公司電腦
