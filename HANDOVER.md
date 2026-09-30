@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-30 公司電腦
+
+- **TOV Completed 名單（預設 7 日）：** Training One View legend 下面加獨立 **Completed** 區；預設 **Last 7 days**，下拉可揀 30／90／year／All stored。跟 Section／Sources／Search／Team。背底永久保留唔刪。Detail「Show completed (≤30 days)」仍舊。TOV **v15.6**、`hx-rules` **v10.5**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
 ## 2026-09-29 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **Board 5-version history：** 每個同步源（`ual`／`ct`／`omt`／`status`／`manual`／`brs`）喺 Supabase `hx_private.board_revisions` 保留最多 5 版；第 6 版刪該源最舊。一行＝一個 source 一次接受咗嘅 payload snapshot（欄：`id`、`source_key`、`version_time`、`saved_at`、`payload`）。Live 仍喺 `hx_private.team_board_actions`。只喺較新寫入先 snapshot；拒收舊本機／開頁唔寫 history。Upload 比 data 時間（UAL／CT／OMT＝`uploadedAt`；Status＝`updated`；BRS＝doc `updated`）；本機舊→載入伺服器；撈唔到唔當 local 贏。TOV **v15.5**、BRS **v4.8**、`hx-rules` **v10.4**；hub `?v=`（page-version 仍 **v17.4**）。Edge 未 redeploy（revision 喺 RPC）。GitHub 後備。唔開 Chrome。

@@ -827,6 +827,42 @@
   }
   .empty { text-align: center; color: #9aa3ad; }
   .detail { padding: 10px 12px; margin-top: 10px; }
+  .completed-archive {
+    border: 1px solid var(--line);
+    background: var(--card);
+    margin: 0 0 12px;
+    padding: 10px 12px 12px;
+  }
+  .completed-archive-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 4px;
+  }
+  .completed-archive h2 {
+    margin: 0;
+    font-size: 14px;
+    color: var(--navy);
+  }
+  .completed-archive .note { margin: 0 0 8px; }
+  #completed-window { min-width: 9.5em; }
+  .completed-archive-shot { overflow-x: auto; max-width: 100%; }
+  .completed-archive table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 860px;
+  }
+  .completed-archive th, .completed-archive td {
+    border: 1px solid var(--line);
+    padding: 5px 7px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .completed-archive th { background: var(--navy); color: #fff; }
+  .completed-archive tbody td { background: var(--ok-row); }
+  .completed-archive td.blank { background: var(--blank); }
   .detail-head {
     display: flex;
     flex-wrap: wrap;
@@ -1454,6 +1490,22 @@
       <span class="flag-ov" title="Override">OV</span> override: flagged person / course
       <span>Click Other / Team 1–4 for that team’s outstanding names</span>
     </div>
+    <section id="completed-archive" class="completed-archive" aria-label="Completed">
+      <div class="completed-archive-head">
+        <h2>Completed</h2>
+        <label for="completed-window">Show</label>
+        <select id="completed-window" aria-label="Completed date range">
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="365">Last year</option>
+          <option value="all">All stored</option>
+        </select>
+        <span id="completed-count"></span>
+      </div>
+      <p class="note">Default is the last 7 days. Pick a longer range to see older completions. This list follows Section, Sources, Search, and the team you picked. Stored records stay either way.</p>
+      <div id="completed-body"></div>
+    </section>
     <div class="search-bar">
       <label for="q">Search</label>
       <div class="typeahead-wrap">
@@ -1661,7 +1713,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.5" aria-label="Page version 15.5">v15.5</div>
+  <div class="page-version" data-version="15.6" aria-label="Page version 15.6">v15.6</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -1678,7 +1730,7 @@ const CT_FILES = "hx:team-board:ct-files";
 const OMT_FILES = "hx:team-board:omt-files";
 const CT_CLEARED = "hx:team-board:ct-cleared";
 const OMT_CLEARED = "hx:team-board:omt-cleared";
-const UI = { org: "hx:team-board:org", src: "hx:team-board:src", role: "hx:team-board:role", team: "hx:team-board:team", q: "hx:team-board:q", sortKey: "hx:team-board:sortKey", sortDir: "hx:team-board:sortDir", listView: "hx:team-board:listView", boardOpen: "hx:team-board:boardOpen", showRecentCompleted: "hx:team-board:showRecentCompleted" };
+const UI = { org: "hx:team-board:org", src: "hx:team-board:src", role: "hx:team-board:role", team: "hx:team-board:team", q: "hx:team-board:q", sortKey: "hx:team-board:sortKey", sortDir: "hx:team-board:sortDir", listView: "hx:team-board:listView", boardOpen: "hx:team-board:boardOpen", showRecentCompleted: "hx:team-board:showRecentCompleted", completedWindow: "hx:team-board:completedWindow" };
 const FILTER_DEFAULT_BASE = "hx:team-board:filter-default";
 /** Factory picture: search empty, Sources All, Section OCG, all teams, role All, Show completed off. Table/Details is layout-only (not a count filter). Legend swatches are not checkboxes. */
 const FACTORY_FILTER_DEFAULT = {
@@ -1690,6 +1742,9 @@ const FACTORY_FILTER_DEFAULT = {
   showRecentCompleted: false
 };
 const COMPLETED_KEEP_DAYS = 30;
+/** Completed archive panel: default last 7 days; longer ranges are opt-in. Stored completions stay forever. */
+const COMPLETED_WINDOW_DEFAULT = "7";
+const COMPLETED_WINDOW_OPTS = ["7", "30", "90", "365", "all"];
 const COURSE_STORE = "hx:course-catalog:rows";
 const COURSE_STATUS = "hx:team-board:course-status";
 const ACCESS_HASH = "hx:team-board:access-hash";
@@ -1777,7 +1832,8 @@ const UI_KEYS = {
   sortDir: ["hx:team-board:sortDir", "hx-team-board-sortDir", "hx:ual-cbt:sortDir"],
   listView: ["hx:team-board:listView"],
   boardOpen: ["hx:team-board:boardOpen"],
-  showRecentCompleted: ["hx:team-board:showRecentCompleted"]
+  showRecentCompleted: ["hx:team-board:showRecentCompleted"],
+  completedWindow: ["hx:team-board:completedWindow"]
 };
 const DATE_RE = /^(\d{1,2})-([A-Za-z]{3,9})-(\d{4})$/;
 const EMP_RE = /^v\d{5,}$/i;
@@ -1809,6 +1865,7 @@ let detailPeople = [];
 let listView = "table";
 let boardOpen = false;
 let showRecentCompleted = false;
+let completedWindow = COMPLETED_WINDOW_DEFAULT;
 let courseStatus = {};
 let manualAuthPick = null;
 let authIndexCache = null;
@@ -4887,7 +4944,13 @@ function completionDayStamp(raw) {
     const m = done.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (m) return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
   }
-  const t = Date.parse(String(raw || ""));
+  const s = String(raw || "").trim();
+  const slash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slash) {
+    const d = Number(slash[1]), mo = Number(slash[2]), y = Number(slash[3]);
+    if (validYmd(y, mo, d)) return Date.UTC(y, mo - 1, d);
+  }
+  const t = Date.parse(s);
   return Number.isFinite(t) ? Date.UTC(new Date(t).getUTCFullYear(), new Date(t).getUTCMonth(), new Date(t).getUTCDate()) : NaN;
 }
 function daysSinceStamp(stamp) {
@@ -4918,6 +4981,181 @@ function isRecentCompleted(staff, row) {
   const rec = readCourseStatus(staff, row);
   const stamp = completionDayStamp(rec.done || rec.updated || "");
   return isWithinCompletedKeepWindow(daysSinceStamp(stamp));
+}
+function normalizeCompletedWindow(raw) {
+  const v = String(raw == null ? "" : raw).trim();
+  return COMPLETED_WINDOW_OPTS.indexOf(v) >= 0 ? v : COMPLETED_WINDOW_DEFAULT;
+}
+function completedWindowDays() {
+  const v = normalizeCompletedWindow(completedWindow);
+  if (v === "all") return Infinity;
+  return Number(v);
+}
+function isWithinCompletedWindow(days, windowDays) {
+  if (!Number.isFinite(days) || days < 0) return false;
+  if (!Number.isFinite(windowDays)) return true;
+  return days <= windowDays;
+}
+function completedSrcAllowed(src) {
+  const s = String(src || "").trim().toLowerCase();
+  if (s === "brief" || s === "rs" || s === "brs") return srcHas("brs");
+  if (s === "ual") return srcHas("ual");
+  if (s === "omt") return srcHas("omt");
+  if (s === "manual") return srcHas("manual");
+  if (s === "ct") return srcHas("ct");
+  return true;
+}
+function completedSrcDisplay(src) {
+  const s = String(src || "").trim().toLowerCase();
+  if (s === "ual") return "UAL CBT";
+  if (s === "omt") return "Mandatory";
+  if (s === "manual") return "Manual";
+  if (s === "brief") return "Briefing";
+  if (s === "rs") return "Read & Sign";
+  if (s === "brs") return "Briefing and R&S";
+  return "CT Reminder";
+}
+function fmtCompletedDoneCell(iso, raw) {
+  const disp = fmtDoneDisplay(iso);
+  if (disp) return disp;
+  const s = String(raw || "").trim();
+  return s || "—";
+}
+function collectCompletedArchiveRows() {
+  const wantDays = completedWindowDays();
+  const needle = queryNeedle();
+  const team = teamFilter || "";
+  const out = [];
+  const seen = new Set();
+  Object.keys(courseStatus || {}).forEach((k) => {
+    if (isSharedMetaStatusKey(k)) return;
+    const parts = String(k).split("|");
+    if (parts.length < 3) return;
+    const staff = padStaff(parts[0]);
+    const code = String(parts[1] || "").trim();
+    const src = String(parts[2] || "").trim().toLowerCase();
+    if (src === "brief" || src === "rs") return;
+    if (!completedSrcAllowed(src)) return;
+    const rec = courseStatus[k] || {};
+    if (rec.status !== "Completed") return;
+    const doneIso = parseDoneDate(rec.done || "") || "";
+    const stamp = completionDayStamp(doneIso || rec.updated || "");
+    const days = daysSinceStamp(stamp);
+    if (!isWithinCompletedWindow(days, wantDays)) return;
+    const who = personOf(staff, "");
+    if (!orgOk(who.group) || !roleOk(who.home)) return;
+    if (team && who.team !== team) return;
+    const cname = courseNameFor(code) || code;
+    if (needle && !hayHas(needle, [
+      who.staff, who.name, who.home, who.shift, crewOf(who),
+      teamLabel(who.team, who.home), code, cname, src, completedSrcDisplay(src),
+      doneIso, fmtDoneDisplay(doneIso)
+    ])) return;
+    const dedupe = staff + "|" + code.toUpperCase() + "|" + src;
+    if (seen.has(dedupe)) return;
+    seen.add(dedupe);
+    out.push({
+      staff: who.staff,
+      name: who.name || "",
+      team: who.team,
+      home: who.home || "",
+      shift: who.shift || "",
+      crew: crewOf(who),
+      code: code,
+      cname: cname,
+      src: src,
+      srcLabel: completedSrcDisplay(src),
+      done: doneIso,
+      doneRaw: rec.done || rec.updated || "",
+      stamp: stamp
+    });
+  });
+  if (srcHas("brs")) {
+    (readBrsDoc().items || []).forEach((it) => {
+      if (!it || it.draft) return;
+      const src = it.type === "read-sign" ? "rs" : "brief";
+      const code = String(it.code || "").trim();
+      const title = String(it.title || "").trim() || (it.type === "read-sign" ? "Read & Sign" : "Briefing");
+      (it.people || []).forEach((p) => {
+        if (!p || !p.ack) return;
+        const stamp = completionDayStamp(p.ackAt || "");
+        const days = daysSinceStamp(stamp);
+        if (!isWithinCompletedWindow(days, wantDays)) return;
+        const who = personOf(p.staff, p.name);
+        if (!orgOk(who.group) || !roleOk(who.home)) return;
+        if (team && who.team !== team) return;
+        if (needle && !hayHas(needle, [
+          who.staff, who.name, who.home, who.shift, crewOf(who),
+          teamLabel(who.team, who.home), code, title, src, completedSrcDisplay(src),
+          p.ackAt
+        ])) return;
+        const dedupe = padStaff(who.staff) + "|" + (code || title).toUpperCase() + "|" + src + "|" + String(it.id || "");
+        if (seen.has(dedupe)) return;
+        seen.add(dedupe);
+        out.push({
+          staff: who.staff,
+          name: who.name || p.name || "",
+          team: who.team,
+          home: who.home || p.section || "",
+          shift: who.shift || "",
+          crew: crewOf(who) || formatSectionCrewText(p.section || ""),
+          code: code || title,
+          cname: code ? title : "",
+          src: src,
+          srcLabel: completedSrcDisplay(src),
+          done: parseDoneDate(p.ackAt || "") || "",
+          doneRaw: p.ackAt || "",
+          stamp: stamp
+        });
+      });
+    });
+  }
+  out.sort((a, b) => {
+    const ta = Number.isFinite(a.stamp) ? a.stamp : 0;
+    const tb = Number.isFinite(b.stamp) ? b.stamp : 0;
+    if (tb !== ta) return tb - ta;
+    return cmpRoster(a, b) || String(a.code || "").localeCompare(String(b.code || ""));
+  });
+  return out;
+}
+function paintCompletedArchive() {
+  const box = document.getElementById("completed-body");
+  const countEl = document.getElementById("completed-count");
+  const sel = document.getElementById("completed-window");
+  if (!box) return;
+  completedWindow = normalizeCompletedWindow(completedWindow);
+  if (sel && sel.value !== completedWindow) sel.value = completedWindow;
+  lsSet(UI.completedWindow, completedWindow);
+  const rows = collectCompletedArchiveRows();
+  if (countEl) {
+    countEl.textContent = rows.length
+      ? (rows.length + " record" + (rows.length === 1 ? "" : "s"))
+      : "";
+  }
+  if (!rows.length) {
+    box.innerHTML = "<p class=\"note\">No completed records in this range.</p>";
+    return;
+  }
+  box.innerHTML = "<div class=\"completed-archive-shot\"><table>" +
+    "<thead><tr>" +
+    "<th>Completed</th><th>Staff #</th><th>Name</th><th>Team</th><th>Section (Crew)</th>" +
+    "<th>Course code</th><th>Course name</th><th>Source</th>" +
+    "</tr></thead><tbody>" +
+    rows.map((r) => {
+      const doneText = fmtCompletedDoneCell(r.done, r.doneRaw);
+      const crew = formatSectionCrewText(r.crew || crewOf(r) || r.home || "");
+      return "<tr>" +
+        "<td>" + esc(doneText) + "</td>" +
+        "<td>" + staffNoHtml(r.staff) + "</td>" +
+        "<td>" + esc(r.name || "") + "</td>" +
+        "<td>" + esc(teamLabel(r.team, r.home)) + "</td>" +
+        "<td" + (crew ? "" : " class=\"blank\"") + ">" + esc(crew) + "</td>" +
+        "<td>" + esc(r.code || "") + "</td>" +
+        "<td" + (r.cname ? "" : " class=\"blank\"") + ">" + esc(r.cname || "") + "</td>" +
+        "<td>" + esc(r.srcLabel || "") + "</td>" +
+        "</tr>";
+    }).join("") +
+    "</tbody></table></div>";
 }
 function personCourseStillOutOrRecent(p, item) {
   if (personCourseStillOut(p, item)) return true;
@@ -8521,6 +8759,7 @@ function paint() {
   applyBoardOpenUi();
   paintBoard();
   paintDetail();
+  paintCompletedArchive();
   paintIngestFlags();
   updateFilterNarrowHints();
 }
@@ -8715,6 +8954,11 @@ document.getElementById("filter-save-default").addEventListener("click", () => {
 });
 document.getElementById("filter-restore-original").addEventListener("click", () => {
   restoreOriginalFilters();
+});
+document.getElementById("completed-window").addEventListener("change", (e) => {
+  completedWindow = normalizeCompletedWindow(e.target && e.target.value);
+  lsSet(UI.completedWindow, completedWindow);
+  paintCompletedArchive();
 });
 document.querySelectorAll("[data-src]").forEach((b) => {
   b.addEventListener("click", () => {
@@ -9618,6 +9862,9 @@ function restoreUi() {
   if (savedBoard === "1") boardOpen = true;
   else if (savedBoard === "0") boardOpen = false;
   else boardOpen = false;
+  completedWindow = normalizeCompletedWindow(firstFilled(UI_KEYS.completedWindow) || COMPLETED_WINDOW_DEFAULT);
+  const winEl = document.getElementById("completed-window");
+  if (winEl) winEl.value = completedWindow;
   applyBoardOpenUi();
 }
 function restoreUal() {
