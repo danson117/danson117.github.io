@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **OCG Name List UA 欄改顯示 V number：** Crew List／Full List 有 V number 的 34 人，UA 格由旗 `UA` 改為該 V number。3 人來源寫明冇 V number，格仍係 `UA`。唔改 Team／Shift／姓名／section。OCG Name List **v3.7**、`ocg-pax-data.js?v=2`、`hx-rules` **v10.16**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-09-30 公司電腦
+
 - **TOV Search 多詞 OR：** Search 用 `;` 分開；任一詞符合就顯示（例 `E195;T241`）。空段忽略；建議跟最後一段。TOV **v15.15**、`hx-rules` **v10.15**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-30 公司電腦
