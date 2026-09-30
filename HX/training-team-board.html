@@ -852,7 +852,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
-    min-width: 860px;
+    min-width: 980px;
   }
   .completed-archive th, .completed-archive td {
     border: 1px solid var(--line);
@@ -1713,7 +1713,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.6" aria-label="Page version 15.6">v15.6</div>
+  <div class="page-version" data-version="15.7" aria-label="Page version 15.7">v15.7</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -5049,7 +5049,8 @@ function collectCompletedArchiveRows() {
     if (needle && !hayHas(needle, [
       who.staff, who.name, who.home, who.shift, crewOf(who),
       teamLabel(who.team, who.home), code, cname, src, completedSrcDisplay(src),
-      doneIso, fmtDoneDisplay(doneIso)
+      doneIso, fmtDoneDisplay(doneIso),
+      rec.completedBy, rec.completedByName, formatCompletedByLabel(rec.completedBy, rec.completedByName)
     ])) return;
     const dedupe = staff + "|" + code.toUpperCase() + "|" + src;
     if (seen.has(dedupe)) return;
@@ -5067,6 +5068,8 @@ function collectCompletedArchiveRows() {
       srcLabel: completedSrcDisplay(src),
       done: doneIso,
       doneRaw: rec.done || rec.updated || "",
+      completedBy: String(rec.completedBy || "").trim(),
+      completedByName: String(rec.completedByName || "").trim(),
       stamp: stamp
     });
   });
@@ -5084,10 +5087,11 @@ function collectCompletedArchiveRows() {
         const who = personOf(p.staff, p.name);
         if (!orgOk(who.group) || !roleOk(who.home)) return;
         if (team && who.team !== team) return;
+        const byLabel = formatCompletedByLabel(who.staff, who.name || p.name || "");
         if (needle && !hayHas(needle, [
           who.staff, who.name, who.home, who.shift, crewOf(who),
           teamLabel(who.team, who.home), code, title, src, completedSrcDisplay(src),
-          p.ackAt
+          p.ackAt, byLabel
         ])) return;
         const dedupe = padStaff(who.staff) + "|" + (code || title).toUpperCase() + "|" + src + "|" + String(it.id || "");
         if (seen.has(dedupe)) return;
@@ -5105,6 +5109,8 @@ function collectCompletedArchiveRows() {
           srcLabel: completedSrcDisplay(src),
           done: parseDoneDate(p.ackAt || "") || "",
           doneRaw: p.ackAt || "",
+          completedBy: who.staff,
+          completedByName: who.name || p.name || "",
           stamp: stamp
         });
       });
@@ -5138,14 +5144,16 @@ function paintCompletedArchive() {
   }
   box.innerHTML = "<div class=\"completed-archive-shot\"><table>" +
     "<thead><tr>" +
-    "<th>Completed</th><th>Staff #</th><th>Name</th><th>Team</th><th>Section (Crew)</th>" +
+    "<th>Completed</th><th>Completed by</th><th>Staff #</th><th>Name</th><th>Team</th><th>Section (Crew)</th>" +
     "<th>Course code</th><th>Course name</th><th>Source</th>" +
     "</tr></thead><tbody>" +
     rows.map((r) => {
       const doneText = fmtCompletedDoneCell(r.done, r.doneRaw);
+      const byText = formatCompletedByLabel(r.completedBy, r.completedByName);
       const crew = formatSectionCrewText(r.crew || crewOf(r) || r.home || "");
       return "<tr>" +
         "<td>" + esc(doneText) + "</td>" +
+        "<td" + (byText ? "" : " class=\"blank\"") + ">" + esc(byText) + "</td>" +
         "<td>" + staffNoHtml(r.staff) + "</td>" +
         "<td>" + esc(r.name || "") + "</td>" +
         "<td>" + esc(teamLabel(r.team, r.home)) + "</td>" +
@@ -5664,7 +5672,40 @@ function readCourseStatus(staff, row) {
   const status = COURSE_STATUS_OPTS.indexOf(rec.status) >= 0 ? rec.status : "Not Started";
   const done = status === "Completed" ? parseDoneDate(rec.done) : "";
   const remark = String(rec.remark || "").trim();
-  return { status: status, done: done, remark: remark };
+  const completedBy = status === "Completed" ? String(rec.completedBy || "").trim() : "";
+  const completedByName = status === "Completed" ? String(rec.completedByName || "").trim() : "";
+  return { status: status, done: done, remark: remark, completedBy: completedBy, completedByName: completedByName };
+}
+function currentCompletionActor() {
+  const staffRaw = hubGate && hubGate.accessStaff
+    ? String(hubGate.accessStaff).replace(/\D/g, "")
+    : String(lsPeek("hx:hub:gate-staff") || "").replace(/\D/g, "");
+  const staff = staffRaw ? padStaff(staffRaw) : "";
+  let name = "";
+  if (staff) {
+    const who = personOf(staff, "");
+    name = String((who && who.name) || "").trim();
+  } else {
+    const role = String((hubGate && (hubGate.accessRole || hubGate.role)) || "").toLowerCase();
+    if (role === "me") name = "Owner - Siu Chung";
+  }
+  return { staff: staff, name: name };
+}
+function formatCompletedByLabel(byStaff, byName) {
+  const s = padStaff(byStaff || "");
+  const n = String(byName || "").trim();
+  if (s && n) return s + " · " + n;
+  if (s) return s;
+  if (n) return n;
+  return "";
+}
+function attachCompletedByFields(out, src) {
+  if (!out || out.status !== "Completed" || !src) return out;
+  const by = String(src.completedBy || "").trim();
+  const byName = String(src.completedByName || "").trim();
+  if (by) out.completedBy = padStaff(by);
+  if (byName) out.completedByName = byName;
+  return out;
 }
 function persistCourseStatus() {
   schedulePersistActions();
@@ -5696,6 +5737,17 @@ function writeCourseStatus(staff, code, src, rec, opts) {
     const baseV = Math.max(0, parseInt(prev.v, 10) || 0);
     const out = { status: status, done: done, updated: new Date().toISOString(), v: baseV };
     if (remark) out.remark = remark;
+    if (status === "Completed") {
+      const becoming = String(prev.status || "") !== "Completed";
+      const hadActor = !!(String(prev.completedBy || "").trim() || String(prev.completedByName || "").trim());
+      if (becoming || !hadActor) {
+        const actor = currentCompletionActor();
+        if (actor.staff) out.completedBy = actor.staff;
+        if (actor.name) out.completedByName = actor.name;
+      } else {
+        attachCompletedByFields(out, prev);
+      }
+    }
     courseStatus[k] = out;
     markStatusDirty(k, baseV, false);
   }
@@ -5719,7 +5771,7 @@ function writeCourseStatus(staff, code, src, rec, opts) {
   } else {
     what = "Set status for staff " + padStaff(staff) + " · " + code + " → " + status +
       (status === "Completed" && done ? " (" + done + ")" : "") +
-      (touchedRemark ? "; remark " + (remark || "(empty)") : "");
+      (touchedRemark ? "; remark " + (remark || "(empty)" ) : "");
   }
   pushActionLog({
     kind: kind,
@@ -5745,6 +5797,7 @@ function normalizeStatusRec(rec) {
     v: Math.max(0, parseInt(rec.v, 10) || 0)
   };
   if (remark) out.remark = remark;
+  attachCompletedByFields(out, rec);
   return out;
 }
 function isSharedMetaStatusKey(k) {
@@ -6668,6 +6721,7 @@ function snapStatusRec(rec) {
     updated: String(rec.updated || "")
   };
   if (remark) out.remark = remark;
+  attachCompletedByFields(out, rec);
   return out;
 }
 function pushActionLog(entry) {
