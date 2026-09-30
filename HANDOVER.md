@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **CT Synchronize now 修：**/v15.9 collapse 後本機只剩較新檔、伺服器仍可有 11+12；`uploadedAt` max 相同 → 舊 plan 唔 push，但 raw 檔名 meta 仍標未 sync，掣似無反應。而家 sync／dirty 用 slot meta；伺服器同槽重複尾數 → Synchronize now 會 PUT。fetch 失敗出 Save failed。TOV **v15.10**、`hx-rules` **v10.9**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-30 公司電腦
+
 - **CT Reminder 尾數唔當新檔：** `.csv` 前 ` 11`／` 12`／`(12)` 等 download 計數忽略；同一 logical 名＋kind（overdue／due-soon）同一槽；最新＝`uploadedAt`。已存 11+12 收成較新嗰份。TOV **v15.9**、`hx-rules` **v10.8**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-30 公司電腦

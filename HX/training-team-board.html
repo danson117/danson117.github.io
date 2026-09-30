@@ -1715,7 +1715,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.9" aria-label="Page version 15.9">v15.9</div>
+  <div class="page-version" data-version="15.10" aria-label="Page version 15.10">v15.10</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -2229,11 +2229,8 @@ function ingestMetaSig(data) {
     return JSON.stringify({
       ualAt: ual ? String(ual.uploadedAt || "") : "",
       ualLen: ualLen,
-      ct: (Array.isArray(data.ctFiles) ? data.ctFiles : []).map((f) => [
-        String(f.name || ""),
-        String(f.uploadedAt || ""),
-        Array.isArray(f.rows) ? f.rows.length : (Number(f.rowCount) || 0)
-      ]),
+      // CT: compare by logical slot (ignore download counters in the filename), not raw name.
+      ct: ctIngestMetaEntries(data.ctFiles),
       omt: (Array.isArray(data.omtFiles) ? data.omtFiles : []).map((f) => [
         String(f.name || ""),
         String(f.uploadedAt || ""),
@@ -2243,6 +2240,86 @@ function ingestMetaSig(data) {
   } catch (e) {
     return "";
   }
+}
+/** Stable CT meta rows: one per slot key, newest uploadedAt wins. */
+function ctIngestMetaEntries(files) {
+  const best = new Map();
+  (Array.isArray(files) ? files : []).forEach((f) => {
+    if (!f) return;
+    const kind = f.kind || ctKindOf(f.name);
+    const key = ctFileSlotKey(f.name, kind);
+    const at = String(f.uploadedAt || "");
+    const rows = Array.isArray(f.rows) ? f.rows.length : (Number(f.rowCount) || 0);
+    const prev = best.get(key);
+    if (!prev || ctUploadedAtMs(at) > ctUploadedAtMs(prev[1])) {
+      best.set(key, [key, at, rows]);
+    }
+  });
+  return Array.from(best.values()).sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+}
+function ctSlotTimeMap(files) {
+  const map = new Map();
+  (Array.isArray(files) ? files : []).forEach((f) => {
+    if (!f) return;
+    const kind = f.kind || ctKindOf(f.name);
+    const key = ctFileSlotKey(f.name, kind);
+    const at = parseUploadAt(f.uploadedAt);
+    const prev = map.get(key) || 0;
+    if (at > prev) map.set(key, at);
+    else if (!map.has(key)) map.set(key, at);
+  });
+  return map;
+}
+function ctRemoteHasDuplicateSlots(files) {
+  const counts = new Map();
+  (Array.isArray(files) ? files : []).forEach((f) => {
+    if (!f) return;
+    const key = ctFileSlotKey(f.name, f.kind || ctKindOf(f.name));
+    counts.set(key, (counts.get(key) || 0) + 1);
+  });
+  for (const n of counts.values()) {
+    if (n > 1) return true;
+  }
+  return false;
+}
+/**
+ * CT plan by slot (counter-agnostic). If remote still stores two counter copies of one slot
+ * while local already collapsed, allow push so Synchronize now can clean the server.
+ */
+function planCtBySlots(localFiles, remoteFiles) {
+  const localHas = Array.isArray(localFiles) && localFiles.some((f) => f && ((Array.isArray(f.rows) && f.rows.length) || Number(f.rowCount) > 0));
+  const remoteHas = Array.isArray(remoteFiles) && remoteFiles.some((f) => f && ((Array.isArray(f.rows) && f.rows.length) || Number(f.rowCount) > 0));
+  if (!localHas && !remoteHas) return { takeRemote: false, needPush: false };
+  if (!localHas && remoteHas) return { takeRemote: true, needPush: false };
+  if (localHas && !remoteHas) return { takeRemote: false, needPush: true };
+  const L = ctSlotTimeMap(localFiles);
+  const R = ctSlotTimeMap(remoteFiles);
+  let localNewer = false;
+  let remoteNewer = false;
+  const keys = new Set([].concat(Array.from(L.keys()), Array.from(R.keys())));
+  keys.forEach((k) => {
+    const lt = L.has(k) ? L.get(k) : 0;
+    const rt = R.has(k) ? R.get(k) : 0;
+    if (!L.has(k) && R.has(k)) remoteNewer = true;
+    else if (L.has(k) && !R.has(k)) localNewer = true;
+    else if (lt > rt) localNewer = true;
+    else if (rt > lt) remoteNewer = true;
+  });
+  if (remoteNewer && !localNewer) return { takeRemote: true, needPush: false };
+  if (localNewer && !remoteNewer) return { takeRemote: false, needPush: true };
+  if (localNewer && remoteNewer) {
+    const lMax = Math.max(0, ...Array.from(L.values()));
+    const rMax = Math.max(0, ...Array.from(R.values()));
+    if (lMax > rMax) return { takeRemote: false, needPush: true };
+    if (rMax > lMax) return { takeRemote: true, needPush: false };
+  }
+  // Same slot times: still push if server keeps duplicate counter files for one slot.
+  if (ctRemoteHasDuplicateSlots(remoteFiles)) return { takeRemote: false, needPush: true };
+  // Or meta still differs after slot collapse (row counts).
+  const lMeta = JSON.stringify(ctIngestMetaEntries(localFiles));
+  const rMeta = JSON.stringify(ctIngestMetaEntries(remoteFiles));
+  if (lMeta !== rMeta) return { takeRemote: false, needPush: true };
+  return { takeRemote: false, needPush: false };
 }
 function localIngestSnapshot() {
   const text = String((document.getElementById("ual-src") || {}).value || "");
@@ -2304,12 +2381,19 @@ function planIngestByDataTime(localSnap, remote) {
   const needPush = {};
   const discarded = [];
   sources.forEach(({ key, label }) => {
+    takeRemote[key] = false;
+    needPush[key] = false;
+    if (key === "ct") {
+      const ctPlan = planCtBySlots(localSnap && localSnap.ctFiles, remote && remote.ctFiles);
+      takeRemote.ct = !!ctPlan.takeRemote;
+      needPush.ct = !!ctPlan.needPush;
+      if (ctPlan.takeRemote) discarded.push(label);
+      return;
+    }
     const localHas = ingestSourceHas(localSnap, key);
     const remoteHas = ingestSourceHas(remote, key);
     const localAt = ingestSourceAt(localSnap, key);
     const remoteAt = ingestSourceAt(remote, key);
-    takeRemote[key] = false;
-    needPush[key] = false;
     if (!localHas && !remoteHas) return;
     if (!localHas && remoteHas) {
       takeRemote[key] = true;
@@ -6164,6 +6248,11 @@ async function syncIngestWithRemote() {
   if (!remote) {
     // Failed sync must not fall through to "local wins".
     ingestTimeSyncDone = false;
+    ingestSyncFailed = true;
+    dirtyIngest = true;
+    showPushFail("Could not reach the server. This upload is saved in this browser only.");
+    setSaveSync("Not synchronized");
+    paintIngestSync();
     return;
   }
   lastRemoteActionsSig = actionsPayloadSig(remote);
@@ -6190,6 +6279,12 @@ async function syncIngestWithRemote() {
       dirtyIngest = true;
       await pushIngestToEdge();
       lastRemoteIngestHadContent = true;
+    } else if (!plan.anyPush && !plan.anyRemote) {
+      // Slot-equivalent (e.g. only download counters differed): treat as synchronized.
+      dirtyIngest = false;
+      ingestSyncFailed = false;
+      lastRemoteIngestMetaSig = ingestMetaSig(localIngestSnapshot());
+      setSaveSync("Saved");
     }
   }
   paintIngestSync();
@@ -9562,10 +9657,19 @@ document.addEventListener("click", (e) => {
   if (!syncBtn) return;
   if (!(getBoardPassword() || getSyncKey()) || !canRemoteWrite()) {
     paintIngestSync();
+    showPushFail("Sync was rejected. Uploads are saved in this browser.");
     return;
   }
   ingestSyncFailed = false;
-  syncIngestWithRemote();
+  setSaveSync("Saving…");
+  paintIngestSync();
+  Promise.resolve(syncIngestWithRemote()).catch(() => {
+    ingestSyncFailed = true;
+    dirtyIngest = true;
+    showPushFail("Could not reach the server. This upload is saved in this browser only.");
+    setSaveSync("Not synchronized");
+    paintIngestSync();
+  });
 });
 document.getElementById("ual-parse").addEventListener("click", () => {
   setUal(document.getElementById("ual-src").value, "Pasted email");
