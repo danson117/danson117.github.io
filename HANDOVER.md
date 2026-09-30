@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Outstanding 對齊＋角色分拆：** Live Manual／status 確認喺 `hx_private.team_board_actions`（Edge `team-board` lite），五個 cname 同 Completed stamp 已喺呢個 payload；TOV refresh 就見。LM00157／T.EA03 Outstanding **0**（Completions 保留）。Outstanding 報告只留 **T.EE0544／T.EE0686／T.X432**，按 Name List roleOf 分 Certifiers／Mechanics：T.EE0544 Certifiers **15／8／23**；T.EE0686 Certifiers **16／8／24**；T.X432 Mechanics **243／26／269**（CG／PAX／OCG；due `2026-09-25`）。Excel 本機 `C:\Cursor_Work\HX-outstanding-by-course.xlsx`（唔入 Git）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Manual T.B275（全 OCG Name List）：** OCG **472**；Completed **173**；Outstanding **299**（due `2026-09-25`）。粘貼完成名單 292 個 unique；其中 119 唔喺 Name List 唔加。Completed done＝2026-09-30、due＝2028-09-30。Supabase `hx_private.team_board_actions`（+ `board_revisions`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
