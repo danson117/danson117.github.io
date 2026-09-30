@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **TOV Manual AUTH LX：** 開咗四個 Manual 課程畀 AUTH operator LX（Name List 24 人）：**LM00157** Completed 24／Outstanding 0；**T.EA03** Completed 0／Outstanding 24（完成名單 10 人全部唔喺 LX）；**T.EE0544** Completed 1／Outstanding 23（完成名單 11 人入面 10 人唔喺 LX）；**T.EE0686** Completed 0／Outstanding 24（完成名單 10 人全部唔喺 LX）。完成行 done＝2026-09-30、due＝2028-09-30；outstanding due＝2026-09-25。Supabase `hx_private.team_board_actions`（+ `board_revisions`）。唔改 HTML。唔開 Chrome。
+
 ## 2026-09-30 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **OCG Name List：** `288531` YAM YIM CHIU Remark **SHOWS LMP**；Name List／Full List 該行黃底。唔改 CG／section。Name List **v3.8**、`ocg-pax-data.js?v=3`、`hx-rules` **v10.17**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
