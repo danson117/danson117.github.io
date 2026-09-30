@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Manual T.B275（全 OCG Name List）：** OCG **472**；Completed **173**；Outstanding **299**（due `2026-09-25`）。粘貼完成名單 292 個 unique；其中 119 唔喺 Name List 唔加。Completed done＝2026-09-30、due＝2028-09-30。Supabase `hx_private.team_board_actions`（+ `board_revisions`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Manual 課程名＋T.EA03／T.EE0686 完成批次：** Manual cname 更正為 LM00157＝SWISS AMOSeTL WBT for External Provider；T.EA03＝Swiss Air Line Station Administration and Procedures Training；T.EE0544＝SWISS B777 ETOPS Training；T.EE0686＝SWISS INTERNATIONAL AIRLINES Docs & Proc Training；T.X432＝**SWISS LHG Ramp Safety Training**。T.EA03／T.EE0686 按粘貼名單標 Completed（done＝2026-10-01；Name List only）。完成後 Outstanding：T.EA03 **0／0／0**；T.EE0686 **16／8／24**；T.EE0544 **15／8／23**；LM00157 **0／0／0**；T.X432 **243／26／269**（CG／PAX／OCG）。Course List 只喺 browser localStorage，今次只改 Supabase Manual cname。`board_revisions` 已 snapshot。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-09-30 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
