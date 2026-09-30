@@ -226,6 +226,7 @@
       </ul>
       <h3>完成日 → 新 Due</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Training One View · Detail due／remaining 欄：</b>Due-day 兩欄（Overdue／Coming due）同闊 <b>128px</b>；表頭 <b>Overdue or will<br>expire due day</b>（兩行長度相近、唔斷字）。Remaining 兩欄同闊 <b>104px</b>（唔再卡 52px）；表頭短兩行 <b>Overdue<br>remaining</b>／<b>Coming due<br>remaining</b>，字完整。數字格仍一行；唔把 Coming due remaining 併入 overdue due-day。表 min-width 跟新欄闊重算。</li>
         <li style="color:#b00020"><b>新 · Completed by 欄：</b>Completed 名單（legend 下面）喺 <b>Completed</b> 日期後面加 <b>Completed by</b>。Status＝Completed 時寫入當下 hub 登入人（staff #＋Name List 名；Owner 無 staff # 就顯示 Owner - Siu Chung）。舊行冇 actor → 空格，唔補寫。BRS Signed／Seen＝簽收人自己。唔改 Outstanding／唔刪背底。</li>
         <li style="color:#b00020"><b>新 · Completed 名單（預設 7 日、可揀更耐）：</b>Training One View 喺 legend 下面有獨立 <b>Completed</b> 區。預設只列出完成日起 <b>Last 7 days</b>；下拉可揀 Last 30／90／year／All stored。跟 Section／Sources／Search／揀中嘅 Team。背底 Status／completion date／course／staff（同 BRS ack）仍永久保留，唔刪。Outstanding 人數唔計呢批。Detail 掣 <b>Show completed (≤30 days)</b> 仍係舊行為（outstanding 表旁顯示近 30 日完成）。</li>
         <li style="color:#b00020"><b>新 · Completed：畫面約 30 日；背底永久：</b>Training One View <b>顯示</b>只約保留完成日起 30 日（預設隱藏；<b>Show completed (≤30 days)</b>／Hide）。超過約 30 日可離開畫面列表。背底 Status／completion date／course／staff（Supabase <code>hx_private.team_board_actions</code> 等）<b>永久保留</b>；唔好刪、清、或當過期洗走。之後要查「當時情況」仍要搵到。Outstanding 人數唔計呢批顯示列。</li>
@@ -322,6 +323,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.6">v10.6</div>
+  <div class="page-version" data-version="10.7">v10.7</div>
 </body>
 </html>

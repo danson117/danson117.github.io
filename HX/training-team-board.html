@@ -885,26 +885,26 @@
   .detail-table table {
     table-layout: fixed;
     width: 100%;
-    min-width: 770px; /* staff+name+team+crew+course+due(172)+remain(52) */
+    min-width: 778px; /* staff+name+team+crew+course+due(128)+remain(104) */
     max-width: none;
     border-collapse: collapse;
     font-size: 12px;
   }
-  .detail-table table.has-ual-cols { min-width: 1362px; }
-  .detail-table table.has-completed-col { min-width: 910px; }
-  .detail-table table.has-ual-cols.has-completed-col { min-width: 1502px; }
+  .detail-table table.has-ual-cols { min-width: 1258px; }
+  .detail-table table.has-completed-col { min-width: 918px; }
+  .detail-table table.has-ual-cols.has-completed-col { min-width: 1398px; }
   .detail-table col.col-staff { width: 72px; }
   .detail-table col.col-name { width: 120px; }
   .detail-table col.col-team { width: 72px; }
   .detail-table col.col-crew { width: 96px; }
-  /* Long headers are two lines and must fit inside the cell (no overlap). Overdue remaining = 50% of prior 104 → 52. */
+  /* Due-day pair 128px; remaining pair 104px (short 2-line headers, whole words). */
   .detail-table col.col-course { width: 186px; }
-  .detail-table col.col-due { width: 172px; }
-  .detail-table col.col-remain { width: 52px; }
+  .detail-table col.col-due { width: 128px; }
+  .detail-table col.col-remain { width: 104px; }
   .detail-table col.col-emp { width: 88px; }
   .detail-table col.col-soon { width: 160px; }
-  .detail-table col.col-soon-due { width: 172px; }
-  .detail-table col.col-soon-remain { width: 172px; }
+  .detail-table col.col-soon-due { width: 128px; }
+  .detail-table col.col-soon-remain { width: 104px; }
   .detail-table col.col-completed { width: 140px; }
   .detail-table th,
   .detail-table td {
@@ -917,6 +917,8 @@
     white-space: normal;
     line-height: 1.25;
     overflow: hidden;
+    overflow-wrap: normal;
+    word-break: normal;
   }
   .detail-table td.col-staff,
   .detail-table td.col-team,
@@ -1713,7 +1715,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.7" aria-label="Page version 15.7">v15.7</div>
+  <div class="page-version" data-version="15.8" aria-label="Page version 15.8">v15.8</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -5498,7 +5500,7 @@ function paintDetail() {
     showRecentCompleted ? ["has-completed-col"] : []
   ).join(" ");
   const tableShot = "<div id=\"detail-shot\"><table class=\"" + tableCls + "\">" + colgroup + "<thead><tr>" + dth("Staff #", "staff", "col-staff") + dth("Name", "name", "col-name") + dth("Team", "team", "col-team") + dth("Section (Crew)", "crew", "col-crew") +
-    dth("Course code", "overdue", "col-course") + dth("Overdue or will expire<br>due day", "due", "col-due") + dth("Overdue or will expire<br>remaining", "remain", "col-remain") +
+    dth("Course code", "overdue", "col-course") + dth("Overdue or will<br>expire due day", "due", "col-due") + dth("Overdue<br>remaining", "remain", "col-remain") +
     ualColsHead +
     completedCol + "</tr></thead><tbody>" +
     list.map((x) => {

@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **TOV Detail due／remaining 欄闊＋表頭：** Due-day 兩欄同 **128px**（表頭 `Overdue or will` / `expire due day`）；remaining 兩欄同 **104px**（表頭 `Overdue remaining`／`Coming due remaining`，唔再 52px 斷字）。唔併 Coming due remaining 入 overdue due-day。TOV **v15.8**、`hx-rules` **v10.7**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-30 公司電腦
+
 - **TOV Completed by 欄：** Completed 名單（legend 下）喺日期後加 **Completed by**。新設 Status＝Completed 時寫 hub 登入 staff #＋名（Owner 無 # 顯示 Owner - Siu Chung）；舊行冇 actor 留空唔補。BRS＝簽收人。TOV **v15.7**、`hx-rules` **v10.6**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-30 公司電腦
