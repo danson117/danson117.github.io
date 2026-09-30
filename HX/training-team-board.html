@@ -1742,7 +1742,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.13" aria-label="Page version 15.13">v15.13</div>
+  <div class="page-version" data-version="15.14" aria-label="Page version 15.14">v15.14</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -3415,7 +3415,7 @@ function cmpRoster(a, b) {
 function orgOk(group) {
   if (org === "cg") return group === "CG";
   if (org === "pax") return group === "PAX";
-  return true;
+  return group === "CG" || group === "PAX";
 }
 function isLtw(home) {
   return /^LTW[1-4]$/i.test(String(home || "").trim());

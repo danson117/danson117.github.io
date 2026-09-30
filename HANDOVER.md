@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **TOV Section OCG：** Outstanding／Team 板／Completed 只顯示 Name List（CG＋PAX）。唔喺名冊唔上表。TOV **v15.14**、`hx-rules` **v10.14**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-30 公司電腦
+
 - **TOV Copy layout／Download：** Table 出圖時 Staff # 同 Name 拉到全文一行，畫面欄闊不變。TOV **v15.13**、`hx-rules` **v10.13**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-30 公司電腦
