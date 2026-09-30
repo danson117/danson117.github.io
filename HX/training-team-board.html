@@ -1721,7 +1721,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.11" aria-label="Page version 15.11">v15.11</div>
+  <div class="page-version" data-version="15.12" aria-label="Page version 15.12">v15.12</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -8545,8 +8545,8 @@ function personCourseTableHtml(who) {
   const sorted = rows.slice().sort((a, b) => (Number(a.remain) || 0) - (Number(b.remain) || 0) || String(a.code).localeCompare(String(b.code)));
   if (!sorted.length) return "<p class=\"note\">No courses.</p>";
   return "<table class=\"person-course-table\"><colgroup>" +
-    "<col class=\"col-course\"><col class=\"col-brs\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-ref\"><col class=\"col-remark\"><col class=\"col-action\">" +
-    "</colgroup><thead><tr><th>Course</th><th class=\"col-brs\">BRS REF. NO.</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th class=\"col-ref\">Reference</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
+    "<col class=\"col-brs\"><col class=\"col-course\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-ref\"><col class=\"col-remark\"><col class=\"col-action\">" +
+    "</colgroup><thead><tr><th class=\"col-brs\">BRS REF. NO.</th><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th class=\"col-ref\">Reference</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
     sorted.map((r) => {
       const n = remainNum(r.remain);
       const brs = isBrsCourseRow(r);
@@ -8581,8 +8581,8 @@ function personCourseTableHtml(who) {
         "</td>";
       const codeEmpty = !String(r.code || "").trim();
       return "<tr class=\"" + cls + "\">" +
-        "<td" + (codeEmpty ? " class=\"blank\"" : "") + ">" + esc(r.code || "") + flagChip(flagReasons) + "</td>" +
         td(r.brsRef || "", "col-brs") +
+        "<td" + (codeEmpty ? " class=\"blank\"" : "") + ">" + esc(r.code || "") + flagChip(flagReasons) + "</td>" +
         td(displayCourseName(r.code, r.name)) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") +
         srcTd + courseStatusCellHtml(who, r) + refTd + courseRemarkCellHtml(who, r) + actionTd + "</tr>";
     }).join("") + "</tbody></table>";
