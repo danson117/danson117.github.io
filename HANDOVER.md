@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-09-30 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **OCG Name List：** `288531` YAM YIM CHIU Remark **SHOWS LMP**；Name List／Full List 該行黃底。唔改 CG／section。Name List **v3.8**、`ocg-pax-data.js?v=3`、`hx-rules` **v10.17**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
 ## 2026-09-30 公司電腦
 
 - **收工：** OCG Name List UA V number 已在 `main` `fe23f78`（Name List **v3.7**、`hx-rules` **v10.16**、hub page-version 仍 **v17.4**）。冇新 HX 改動要 push。`HX/team-board-actions.json` 本機仍係 2026-09-22，同 GitHub 一樣；Training One View 板面今次冇改，共用資料以 Supabase 為準。家庭頁 Git 顯示 modified，內容同 HEAD 一樣，冇 commit。本機 `OCG_V_Number.xlsx` 唔入 GitHub。唔開 Chrome。

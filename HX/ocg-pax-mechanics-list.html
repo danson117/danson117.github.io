@@ -118,8 +118,8 @@
       <p><b>OCG</b> = CG + PAX (the total). A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = Crew List, including FLS and RF. <b>CG</b> = Name List, not on Crew List. <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC). <b>Office</b> = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
     </div>
   </div>
-  <div class="page-version" data-version="3.7">v3.7</div>
-<script src="ocg-pax-data.js?v=2"></script>
+  <div class="page-version" data-version="3.8">v3.8</div>
+<script src="ocg-pax-data.js?v=3"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script>
 hxUnpackRoster();
@@ -367,6 +367,7 @@ function sorted(list){
   });
 }
 function rowClass(r){
+  if (r.note === "SHOWS LMP") return "warn";
   if (tab !== "full") return "";
   if (r.match === "Master only") return "hot";
   return "";
