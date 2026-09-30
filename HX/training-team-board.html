@@ -1010,19 +1010,25 @@
     table-layout: fixed;
     border-collapse: collapse;
   }
-  .person-course-table col.col-course { width: 9%; }
-  .person-course-table col.col-cname { width: 18%; }
+  .person-course-table col.col-course { width: 8%; }
+  .person-course-table col.col-brs { width: 12%; }
+  .person-course-table col.col-cname { width: 14%; }
   .person-course-table col.col-due { width: 10%; }
-  .person-course-table col.col-remain { width: 9%; }
-  .person-course-table col.col-src { width: 10%; }
+  .person-course-table col.col-remain { width: 8%; }
+  .person-course-table col.col-src { width: 9%; }
   .person-course-table col.col-status { width: 12%; }
-  .person-course-table col.col-ref { width: 9%; min-width: 6.5em; }
-  .person-course-table col.col-remark { width: 15%; }
-  .person-course-table col.col-action { width: 8%; }
+  .person-course-table col.col-ref { width: 8%; min-width: 6.5em; }
+  .person-course-table col.col-remark { width: 12%; }
+  .person-course-table col.col-action { width: 7%; }
   .person-course-table th,
   .person-course-table td {
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+  .person-course-table td.col-brs {
+    overflow-wrap: normal;
+    word-break: normal;
+    white-space: nowrap;
   }
   .person-course-table th.col-ref,
   .person-course-table td.col-ref {
@@ -1715,7 +1721,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.10" aria-label="Page version 15.10">v15.10</div>
+  <div class="page-version" data-version="15.11" aria-label="Page version 15.11">v15.11</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -4527,7 +4533,7 @@ function personIdentityMatch(who, needle) {
 function courseRowMatch(row, needle) {
   if (!row || !needle) return !needle;
   return hayHas(needle, [
-    row.code, row.name, displayCourseName(row.code, row.name),
+    row.code, row.brsRef, row.name, displayCourseName(row.code, row.name),
     row.due, fmtDueDate(row.due), row.remain, remainText(row.remain),
     row.src, row.kind, srcLabel(row)
   ]);
@@ -4537,7 +4543,7 @@ function personRowMatch(p, item, needle) {
   return hayHas(needle, [
     p.staff, p.name, p.team, teamLabel(p.team, p.home),
     p.home, p.shift, p.crew, crewOf(p), p.section, p.area, p.emp,
-    p.code, p.cname, displayCourseName(p.code, p.cname),
+    p.code, p.brsRef, p.cname, displayCourseName(p.code, p.cname),
     p.due, fmtDueDate(p.due), p.remain, remainText(p.remain), p.extra, p.kind,
     item && item.src, item && item.key, item && item.title,
     srcLabel(p)
@@ -4979,8 +4985,66 @@ function brsToday() {
   const p = (n) => String(n).padStart(2, "0");
   return p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear();
 }
+function considerCourseDue(prev, code, due) {
+  const d = String(due || "").trim();
+  const stamp = d ? dueStamp(d) : 0;
+  if (!prev) return { code: code, due: d, stamp: stamp };
+  if (stamp && (!prev.stamp || stamp < prev.stamp)) return { code: code || prev.code, due: d, stamp: stamp };
+  if (!prev.due && d) return { code: prev.code || code, due: d, stamp: stamp || prev.stamp };
+  if (!prev.code && code) prev.code = code;
+  return prev;
+}
+function staffCourseLookup() {
+  const byName = new Map();
+  const byCode = new Map();
+  const add = (staff, code, name, due) => {
+    const who = padStaff(staff);
+    const c = String(code || "").trim();
+    if (!who || !c || /^BRS/i.test(c)) return;
+    const ck = who + "\n" + normCode(c);
+    byCode.set(ck, considerCourseDue(byCode.get(ck), c, due));
+    [name, displayCourseName(c, name)].forEach((n) => {
+      const key = normCourseName(n);
+      if (!key || key === normCode(c)) return;
+      const nk = who + "\n" + key;
+      byName.set(nk, considerCourseDue(byName.get(nk), c, due));
+    });
+  };
+  manualRows.forEach((r) => add(r.staff, r.code, r.cname, r.exp));
+  ctRows.forEach((r) => add(r.uid || r.staff, r.code, r.cname, r.exp));
+  omtRows.forEach((r) => add(r.uid || r.staff, r.code, r.cname, r.exp));
+  ualRows.forEach((r) => add(r.staff, r.code, r.cname, r.due));
+  return { byName: byName, byCode: byCode };
+}
+function catalogNameIndex() {
+  const map = new Map();
+  const put = (name, code) => {
+    const key = normCourseName(name);
+    const c = String(code || "").trim();
+    if (!key || !c || /^BRS/i.test(c)) return;
+    if (!map.has(key)) map.set(key, c);
+    else if (normCode(map.get(key)) !== normCode(c)) map.set(key, "");
+  };
+  loadCatalogRows().forEach((r) => {
+    put(r.name, r.code);
+    put(displayCourseName(r.code, r.name), r.code);
+  });
+  return map;
+}
+function linkedCourseForPerson(staff, title, lookup, catNames) {
+  const who = padStaff(staff);
+  const want = normCourseName(title);
+  const named = want ? lookup.byName.get(who + "\n" + want) : null;
+  if (named && named.code) return { code: named.code, due: named.due || "" };
+  const cat = want ? String(catNames.get(want) || "").trim() : "";
+  if (!cat) return { code: "", due: "" };
+  const row = lookup.byCode.get(who + "\n" + normCode(cat));
+  return { code: cat, due: (row && row.due) || "" };
+}
 function brsItems() {
   const list = [];
+  const lookup = staffCourseLookup();
+  const catNames = catalogNameIndex();
   readBrsDoc().items.forEach((it) => {
     if (it && it.draft) return;
     const open = (it.people || []).filter((p) => p && !p.ack);
@@ -4993,17 +5057,17 @@ function brsItems() {
     if (!open.length && !recentDone.length) return;
     const code = String(it.code || "").trim();
     const title = String(it.title || "").trim() || (it.type === "read-sign" ? "Read & Sign" : "Briefing");
-    const courseCode = code || title;
     const courseName = code ? title : (it.type === "read-sign" ? "Read & Sign" : "Briefing");
     const src = it.type === "read-sign" ? "rs" : "brief";
-    const due = String(it.dueDate || "").trim();
-    const remain = due ? remainFromDue(due) : "";
-    const remainN = remainNum(remain);
-    const hotByDue = remainBand(remainN) === "hot";
+    const itemDue = String(it.dueDate || "").trim();
     const people = [];
     const pushPerson = (p, hot) => {
       const who = personOf(p.staff, p.name);
       if (!orgOk(who.group) || !roleOk(who.home)) return;
+      const linked = linkedCourseForPerson(who.staff, title, lookup, catNames);
+      const courseCode = linked.code || code || title;
+      const due = linked.due || itemDue;
+      const remain = due ? remainFromDue(due) : "";
       people.push({
         staff: who.staff,
         name: who.name || p.name || "",
@@ -5014,12 +5078,13 @@ function brsItems() {
         shift: who.shift || "",
         crew: crewOf(who),
         code: courseCode,
+        brsRef: code,
         due: due,
         remain: remain,
         cname: courseName,
         kind: src,
         brsId: it.id,
-        hot: !!hot || hotByDue
+        hot: !!hot || remainBand(remainNum(remain)) === "hot"
       });
     };
     open.forEach((p) => pushPerson(p, true));
@@ -5455,6 +5520,7 @@ function peopleBundle(pairs) {
     const rawName = p.cname && p.cname !== course ? p.cname : "";
     const row = {
       code: course,
+      brsRef: p.brsRef || "",
       name: displayCourseName(course, rawName) || rawName || course,
       due: p.due || "",
       remain: p.remain,
@@ -8479,8 +8545,8 @@ function personCourseTableHtml(who) {
   const sorted = rows.slice().sort((a, b) => (Number(a.remain) || 0) - (Number(b.remain) || 0) || String(a.code).localeCompare(String(b.code)));
   if (!sorted.length) return "<p class=\"note\">No courses.</p>";
   return "<table class=\"person-course-table\"><colgroup>" +
-    "<col class=\"col-course\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-ref\"><col class=\"col-remark\"><col class=\"col-action\">" +
-    "</colgroup><thead><tr><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th class=\"col-ref\">Reference</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
+    "<col class=\"col-course\"><col class=\"col-brs\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-ref\"><col class=\"col-remark\"><col class=\"col-action\">" +
+    "</colgroup><thead><tr><th>Course</th><th class=\"col-brs\">BRS REF. NO.</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th class=\"col-ref\">Reference</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
     sorted.map((r) => {
       const n = remainNum(r.remain);
       const brs = isBrsCourseRow(r);
@@ -8516,6 +8582,7 @@ function personCourseTableHtml(who) {
       const codeEmpty = !String(r.code || "").trim();
       return "<tr class=\"" + cls + "\">" +
         "<td" + (codeEmpty ? " class=\"blank\"" : "") + ">" + esc(r.code || "") + flagChip(flagReasons) + "</td>" +
+        td(r.brsRef || "", "col-brs") +
         td(displayCourseName(r.code, r.name)) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") +
         srcTd + courseStatusCellHtml(who, r) + refTd + courseRemarkCellHtml(who, r) + actionTd + "</tr>";
     }).join("") + "</tbody></table>";

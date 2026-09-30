@@ -14,6 +14,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **TOV BRS 行 Course／BRS REF. NO.／Due：** 人課程表加欄 **BRS REF. NO.**（BRS 號）。**Course** 顯示同名課程碼（例 eTechLog → LM00183），唔再把 BRS 號放喺 Course。Due day／Remaining 抄該人同名課程到期日；搵唔到先用 BRS 自己嘅 due。冇同名課程就 Course 仍顯示 BRS 號。唔改 BRS 存檔。TOV **v15.11**、`hx-rules` **v10.11**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。
+
+## 2026-09-30 公司電腦
+
 - **Course List 欄闊跟內容：** 每欄闊到格內全文一行睇得晒（Name／Description 唔截斷）；字少嘅欄（Code／Issued By／Type／Interval）收到內容同表頭。總闊超過畫面就表內橫向捲。Course List **v1.8**、`hx-rules` **v10.10**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。
 
 ## 2026-09-30 公司電腦

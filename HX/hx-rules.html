@@ -240,7 +240,8 @@
       <h3>上載同顯示</h3>
       <ul>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · duplicate BRS Ref. No. while typing：</b>Create／edit 嘅 <b>BRS Ref. No.</b> 欄，打字即刻檢查：號已存在（已確認 item 或另一個 draft）→ 欄旁英文短警告 <b>That number is already used.</b>；即刻 block <b>Create BRS</b>（同 Save Draft 唔寫入重複號）；唔等按 Create／confirm。Create New 自動號＝下一個未用號（唔預填已用號）。Draft 號撞已確認 → 清走 draft 嗰個號、唔覆寫已確認 item。Create 成功（自由號）後關 new-item editor（其他 dirty 關閉規則不變）。</li>
-        <li style="color:#b00020"><b>新 · Briefing and R&amp;S · BRS Ref. No.／Course name 標籤：</b>Create／edit（同 list／Admin）可見標籤：原 <b>Item number</b>／後改 <b>BRS Number</b> → <b>BRS Ref. No.</b>；原 <b>Title</b> → <b>Course name</b>。存檔欄不變（仍係 <code>code</code>／<code>title</code>）；編號規則仍係 <code>BRS</code>＋年月＋兩位。Training One View 共用欄頭仍叫 <b>Course code</b>（唔改成 BRS Ref. No.）；BRS 行格內仍顯示 BRS 號同 course name。唔改 Add link 次序、Due Date YYYY-MM-DD。</li>
+        <li style="color:#b00020"><b>新 · Training One View · BRS 行 Course／BRS REF. NO.／Due：</b>人課程表加欄 <b>BRS REF. NO.</b>（BRS 號，例 <code>BRS20260902</code>）。<b>Course</b> 顯示同名課程碼（例 EK Emirates eTechLog Training → <code>LM00183</code>），唔再把 BRS 號放喺 Course。Due day／Remaining 抄該人同名課程（Manual／CT／Mandatory／UAL）嘅到期日；BRS 自己有 due 而搵唔到個人課程日時先用 BRS due。冇同名課程就 Course 仍顯示 BRS 號。主表欄頭仍叫 <b>Course code</b>。唔改 BRS 存檔欄（仍係 <code>code</code>／<code>title</code>／<code>dueDate</code>）。</li>
+        <li style="color:#b00020"><b>新 · Briefing and R&amp;S · BRS Ref. No.／Course name 標籤：</b>Create／edit（同 list／Admin）可見標籤：原 <b>Item number</b>／後改 <b>BRS Number</b> → <b>BRS Ref. No.</b>；原 <b>Title</b> → <b>Course name</b>。存檔欄不變（仍係 <code>code</code>／<code>title</code>）；編號規則仍係 <code>BRS</code>＋年月＋兩位。人課程表 Course／BRS REF. NO. 見上面新規則。唔改 Add link 次序、Due Date YYYY-MM-DD。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · Due Date 跟 TOV：</b>Create／edit <b>Due Date</b> 同 Training One View Add course：文字欄、placeholder <b>YYYY-MM-DD</b>、打數字自動插入連字號、可空；存 <code>dueDate</code> 仍係 YYYY-MM-DD。唔用 native <code>type=date</code>（唔 locale 斜槓、唔 focus scroll）。唔改 TOV。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S editor · Add link 在上：</b>Create／edit 材料區：<b>Add a link</b>（輸入＋綠色 <b>Add link</b>）喺 <b>Materials</b> 列表上面。行為不變（只 Add link、唔 drop 檔；列表仍可 drag 改次序）。英文標籤／掣名唔改。</li>
         <li style="color:#b00020"><b>新 · Training One View · 揀 Team／Other 頭：</b>Team 1–4／Other 表頭揀中時用亮青綠底 <code>#00a8ad</code>＋白字；未揀保持深青綠 <code>#015260</code>。暫時唔用紅外框標選中 Team／Other（其他 narrowing 控件紅框保留）。</li>
@@ -326,6 +327,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.10">v10.10</div>
+  <div class="page-version" data-version="10.11">v10.11</div>
 </body>
 </html>
