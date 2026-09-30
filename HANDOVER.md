@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **Course List 欄闊跟內容：** 每欄闊到格內全文一行睇得晒（Name／Description 唔截斷）；字少嘅欄（Code／Issued By／Type／Interval）收到內容同表頭。總闊超過畫面就表內橫向捲。Course List **v1.8**、`hx-rules` **v10.10**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。
+
+## 2026-09-30 公司電腦
+
 - **EK Authorization Competency Matrix：** 新頁 `HX/ek-authorization-competency-matrix.html` **v1.0**。底表能力項加 Source／Mandatory by，GOM 只係另名嘅併入 EK GOM name，GOM 先有嘅要求另開 EK add 行（DG、SMS、safety reporting、recurrent programme、training records）。FOD 留喺原行。`links.html` 有連結。未入 hub。GitHub 後備。本機 Chrome 開 file URL。
 
 ## 2026-09-30 公司電腦
