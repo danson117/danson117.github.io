@@ -1715,7 +1715,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.8" aria-label="Page version 15.8">v15.8</div>
+  <div class="page-version" data-version="15.9" aria-label="Page version 15.9">v15.9</div>
 <script src="ocg-pax-data.js?v=1"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -4207,6 +4207,56 @@ function ctKindLabel(kind) {
   if (kind === "dueSoon") return "due soon";
   return "CT file";
 }
+/** Strip download counter before .csv: " 12", " (12)", "(12)". Does not strip "(overdue)". */
+function ctFileLogicalKey(name) {
+  let s = String(name || "").trim();
+  s = s.replace(/\.csv$/i, "");
+  s = s.replace(/(?:\s*\(\d+\)|\s+\d+)\s*$/i, "");
+  return s.replace(/\s+/g, " ").trim().toLowerCase();
+}
+function ctFileSlotKey(name, kind) {
+  const k = kind || ctKindOf(name);
+  return ctFileLogicalKey(name) + "|" + String(k || "other");
+}
+function ctUploadedAtMs(at) {
+  const t = Date.parse(String(at || ""));
+  return Number.isFinite(t) ? t : 0;
+}
+function findCtFileSlotIndex(name, kind) {
+  const want = ctFileSlotKey(name, kind || ctKindOf(name));
+  return ctFiles.findIndex((f) => f && ctFileSlotKey(f.name, f.kind) === want);
+}
+/** Incoming replaces only when newer (or existing has no uploadedAt). Equal/older → keep existing. */
+function ctIncomingIsNewer(prev, incoming) {
+  if (!prev) return true;
+  const pt = ctUploadedAtMs(prev && prev.uploadedAt);
+  const it = ctUploadedAtMs(incoming && incoming.uploadedAt);
+  if (it && pt) return it > pt;
+  if (it && !pt) return true;
+  if (!it && pt) return false;
+  return false;
+}
+/** One slot per logical name + kind; keep newest uploadedAt. Overdue vs due-soon stay separate. */
+function collapseCtFilesBySlot() {
+  const best = new Map();
+  (ctFiles || []).forEach((f) => {
+    if (!f || !(f.rows || []).length) return;
+    const key = ctFileSlotKey(f.name, f.kind);
+    const prev = best.get(key);
+    if (!prev || ctIncomingIsNewer(prev, f)) best.set(key, f);
+  });
+  const next = Array.from(best.values());
+  next.sort((a, b) => {
+    const order = { overdue: 0, dueSoon: 1, other: 2 };
+    const ka = order[a.kind] != null ? order[a.kind] : 9;
+    const kb = order[b.kind] != null ? order[b.kind] : 9;
+    if (ka !== kb) return ka - kb;
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
+  const changed = next.length !== ctFiles.length || next.some((f, i) => f !== ctFiles[i]);
+  ctFiles = next;
+  return changed;
+}
 function flattenCt() {
   ctRows = [];
   ctFiles.forEach((f) => {
@@ -5978,6 +6028,7 @@ function applyServerIngest(data, opts) {
     if (plan.takeRemote.ct && Object.prototype.hasOwnProperty.call(data, "ctFiles")) {
       const list = Array.isArray(data.ctFiles) ? data.ctFiles : [];
       ctFiles = list.map(mapCtFile).filter((f) => f.rows.length);
+      collapseCtFilesBySlot();
       flattenCt();
       if (ctFiles.length) persistCtFiles();
       else {
@@ -6807,7 +6858,8 @@ function applyUalSnap(snap) {
 function applyCtFileSnap(mode, snap) {
   if (!snap || !snap.name) return false;
   if (mode === "remove") {
-    ctFiles = ctFiles.filter((f) => !(f.name === snap.name && (!snap.kind || f.kind === snap.kind)));
+    const slot = ctFileSlotKey(snap.name, snap.kind || ctKindOf(snap.name));
+    ctFiles = ctFiles.filter((f) => ctFileSlotKey(f.name, f.kind) !== slot);
   } else if (mode === "set") {
     const rec = {
       name: snap.name,
@@ -6815,9 +6867,17 @@ function applyCtFileSnap(mode, snap) {
       rows: (snap.rows || []).map((r) => normCtRow(r, snap.kind || ctKindOf(snap.name), snap.name)).filter((r) => r.uid),
       uploadedAt: snap.uploadedAt || ""
     };
-    const i = ctFiles.findIndex((f) => f.name === rec.name);
-    if (i >= 0) ctFiles[i] = rec;
-    else ctFiles.push(rec);
+    const i = findCtFileSlotIndex(rec.name, rec.kind);
+    if (i >= 0) {
+      if (!ctIncomingIsNewer(ctFiles[i], rec) && ctUploadedAtMs(ctFiles[i].uploadedAt)) {
+        /* keep newer stored copy */
+      } else {
+        ctFiles[i] = rec;
+      }
+    } else {
+      ctFiles.push(rec);
+    }
+    collapseCtFilesBySlot();
   } else return false;
   flattenCt();
   persistCtFiles({ clear: true });
@@ -8944,12 +9004,17 @@ function cloneCtFileRec(f) {
 function addCtFile(name, rows, kind) {
   if (!requirePerm("ingest")) return;
   kind = kind || ctKindOf(name);
-  const prev = ctFiles.find((f) => f.name === name);
+  const i = findCtFileSlotIndex(name, kind);
+  const prev = i >= 0 ? ctFiles[i] : null;
   const prevClone = cloneCtFileRec(prev);
   const rec = { name, kind, rows: (rows || []).map((r) => normCtRow(r, kind, name)).filter((r) => r.uid), uploadedAt: nowIso() };
-  const i = ctFiles.findIndex((f) => f.name === name);
+  if (prev && !ctIncomingIsNewer(prev, rec)) {
+    paintCtFiles();
+    return Promise.resolve();
+  }
   if (i >= 0) ctFiles[i] = rec;
   else ctFiles.push(rec);
+  collapseCtFilesBySlot();
   flattenCt();
   persistCtFiles();
   const nextClone = cloneCtFileRec(rec);
@@ -9895,9 +9960,14 @@ function addCtFromRows(name, rows, kind, uploadedAt) {
   if (!Array.isArray(rows) || !rows.length) return;
   const rec = mapCtFile({ name: name || "Saved CSV", kind: kind || ctKindOf(name), rows: rows, uploadedAt: uploadedAt || "" });
   if (!rec.rows.length) return;
-  const i = ctFiles.findIndex((f) => f.name === rec.name && f.kind === rec.kind);
-  if (i >= 0) ctFiles[i] = rec;
-  else ctFiles.push(rec);
+  const i = findCtFileSlotIndex(rec.name, rec.kind);
+  if (i >= 0) {
+    if (!ctIncomingIsNewer(ctFiles[i], rec) && ctUploadedAtMs(ctFiles[i].uploadedAt)) return;
+    ctFiles[i] = rec;
+  } else {
+    ctFiles.push(rec);
+  }
+  collapseCtFilesBySlot();
 }
 function restoreUi() {
   const savedDefault = loadSavedFilterDefault();
@@ -9949,7 +10019,9 @@ function restoreCt() {
   const primary = peekJson(CT_FILES);
   if (primary.found && Array.isArray(primary.value) && primary.value.length) {
     ctFiles = primary.value.map(mapCtFile).filter((f) => f.rows.length);
+    const collapsed = collapseCtFilesBySlot();
     flattenCt();
+    if (collapsed) persistCtFiles();
     paintCtFiles();
     return;
   }
@@ -9957,7 +10029,9 @@ function restoreCt() {
   if (Array.isArray(alias.value) && alias.value.length) {
     if (alias.value[0] && alias.value[0].rows) ctFiles = alias.value.map(mapCtFile).filter((f) => f.rows.length);
     else addCtFromRows(firstFilled(CT_NAME_KEYS) || "Saved CSV", alias.value);
+    const collapsed = collapseCtFilesBySlot();
     flattenCt();
+    if (collapsed) persistCtFiles();
     paintCtFiles();
     return;
   }
@@ -9982,7 +10056,9 @@ function restoreCt() {
       addCtFromRows(k.replace(/^.*:/, "") + ".csv", got.value, ctKindOf(k));
     }
   });
+  const collapsed = collapseCtFilesBySlot();
   flattenCt();
+  if (collapsed) persistCtFiles();
   paintCtFiles();
 }
 function restoreOmt() {

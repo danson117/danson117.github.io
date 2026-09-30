@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-09-30 公司電腦
 
+- **CT Reminder 尾數唔當新檔：** `.csv` 前 ` 11`／` 12`／`(12)` 等 download 計數忽略；同一 logical 名＋kind（overdue／due-soon）同一槽；最新＝`uploadedAt`。已存 11+12 收成較新嗰份。TOV **v15.9**、`hx-rules` **v10.8**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-09-30 公司電腦
+
 - **TOV Detail due／remaining 欄闊＋表頭：** Due-day 兩欄同 **128px**（表頭 `Overdue or will` / `expire due day`）；remaining 兩欄同 **104px**（表頭 `Overdue remaining`／`Coming due remaining`，唔再 52px 斷字）。唔併 Coming due remaining 入 overdue due-day。TOV **v15.8**、`hx-rules` **v10.7**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-09-30 公司電腦
