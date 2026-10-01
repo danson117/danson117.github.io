@@ -830,7 +830,7 @@
   .completed-archive {
     border: 1px solid var(--line);
     background: var(--card);
-    margin: 0 0 12px;
+    margin: 16px 0 12px;
     padding: 10px 12px 12px;
   }
   .completed-archive-head {
@@ -1519,22 +1519,6 @@
       <span class="flag-ov" title="Override">OV</span> override: flagged person / course
       <span>Click Other / Team 1–4 for that team’s outstanding names</span>
     </div>
-    <section id="completed-archive" class="completed-archive" aria-label="Completed">
-      <div class="completed-archive-head">
-        <h2>Completed</h2>
-        <label for="completed-window">Show</label>
-        <select id="completed-window" aria-label="Completed date range">
-          <option value="7">Last 7 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="90">Last 90 days</option>
-          <option value="365">Last year</option>
-          <option value="all">All stored</option>
-        </select>
-        <span id="completed-count"></span>
-      </div>
-      <p class="note">Default is the last 7 days. Pick a longer range to see older completions. This list follows Section, Sources, Search, and the team you picked. Stored records stay either way.</p>
-      <div id="completed-body"></div>
-    </section>
     <div class="search-bar">
       <label for="q">Search</label>
       <div class="typeahead-wrap">
@@ -1557,6 +1541,22 @@
       </table>
     </div>
     <div id="detail" class="detail hidden"></div>
+    <section id="completed-archive" class="completed-archive" aria-label="Completed">
+      <div class="completed-archive-head">
+        <h2>Completed</h2>
+        <label for="completed-window">Show</label>
+        <select id="completed-window" aria-label="Completed date range">
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="365">Last year</option>
+          <option value="all">All stored</option>
+        </select>
+        <span id="completed-count"></span>
+      </div>
+      <p class="note">Default is the last 7 days. Pick a longer range to see older completions. This list follows Section, Sources, Search, and the team you picked. Stored records stay either way.</p>
+      <div id="completed-body"></div>
+    </section>
   </div>
   <div id="course-pop" class="pop hidden" hidden>
     <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="course-pop-title">
@@ -1742,7 +1742,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.15" aria-label="Page version 15.15">v15.15</div>
+  <div class="page-version" data-version="15.16" aria-label="Page version 15.16">v15.16</div>
 <script src="ocg-pax-data.js?v=2"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>

@@ -10,6 +10,11 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Completed 區放低：** Completed 名單（標題、Show、筆數、提示、表）移到 outstanding board／detail **下面**。預設仍 Last 7 days。TOV **v15.16**、`hx-rules` **v10.18**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+- **T.B275 Mechanics outstanding 收起：** 可見 Outstanding 只留 Certifiers **6／1／7** 同 Other **5／0／5**（CG／PAX／OCG；合計 **12**）。Mechanics outstanding **200／87／287** 唔再喺 `payload.manual`；還原位＝`hx_private.team_board_actions.payload.status` 鍵 `__hx_shared__/manual-hold-tb275` 嘅 `rows`（下一輪 TOV save 唔會清，因為頁面唔打包 `__hx_shared__/`，而 `hx_team_board_put` 合併 status 唔會丟未知鍵）。Completed **173** 留喺 manual。課程名寫入可見行。`board_revisions` 已 snapshot manual／status（status 經 `board_strip_shared`，archive 唔喺 revision）。Excel `C:\Cursor_Work\HX-outstanding-by-course.xlsx`（唔入 Git）去掉 Mechanics 行，Held 表留人數。唔寫職員明細。
+
+## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Outstanding 對齊＋角色分拆：** Live Manual／status 確認喺 `hx_private.team_board_actions`（Edge `team-board` lite），五個 cname 同 Completed stamp 已喺呢個 payload；TOV refresh 就見。LM00157／T.EA03 Outstanding **0**（Completions 保留）。Outstanding 報告只留 **T.EE0544／T.EE0686／T.X432**，按 Name List roleOf 分 Certifiers／Mechanics：T.EE0544 Certifiers **15／8／23**；T.EE0686 Certifiers **16／8／24**；T.X432 Mechanics **243／26／269**（CG／PAX／OCG；due `2026-09-25`）。Excel 本機 `C:\Cursor_Work\HX-outstanding-by-course.xlsx`（唔入 Git）。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
