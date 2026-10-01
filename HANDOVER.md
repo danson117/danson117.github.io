@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Outstanding course 暫時收起：** Detail 標題旁每個符合而家 filter 嘅 outstanding course 一個掣。預設全顯示；撳一下今次開頁收起該 course（淨係得嗰科嘅人離開列表；due／remaining 跟仲顯示嘅科）。唔寫 Save as default，refresh 恢復。Table 同 Details 都跟。TOV **v15.17**、`hx-rules` **v10.19**；hub page-version 仍 **v17.4**。GitHub 後備 → Vercel。唔開 Chrome。唔改訓練資料。
+
+## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Manual T.C659（OCG Mechanics）：** 課程名 Basic Refuelling Procedures（catalog 無另一個名）。Mechanics **340**（CG 244／PAX 96）。Completed **164**（CG 110／PAX 54，done＝2026-10-01）。Outstanding **176**（CG 134／PAX 42，due `2026-09-25`），全部 Mechanics。Certifiers 同唔喺 Name List 唔入。其他 Manual 保留（T.X432 名仍係 SWISS LHG Ramp Safety Training；LM00157／T.EA03 Outstanding 0；T.EE0544 Outstanding 23；T.EE0686 Outstanding 24；T.X432 Outstanding 269）。`board_revisions` 已 snapshot manual／status。Excel `C:\Cursor_Work\HX-outstanding-by-course.xlsx`（唔入 Git）加咗 T.C659 Outstanding，並保留 T.EE0544／T.EE0686／T.X432／T.B275。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

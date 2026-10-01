@@ -872,6 +872,28 @@
     margin: 0 0 8px;
   }
   .detail-head h3 { margin: 0; font-size: 14px; color: var(--navy); }
+  .detail-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .course-hide-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .course-hide-bar button {
+    font-size: 12px;
+    padding: 2px 8px;
+  }
+  .course-hide-bar button:not(.on) {
+    text-decoration: line-through;
+    opacity: 0.55;
+  }
   .detail-head .toolbar { margin: 0; }
   .detail table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .detail th, .detail td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; }
@@ -1742,7 +1764,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.16" aria-label="Page version 15.16">v15.16</div>
+  <div class="page-version" data-version="15.17" aria-label="Page version 15.17">v15.17</div>
 <script src="ocg-pax-data.js?v=2"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -1894,6 +1916,7 @@ let detailPeople = [];
 let listView = "table";
 let boardOpen = false;
 let showRecentCompleted = false;
+let hiddenCourseCodes = new Set();
 let completedWindow = COMPLETED_WINDOW_DEFAULT;
 let courseStatus = {};
 let manualAuthPick = null;
@@ -4590,13 +4613,7 @@ function bundledPersonMatch(who, needle) {
   if ((who.courses || []).some((c) => hayHas(needle, [c]))) return true;
   return personCourseRows(who).some((r) => courseRowMatch(r, needle));
 }
-function applyQueryToPerson(who, needleOrTerms) {
-  const terms = Array.isArray(needleOrTerms)
-    ? needleOrTerms.filter(Boolean)
-    : (needleOrTerms ? [needleOrTerms] : []);
-  if (!terms.length || terms.some((n) => personIdentityMatch(who, n))) return who;
-  const rows = personCourseRows(who).filter((r) => terms.some((n) => courseRowMatch(r, n)));
-  if (!rows.length) return null;
+function personWithRows(who, rows) {
   const overdueRows = [];
   const soonRows = [];
   const overdueCourses = [];
@@ -4660,6 +4677,49 @@ function applyQueryToPerson(who, needleOrTerms) {
   });
   next.status = statusOf(next);
   return next;
+}
+function applyQueryToPerson(who, needleOrTerms) {
+  const terms = Array.isArray(needleOrTerms)
+    ? needleOrTerms.filter(Boolean)
+    : (needleOrTerms ? [needleOrTerms] : []);
+  if (!terms.length || terms.some((n) => personIdentityMatch(who, n))) return who;
+  const rows = personCourseRows(who).filter((r) => terms.some((n) => courseRowMatch(r, n)));
+  if (!rows.length) return null;
+  return personWithRows(who, rows);
+}
+function hideCourseKey(code) {
+  return String(code || "").trim().toUpperCase();
+}
+function collectOutstandingCourseCodes(people) {
+  const seen = new Map();
+  (people || []).forEach((who) => {
+    (who.overdueCourses || []).concat(who.soonCourses || []).forEach((c) => {
+      const raw = String(c || "").trim();
+      if (!raw) return;
+      const key = hideCourseKey(raw);
+      if (!seen.has(key)) seen.set(key, raw);
+    });
+  });
+  return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1], undefined, { numeric: true, sensitivity: "base" }));
+}
+function personOmitHiddenCourses(who) {
+  if (!who || !hiddenCourseCodes.size) return who;
+  const all = personCourseRows(who);
+  const rows = all.filter((r) => !hiddenCourseCodes.has(hideCourseKey(r.code)));
+  if (rows.length === all.length) return who;
+  if (!rows.length) return null;
+  return personWithRows(who, rows);
+}
+function courseHideBarHtml(codes) {
+  if (!codes || !codes.length) return "";
+  return "<div class=\"course-hide-bar\" role=\"group\" aria-label=\"Outstanding courses\">" +
+    codes.map(([key, label]) => {
+      const shown = !hiddenCourseCodes.has(key);
+      return "<button type=\"button\" data-hide-course=\"" + esc(key) + "\"" +
+        (shown ? " class=\"on\" aria-pressed=\"true\"" : " aria-pressed=\"false\"") +
+        " title=\"" + (shown ? "Shown. Click to hide this course for now." : "Hidden for now. Click to show this course.") + "\">" +
+        esc(label) + "</button>";
+    }).join("") + "</div>";
 }
 function readBrsDoc() {
   try {
@@ -5639,11 +5699,13 @@ function paintDetail() {
     });
   });
   const terms = queryNeedles();
-  const list = peopleBundle(pairs).map((who) => {
+  const matched = peopleBundle(pairs).map((who) => {
     if (!terms.length) return who;
     if (!terms.some((s) => bundledPersonMatch(who, s))) return null;
     return applyQueryToPerson(who, terms);
   }).filter(Boolean);
+  const courseChoices = collectOutstandingCourseCodes(matched);
+  const list = matched.map((who) => personOmitHiddenCourses(who)).filter(Boolean);
   detailPeople = list;
   const val = (x, key) => {
     if (key === "src") return x.srcs.join("+");
@@ -5774,9 +5836,10 @@ function paintDetail() {
   const emptyNote = showRecentCompleted
     ? "<p class=\"note\">No outstanding or recent completed names.</p>"
     : "<p class=\"note\">No outstanding names.</p>";
-  box.innerHTML = "<div class=\"detail-head\"><h3>" + esc(label) + " · " + list.length + " people" +
+  box.innerHTML = "<div class=\"detail-head\"><div class=\"detail-title-row\"><h3>" + esc(label) + " · " + list.length + " people" +
     (showRecentCompleted && completedN ? " · " + completedN + " completed-only" : "") +
     " · roster " + rosterN + "</h3>" +
+    courseHideBarHtml(courseChoices) + "</div>" +
     "<div class=\"toolbar\"><div class=\"view-toggle\">" + viewBtns + "</div>" + roleBtns + completedBtn + layoutActionBtns("detail-copy", "detail-download") + "</div>" +
     colorLegend + "</div>" +
     (list.length ? (listView === "cards" ? cardsShot : tableShot) : emptyNote);
@@ -9331,6 +9394,14 @@ document.getElementById("detail").addEventListener("click", (e) => {
     paint();
     return;
   }
+  const hideCourse = e.target.closest("[data-hide-course]");
+  if (hideCourse) {
+    const key = hideCourse.getAttribute("data-hide-course");
+    if (hiddenCourseCodes.has(key)) hiddenCourseCodes.delete(key);
+    else hiddenCourseCodes.add(key);
+    paint();
+    return;
+  }
   const b = e.target.closest("[data-role]");
   if (!b) return;
   role = b.dataset.role;
@@ -9400,7 +9471,7 @@ document.getElementById("detail").addEventListener("click", (e) => {
     downloadDetailImage(dl);
     return;
   }
-  if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]") || e.target.closest("[data-show-completed]")) return;
+  if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]") || e.target.closest("[data-show-completed]") || e.target.closest("[data-hide-course]")) return;
   const brsBtn = e.target.closest("[data-brs-open]");
   if (brsBtn) {
     e.preventDefault();
