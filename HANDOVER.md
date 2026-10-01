@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Export XLSX：** Outstanding 工具列加英文掣 **Export XLSX**。下載而家篩選後嘅表（一行一個人；欄跟畫面；UAL／Show completed 跟開住先出）。唔改訓練資料。TOV **v15.18**、`hx-rules` **v10.20**；hub page-version 仍 **v17.4**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Manual T.B275 只限有 Authorization 嘅 Certifier：** Name List Certifiers 有任何 Authorization 嘅 **110** 人全部已 Completed。可見 Outstanding **0**。之前可見嘅 12 人（Certifiers 6／1／7、Other 5／0／5）冇 Authorization，已從 `payload.manual` 收起；還原位＝`payload.status` 鍵 `__hx_shared__/manual-hold-tb275-no-auth`。Mechanics hold `__hx_shared__/manual-hold-tb275`（200／87／287）同 Completed **173** 保留。`board_revisions` manual id 28。Excel `C:\Cursor_Work\HX-outstanding-by-course.xlsx`（唔入 Git）T.B275 outstanding 改 0。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

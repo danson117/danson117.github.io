@@ -21,6 +21,7 @@ alwaysApply: true
 - Training One View Status／action／Remark：即時留喺呢個 browser。唔使日日按 Keep Status。頁面唔顯示 token 欄；若 browser 已有 `localStorage` `hx:team-board:gh-token` 就自動 PUT（唔入 repo）。之後每次改 Status／Remark／Manual 自動 SAVE（~800ms）+ 自動 PUT `HX/team-board-actions.json`（1–2s debounce）。成功唔彈窗；失敗先彈（dialog 紅字 **WARNING: The information on this page is not accurate yet.**）。詳見 `HX/hx-rules.html` 紅字 **Team Board Status / actions stay** / **Save failed**。
 - **UAL／CT／Mandatory 同步喺三張上載卡：** 唔再用頁頂大 banner。每卡：未同步→橙＋「Upload not synchronized yet.」；右下細 icon 綠 ✓＝該源已同步、橙 ×＝進行中、橙感嘆＝未同步。跟 `ingestDiffNames` 逐源。詳見 `HX/hx-rules.html` 紅字。
 - **Training One View · Completed：** 畫面約 30 日（預設隱藏／Show completed）；背底 completion 永久保留（唔刪／唔清）。詳見 `HX/hx-rules.html` 紅字。
+- **Training One View · Export XLSX：** Outstanding 工具列 **Export XLSX**。下載而家篩選後嘅表（一行一個人，欄跟畫面；UAL／Show completed 欄跟開住先出）。唔改訓練資料。檔名 `TOV-outstanding-YYYY-MM-DD.xlsx`。詳見 `HX/hx-rules.html` 紅字。
 - **Training One View · Course code 欄：** Detail 表原「Overdue or will expire courses」表頭改 **Course code**（英文 UI）。格內係 course code；紅色＝overdue／將到期，唔係欄名。唔改資料。詳見 `HX/hx-rules.html` 紅字。
 - **Training One View · UAL 四欄：** Detail 表 **UA Employee #**、**Coming due courses**、**Coming due day**、**Coming due remaining** 只喺揀 UAL（含 All）時一齊顯示；冇 UAL 一齊隱藏。Cards 若有同等欄位同規則。詳見 `HX/hx-rules.html` 紅字。
 - **Training One View · Detail 欄寬／Section (Crew)：** 表頭 **Section (Crew)**；格 `LTA1 (1E)`（只顯示）。Course code ≈186px（+33%）；remaining 兩欄＝due-day 闊（104px）；`table-layout: fixed`；UAL 隱藏唔拉闊兄弟欄。詳見 `HX/hx-rules.html` 紅字。

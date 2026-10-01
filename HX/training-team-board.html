@@ -1764,7 +1764,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.17" aria-label="Page version 15.17">v15.17</div>
+  <div class="page-version" data-version="15.18" aria-label="Page version 15.18">v15.18</div>
 <script src="ocg-pax-data.js?v=2"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -5840,7 +5840,9 @@ function paintDetail() {
     (showRecentCompleted && completedN ? " · " + completedN + " completed-only" : "") +
     " · roster " + rosterN + "</h3>" +
     courseHideBarHtml(courseChoices) + "</div>" +
-    "<div class=\"toolbar\"><div class=\"view-toggle\">" + viewBtns + "</div>" + roleBtns + completedBtn + layoutActionBtns("detail-copy", "detail-download") + "</div>" +
+    "<div class=\"toolbar\"><div class=\"view-toggle\">" + viewBtns + "</div>" + roleBtns + completedBtn +
+    "<button type=\"button\" id=\"detail-export-xlsx\">Export XLSX</button>" +
+    layoutActionBtns("detail-copy", "detail-download") + "</div>" +
     colorLegend + "</div>" +
     (list.length ? (listView === "cards" ? cardsShot : tableShot) : emptyNote);
   applyWriteAccess();
@@ -8987,6 +8989,145 @@ function drawNodeToCanvas(root, widthCap) {
   }
   return canvas;
 }
+function crc32(bytes) {
+  let c = ~0;
+  for (let i = 0; i < bytes.length; i++) {
+    c ^= bytes[i];
+    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
+  }
+  return (~c) >>> 0;
+}
+function concatBytes(parts) {
+  let n = 0;
+  parts.forEach((p) => { n += p.length; });
+  const out = new Uint8Array(n);
+  let o = 0;
+  parts.forEach((p) => { out.set(p, o); o += p.length; });
+  return out;
+}
+function le16(n) {
+  return Uint8Array.of(n & 255, (n >> 8) & 255);
+}
+function le32(n) {
+  return Uint8Array.of(n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >>> 24) & 255);
+}
+function zipStore(entries) {
+  const enc = new TextEncoder();
+  const locals = [];
+  const centrals = [];
+  let offset = 0;
+  entries.forEach((ent) => {
+    const name = enc.encode(ent.name);
+    const data = ent.data;
+    const crc = crc32(data);
+    const local = concatBytes([
+      le32(0x04034b50), le16(20), le16(0), le16(0), le16(0), le16(0),
+      le32(crc), le32(data.length), le32(data.length), le16(name.length), le16(0),
+      name, data
+    ]);
+    locals.push(local);
+    centrals.push(concatBytes([
+      le32(0x02014b50), le16(20), le16(20), le16(0), le16(0), le16(0), le16(0),
+      le32(crc), le32(data.length), le32(data.length), le16(name.length),
+      le16(0), le16(0), le16(0), le16(0), le32(0), le32(offset), name
+    ]));
+    offset += local.length;
+  });
+  const central = concatBytes(centrals);
+  const end = concatBytes([
+    le32(0x06054b50), le16(0), le16(0), le16(entries.length), le16(entries.length),
+    le32(central.length), le32(offset), le16(0)
+  ]);
+  return concatBytes(locals.concat([central, end]));
+}
+function xmlEsc(s) {
+  return String(s == null ? "" : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function colLetters(i) {
+  let n = i + 1;
+  let s = "";
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}
+function sheetXml(rows) {
+  const body = rows.map((row, ri) => {
+    const cells = row.map((val, ci) => {
+      const ref = colLetters(ci) + (ri + 1);
+      return "<c r=\"" + ref + "\" t=\"inlineStr\"><is><t xml:space=\"preserve\">" + xmlEsc(val) + "</t></is></c>";
+    }).join("");
+    return "<row r=\"" + (ri + 1) + "\">" + cells + "</row>";
+  }).join("");
+  return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+    "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData>" +
+    body + "</sheetData></worksheet>";
+}
+function xlsxBytes(rows, sheetName) {
+  const enc = new TextEncoder();
+  const name = xmlEsc(sheetName || "Outstanding").slice(0, 31) || "Outstanding";
+  const types = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+    "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">" +
+    "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>" +
+    "<Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
+    "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>" +
+    "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
+    "</Types>";
+  const rels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+    "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
+    "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>" +
+    "</Relationships>";
+  const wb = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+    "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
+    "<sheets><sheet name=\"" + name + "\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>";
+  const wbRels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+    "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
+    "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>" +
+    "</Relationships>";
+  return zipStore([
+    { name: "[Content_Types].xml", data: enc.encode(types) },
+    { name: "_rels/.rels", data: enc.encode(rels) },
+    { name: "xl/workbook.xml", data: enc.encode(wb) },
+    { name: "xl/_rels/workbook.xml.rels", data: enc.encode(wbRels) },
+    { name: "xl/worksheets/sheet1.xml", data: enc.encode(sheetXml(rows)) }
+  ]);
+}
+function exportDetailXlsx() {
+  const people = detailPeople || [];
+  const showUal = srcHas("ual");
+  const headers = ["Staff #", "Name", "Team", "Section (Crew)", "Course code", "Overdue or will expire due day", "Overdue remaining"];
+  if (showUal) headers.push("UA Employee #", "Coming due courses", "Coming due day", "Coming due remaining");
+  if (showRecentCompleted) headers.push("Completed (≤30 days)");
+  const rows = [headers];
+  people.forEach((x) => {
+    const row = [
+      x.staff || "",
+      x.name || "",
+      teamLabel(x.team, x.home),
+      formatSectionCrewText(x.crew || crewOf(x) || x.section || ""),
+      (x.overdueCourses || []).join(", "),
+      fmtDueDate(x.due),
+      remainText(x.remain, Number(x.remain) > 0)
+    ];
+    if (showUal) {
+      row.push(
+        x.emp || "",
+        (x.soonCourses || []).join(", "),
+        fmtDueDate(x.soonDue),
+        remainText(x.soonRemain, true)
+      );
+    }
+    if (showRecentCompleted) row.push((x.completedCourses || []).join(", "));
+    rows.push(row);
+  });
+  const bytes = xlsxBytes(rows, "Outstanding");
+  const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const d = new Date();
+  const stamp = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  downloadPngBlob(blob, "TOV-outstanding-" + stamp + ".xlsx");
+}
 function downloadPngBlob(blob, filename) {
   const a = document.createElement("a");
   const url = URL.createObjectURL(blob);
@@ -9381,6 +9522,10 @@ document.querySelectorAll("[data-src]").forEach((b) => {
 });
 document.getElementById("detail").addEventListener("click", (e) => {
   if (e.target.closest("[data-copy-shot]") || e.target.closest("[data-download-shot]")) return;
+  if (e.target.closest("#detail-export-xlsx")) {
+    exportDetailXlsx();
+    return;
+  }
   const view = e.target.closest("[data-list-view]");
   if (view) {
     listView = view.dataset.listView === "cards" ? "cards" : "table";
@@ -9471,7 +9616,7 @@ document.getElementById("detail").addEventListener("click", (e) => {
     downloadDetailImage(dl);
     return;
   }
-  if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]") || e.target.closest("[data-show-completed]") || e.target.closest("[data-hide-course]")) return;
+  if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]") || e.target.closest("[data-show-completed]") || e.target.closest("[data-hide-course]") || e.target.closest("#detail-export-xlsx")) return;
   const brsBtn = e.target.closest("[data-brs-open]");
   if (brsBtn) {
     e.preventDefault();
