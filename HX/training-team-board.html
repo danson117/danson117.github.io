@@ -1764,7 +1764,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.18" aria-label="Page version 15.18">v15.18</div>
+  <div class="page-version" data-version="15.19" aria-label="Page version 15.19">v15.19</div>
 <script src="ocg-pax-data.js?v=2"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -1913,6 +1913,7 @@ let sortDir = -1;
 let dSort = "";
 let dDir = 1;
 let detailPeople = [];
+let detailCourseChoices = [];
 let listView = "table";
 let boardOpen = false;
 let showRecentCompleted = false;
@@ -5707,6 +5708,7 @@ function paintDetail() {
   const courseChoices = collectOutstandingCourseCodes(matched);
   const list = matched.map((who) => personOmitHiddenCourses(who)).filter(Boolean);
   detailPeople = list;
+  detailCourseChoices = courseChoices;
   const val = (x, key) => {
     if (key === "src") return x.srcs.join("+");
     if (key === "staff") return x.staff;
@@ -9094,6 +9096,40 @@ function xlsxBytes(rows, sheetName) {
     { name: "xl/worksheets/sheet1.xml", data: enc.encode(sheetXml(rows)) }
   ]);
 }
+function exportFilterRows(peopleCount) {
+  const srcName = { ual: "UAL CBT", ct: "CT Reminder", omt: "Mandatory", manual: "Manual", brs: "Briefing and R&S" };
+  const roleName = { all: "All", cert: "Certifiers (LTWX)", mech: "Mechanics (other sections)" };
+  const orgName = { ocg: "OCG", cg: "CG", pax: "PAX" };
+  const sources = srcIsAll()
+    ? "All"
+    : (SRC_ALL.filter(srcHas).map((k) => srcName[k] || k).join(", ") || "(none)");
+  const shown = [];
+  const hidden = [];
+  (detailCourseChoices || []).forEach((pair) => {
+    if (hiddenCourseCodes.has(pair[0])) hidden.push(pair[1]);
+    else shown.push(pair[1]);
+  });
+  const rows = [
+    [],
+    ["Filters"],
+    ["Search", String(q || "").trim() || "(empty)"],
+    ["Sources", sources],
+    ["Section", orgName[org] || String(org || "")],
+    ["Team", teamFilter ? (TEAM_LABEL[teamFilter] || teamFilter) : "All teams"]
+  ];
+  if (pick && pick.id) {
+    const picked = sortItems(itemsRaw()).find((it) => itemId(it) === pick.id);
+    rows.push(["Board item", (picked && picked.title) ? picked.title : String(pick.id)]);
+  }
+  rows.push(
+    ["Role", roleName[role] || String(role || "")],
+    ["Show completed (≤30 days)", showRecentCompleted ? "On" : "Off"],
+    ["Courses shown", shown.length ? shown.join(", ") : "(none)"],
+    ["Courses hidden", hidden.length ? hidden.join(", ") : "(none)"],
+    ["People", String(peopleCount)]
+  );
+  return rows;
+}
 function exportDetailXlsx() {
   const people = detailPeople || [];
   const showUal = srcHas("ual");
@@ -9122,6 +9158,7 @@ function exportDetailXlsx() {
     if (showRecentCompleted) row.push((x.completedCourses || []).join(", "));
     rows.push(row);
   });
+  exportFilterRows(people.length).forEach((row) => rows.push(row));
   const bytes = xlsxBytes(rows, "Outstanding");
   const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   const d = new Date();

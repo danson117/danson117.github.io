@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-02 公司電腦
+
+- **TOV Export XLSX 最底寫 filter：** 數據行下面空一行，再寫今次條件（Search、Sources、Section、Team、Role、Show completed、Courses shown、Courses hidden；有揀中 board 格先加 Board item；最後 People）。唔改訓練資料。TOV **v15.19**、`hx-rules` **v10.21**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **TOV Export XLSX：** Outstanding 工具列加英文掣 **Export XLSX**。下載而家篩選後嘅表（一行一個人；欄跟畫面；UAL／Show completed 跟開住先出）。唔改訓練資料。TOV **v15.18**、`hx-rules` **v10.20**；hub page-version 仍 **v17.4**。GitHub 後備 → Vercel。唔開 Chrome。
