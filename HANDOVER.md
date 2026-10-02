@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-03 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion → TOV Manual：** 工具列加 **Include near expiry**（年數 ≥1）同 **Add to TOV**。跟而家 Group／Role 嘅 Outstanding（可連紅／黃就嚟到期）寫入 Training One View Manual；冇完成日 → due＝一星期前；有完成日 → 完成日＋Expiry 年數。同一 staff＋course 已有 Manual 就 skip。要 hub edit／Manual 寫權。頁 **v2.0**、`hx-rules` **v10.49**、hub page-version **v18.7**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-03 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Future section codes 併入 OCG Name List：** 舊 hub `#sections` 唔再係獨立側欄頁。LT family 表只得 Name List 嘅 **Future sections** tab。開 `#sections` 會去 `#ocg-pax` 並打開該 tab。`section-codes.html` 轉去同一 tab。Name List **v3.17**、`section-codes` **v1.3**（轉頁）、links **v3.1**、`hx-rules` **v10.48**、hub page-version **v18.6**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-03 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

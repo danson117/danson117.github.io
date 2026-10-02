@@ -94,6 +94,32 @@
   }
   #cmp-remap.cmp-need-map:hover { background: var(--hot-bg); }
   button.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  #cmp-add-tov {
+    background: #f6efe6;
+    border-color: #c4a484;
+    color: #6b3e26;
+    font-weight: 650;
+  }
+  #cmp-add-tov:hover { background: #efe4d6; }
+  #cmp-add-tov:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #f6efe6;
+  }
+  .cmp-near {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    color: var(--admin);
+    font-weight: 650;
+    white-space: nowrap;
+    margin: 0 2px 0 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .cmp-near input { margin: 0; }
+  .cmp-near[hidden] { display: none !important; }
   .cmp-tools input.cmp-years {
     width: 4.2em;
     font: inherit;
@@ -206,10 +232,10 @@
 <body>
   <div class="page">
     <h1>Course completion</h1>
-    <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Nothing is saved, and Training One View is left as it is.</p>
+    <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Optional: add Manual outstanding rows to Training One View.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. Nothing is sent out.</p>
+      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -229,6 +255,11 @@
         <button type="button" class="cmp-split" data-cmp="outstanding"><span>Outstanding</span><span class="cmp-n" data-cmp-n="status-outstanding">0</span></button>
         <span class="filter-label">Expiry:</span>
         <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" aria-label="Expiry years" title="Years after the completed date. Default 2. 0 means no expiry date.">
+        <label class="cmp-near" id="cmp-near-wrap" for="cmp-include-near" title="Also add Completed rows that are red (≤30 days) or yellow (≤90 days) so they can train early.">
+          <input id="cmp-include-near" type="checkbox">
+          Include near expiry
+        </label>
+        <button type="button" id="cmp-add-tov" disabled title="Add Manual outstanding rows to Training One View for this course.">Add to TOV</button>
         <button type="button" id="cmp-export-xlsx">Export XLSX</button>
         <button type="button" id="cmp-remap" title="Choose columns when the file uses different header names.">Match columns</button>
         <button type="button" id="cmp-copy" class="pop-icon" data-copy-shot title="Copy layout" aria-label="Copy layout">
@@ -290,10 +321,21 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="1.9" aria-label="Page version 1.9">v1.9</div>
+  <div id="cmp-tov-pop" class="pop hidden" hidden>
+    <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="cmp-tov-title">
+      <h4 id="cmp-tov-title">Add to Training One View</h4>
+      <p class="note" id="cmp-tov-lead"></p>
+      <div class="cmp-tools" id="cmp-tov-actions">
+        <button type="button" class="primary" id="cmp-tov-ok">Add</button>
+        <button type="button" id="cmp-tov-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="page-version" data-version="2.0" aria-label="Page version 2.0">v2.0</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
+<script src="hx-shared-sync.js?v=1.4"></script>
 <script>
 try { if (typeof hxUnpackRoster === "function") hxUnpackRoster(); } catch (e) {}
 const byStaff = new Map();
@@ -496,6 +538,14 @@ let cmpRole = "all";
 let cmpSortKey = "";
 let cmpSortDir = 1;
 let cmpExpiryYears = 2;
+let cmpIncludeNear = false;
+let cmpHubGate = { role: "view", password: "", editActions: [], accessStaff: "", accessRole: "view" };
+let cmpTovBusy = false;
+const CMP_SYNC_EDGE = "https://kcoszufshvvpxikpzlue.supabase.co/functions/v1/team-board";
+const CMP_MANUAL_STORE = "hx:team-board:manual-courses";
+const CMP_SYNC_KEY = "hx:team-board:sync-key";
+const CMP_GATE_PW = "hx:hub:gate-pw";
+const CMP_GATE_STAFF = "hx:hub:gate-staff";
 function cmpRoleOf(rec) {
   const title = String((rec && rec.title) || "");
   const pos = String((rec && rec.pos) || "");
@@ -848,6 +898,341 @@ function paintCmpMapHint() {
   if (cmpMapNeedsConfirm) btn.setAttribute("aria-invalid", "true");
   else btn.removeAttribute("aria-invalid");
 }
+function cmpWeekAgoIso() {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+}
+function cmpNewManualId() {
+  return "m-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+}
+function cmpLsGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+function cmpLsSet(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) {}
+}
+function cmpGatePassword() {
+  if (cmpHubGate.password) return String(cmpHubGate.password).trim();
+  if (window.HxSharedSync && typeof window.HxSharedSync.getPassword === "function") {
+    const pw = String(window.HxSharedSync.getPassword() || "").trim();
+    if (pw) return pw;
+  }
+  return String(cmpLsGet(CMP_GATE_PW) || "").trim();
+}
+function cmpGateStaff() {
+  const raw = cmpHubGate.accessStaff
+    ? String(cmpHubGate.accessStaff).replace(/\D/g, "")
+    : String(cmpLsGet(CMP_GATE_STAFF) || "").replace(/\D/g, "");
+  if (!raw) return "";
+  return raw.length < 6 ? raw.padStart(6, "0") : raw.slice(-6);
+}
+function cmpCanWriteManual() {
+  const role = String(cmpHubGate.role || "").toLowerCase();
+  const accessRole = String(cmpHubGate.accessRole || role || "").toLowerCase();
+  if (accessRole === "me" || accessRole === "admin" || role === "me" || role === "admin" || role === "edit") return true;
+  const acts = Array.isArray(cmpHubGate.editActions) ? cmpHubGate.editActions : [];
+  if (acts.indexOf("team-board-manual") >= 0) return true;
+  return !!String(cmpLsGet(CMP_SYNC_KEY) || "").trim();
+}
+function cmpEdgeHeaders(extra) {
+  const h = Object.assign({}, extra || {});
+  const pw = cmpGatePassword();
+  if (pw) h["x-hx-board-password"] = pw;
+  else {
+    const key = String(cmpLsGet(CMP_SYNC_KEY) || "").trim();
+    if (key) h["x-hx-sync-key"] = key;
+  }
+  const staff = cmpGateStaff();
+  if (staff && staff !== "000000") h["x-hx-staff"] = staff;
+  return h;
+}
+function cmpTovCandidates() {
+  if (!cmpModel || !cmpModel.rows) return [];
+  const scoped = cmpRoleRows().filter(cmpOrgOk);
+  const out = [];
+  const seen = new Set();
+  scoped.forEach((row) => {
+    if (row.doneFlag) return;
+    const id = padStaff(row.staff);
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    out.push(row);
+  });
+  if (cmpIncludeNear && cmpExpiryYears >= 1) {
+    scoped.forEach((row) => {
+      if (!row.doneFlag) return;
+      if (row.band !== "hot" && row.band !== "warn") return;
+      const id = padStaff(row.staff);
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      out.push(row);
+    });
+  }
+  return out;
+}
+function cmpManualDueFor(row) {
+  if (!row.done) return cmpWeekAgoIso();
+  if (cmpExpiryYears >= 1) {
+    const due = cmpDueFromDone(row.done, cmpExpiryYears);
+    if (due) return due;
+  }
+  return cmpWeekAgoIso();
+}
+function paintCmpTovControls() {
+  const nearWrap = document.getElementById("cmp-near-wrap");
+  const nearBox = document.getElementById("cmp-include-near");
+  const btn = document.getElementById("cmp-add-tov");
+  const yearsOk = cmpExpiryYears >= 1;
+  if (nearWrap) nearWrap.hidden = !yearsOk;
+  if (!yearsOk && cmpIncludeNear) {
+    cmpIncludeNear = false;
+    if (nearBox) nearBox.checked = false;
+  } else if (nearBox) {
+    nearBox.checked = !!cmpIncludeNear;
+  }
+  const n = cmpTovCandidates().length;
+  if (btn) {
+    btn.disabled = !cmpModel || !!cmpModel.error || n < 1 || cmpTovBusy;
+    btn.textContent = n > 0 ? ("Add to TOV (" + n + ")") : "Add to TOV";
+  }
+}
+function closeCmpTovPop() {
+  const pop = document.getElementById("cmp-tov-pop");
+  if (!pop) return;
+  pop.classList.add("hidden");
+  pop.hidden = true;
+}
+function openCmpTovPop(opts) {
+  const pop = document.getElementById("cmp-tov-pop");
+  const titleEl = document.getElementById("cmp-tov-title");
+  const lead = document.getElementById("cmp-tov-lead");
+  const ok = document.getElementById("cmp-tov-ok");
+  const cancel = document.getElementById("cmp-tov-cancel");
+  if (!pop || !lead || !ok || !cancel) return;
+  if (titleEl) titleEl.textContent = opts.title || "Add to Training One View";
+  lead.textContent = opts.lead || "";
+  const mode = opts.mode || "confirm";
+  if (mode === "confirm") {
+    ok.hidden = false;
+    ok.textContent = opts.okLabel || "Add";
+    ok.className = "primary";
+    cancel.hidden = false;
+    cancel.textContent = "Cancel";
+    ok.onclick = () => {
+      closeCmpTovPop();
+      if (typeof opts.onOk === "function") opts.onOk();
+    };
+    cancel.onclick = () => {
+      closeCmpTovPop();
+      if (typeof opts.onCancel === "function") opts.onCancel();
+    };
+  } else {
+    ok.hidden = false;
+    ok.textContent = "OK";
+    ok.className = "primary";
+    cancel.hidden = true;
+    ok.onclick = () => {
+      closeCmpTovPop();
+      if (typeof opts.onOk === "function") opts.onOk();
+    };
+    cancel.onclick = null;
+  }
+  pop.classList.remove("hidden");
+  pop.hidden = false;
+}
+function applyCmpHubGate(msg) {
+  cmpHubGate = {
+    role: String((msg && msg.role) || "view").toLowerCase() || "view",
+    password: msg && msg.password != null ? String(msg.password) : "",
+    editActions: Array.isArray(msg && msg.editActions) ? msg.editActions.map(String) : [],
+    accessStaff: msg && msg.accessStaff != null ? String(msg.accessStaff) : "",
+    accessRole: String((msg && (msg.accessRole || msg.role)) || "view").toLowerCase() || "view"
+  };
+  if (window.HxSharedSync) {
+    try {
+      if (cmpHubGate.password) window.HxSharedSync.setPassword(cmpHubGate.password);
+      else window.HxSharedSync.setPassword("");
+      if (typeof window.HxSharedSync.setStaff === "function") {
+        window.HxSharedSync.setStaff(cmpHubGate.accessStaff || "");
+      }
+    } catch (e) {}
+  }
+  paintCmpTovControls();
+}
+async function cmpFetchLiteBoard() {
+  const res = await fetch(CMP_SYNC_EDGE + "?lite=1", {
+    cache: "no-store",
+    headers: cmpEdgeHeaders()
+  });
+  if (res.status === 401 || res.status === 403) {
+    const err = new Error("unauthorized");
+    err.code = "unauthorized";
+    throw err;
+  }
+  if (!res.ok) throw new Error("GET " + res.status);
+  const data = await res.json();
+  return data && typeof data === "object" ? data : null;
+}
+async function cmpPushManualRows(rows) {
+  const payload = {
+    v: 1,
+    updated: new Date().toISOString(),
+    status: {},
+    manual: rows.map((r) => Object.assign({}, r, { baseV: 0 })),
+    _statusDeleted: [],
+    _manualDeleted: [],
+    log: []
+  };
+  const res = await fetch(CMP_SYNC_EDGE, {
+    method: "PUT",
+    headers: cmpEdgeHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(payload)
+  });
+  const body = await res.json().catch(() => ({}));
+  if (res.status === 401 || res.status === 403) {
+    const err = new Error("unauthorized");
+    err.code = "unauthorized";
+    throw err;
+  }
+  if (res.status === 409 || (body && body.conflict)) {
+    const err = new Error("conflict");
+    err.code = "conflict";
+    throw err;
+  }
+  if (!res.ok) throw new Error("PUT " + res.status);
+  return body;
+}
+function cmpMergeLocalManual(added) {
+  if (!added || !added.length) return;
+  let list = [];
+  try {
+    const raw = cmpLsGet(CMP_MANUAL_STORE);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(parsed)) list = parsed;
+  } catch (e) {}
+  const byId = new Map();
+  list.forEach((r) => {
+    if (r && r.id) byId.set(String(r.id), r);
+  });
+  added.forEach((r) => {
+    if (r && r.id) byId.set(String(r.id), r);
+  });
+  cmpLsSet(CMP_MANUAL_STORE, JSON.stringify(Array.from(byId.values())));
+}
+async function runCmpAddToTov() {
+  const people = cmpTovCandidates();
+  if (!people.length) {
+    openCmpTovPop({
+      mode: "info",
+      title: "Add to Training One View",
+      lead: "No outstanding people match the current Group and Role filters."
+    });
+    return;
+  }
+  if (!cmpGatePassword() && !String(cmpLsGet(CMP_SYNC_KEY) || "").trim()) {
+    openCmpTovPop({
+      mode: "info",
+      title: "Add to Training One View",
+      lead: "Log in on the HX hub with edit rights first, then try again."
+    });
+    return;
+  }
+  if (!cmpCanWriteManual()) {
+    openCmpTovPop({
+      mode: "info",
+      title: "Add to Training One View",
+      lead: "This account cannot add Manual courses. Need Training One View Manual edit rights."
+    });
+    return;
+  }
+  const code = String((cmpModel && cmpModel.keptCode) || (people[0] && people[0].code) || "").trim();
+  const courseTitle = String((people.find((r) => r.title) || {}).title || "").trim();
+  const nearN = people.filter((r) => r.doneFlag).length;
+  const outN = people.length - nearN;
+  let lead = "Add " + people.length + " Manual outstanding row(s) to Training One View for course " + (code || "(unknown)") + ".";
+  lead += " Outstanding " + outN + ".";
+  if (cmpIncludeNear) lead += " Near expiry " + nearN + ".";
+  lead += " Blank completed date → due one week ago. Existing Manual for the same staff and course is skipped.";
+  openCmpTovPop({
+    mode: "confirm",
+    title: "Add to Training One View",
+    lead: lead,
+    okLabel: "Add",
+    onOk: () => { void cmpDoAddToTov(people, code, courseTitle); }
+  });
+}
+async function cmpDoAddToTov(people, code, courseTitle) {
+  if (cmpTovBusy) return;
+  cmpTovBusy = true;
+  paintCmpTovControls();
+  try {
+    const board = await cmpFetchLiteBoard();
+    const remoteManual = Array.isArray(board && board.manual) ? board.manual : [];
+    const have = new Set();
+    remoteManual.forEach((r) => {
+      const staff = padStaff(r && (r.staff || r.uid));
+      const c = String((r && r.code) || "").trim().toUpperCase();
+      if (staff && c) have.add(staff + "|" + c);
+    });
+    const courseCode = code || String((people[0] && people[0].code) || "").trim();
+    const courseName = courseTitle || String((people.find((r) => r.title) || {}).title || "").trim() || courseCode;
+    const toAdd = [];
+    let skipped = 0;
+    people.forEach((row) => {
+      const staff = padStaff(row.staff);
+      if (!staff || !courseCode) return;
+      const key = staff + "|" + courseCode.toUpperCase();
+      if (have.has(key)) {
+        skipped += 1;
+        return;
+      }
+      have.add(key);
+      toAdd.push({
+        id: cmpNewManualId(),
+        staff: staff,
+        name: String(row.name || "").trim(),
+        code: courseCode,
+        cname: courseName,
+        exp: cmpManualDueFor(row),
+        v: 0
+      });
+    });
+    if (!toAdd.length) {
+      openCmpTovPop({
+        mode: "info",
+        title: "Add to Training One View",
+        lead: skipped
+          ? ("Nothing new to add. All " + skipped + " already have Manual for " + courseCode + ".")
+          : "Nothing new to add."
+      });
+      return;
+    }
+    await cmpPushManualRows(toAdd);
+    cmpMergeLocalManual(toAdd);
+    openCmpTovPop({
+      mode: "info",
+      title: "Add to Training One View",
+      lead: "Added " + toAdd.length + " Manual outstanding row(s) for " + courseCode + "." +
+        (skipped ? (" Skipped " + skipped + " already on Manual.") : "") +
+        " Refresh Training One View if it is already open."
+    });
+  } catch (e) {
+    const codeName = e && e.code ? String(e.code) : "";
+    let msg = "Could not add Manual rows.";
+    if (codeName === "unauthorized") msg = "Sync was rejected. Log in on the HX hub with edit rights, then try again.";
+    else if (codeName === "conflict") msg = "Someone else just changed Training One View. Nothing was added. Try again.";
+    else if (e && e.message) msg = "Could not add Manual rows (" + e.message + ").";
+    openCmpTovPop({
+      mode: "info",
+      title: "Add to Training One View",
+      lead: msg
+    });
+  } finally {
+    cmpTovBusy = false;
+    paintCmpTovControls();
+  }
+}
 function cmpHeaderRow(grid) {
   const limit = Math.min(grid.length, 12);
   for (let i = 0; i < limit; i++) {
@@ -1007,6 +1392,7 @@ function paintCmp() {
     body.innerHTML = "";
     if (statusEl) statusEl.textContent = cmpModel && cmpModel.error ? cmpModel.error : "No completion file yet.";
     paintCmpMapHint();
+    paintCmpTovControls();
     return;
   }
   const shown = cmpShownRows();
@@ -1055,6 +1441,7 @@ function paintCmp() {
       (cmpModel.usual || !(cmpModel.columns && cmpModel.columns.length) ? "" : " Columns " + cmpModel.columns.join(", ") + ".");
   }
   paintCmpMapHint();
+  paintCmpTovControls();
 }
 function exportCmpXlsx() {
   if (!window.HxXlsx || typeof HxXlsx.buildSync !== "function") return;
@@ -1515,6 +1902,21 @@ document.getElementById("cmp-years").addEventListener("blur", (e) => {
   e.target.value = String(cmpExpiryYears);
   paintCmp();
 });
+document.getElementById("cmp-include-near").addEventListener("change", (e) => {
+  cmpIncludeNear = !!e.target.checked && cmpExpiryYears >= 1;
+  paintCmpTovControls();
+});
+window.addEventListener("message", (e) => {
+  const msg = e.data || {};
+  if (!msg || typeof msg !== "object") return;
+  if (msg.type === "hx-gate") applyCmpHubGate(msg);
+});
+try {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "hx-gate-request" }, "*");
+  }
+} catch (e) {}
+paintCmpTovControls();
 document.getElementById("cmp-file").addEventListener("change", (e) => {
   const file = e.target.files && e.target.files[0];
   takeCmpFile(file);
@@ -1552,6 +1954,10 @@ document.getElementById("cmp-box").addEventListener("click", (e) => {
   }
   if (e.target.closest("#cmp-remap")) {
     if (cmpSource) openCmpMap(cmpSource);
+    return;
+  }
+  if (e.target.closest("#cmp-add-tov")) {
+    void runCmpAddToTov();
     return;
   }
   if (e.target.closest("#cmp-export-xlsx")) {
