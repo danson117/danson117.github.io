@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion 欄名／CSV：** 同一頁接受 xlsx 同 CSV。平常表頭照舊。欄名變咗或調位，瀏覽器自己對（常見欄名，然後格內容）。都唔肯定先彈 Match columns，選擇只記呢個瀏覽器。唔送 AI、唔寫 Supabase。頁 **v1.1**、`hx-rules` **v10.39**、hub page-version **v17.6**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion 獨立頁：** 成個 Course completion xlsx 由 Training One View 抽出，自己一頁 `HX/course-completion.html`（hub `#course-completion`）。行為不變（Name List 包括 SHOWS LMP、Section 跟名冊、Department 唔用、Role／Status／Expiry／Years、排序、Export／Copy／Download）。匯出檔名 `course-completion-YYYY-MM-DD.xlsx`。唔送 AI、唔寫 Supabase、唔改板。TOV 上載區唔再有呢張卡。頁 **v1.0**、TOV **v15.28**、`hx-rules` **v10.38**、links **v3.0**、hub page-version **v17.5**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
