@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **Authorization List 同一 Staff # 只顯示一行：** 工具列掣 **One per Staff #**。開住時，而家篩選同排序入面每個 Staff # 只留第一行；再撳或 Clear filters 恢復。Copy／XLSX 跟畫面。Auth **v2.10**、`hx-rules` **v10.26**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。唔改授權資料。
+
+## 2026-10-02 公司電腦
+
 - **OCG 紀錄、唔再計人：** `382200`、`313495` Remark **01OCT will transfer to CXG**。只留 Full List 黃行。唔入 OCG／CG／PAX／role 人數，唔上 Crew List、Name List。訓練／Authorization／License／BRS 名冊唔計。已存訓練列唔刪。Name List **v3.9**、`ocg-pax-data.js?v=4`、TOV **v15.23**、Auth **v2.9**、Lic **v1.9**、BRS **v4.9**、`hx-rules` **v10.25**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-10-02 公司電腦

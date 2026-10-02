@@ -96,6 +96,7 @@
       <button type="button" id="to-xlsx">To XLSX</button>
       <button type="button" id="update-csv-btn">Update CSV</button>
       <input id="update-csv" type="file" accept=".csv,text/csv" hidden>
+      <button type="button" id="one-staff" aria-pressed="false" title="Show one row for each Staff #">One per Staff #</button>
       <button type="button" id="clear">Clear filters</button>
     </div>
     <div class="ops-roster" id="ops-roster">
@@ -134,11 +135,11 @@
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Due Red / Yellow / Red + Yellow only show module <code>--/--/AUTH/HAECO</code> rows in those windows; All stays unrestricted by module. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows. <b>Airline</b>: type one or more characters to see matching operator codes / airline names (contains); pick a row to fill the code and full name (from that code's auth module title, including stage-only codes). This lookup does not filter the table.</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Due Red / Yellow / Red + Yellow only show module <code>--/--/AUTH/HAECO</code> rows in those windows; All stays unrestricted by module. <b>One per Staff #</b> keeps the first row of each staff number in the current sort; other aircraft and modules for that person stay hidden until the button is off or filters are cleared. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows. <b>Airline</b>: type one or more characters to see matching operator codes / airline names (contains); pick a row to fill the code and full name (from that code's auth module title, including stage-only codes). This lookup does not filter the table.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.9">v2.9</div>
+  <div class="page-version" data-version="2.10">v2.10</div>
 <script src="ocg-pax-data.js?v=4"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -162,6 +163,7 @@ let fOp = "";
 let fCat = "";
 let fAc = "";
 let fDue = "";
+let onePerStaff = false;
 let sortKey = "name";
 let sortDir = 1;
 let searchTimer = 0;
@@ -476,6 +478,27 @@ function sorted(list){
     return sortDir * cmp || String(a.name||"").localeCompare(String(b.name||"")) || String(a.module||"").localeCompare(String(b.module||""));
   });
 }
+function collapseStaff(list){
+  if (!onePerStaff) return list;
+  const seen = new Set();
+  const out = [];
+  for (let i = 0; i < list.length; i++) {
+    const id = String(list[i].staff || "");
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(list[i]);
+  }
+  return out;
+}
+function displayRows(){
+  return collapseStaff(sorted(filtered()));
+}
+function setOneStaffButton(){
+  const btn = document.getElementById("one-staff");
+  if (!btn) return;
+  btn.classList.toggle("on", onePerStaff);
+  btn.setAttribute("aria-pressed", onePerStaff ? "true" : "false");
+}
 function rowClass(r){
   const n = daysLeft(r.expiryN);
   if (n == null) return "";
@@ -515,8 +538,8 @@ function paintBody(){
   document.getElementById("body").innerHTML = html;
 }
 function rebuildView(resetScroll){
-  view = sorted(filtered());
-  document.getElementById("status").textContent = view.length + " of " + AUTH_ROWS.length + " rows";
+  view = displayRows();
+  document.getElementById("status").textContent = view.length + " of " + AUTH_ROWS.length + " rows" + (onePerStaff ? " · one per staff" : "");
   if (resetScroll) document.getElementById("wrap").scrollTop = 0;
   paintBody();
 }
@@ -527,11 +550,12 @@ function paintChrome(){
   document.getElementById("n-people").textContent = String(new Set(AUTH_ROWS.map(r => r.staff)).size);
   document.querySelectorAll("[data-group]").forEach(el => el.classList.toggle("on", el.dataset.group === fGroup));
   setDueButtons();
+  setOneStaffButton();
   paintHead();
 }
 /** Same row list as status "N of TOTAL" after all filters. Never AUTH_PACK / stage / DOM. */
 function exportRows(){
-  return sorted(filtered());
+  return displayRows();
 }
 function tableTsv(rows){
   const head = COLS.map(([,l]) => l).join("\t");
@@ -1012,8 +1036,14 @@ function bindUi(){
     const wrap = document.querySelector(".op-lookup");
     if (wrap && !wrap.contains(e.target)) hideOpSuggest();
   });
+  document.getElementById("one-staff").addEventListener("click", () => {
+    onePerStaff = !onePerStaff;
+    setOneStaffButton();
+    rebuildView(true);
+  });
   document.getElementById("clear").addEventListener("click", () => {
     q = fDept = fOp = fCat = fAc = fDue = "";
+    onePerStaff = false;
     fGroup = "ocg";
     document.getElementById("q").value = "";
     document.getElementById("op-lookup").value = "";
