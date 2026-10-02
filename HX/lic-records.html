@@ -102,7 +102,7 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="1.9">v1.9</div>
+  <div class="page-version" data-version="2.0">v2.0</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -206,39 +206,66 @@ function unpack(){
   });
   return true;
 }
-function fillSelect(id, values){
+function fillSelect(id, values, current){
   const sel = document.getElementById(id);
-  sel.innerHTML = "";
-  const all = document.createElement("option");
-  all.value = ""; all.textContent = "All"; sel.appendChild(all);
-  [...new Set(values.filter(Boolean))].sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:"base"})).forEach(v => {
-    const o = document.createElement("option");
-    o.value = v; o.textContent = v; sel.appendChild(o);
-  });
+  const uniq = [...new Set(values.filter(v => v != null && String(v) !== ""))].map(String);
+  uniq.sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:"base"}));
+  const next = uniq.indexOf(String(current || "")) >= 0 ? String(current) : "";
+  const want = [""].concat(uniq);
+  const have = Array.prototype.map.call(sel.options, o => o.value);
+  const same = have.length === want.length && have.every((v,i) => v === want[i]);
+  if (!same) {
+    sel.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = ""; all.textContent = "All"; sel.appendChild(all);
+    uniq.forEach(v => {
+      const o = document.createElement("option");
+      o.value = v; o.textContent = v; sel.appendChild(o);
+    });
+  }
+  if (sel.value !== next) sel.value = next;
+  return next;
 }
 function setDueButtons(){
   document.querySelectorAll("#f-due [data-due]").forEach(btn => {
     btn.classList.toggle("on", (btn.dataset.due || "") === fDue);
   });
 }
-function filtered(){
+function matchRow(r, skip){
   const s = q.trim().toLowerCase();
-  return LIC_ROWS.filter(r => {
-    if (fGroup === "CG" && r.group !== "CG") return false;
-    if (fGroup === "PAX" && r.group !== "PAX") return false;
-    if (fDept && r.dept !== fDept) return false;
-    if (fAuth && r.auth !== fAuth) return false;
-    if (fCat && r.cat !== fCat) return false;
-    if (fAc && r.ac !== fAc) return false;
-    if (fDue) {
-      const hl = rowClass(r);
-      if (fDue === "red" && hl !== "hot") return false;
-      if (fDue === "yellow" && hl !== "warn") return false;
-      if (fDue === "both" && hl !== "hot" && hl !== "warn") return false;
-    }
-    if (!s) return true;
-    return COLS.some(([k]) => String(r[k] || "").toLowerCase().includes(s));
-  });
+  if (fGroup === "CG" && r.group !== "CG") return false;
+  if (fGroup === "PAX" && r.group !== "PAX") return false;
+  if (skip !== "dept" && fDept && r.dept !== fDept) return false;
+  if (skip !== "auth" && fAuth && r.auth !== fAuth) return false;
+  if (skip !== "cat" && fCat && r.cat !== fCat) return false;
+  if (skip !== "ac" && fAc && r.ac !== fAc) return false;
+  if (fDue) {
+    const hl = rowClass(r);
+    if (fDue === "red" && hl !== "hot") return false;
+    if (fDue === "yellow" && hl !== "warn") return false;
+    if (fDue === "both" && hl !== "hot" && hl !== "warn") return false;
+  }
+  if (!s) return true;
+  return COLS.some(([k]) => String(r[k] || "").toLowerCase().includes(s));
+}
+function filtered(){
+  return LIC_ROWS.filter(r => matchRow(r, ""));
+}
+function syncFacets(){
+  const spec = [
+    ["f-dept", "dept", () => fDept, v => { fDept = v; }],
+    ["f-auth", "auth", () => fAuth, v => { fAuth = v; }],
+    ["f-cat", "cat", () => fCat, v => { fCat = v; }],
+    ["f-ac", "ac", () => fAc, v => { fAc = v; }]
+  ];
+  for (let pass = 0; pass < spec.length; pass++) {
+    let changed = false;
+    spec.forEach(([id, key, read, write]) => {
+      const next = fillSelect(id, LIC_ROWS.filter(r => matchRow(r, key)).map(r => r[key]), read());
+      if (next !== read()) { write(next); changed = true; }
+    });
+    if (!changed) break;
+  }
 }
 function sortVal(r, key){
   if (key === "expiry") return r.expiryN || 0;
@@ -294,6 +321,7 @@ function paintBody(){
   document.getElementById("body").innerHTML = html;
 }
 function rebuildView(resetScroll){
+  syncFacets();
   view = sorted(filtered());
   document.getElementById("status").textContent = view.length + " of " + LIC_ROWS.length + " rows";
   if (resetScroll) document.getElementById("wrap").scrollTop = 0;
@@ -588,14 +616,6 @@ function applyPack(pack){
     rejectCsv("Packed license data could not be read.");
     return false;
   }
-  fillSelect("f-dept", LIC_ROWS.map(r => r.dept));
-  fillSelect("f-auth", LIC_ROWS.map(r => r.auth));
-  fillSelect("f-cat", LIC_ROWS.map(r => r.cat));
-  fillSelect("f-ac", LIC_ROWS.map(r => r.ac));
-  document.getElementById("f-dept").value = fDept;
-  document.getElementById("f-auth").value = fAuth;
-  document.getElementById("f-cat").value = fCat;
-  document.getElementById("f-ac").value = fAc;
   paintChrome();
   rebuildView(true);
   return true;
@@ -718,10 +738,6 @@ async function handleCsvFile(file){
 }
 
 function bindUi(){
-  fillSelect("f-dept", LIC_ROWS.map(r => r.dept));
-  fillSelect("f-auth", LIC_ROWS.map(r => r.auth));
-  fillSelect("f-cat", LIC_ROWS.map(r => r.cat));
-  fillSelect("f-ac", LIC_ROWS.map(r => r.ac));
   document.getElementById("q").addEventListener("input", e => {
     q = e.target.value;
     clearTimeout(searchTimer);

@@ -139,7 +139,7 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.10">v2.10</div>
+  <div class="page-version" data-version="2.11">v2.11</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -423,15 +423,25 @@ function onOpLookupKeydown(e){
     hideOpSuggest();
   }
 }
-function fillSelect(id, values){
+function fillSelect(id, values, current){
   const sel = document.getElementById(id);
-  sel.innerHTML = "";
-  const all = document.createElement("option");
-  all.value = ""; all.textContent = "All"; sel.appendChild(all);
-  [...new Set(values.filter(Boolean))].sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:"base"})).forEach(v => {
-    const o = document.createElement("option");
-    o.value = v; o.textContent = v; sel.appendChild(o);
-  });
+  const uniq = [...new Set(values.filter(v => v != null && String(v) !== ""))].map(String);
+  uniq.sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:"base"}));
+  const next = uniq.indexOf(String(current || "")) >= 0 ? String(current) : "";
+  const want = [""].concat(uniq);
+  const have = Array.prototype.map.call(sel.options, o => o.value);
+  const same = have.length === want.length && have.every((v,i) => v === want[i]);
+  if (!same) {
+    sel.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = ""; all.textContent = "All"; sel.appendChild(all);
+    uniq.forEach(v => {
+      const o = document.createElement("option");
+      o.value = v; o.textContent = v; sel.appendChild(o);
+    });
+  }
+  if (sel.value !== next) sel.value = next;
+  return next;
 }
 function setDueButtons(){
   document.querySelectorAll("#f-due [data-due]").forEach(btn => {
@@ -443,25 +453,42 @@ function isDueHaecoModule(r){
   const m = String(r.module || "");
   return m === DUE_HAECO_MODULE || m.includes(DUE_HAECO_MODULE);
 }
-function filtered(){
+function matchRow(r, skip){
   const s = q.trim().toLowerCase();
-  return AUTH_ROWS.filter(r => {
-    if (fGroup === "CG" && r.group !== "CG") return false;
-    if (fGroup === "PAX" && r.group !== "PAX") return false;
-    if (fDept && r.dept !== fDept) return false;
-    if (fOp && r.op !== fOp) return false;
-    if (fCat && r.cat !== fCat) return false;
-    if (fAc && r.ac !== fAc) return false;
-    if (fDue) {
-      if (!isDueHaecoModule(r)) return false;
-      const hl = rowClass(r);
-      if (fDue === "red" && hl !== "hot") return false;
-      if (fDue === "yellow" && hl !== "warn") return false;
-      if (fDue === "both" && hl !== "hot" && hl !== "warn") return false;
-    }
-    if (!s) return true;
-    return COLS.some(([k]) => String(r[k] || "").toLowerCase().includes(s));
-  });
+  if (fGroup === "CG" && r.group !== "CG") return false;
+  if (fGroup === "PAX" && r.group !== "PAX") return false;
+  if (skip !== "dept" && fDept && r.dept !== fDept) return false;
+  if (skip !== "op" && fOp && r.op !== fOp) return false;
+  if (skip !== "cat" && fCat && r.cat !== fCat) return false;
+  if (skip !== "ac" && fAc && r.ac !== fAc) return false;
+  if (fDue) {
+    if (!isDueHaecoModule(r)) return false;
+    const hl = rowClass(r);
+    if (fDue === "red" && hl !== "hot") return false;
+    if (fDue === "yellow" && hl !== "warn") return false;
+    if (fDue === "both" && hl !== "hot" && hl !== "warn") return false;
+  }
+  if (!s) return true;
+  return COLS.some(([k]) => String(r[k] || "").toLowerCase().includes(s));
+}
+function filtered(){
+  return AUTH_ROWS.filter(r => matchRow(r, ""));
+}
+function syncFacets(){
+  const spec = [
+    ["f-dept", "dept", () => fDept, v => { fDept = v; }],
+    ["f-op", "op", () => fOp, v => { fOp = v; }],
+    ["f-cat", "cat", () => fCat, v => { fCat = v; }],
+    ["f-ac", "ac", () => fAc, v => { fAc = v; }]
+  ];
+  for (let pass = 0; pass < spec.length; pass++) {
+    let changed = false;
+    spec.forEach(([id, key, read, write]) => {
+      const next = fillSelect(id, AUTH_ROWS.filter(r => matchRow(r, key)).map(r => r[key]), read());
+      if (next !== read()) { write(next); changed = true; }
+    });
+    if (!changed) break;
+  }
 }
 function sortVal(r, key){
   if (key === "expiry") return r.expiryN || 0;
@@ -538,6 +565,7 @@ function paintBody(){
   document.getElementById("body").innerHTML = html;
 }
 function rebuildView(resetScroll){
+  syncFacets();
   view = displayRows();
   document.getElementById("status").textContent = view.length + " of " + AUTH_ROWS.length + " rows" + (onePerStaff ? " · one per staff" : "");
   if (resetScroll) document.getElementById("wrap").scrollTop = 0;
@@ -849,14 +877,6 @@ function applyPack(pack){
     rejectCsv("Packed authorization data could not be read.");
     return false;
   }
-  fillSelect("f-dept", AUTH_ROWS.map(r => r.dept));
-  fillSelect("f-op", AUTH_ROWS.map(r => r.op));
-  fillSelect("f-cat", AUTH_ROWS.map(r => r.cat));
-  fillSelect("f-ac", AUTH_ROWS.map(r => r.ac));
-  document.getElementById("f-dept").value = fDept;
-  document.getElementById("f-op").value = fOp;
-  document.getElementById("f-cat").value = fCat;
-  document.getElementById("f-ac").value = fAc;
   opAirlineNames = null;
   paintOperatorsTable();
   paintChrome();
@@ -986,10 +1006,6 @@ async function handleCsvFile(file){
 }
 
 function bindUi(){
-  fillSelect("f-dept", AUTH_ROWS.map(r => r.dept));
-  fillSelect("f-op", AUTH_ROWS.map(r => r.op));
-  fillSelect("f-cat", AUTH_ROWS.map(r => r.cat));
-  fillSelect("f-ac", AUTH_ROWS.map(r => r.ac));
   document.getElementById("q").addEventListener("input", e => {
     q = e.target.value;
     clearTimeout(searchTimer);

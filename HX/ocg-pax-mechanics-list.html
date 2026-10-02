@@ -92,13 +92,12 @@
       <button type="button" id="reset-cols">Reset columns</button>
     </div>
     <div class="filters" id="extra-filters">
-      <button type="button" class="on" data-group="ocg" data-full-only>OCG</button>
-      <button type="button" data-group="CG" data-full-only>CG</button>
-      <button type="button" data-group="PAX" data-full-only>PAX</button>
-      <label data-full-only>Team <select id="f-team"><option value="">All</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+      <button type="button" class="on" data-group="ocg">OCG</button>
+      <button type="button" data-group="CG">CG</button>
+      <button type="button" data-group="PAX">PAX</button>
+      <label data-full-only>Team <select id="f-team"><option value="">All</option></select></label>
       <label data-full-only>Home <select id="f-home"><option value="">All</option></select></label>
-      <label data-full-only>Match <select id="f-match"><option value="">All</option><option value="Both">Both</option><option value="Master only">Master only</option><option value="OCS only">OCS only</option></select></label>
-      <label>CG/PAX <select id="f-org"><option value="">OCG</option><option value="CG">CG</option><option value="PAX">PAX</option></select></label>
+      <label data-full-only>Match <select id="f-match"><option value="">All</option></select></label>
     </div>
     <div class="col-panel" id="col-panel" hidden>
       <p class="col-hint">Drag a name, or use ▲ ▼. Order is saved on this browser.</p>
@@ -118,7 +117,7 @@
       <p><b>OCG</b> = CG + PAX (the total). A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = already marked PAX on the roster, or on the Crew List (including FLS and RF). <b>CG</b> stays CG. A <b>Team</b> number is only a team number and does not make someone PAX, so CG can have a Team number. <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC). <b>Office</b> = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
     </div>
   </div>
-  <div class="page-version" data-version="3.15">v3.15</div>
+  <div class="page-version" data-version="3.16">v3.16</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script>
@@ -178,14 +177,13 @@ let fGroup = "ocg";
 let fTeam = "";
 let fHome = "";
 let fMatch = "";
-let fOrg = "";
 let fRole = "";
 const UI = { tab:"hx:ocg-pax:tab", q:"hx:ocg-pax:q", group:"hx:ocg-pax:group", team:"hx:ocg-pax:team", home:"hx:ocg-pax:home", match:"hx:ocg-pax:match", org:"hx:ocg-pax:org", role:"hx:ocg-pax:role", sortKey:"hx:ocg-pax:sortKey", sortDir:"hx:ocg-pax:sortDir", colsOpen:"hx:ocg-pax:colsOpen" };
 function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
 function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
 function persistUi(){
   lsSet(UI.tab, tab); lsSet(UI.q, q); lsSet(UI.group, fGroup); lsSet(UI.team, fTeam);
-  lsSet(UI.home, fHome); lsSet(UI.match, fMatch); lsSet(UI.org, fOrg); lsSet(UI.role, fRole); lsSet(UI.sortKey, sortKey); lsSet(UI.sortDir, String(sortDir));
+  lsSet(UI.home, fHome); lsSet(UI.match, fMatch); lsSet(UI.role, fRole); lsSet(UI.sortKey, sortKey); lsSet(UI.sortDir, String(sortDir));
   const p = document.getElementById("col-panel");
   if (p) lsSet(UI.colsOpen, p.hidden ? "0" : "1");
 }
@@ -196,17 +194,15 @@ function restoreUi(){
   const tm = lsGet(UI.team); if (tm != null) fTeam = tm;
   const hm = lsGet(UI.home); if (hm != null) fHome = hm;
   const mt = lsGet(UI.match); if (mt != null) fMatch = mt;
-  const og = lsGet(UI.org); if (og==="CG"||og==="PAX"||og==="") fOrg = og || ""; else if (og==="OCG") fOrg = "";
+  const og = lsGet(UI.org);
+  if ((fGroup === "ocg" || fGroup === "all") && (og === "CG" || og === "PAX")) fGroup = og;
+  try { localStorage.removeItem(UI.org); } catch (e) {}
   const rl = lsGet(UI.role); if (rl==="MECHANIC"||rl==="CERTIFIER"||rl==="OFFICE"||rl==="") fRole = rl || "";
   const sk = lsGet(UI.sortKey);
   if (sk && !DROPPED_FULL.has(sk)) sortKey = sk;
   else if (sk && DROPPED_FULL.has(sk)) sortKey = tab === "full" ? "staff" : tab === "team" ? "shift" : tab === "sections" ? "code" : "home";
   const sd = lsGet(UI.sortDir); if (sd==="1"||sd==="-1") sortDir = Number(sd);
   document.getElementById("q").value = q;
-  document.getElementById("f-team").value = fTeam;
-  document.getElementById("f-home").value = fHome;
-  document.getElementById("f-match").value = fMatch;
-  document.getElementById("f-org").value = fOrg;
   if (lsGet(UI.colsOpen) === "1") {
     const p = document.getElementById("col-panel");
     p.hidden = false;
@@ -337,31 +333,67 @@ function cellVal(r, k){
   if (k === "staff" || k === "mStaff") return padStaff(r[k]);
   return r[k];
 }
-function filtered(){
+function rowPasses(r, skip){
   const s = q.trim().toLowerCase();
-  return rowsAll().filter(r => {
-    if (tab === "sections") {
-      if (!s) return true;
-      return cols().some(([k]) => String(cellVal(r,k)||"").toLowerCase().includes(s));
-    }
-    if (fRole && roleOf(r) !== fRole) return false;
-    if (tab !== "team") {
-      if (fOrg && orgOf(r) !== fOrg) return false;
-    }
-    if (recordOnly(r)) {
-      if (tab !== "full") return false;
-      if (fRole || fOrg || fTeam || fHome || fMatch) return false;
-      if (fGroup && fGroup !== "ocg" && fGroup !== "all") return false;
-    }
-    if (tab === "full") {
-      if (fGroup && fGroup !== "ocg" && fGroup !== "all" && !groupOk(r, fGroup)) return false;
-      if (fTeam && r.team !== fTeam) return false;
-      if (fHome && r.home !== fHome) return false;
-      if (fMatch && r.match !== fMatch) return false;
-    }
+  if (tab === "sections") {
     if (!s) return true;
     return cols().some(([k]) => String(cellVal(r,k)||"").toLowerCase().includes(s));
-  });
+  }
+  if (skip !== "role" && fRole && roleOf(r) !== fRole) return false;
+  if (tab === "staff" && (fGroup === "CG" || fGroup === "PAX") && orgOf(r) !== fGroup) return false;
+  if (recordOnly(r)) {
+    if (tab !== "full") return false;
+    const narrowing = (skip !== "role" && fRole) || (skip !== "team" && fTeam) || (skip !== "home" && fHome) || (skip !== "match" && fMatch);
+    if (narrowing) return false;
+    if (fGroup && fGroup !== "ocg" && fGroup !== "all") return false;
+  }
+  if (tab === "full") {
+    if (fGroup && fGroup !== "ocg" && fGroup !== "all" && !groupOk(r, fGroup)) return false;
+    if (skip !== "team" && fTeam && r.team !== fTeam) return false;
+    if (skip !== "home" && fHome && r.home !== fHome) return false;
+    if (skip !== "match" && fMatch && r.match !== fMatch) return false;
+  }
+  if (!s) return true;
+  return cols().some(([k]) => String(cellVal(r,k)||"").toLowerCase().includes(s));
+}
+function filtered(){
+  return rowsAll().filter(r => rowPasses(r, ""));
+}
+function fillFacet(id, values, current){
+  const sel = document.getElementById(id);
+  const uniq = [...new Set(values.filter(v => v != null && String(v) !== ""))].map(String);
+  uniq.sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:"base"}));
+  const next = uniq.indexOf(String(current || "")) >= 0 ? String(current) : "";
+  const want = [""].concat(uniq);
+  const have = Array.prototype.map.call(sel.options, o => o.value);
+  const same = have.length === want.length && have.every((v,i) => v === want[i]);
+  if (!same) {
+    sel.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = ""; all.textContent = "All"; sel.appendChild(all);
+    uniq.forEach(v => {
+      const o = document.createElement("option");
+      o.value = v; o.textContent = v; sel.appendChild(o);
+    });
+  }
+  if (sel.value !== next) sel.value = next;
+  return next;
+}
+function syncFacets(){
+  if (tab !== "full") return;
+  const spec = [
+    ["f-team", "team", () => fTeam, v => { fTeam = v; }],
+    ["f-home", "home", () => fHome, v => { fHome = v; }],
+    ["f-match", "match", () => fMatch, v => { fMatch = v; }]
+  ];
+  for (let pass = 0; pass < spec.length; pass++) {
+    let changed = false;
+    spec.forEach(([id, key, read, write]) => {
+      const next = fillFacet(id, rowsAll().filter(r => rowPasses(r, key)).map(r => r[key]), read());
+      if (next !== read()) { write(next); changed = true; }
+    });
+    if (!changed) break;
+  }
 }
 function sortVal(row, key){
   if (DATE_KEYS.has(key)) return row.joinedIso || String(row[key]||"");
@@ -416,6 +448,7 @@ function paintBody(){
   document.getElementById("body").innerHTML = html;
 }
 function paint(){
+  syncFacets();
   persistUi();
   nlView = sorted(filtered());
   const current = currentRoster();
@@ -478,7 +511,6 @@ document.querySelectorAll("[data-group]").forEach(b => b.addEventListener("click
 document.getElementById("f-team").addEventListener("change", e => { fTeam = e.target.value; paint(); });
 document.getElementById("f-home").addEventListener("change", e => { fHome = e.target.value; paint(); });
 document.getElementById("f-match").addEventListener("change", e => { fMatch = e.target.value; paint(); });
-document.getElementById("f-org").addEventListener("change", e => { fOrg = e.target.value; paint(); });
 document.querySelectorAll("[data-group-stat]").forEach(el => {
   el.addEventListener("click", () => {
     fGroup = el.dataset.groupStat;
@@ -569,13 +601,9 @@ colList.addEventListener("drop", e => {
 document.getElementById("copy-tsv").addEventListener("click", e => copyText(sheet("\t"), e.currentTarget, "Copy TSV"));
 document.getElementById("copy-csv").addEventListener("click", e => copyText(sheet(","), e.currentTarget, "Copy CSV"));
 document.getElementById("clear").addEventListener("click", () => {
-  q = fTeam = fHome = fMatch = fOrg = fRole = "";
+  q = fTeam = fHome = fMatch = fRole = "";
   fGroup = "ocg";
   document.getElementById("q").value = "";
-  document.getElementById("f-team").value = "";
-  document.getElementById("f-home").value = "";
-  document.getElementById("f-match").value = "";
-  document.getElementById("f-org").value = "";
   paint();
 });
 (function fillMasterCols(){
@@ -591,14 +619,6 @@ document.getElementById("clear").addEventListener("click", () => {
     r.mName = t ? t.name : "";
     r.mChinese = t ? t.chinese : "";
     r.mTitle = t ? t.title : "";
-  });
-})();
-(function fillHomes(){
-  const sel = document.getElementById("f-home");
-  const homes = [...new Set(FULL.map(r => r.home).filter(Boolean))].sort();
-  homes.forEach(h => {
-    const o = document.createElement("option");
-    o.value = h; o.textContent = h; sel.appendChild(o);
   });
 })();
 loadColOrder();

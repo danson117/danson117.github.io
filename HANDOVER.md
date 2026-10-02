@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **篩選下拉只列出有得揀嘅選項：** OCG Name List 刪走重複 CG/PAX 下拉，只留 OCG／CG／PAX 掣。Full List 嘅 Team／Home／Match，同 Authorization List、License Records 嘅 Section／Operator／Category／Aircraft／Authority，只顯示其他而家篩選下真係有嘅值（例 PAX 唔出 LGA1）。All 保留；揀咗嘅值消失就返 All。Name List **v3.16**、Auth **v2.11**、Lic **v2.0**、`hx-rules` **v10.37**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
 ## 2026-10-02 公司電腦
 
 - **236051 改做 CG：** CHAN SIU CHUNG 由 PAX 改做 CG。唔喺 Crew List，section 仍然 LGDX，冇加去 Crew List。Name List **v3.15**、`ocg-pax-data.js?v=10`、`hx-rules` **v10.36**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。本機 Chrome 開 Name List。唔寫訓練明細。

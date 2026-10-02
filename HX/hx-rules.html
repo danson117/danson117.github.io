@@ -309,6 +309,7 @@
         <li><b>Authorization List</b>／<b>License Records</b>：CSV DEPT 只參考；顯示 Section／Team 跟 Name List。唔喺 Name List 嘅人唔上表。</li>
         <li style="color:#b00020"><b>新 · Authorization List Airline 欄：</b>打至少一個字就列出符合嘅 operator code／航空公司名（contains，唔使完整 code）；揀一行填入 code 同全名。全名取自該 code 嘅 auth module 標題最後一段（唔係另外一本 IATA 名冊）。唔喺 Name List、只喺 stage 嘅 code 一樣查到名，但仍然唔上表。冇符合先顯示 Not on this list。呢個 lookup 唔過濾表。</li>
         <li style="color:#b00020"><b>新 · Authorization List Operators 表：</b>Operators 表列出每個 operator code 一行（Operator code + Airline name）；航空公司名同樣取自 module 標題最後一段（含只喺 stage 嘅 code）。唔過濾、唔跟職員表。</li>
+        <li style="color:#b00020"><b>新 · 篩選下拉只列出而家有得揀嘅選項：</b>OCG Name List（Full List）嘅 <b>Team</b>／<b>Home</b>／<b>Match</b>，同 Authorization List、License Records 嘅 <b>Section</b>／<b>Operator</b>／<b>Category</b>／<b>Aircraft</b>／<b>Authority</b>，下拉只顯示其他而家篩選（OCG／CG／PAX、其餘下拉、Search、到期色）之下真係有行嘅值。<b>All</b> 保留。而家揀咗嘅值唔再喺名單就返 <b>All</b>。固定控件（狀態、role、view、completed window、course type）唔跟。OCG Name List 刪走重複嘅 <b>CG/PAX</b> 下拉，只留 OCG／CG／PAX 掣（Name List 同 Full List 都用呢三粒掣）。Name List <b>v3.16</b>、Auth <b>v2.11</b>、Lic <b>v2.0</b>。</li>
         <li style="color:#b00020"><b>新 · Authorization List 同一 Staff # 只顯示一行：</b>工具列有掣 <b>One per Staff #</b>。撳開之後，而家篩選同排序入面每個 Staff # 只留第一行（其他機型／module 收起）。再撳或 <b>Clear filters</b> 恢復全部行。Copy Table／To XLSX 跟畫面。Auth <b>v2.10</b>。</li>
         <li>大名單 packed lossless：<code>ocg-pax-data.js</code>。改 version 唔好清已載入訓練檔。</li>
         <li>零碎筆記：畫面唔顯示「記下」／時間／caption；時間只留 hidden ledger。</li>
@@ -351,6 +352,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.36">v10.36</div>
+  <div class="page-version" data-version="10.37">v10.37</div>
 </body>
 </html>
