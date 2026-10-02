@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **236051 改做 CG：** CHAN SIU CHUNG 由 PAX 改做 CG。唔喺 Crew List，section 仍然 LGDX，冇加去 Crew List。Name List **v3.15**、`ocg-pax-data.js?v=10`、`hx-rules` **v10.36**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。本機 Chrome 開 Name List。唔寫訓練明細。
+
+## 2026-10-02 公司電腦
+
 - **Name List 加入同移走：** `382755` 新入職，LTC3、Team 3，跟同隊 licence technician（PAX、Crew List、16-Jan-26）。移走 `169153`、`170465`。`382200`、`313495` 連 Full List 黃行一併移走。已存訓練列唔刪。Name List **v3.14**、`ocg-pax-data.js?v=9`、`hx-rules` **v10.35**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。本機 Chrome 開 Name List。唔寫訓練明細。
 
 ## 2026-10-02 公司電腦
