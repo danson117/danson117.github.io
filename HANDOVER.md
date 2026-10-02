@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **身份可以重疊（暫時唔拆單一角色）：** OCG Name List 嘅 Crew List＝Mechanics。Authorization List 有紀錄＝Certifiers／CS／Engineers。同一人可以兩個都係。EY 課程 T.EE0771 嘅 **62** 人全部有授權，所以全部係 Certifiers／CS／Engineers；其中 Crew List **19**（全部 LTW）同時係 Mechanics，其餘 **43** 只有授權身份。課程人數冇改。唔改 HTML。唔開 Chrome。
+
+## 2026-10-02 公司電腦
+
 - **更正 T.EE0771 角色：** 62 人唔係 Mechanics。Name List role：Certifiers **61**（Licensed Engineer 49，其餘 DIC／Controller）、Office **1**、Mechanics **0**。TOV Role 掣跟 section（LTW＝Certifiers **19**；其他 section **43** 會標 Mechanics），唔等於職位。課程人數冇改。唔改 HTML。唔開 Chrome。
 
 ## 2026-10-02 公司電腦
