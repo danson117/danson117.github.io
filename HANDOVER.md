@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **TOV Manual T.EE0771（EY Authorization · OCG Name List）：** 課程名 Etihad Airways Electronic Aircraft Technical Log (eTechLog8) Training（Course List 已有）。Name List 現有 EY 授權 **62**（CG 42／PAX 20），全部 Mechanics、未過期。Completed **61**（CG 41／PAX 20，done＝2026-10-02、due＝2028-10-02，先過 90 日 outstanding 規則）。Outstanding **1**（CG 1／PAX 0，due `2026-09-25`）。粘貼 65 個 unique；3 個唔喺 Name List、1 個喺 Name List 但冇 EY 授權，唔入。其他 Manual 行數不變（1111）。Supabase `hx_private.team_board_actions`（`hx_team_board_put` 會 snapshot `board_revisions`）。唔改 HTML。唔開 Chrome。唔寫職員明細。本機冇 `HX-outstanding-by-course.xlsx`。
+
+## 2026-10-02 公司電腦
+
 - **Team 數字唔再當 PAX：** Name List 唔再用 Team 格判 PAX。CG 可以有 Team No.，仍然係 CG。PAX 跟 roster group，或者人喺 Crew List。已填之前停低嘅 CG Team No. **36** 人（空白先填；冇加入 Crew List；section 冇改；Auth_050 冇改）。Name List **v3.11**、`ocg-pax-data.js?v=6`、`hx-rules` **v10.28**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。
 
 ## 2026-10-02 公司電腦
