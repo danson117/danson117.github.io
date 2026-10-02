@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **TOV Manual T.EE0155（EY Authorization · OCG Name List）只加 Outstanding：** 課程名 Etihad Airways Documentation and Procedures Training（Course List 已有，行上記住完整課程名）。只加未完成 **2** 人（CG 2／PAX 0，due `2026-09-25`，冇 Completed status）。唔加已完成嘅 60 人。其他 Manual 行數不變（1173 → 1175，新增 2）。Supabase `hx_private.team_board_actions`（`hx_team_board_put` 會 snapshot `board_revisions`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-02 公司電腦
+
 - **身份可以重疊（暫時唔拆單一角色）：** OCG Name List 嘅 Crew List＝Mechanics。Authorization List 有紀錄＝Certifiers／CS／Engineers。同一人可以兩個都係。EY 課程 T.EE0771 嘅 **62** 人全部有授權，所以全部係 Certifiers／CS／Engineers；其中 Crew List **19**（全部 LTW）同時係 Mechanics，其餘 **43** 只有授權身份。課程人數冇改。唔改 HTML。唔開 Chrome。
 
 ## 2026-10-02 公司電腦
