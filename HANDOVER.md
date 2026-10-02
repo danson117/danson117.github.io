@@ -10,6 +10,14 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion 掣下面人數：** Group／Role／Status 每粒掣個字下面有人數，跟其他已選條件同 Expiry 年數。Status 揀 Completed 時，CS／Mechanic 只計未過期 Completed。Outstanding＝過期＋名冊未喺檔。統計句縮短，唔再重複 Group／Role／Status 總數，放喺掣下面；仍然寫檔名、課程碼、移除數、Never in file、年數、近期紅／黃、Skipped。頁 **v1.8**、`hx-rules` **v10.46**、hub page-version **v18.3**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **Course completion Outstanding 包括未做過：** Outstanding 唔止過期。Name List（包括 SHOWS LMP）入面，保留課程喺允許 department 冇出現過嘅人，都係 Outstanding，完成日空白。PAX／CG 跟名冊；PAX section 限制照舊；CG 冇額外 section。檔入面已有嘅唔重複。唔喺名冊仍然 Skipped。狀態行寫 Never in file。Export 仍然一張表、跟而家顯示嘅行。表頭讀法不變。同上面一齊出街：頁 **v1.8**、`hx-rules` **v10.46**、hub page-version **v18.3**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion 工具列 Expiry：** 標籤改做 **Expiry:**，同 Status: 同一樣式（唔再係啡色 Years）。右邊仍然只係數字，預設 2，冇開關。0 冇到期；大於 0 先按年數變 Outstanding。表頭讀法、Group、Export 不變。頁 **v1.5**、`hx-rules` **v10.43**、hub page-version **v18.0**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

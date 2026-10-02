@@ -241,6 +241,9 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · 掣下面人數：</b>Group <b>All／PAX／CG</b>、Role <b>All／CS／Mechanic</b>、Status <b>All／Completed／Outstanding</b> 每粒掣個字下面有人數，跟其他已選條件同 <b>Expiry:</b> 年數。Group 跟而家 Role 同 Status；All＝嗰組 PAX＋CG。Role 跟而家 Group 同 Status；All 包括 Office；CS 同 Mechanic 只計自己。Status 跟而家 Group 同 Role；Completed＝未過期完成；Outstanding＝過期＋名冊未喺檔。揀中嘅掣仍然亮。統計句唔再重複 Group／Role／Status 總數，仍然寫檔名、課程碼、其他 department／課程碼／未完成移除、PAX 其他 section、Never in file、年數、近期紅／黃、Skipped（not on Name List）。統計行仍然喺掣下面。頁 <b>v1.8</b>。</li>
+        <li style="color:#b00020"><b>新 · Course completion · 狀態行喺掣下面：</b>同一條 <code>#cmp-status</code>。未載入檔時 <b>No completion file yet.</b> 仍喺拖放區下面。載入之後統計行直接喺 Group／Role／Status／<b>Expiry:</b> 同 Export／Match columns／Copy／Download 下面，唔再喺上面。唔好再抄多一行。Outstanding 仍然係過期＋名冊未喺檔（見下面）。頁 <b>v1.7</b>。</li>
+        <li style="color:#b00020"><b>新 · Course completion · Outstanding 包括未做過：</b>Outstanding 唔止過期。Name List（包括 Remark SHOWS LMP；紀錄行已經唔喺 PEOPLE）入面，呢個保留課程碼喺允許 department 冇出現過嘅員工編號，都係 Outstanding：完成日空白、Status Outstanding。PAX／CG 跟名冊。PAX 仍然只留 LTC1／LTC2／LTC3／LTC4／LTC6／LTCX 同 LTW1–LTW4。CG 冇額外 section 限制。All＝兩組。檔入面該科允許 department 已經有嘅員工編號唔當未做過，唔重複；過期就用嗰一行做 Outstanding。唔喺 Name List 仍然 Skipped。Status：Outstanding＝過期＋未喺檔；Completed＝未過期 Completed；All＝兩邊。預設完成日新到舊，空白日期最後。狀態行寫 Never in file 幾多。Group 仍然 All／PAX／CG。Export 一張表，跟而家顯示嘅行。表頭讀法不變。唔送 AI、唔寫 Supabase。同掣下面人數一齊出街，頁 <b>v1.8</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 工具列 Expiry：</b>標籤係 <b>Expiry:</b>，同 <b>Status:</b> 同一個 class、顏色、字重、間距（唔好用啡色 label）。右邊只係數字，預設 <b>2</b>，一直可以改。冇開關。打 <b>0</b>＝冇到期，Completed 維持 Completed。大於 0 先按年數變 Outstanding（到期日當日仍 Completed；≤30 日紅、&gt;30 且 ≤90 日黃）。Group／Export／表頭讀法不變。頁 <b>v1.5</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Years 決定到期：</b>唔再有 Expiry 開關。工具列只留 <b>Years</b>，一直可以改，預設 <b>2</b>。打 <b>0</b>＝冇到期日，Completed 維持 Completed，唔變色。大於 0：完成日舊過嗰多少年先變 Outstanding；到期日當日仍係 Completed；剩餘 ≤30 日紅、&gt;30 且 ≤90 日黃。表頭讀法不變（<code>x:</code> 命名空間、格冇欄位字母、inline 字、Excel 日期序號、<b>end_date</b>）。Group 仍然 All／PAX／CG。Export XLSX 一張表，跟而家揀嘅組，最底寫 Validity years。唔送 AI、唔寫 Supabase。頁 <b>v1.4</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 表頭同 Expiry 開關：</b>有啲下載 xlsx 用 <code>x:</code> 命名空間，而且格冇欄位字母。舊讀法搵唔到行，又跳過冇欄位字母嘅格，成張表變空，所以話 <b>has no header row</b>。而家按本地名讀格（有欄位字母照用；冇就跟住順序），inline 字同 Excel 日期序號都讀。表頭對 <b>Staff no.</b>、<b>Course code</b>（cost code）、<b>Course title</b>、<b>Status</b>、<b>end_date</b>（包括 <b>end_date Hierarchy - Completion Date</b>）、<b>Department</b>。<b>LM - CXG Transit</b>＝PAX，<b>LM - OCG</b>＝CG；其他 department（Planning、Avionics 等）唔當 CG。Status 實字 <b>Complete</b> 當 <b>Completed</b>；<b>Outstanding</b>／<b>Incomplete</b> 唔當完成。Section 仍然跟 Name List。<b>Expiry</b> 係真正開關：關住 <b>Years</b> 唔可以改，Status 跟檔，Completed 維持 Completed。開住先可以打年數，預設 <b>2</b>。打 <b>0</b>＝冇到期日，全部 Completed 維持 Completed，唔彈返 2。開住而且年數大於 0：完成日舊過嗰多少年先變 Outstanding；90 日內變色；到期日當日仍係 Completed。Group 仍然 All／PAX／CG。Export XLSX 一張表，跟而家揀嘅組。唔送 AI、唔寫 Supabase。頁 <b>v1.3</b>。</li>
@@ -359,6 +362,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.43">v10.43</div>
+  <div class="page-version" data-version="10.46">v10.46</div>
 </body>
 </html>

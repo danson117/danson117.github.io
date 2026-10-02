@@ -57,6 +57,21 @@
     font-size: 0;
   }
   .cmp-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
+  #cmp-status { margin-top: 8px; }
+  .cmp-tools button.cmp-split {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.15;
+    min-width: 5.2em;
+    padding: 4px 10px 3px;
+    gap: 1px;
+  }
+  .cmp-tools button.cmp-split .cmp-n {
+    font-size: 11px;
+    font-weight: 650;
+  }
   .filter-label { font-weight: 650; color: var(--navy); white-space: nowrap; margin-right: 2px; }
   button {
     font: inherit;
@@ -185,25 +200,24 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Nothing is saved, and Training One View is left as it is.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Only Completed rows are listed, newest completed date first. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. Nothing is sent out.</p>
+      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. Nothing is sent out.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
       </div>
-      <p class="note" id="cmp-status">No completion file yet.</p>
       <div class="toolbar cmp-tools" id="cmp-tools" hidden>
         <span class="filter-label">Group:</span>
-        <button type="button" class="on" data-cmp-org="all">All</button>
-        <button type="button" data-cmp-org="pax">PAX</button>
-        <button type="button" data-cmp-org="cg">CG</button>
+        <button type="button" class="on cmp-split" data-cmp-org="all"><span>All</span><span class="cmp-n" data-cmp-n="org-all">0</span></button>
+        <button type="button" class="cmp-split" data-cmp-org="pax"><span>PAX</span><span class="cmp-n" data-cmp-n="org-pax">0</span></button>
+        <button type="button" class="cmp-split" data-cmp-org="cg"><span>CG</span><span class="cmp-n" data-cmp-n="org-cg">0</span></button>
         <span class="filter-label">Role:</span>
-        <button type="button" class="on" data-cmp-role="all">All</button>
-        <button type="button" data-cmp-role="cs">CS</button>
-        <button type="button" data-cmp-role="mech">Mechanic</button>
+        <button type="button" class="on cmp-split" data-cmp-role="all"><span>All</span><span class="cmp-n" data-cmp-n="role-all">0</span></button>
+        <button type="button" class="cmp-split" data-cmp-role="cs"><span>CS</span><span class="cmp-n" data-cmp-n="role-cs">0</span></button>
+        <button type="button" class="cmp-split" data-cmp-role="mech"><span>Mechanic</span><span class="cmp-n" data-cmp-n="role-mech">0</span></button>
         <span class="filter-label">Status:</span>
-        <button type="button" class="on" data-cmp="all">All</button>
-        <button type="button" data-cmp="completed">Completed</button>
-        <button type="button" data-cmp="outstanding">Outstanding</button>
+        <button type="button" class="on cmp-split" data-cmp="all"><span>All</span><span class="cmp-n" data-cmp-n="status-all">0</span></button>
+        <button type="button" class="cmp-split" data-cmp="completed"><span>Completed</span><span class="cmp-n" data-cmp-n="status-completed">0</span></button>
+        <button type="button" class="cmp-split" data-cmp="outstanding"><span>Outstanding</span><span class="cmp-n" data-cmp-n="status-outstanding">0</span></button>
         <span class="filter-label">Expiry:</span>
         <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" aria-label="Expiry years" title="Years after the completed date. Default 2. 0 means no expiry date.">
         <button type="button" id="cmp-export-xlsx">Export XLSX</button>
@@ -222,6 +236,7 @@
           </svg>
         </button>
       </div>
+      <p class="note" id="cmp-status">No completion file yet.</p>
       <div class="cmp-table-wrap" id="cmp-wrap" hidden>
         <div id="cmp-shot">
           <table class="cmp-table">
@@ -266,7 +281,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="1.5" aria-label="Page version 1.5">v1.5</div>
+  <div class="page-version" data-version="1.8" aria-label="Page version 1.8">v1.8</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -542,10 +557,46 @@ function cmpRoleRows() {
   if (!cmpModel || !cmpModel.rows) return [];
   return cmpModel.rows.map(cmpView).filter(cmpRoleOk);
 }
-function cmpOrgOk(row) {
-  if (cmpOrg === "pax") return row.bucket === "PAX";
-  if (cmpOrg === "cg") return row.bucket === "CG";
+function cmpOrgMatch(row, org) {
+  if (org === "pax") return row.bucket === "PAX";
+  if (org === "cg") return row.bucket === "CG";
   return row.bucket === "PAX" || row.bucket === "CG";
+}
+function cmpRoleMatch(row, role) {
+  if (role === "cs") return row.role === "CS";
+  if (role === "mech") return row.role === "MECHANIC";
+  return true;
+}
+function cmpStatusOk(row, filter) {
+  if (filter === "completed") return !!row.doneFlag;
+  if (filter === "outstanding") return !row.doneFlag;
+  return true;
+}
+function cmpOrgOk(row) {
+  return cmpOrgMatch(row, cmpOrg);
+}
+function cmpFacetCount(rows, kind, value) {
+  return rows.filter((row) => {
+    if (kind === "org") return cmpOrgMatch(row, value) && cmpRoleMatch(row, cmpRole) && cmpStatusOk(row, cmpFilter);
+    if (kind === "role") return cmpOrgMatch(row, cmpOrg) && cmpRoleMatch(row, value) && cmpStatusOk(row, cmpFilter);
+    return cmpOrgMatch(row, cmpOrg) && cmpRoleMatch(row, cmpRole) && cmpStatusOk(row, value);
+  }).length;
+}
+function paintCmpCounts() {
+  const rows = (!cmpModel || !cmpModel.rows) ? [] : cmpModel.rows.map(cmpView);
+  const set = (key, n) => {
+    const el = document.querySelector("#cmp-tools [data-cmp-n=\"" + key + "\"]");
+    if (el) el.textContent = String(n);
+  };
+  set("org-all", cmpFacetCount(rows, "org", "all"));
+  set("org-pax", cmpFacetCount(rows, "org", "pax"));
+  set("org-cg", cmpFacetCount(rows, "org", "cg"));
+  set("role-all", cmpFacetCount(rows, "role", "all"));
+  set("role-cs", cmpFacetCount(rows, "role", "cs"));
+  set("role-mech", cmpFacetCount(rows, "role", "mech"));
+  set("status-all", cmpFacetCount(rows, "status", "all"));
+  set("status-completed", cmpFacetCount(rows, "status", "completed"));
+  set("status-outstanding", cmpFacetCount(rows, "status", "outstanding"));
 }
 function cmpShownRows() {
   if (!cmpModel || !cmpModel.rows) return [];
@@ -693,6 +744,12 @@ function cmpDeptBucket(raw) {
 }
 function cmpPaxSection(sec) {
   return /^(LTC[12346]|LTCX|LTW[1-4])$/i.test(String(sec || "").trim());
+}
+function cmpPersonBucket(person) {
+  const g = String((person && person.group) || "").trim().toUpperCase();
+  if (g === "PAX") return "PAX";
+  if (g === "CG" || g === "OC") return "CG";
+  return "";
 }
 function cmpIsDeptCell(v) {
   return cmpDeptBucket(v) !== "";
@@ -857,12 +914,41 @@ function cmpBuild(grid, fileName, headAt, header, map) {
       bucket: item.bucket
     });
   });
+  const covered = new Set();
+  kept.forEach((item) => {
+    if (item.codeKey !== keptCode) return;
+    if (!rosterHas(item.staff)) return;
+    covered.add(padStaff(item.staff));
+  });
+  let keptTitle = "";
+  rows.forEach((row) => { if (!keptTitle && row.title) keptTitle = row.title; });
+  let neverInFile = 0;
+  byStaff.forEach((person, id) => {
+    if (covered.has(id)) return;
+    const bucket = cmpPersonBucket(person);
+    if (!bucket) return;
+    const section = String(person.home || "").trim();
+    if (bucket === "PAX" && !cmpPaxSection(section)) return;
+    neverInFile++;
+    rows.push({
+      staff: id,
+      name: String(person.name || "").trim(),
+      section: section,
+      code: keptCode,
+      title: keptTitle,
+      status: "Outstanding",
+      done: "",
+      doneFlag: false,
+      role: roles.get(id) || "",
+      bucket: bucket
+    });
+  });
   const columns = CMP_FIELDS.filter((field) => map[field.key] >= 0).map((field) => field.label + " = " + String(header[map[field.key]] || "").trim());
   const usual = /staff no/.test(cmpNormHeader(header[map.staff])) && /course code/.test(cmpNormHeader(header[map.code]));
   return {
     fileName: fileName, fileRows: fileRows, skipped: skipped, rows: rows, columns: columns, usual: usual,
     headAt: headAt, header: header, map: map, keptCode: keptCode, otherDept: otherDept, otherCodes: otherCodes,
-    notCompleted: notCompleted, paxSection: paxSection
+    notCompleted: notCompleted, paxSection: paxSection, neverInFile: neverInFile
   };
 }
 function cmpPrepare(grid, fileName, forced) {
@@ -890,14 +976,10 @@ function paintCmp() {
     if (statusEl) statusEl.textContent = cmpModel && cmpModel.error ? cmpModel.error : "No completion file yet.";
     return;
   }
-  const roleRows = cmpRoleRows();
   const shown = cmpShownRows();
-  const completed = roleRows.filter((row) => row.doneFlag).length;
-  const outstanding = roleRows.length - completed;
-  const expired = roleRows.filter((row) => row.expired).length;
-  const nearRed = roleRows.filter((row) => row.band === "hot" && !row.expired).length;
-  const nearYellow = roleRows.filter((row) => row.band === "warn").length;
-  const roleLabel = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mechanic" : "All");
+  const scoped = (cmpModel.rows || []).map(cmpView).filter((row) => cmpOrgMatch(row, cmpOrg) && cmpRoleMatch(row, cmpRole));
+  const nearRed = scoped.filter((row) => row.band === "hot" && !row.expired).length;
+  const nearYellow = scoped.filter((row) => row.band === "warn").length;
   body.innerHTML = shown.map((row) => {
     const cls = (row.doneFlag ? "cmp-done" : "cmp-open") +
       (row.band === "hot" ? " cmp-hot" : "") +
@@ -923,27 +1005,21 @@ function paintCmp() {
   tools.querySelectorAll("[data-cmp-org]").forEach((btn) => {
     btn.classList.toggle("on", btn.getAttribute("data-cmp-org") === cmpOrg);
   });
+  paintCmpCounts();
   paintCmpSortHeaders();
   if (statusEl) {
-    const groupLabel = cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All");
     statusEl.textContent = cmpModel.fileName +
-      " · Group " + groupLabel +
       " · Course " + (cmpModel.keptCode || "") +
-      " · Role " + roleLabel +
-      " · Completed " + completed +
-      " · Outstanding " + outstanding +
       " · Other departments removed " + (cmpModel.otherDept || 0) +
       " · Other course codes removed " + (cmpModel.otherCodes || 0) +
       " · Not completed removed " + (cmpModel.notCompleted || 0) +
       " · PAX other sections removed " + (cmpModel.paxSection || 0) +
+      " · Never in file " + (cmpModel.neverInFile || 0) +
       " · Years " + cmpExpiryYears +
-      (cmpExpiryYears > 0
-        ? " · Expired to Outstanding " + expired +
-          " · Near red " + nearRed + " · Near yellow " + nearYellow
-        : " · No expiry") +
-      " · Skipped " + cmpModel.skipped + " (not on Name List)" +
-      " · Showing " + shown.length + "." +
-      (cmpModel.usual || !(cmpModel.columns && cmpModel.columns.length) ? "" : " · Columns " + cmpModel.columns.join(", ") + ".");
+      " · Near red " + nearRed +
+      " · Near yellow " + nearYellow +
+      " · Skipped " + cmpModel.skipped + " (not on Name List)." +
+      (cmpModel.usual || !(cmpModel.columns && cmpModel.columns.length) ? "" : " Columns " + cmpModel.columns.join(", ") + ".");
   }
 }
 function exportCmpXlsx() {
@@ -971,6 +1047,7 @@ function exportCmpXlsx() {
     ["Role", roleLabel],
     ["Status", statusLabel],
     ["Validity years", String(cmpExpiryYears)],
+    ["Never in file", String((cmpModel && cmpModel.neverInFile) || 0)],
     ["Sort", cmpSortKey ? (sortLabels[cmpSortKey] || cmpSortKey) + (cmpSortDir >= 0 ? " A to Z" : " Z to A") : ""],
     ["People", String(shown.length)]
   );
