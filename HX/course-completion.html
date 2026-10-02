@@ -79,6 +79,11 @@
     background: #fff;
     color: var(--ink);
   }
+  .cmp-tools input.cmp-years:disabled {
+    background: #e4e4e4;
+    color: #6b7280;
+    cursor: not-allowed;
+  }
   .pop-icon {
     width: 34px;
     height: 34px;
@@ -185,7 +190,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Nothing is saved, and Training One View is left as it is.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Only Completed rows are listed, newest completed date first. Header names are matched in this browser. Nothing is sent out.</p>
+      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Only Completed rows are listed, newest completed date first. Header names are matched in this browser. Expiry off keeps the file status and locks Years. Expiry on uses the year count (default 2). 0 means no expiry date. Nothing is sent out.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -205,9 +210,9 @@
         <button type="button" data-cmp="completed">Completed</button>
         <button type="button" data-cmp="outstanding">Outstanding</button>
         <span class="filter-label">Expiry:</span>
-        <button type="button" id="cmp-expiry" aria-pressed="false" title="When on, a completion past the year count becomes Outstanding. Within 90 days the row changes colour. The due day stays Completed.">Expiry</button>
+        <button type="button" id="cmp-expiry" aria-pressed="false" title="Off: rows keep the file status and Years is locked. On: type a year count. Default 2. 0 means no expiry date. A completion older than that becomes Outstanding. Within 90 days the row changes colour. The due day stays Completed.">Expiry</button>
         <label class="filter-label" for="cmp-years">Years</label>
-        <input id="cmp-years" class="cmp-years" type="number" min="1" step="1" value="2" inputmode="numeric" aria-label="Validity years" title="Years after the completed date. Default 2.">
+        <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" disabled aria-label="Validity years" title="Turn Expiry on to edit the year count. Default 2. 0 means no expiry date.">
         <button type="button" id="cmp-export-xlsx">Export XLSX</button>
         <button type="button" id="cmp-remap" title="Choose columns when the file uses different header names.">Match columns</button>
         <button type="button" id="cmp-copy" class="pop-icon" data-copy-shot title="Copy layout" aria-label="Copy layout">
@@ -268,7 +273,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="1.2" aria-label="Page version 1.2">v1.2</div>
+  <div class="page-version" data-version="1.3" aria-label="Page version 1.3">v1.3</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -399,6 +404,14 @@ async function unzipXlsx(buf) {
 function xlsxText(el) {
   return String(el && el.textContent || "").replace(/\s+/g, " ").trim();
 }
+function xmlEls(root, local) {
+  if (!root || typeof root.getElementsByTagNameNS !== "function") return [];
+  const list = root.getElementsByTagNameNS("*", local);
+  const out = [];
+  if (!list) return out;
+  for (let i = 0; i < list.length; i++) out.push(list[i]);
+  return out;
+}
 function colIndex(ref) {
   const m = String(ref || "").match(/^([A-Z]+)/i);
   if (!m) return -1;
@@ -407,24 +420,33 @@ function colIndex(ref) {
   return n - 1;
 }
 function parseSharedStrings(xml) {
-  const doc = new DOMParser().parseFromString(xml, "application/xml");
-  return [...doc.getElementsByTagName("si")].map((si) => xlsxText(si));
+  const doc = new DOMParser().parseFromString(String(xml || "").replace(/^\uFEFF/, ""), "application/xml");
+  return xmlEls(doc, "si").map((si) => xlsxText(si));
 }
 function parseSheetGrid(xml, strings) {
-  const doc = new DOMParser().parseFromString(xml, "application/xml");
+  const doc = new DOMParser().parseFromString(String(xml || "").replace(/^\uFEFF/, ""), "application/xml");
   const grid = [];
-  [...doc.getElementsByTagName("row")].forEach((row) => {
+  xmlEls(doc, "row").forEach((row) => {
     const cells = [];
-    [...row.getElementsByTagName("c")].forEach((c) => {
-      const i = colIndex(c.getAttribute("r"));
-      if (i < 0 || i > 40) return;
+    let next = 0;
+    xmlEls(row, "c").forEach((c) => {
+      let i = colIndex(c.getAttribute("r"));
+      if (i < 0) i = next;
+      if (i > 40) {
+        next = i + 1;
+        return;
+      }
       const t = c.getAttribute("t") || "";
-      const v = xlsxText(c.getElementsByTagName("v")[0] || c.getElementsByTagName("t")[0]);
+      const vEl = xmlEls(c, "v")[0];
+      const tEl = xmlEls(c, "t")[0];
+      const v = xlsxText(vEl || (t === "inlineStr" ? null : tEl));
       let val = v;
       if (t === "s") val = strings[Number(v)] || "";
-      else if (t === "inlineStr") val = xlsxText(c);
+      else if (t === "inlineStr" || t === "str") val = xlsxText(c);
+      else if (!val && tEl) val = xlsxText(tEl);
       while (cells.length < i) cells.push("");
       cells[i] = val;
+      next = i + 1;
     });
     if (cells.some((x) => String(x || "").trim() !== "")) grid.push(cells);
   });
@@ -434,13 +456,13 @@ function xlsxSheetPath(files) {
   const wb = files["xl/workbook.xml"];
   const rels = files["xl/_rels/workbook.xml.rels"];
   if (!wb) return "xl/worksheets/sheet1.xml";
-  const doc = new DOMParser().parseFromString(decodeBytes(wb), "application/xml");
-  const sheets = [...doc.getElementsByTagName("sheet")];
+  const doc = new DOMParser().parseFromString(String(decodeBytes(wb) || "").replace(/^\uFEFF/, ""), "application/xml");
+  const sheets = xmlEls(doc, "sheet");
   const pick = sheets.find((s) => /export/i.test(s.getAttribute("name") || "")) || sheets[0];
   const rid = pick && (pick.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || pick.getAttribute("r:id") || pick.getAttribute("id"));
   if (rels && rid) {
-    const rdoc = new DOMParser().parseFromString(decodeBytes(rels), "application/xml");
-    const rel = [...rdoc.getElementsByTagName("Relationship")].find((r) => r.getAttribute("Id") === rid);
+    const rdoc = new DOMParser().parseFromString(String(decodeBytes(rels) || "").replace(/^\uFEFF/, ""), "application/xml");
+    const rel = xmlEls(rdoc, "Relationship").find((r) => r.getAttribute("Id") === rid);
     let t = rel && rel.getAttribute("Target") || "";
     if (t) {
       t = t.replace(/^\//, "");
@@ -588,7 +610,7 @@ const CMP_FIELDS = [
   { key: "dept", label: "Department", need: true, aliases: ["departments", "department", "dept", "division"] },
   { key: "title", label: "Course title", need: false, aliases: ["course title", "course name", "activity name", "training name", "course description", "module name"] },
   { key: "status", label: "Status", need: false, aliases: ["completion status", "course status", "training status", "status", "result"] },
-  { key: "date", label: "Completed date", need: false, aliases: ["completion date", "completed date", "date completed", "end date", "completed on", "finish date", "finished date"] }
+  { key: "date", label: "Completed date", need: false, aliases: ["completion date", "completed date", "date completed", "end date", "end date hierarchy completion date", "completed on", "finish date", "finished date"] }
 ];
 let cmpSource = null;
 function cmpNormHeader(h) {
@@ -662,6 +684,14 @@ function cmpIsCodeCell(v) {
 }
 function cmpIsStatusCell(v) {
   return /^(completed|outstanding|complete|incomplete|passed|failed|pass|fail|in progress|not started)$/i.test(String(v || "").trim());
+}
+function cmpCanonStatus(raw) {
+  const s = String(raw || "").trim();
+  if (/^complete$/i.test(s) || /^completed$/i.test(s)) return "Completed";
+  return s;
+}
+function cmpIsCompletedStatus(raw) {
+  return cmpCanonStatus(raw) === "Completed";
 }
 function cmpDeptBucket(raw) {
   const s = String(raw || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -782,7 +812,7 @@ function cmpBuild(grid, fileName, headAt, header, map) {
       staff: staff,
       codeKey: codeKey,
       title: iTitle >= 0 ? String(cells[iTitle] || "").trim() : "",
-      status: iStatus >= 0 ? String(cells[iStatus] || "").trim() : "",
+      status: iStatus >= 0 ? cmpCanonStatus(cells[iStatus]) : "",
       done: iDate >= 0 ? cmpDoneDate(cells[iDate]) : "",
       bucket: bucket
     });
@@ -810,8 +840,8 @@ function cmpBuild(grid, fileName, headAt, header, map) {
     const person = byStaff.get(padStaff(item.staff));
     const section = String((person && person.home) || "").trim();
     if (item.bucket === "PAX" && !cmpPaxSection(section)) { paxSection++; return; }
-    const status = item.status || "Completed";
-    if (iStatus >= 0 && !/completed/i.test(status)) { notCompleted++; return; }
+    const status = cmpCanonStatus(item.status || "Completed");
+    if (iStatus >= 0 && !cmpIsCompletedStatus(status)) { notCompleted++; return; }
     const id = padStaff(item.staff) + "|" + item.bucket;
     if (seen.has(id)) {
       const prev = rows[seen.get(id)];
@@ -830,7 +860,7 @@ function cmpBuild(grid, fileName, headAt, header, map) {
       title: item.title,
       status: status,
       done: item.done,
-      doneFlag: /completed/i.test(status),
+      doneFlag: cmpIsCompletedStatus(status),
       role: roles.get(padStaff(item.staff)) || "",
       bucket: item.bucket
     });
@@ -855,6 +885,14 @@ function cmpPrepare(grid, fileName, forced) {
   const map = found.map;
   if (map.staff < 0 || map.code < 0 || map.dept < 0) return { needMap: true, grid: grid, fileName: fileName, headAt: headAt, header: header, map: map };
   return cmpBuild(grid, fileName, headAt, header, map);
+}
+function syncCmpYears() {
+  const input = document.getElementById("cmp-years");
+  if (!input) return;
+  input.disabled = !cmpExpiryOn;
+  input.title = cmpExpiryOn
+    ? "Years after the completed date. Default 2. 0 means no expiry date."
+    : "Turn Expiry on to edit the year count. Default 2. 0 means no expiry date.";
 }
 function paintCmp() {
   const statusEl = document.getElementById("cmp-status");
@@ -902,6 +940,7 @@ function paintCmp() {
     btn.classList.toggle("on", btn.getAttribute("data-cmp-org") === cmpOrg);
   });
   const expiryBtn = document.getElementById("cmp-expiry");
+  syncCmpYears();
   if (expiryBtn) {
     expiryBtn.classList.toggle("on", cmpExpiryOn);
     expiryBtn.setAttribute("aria-pressed", cmpExpiryOn ? "true" : "false");
@@ -1359,15 +1398,22 @@ function takeCmpFile(file) {
   });
 }
 document.getElementById("cmp-years").addEventListener("input", (e) => {
+  if (!cmpExpiryOn) return;
   const raw = String(e.target.value || "").trim();
   if (!/^\d+$/.test(raw)) return;
   const n = Number(raw);
-  if (n < 1) return;
+  if (n < 0) return;
   cmpExpiryYears = n;
-  if (cmpExpiryOn) paintCmp();
+  paintCmp();
 });
 document.getElementById("cmp-years").addEventListener("blur", (e) => {
+  const raw = String(e.target.value || "").trim();
+  if (/^\d+$/.test(raw)) {
+    const n = Number(raw);
+    if (n >= 0) cmpExpiryYears = n;
+  }
   e.target.value = String(cmpExpiryYears);
+  if (cmpExpiryOn) paintCmp();
 });
 document.getElementById("cmp-file").addEventListener("change", (e) => {
   const file = e.target.files && e.target.files[0];
