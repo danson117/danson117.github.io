@@ -113,13 +113,13 @@
     <div class="notes">
       <p>Crew List (Pax Teams 1–4) joined to OCS staff extract. Updated 20 Sep 2026.</p>
       <p><b>UA</b> shows the V number (30 Sep 2026). A cell that still says UA has authorization and no V number.</p>
-      <p><b>Full List</b> shows every staff (OCG). <b>Name List</b> columns come first (CG/PAX, Staff No, Staff Name, Chinese Name, Home Section, Current Section, Staff Position, Position Title, Class, Status, Date join, Date Term, Revenue Code), then <b>Crew List</b> columns that are not duplicates (Team, Shift, Ω, UA, MM Refueller, JL, JJP). <b>Remark</b> sits after the name.</p>
+      <p><b>Full List</b> shows every staff record. <b>Name List</b> columns come first (CG/PAX, Staff No, Staff Name, Chinese Name, Home Section, Current Section, Staff Position, Position Title, Class, Status, Date join, Date Term, Revenue Code), then <b>Crew List</b> columns that are not duplicates (Team, Shift, Ω, UA, MM Refueller, JL, JJP). <b>Remark</b> sits after the name. A Remark <b>01OCT will transfer to CXG</b> is a record only: they used to be OCG. They stay on Full List (yellow row) and are not in the OCG / CG / PAX / role counts, not on Crew List or Name List, and not in training.</p>
       <p><b>Future sections</b> are <strong>new section codes for later</strong>. They are not current Home / Current on the Name List. Do not overwrite published sections until a formal update. The table shows LT families only. Team numbers 1–9 and duplicate rows are dropped (LTY1–9 → LTY). Letter suffixes stay (LTCX, LTDC, LTFA, LTXM).</p>
       <p><b>OCG</b> = CG + PAX (the total). A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = Crew List, including FLS and RF. <b>CG</b> = Name List, not on Crew List. <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC). <b>Office</b> = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
     </div>
   </div>
-  <div class="page-version" data-version="3.8">v3.8</div>
-<script src="ocg-pax-data.js?v=3"></script>
+  <div class="page-version" data-version="3.9">v3.9</div>
+<script src="ocg-pax-data.js?v=4"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script>
 hxUnpackRoster();
@@ -300,6 +300,13 @@ function rowsAll(){
   if (tab === "sections") return SECTIONS;
   return STAFF;
 }
+const RECORD_NOTE = "01OCT will transfer to CXG";
+function recordOnly(r){
+  return String(r && r.note || "") === RECORD_NOTE;
+}
+function currentRoster(){
+  return FULL.filter(r => !recordOnly(r));
+}
 function groupOk(r, g){
   if (!g || g === "ocg" || g === "all") return true;
   if (g === "CG") return r.group === "CG" || r.group === "OC";
@@ -341,6 +348,11 @@ function filtered(){
     if (tab !== "team") {
       if (fOrg && orgOf(r) !== fOrg) return false;
     }
+    if (recordOnly(r)) {
+      if (tab !== "full") return false;
+      if (fRole || fOrg || fTeam || fHome || fMatch) return false;
+      if (fGroup && fGroup !== "ocg" && fGroup !== "all") return false;
+    }
     if (tab === "full") {
       if (fGroup && fGroup !== "ocg" && fGroup !== "all" && !groupOk(r, fGroup)) return false;
       if (fTeam && r.team !== fTeam) return false;
@@ -367,7 +379,7 @@ function sorted(list){
   });
 }
 function rowClass(r){
-  if (r.note === "SHOWS LMP") return "warn";
+  if (r.note === "SHOWS LMP" || recordOnly(r)) return "warn";
   if (tab !== "full") return "";
   if (r.match === "Master only") return "hot";
   return "";
@@ -406,10 +418,11 @@ function paintBody(){
 function paint(){
   persistUi();
   nlView = sorted(filtered());
-  document.getElementById("n-all").textContent = String(FULL.length);
-  document.getElementById("n-cg").textContent = String(FULL.filter(r => r.group === "CG" || r.group === "OC").length);
-  document.getElementById("n-pax").textContent = String(FULL.filter(r => r.group === "PAX").length);
-  const roleBase = FULL.filter(r => groupOk(r, fGroup));
+  const current = currentRoster();
+  document.getElementById("n-all").textContent = String(current.length);
+  document.getElementById("n-cg").textContent = String(current.filter(r => r.group === "CG" || r.group === "OC").length);
+  document.getElementById("n-pax").textContent = String(current.filter(r => r.group === "PAX").length);
+  const roleBase = current.filter(r => groupOk(r, fGroup));
   document.getElementById("n-mech").textContent = String(roleBase.filter(r => roleOf(r) === "MECHANIC").length);
   document.getElementById("n-cert").textContent = String(roleBase.filter(r => roleOf(r) === "CERTIFIER").length);
   document.getElementById("n-office").textContent = String(roleBase.filter(r => roleOf(r) === "OFFICE").length);
