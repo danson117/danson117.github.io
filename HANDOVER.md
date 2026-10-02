@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **Name List 加入同移走：** `382755` 新入職，LTC3、Team 3，跟同隊 licence technician（PAX、Crew List、16-Jan-26）。移走 `169153`、`170465`。`382200`、`313495` 連 Full List 黃行一併移走。已存訓練列唔刪。Name List **v3.14**、`ocg-pax-data.js?v=9`、`hx-rules` **v10.35**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。本機 Chrome 開 Name List。唔寫訓練明細。
+
+## 2026-10-02 公司電腦
+
 - **Name List 編號 section：** 正式用 LTC1／LTC2／LTC3／LTC4／LTC6／LTCX 同 LTW1–LTW4 取代呢批人嘅舊 Home／Current（LTA、LGEX、LTDX）。對到名冊 **117**。姓名／職位／班／入職日／Revenue 冇衝突。Team 只補原本空白 **4** 人（LTW）。`290990` 舊 Current 係 LTGC，而家 LTC4。`382755` 唔喺 Name List，冇加。`169153`、`170465` 唔喺呢份檔，仍係 LTA1／LTA3。紀錄行 `382200`、`313495` 唔改。Name List **v3.13**、`ocg-pax-data.js?v=8`、`hx-rules` **v10.34**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。本機 Chrome 開 Name List。唔寫訓練明細。
 
 ## 2026-10-02 公司電腦
