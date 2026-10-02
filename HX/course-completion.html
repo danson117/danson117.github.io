@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course completion</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --muted: #4a5564;
+    --line: #d5dbe3;
+    --paper: #f4f6f8;
+    --card: #ffffff;
+    --navy: #015260;
+    --navy-soft: #e5f4f6;
+    --hot: #b42318;
+    --hot-bg: #fee4e2;
+    --warn: #8a5a00;
+    --warn-bg: #fff3b0;
+    --admin: #6b3e26;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.4;
+    font-size: 13.5px;
+  }
+  .page { max-width: 1380px; margin: 0 auto; padding: 18px 16px 72px; }
+  h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); font-weight: 700; }
+  .subtitle { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+  .note { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
+  .box {
+    background: #e8f2f4;
+    border: 1px solid #9bb8be;
+    padding: 10px 12px 12px;
+  }
+  .box label { display: block; font-weight: 650; margin-bottom: 4px; color: var(--admin); }
+  .drop {
+    position: relative;
+    border: 1px dashed #9bb8be;
+    background: #fff;
+    min-height: 72px;
+    padding: 10px 12px;
+  }
+  .drop.on { border-color: #00778b; background: #e5f4f6; }
+  .drop p { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+  .drop input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    font-size: 0;
+  }
+  .cmp-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
+  .filter-label { font-weight: 650; color: var(--navy); white-space: nowrap; margin-right: 2px; }
+  button {
+    font: inherit;
+    font-size: 13px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  button:hover { background: var(--navy-soft); }
+  button.on { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 650; }
+  button.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .cmp-tools input.cmp-years {
+    width: 4.2em;
+    font: inherit;
+    font-size: 13px;
+    padding: 5px 6px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
+  .pop-icon {
+    width: 34px;
+    height: 34px;
+    padding: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--navy);
+  }
+  .pop-icon svg { width: 18px; height: 18px; display: block; }
+  .pop-icon.ok { background: #dcfce7; border-color: #16a34a; color: #166534; }
+  .pop-icon.bad { background: #fee4e2; border-color: #b42318; color: #b42318; }
+  .cmp-table-wrap {
+    max-height: 70vh;
+    overflow: auto;
+    margin-top: 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .cmp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .cmp-table th {
+    position: sticky;
+    top: 0;
+    background: var(--navy);
+    color: #fff;
+    text-align: left;
+    padding: 6px 8px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .cmp-table th[aria-sort="ascending"]::after { content: " ▲"; }
+  .cmp-table th[aria-sort="descending"]::after { content: " ▼"; }
+  .cmp-table td { padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .cmp-table tr.cmp-done td.col-status { color: #0b6b2f; font-weight: 650; }
+  .cmp-table tr.cmp-hot td { background: var(--hot-bg); color: var(--hot); }
+  .cmp-table tr.cmp-warn td { background: var(--warn-bg); color: var(--warn); }
+  .cmp-table tr.cmp-done.cmp-hot td.col-status { color: var(--hot); }
+  .cmp-table tr.cmp-done.cmp-warn td.col-status { color: var(--warn); }
+  #cmp-wrap.capturing { overflow: visible; max-height: none; }
+  #cmp-wrap.capturing #cmp-shot {
+    width: max-content;
+    max-width: none;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+  #cmp-wrap.capturing #cmp-shot > table {
+    table-layout: auto;
+    width: max-content;
+    min-width: 0;
+  }
+  #cmp-wrap.capturing #cmp-shot col.col-staff,
+  #cmp-wrap.capturing #cmp-shot col.col-name { width: auto; }
+  #cmp-wrap.capturing #cmp-shot th.col-staff,
+  #cmp-wrap.capturing #cmp-shot td.col-staff,
+  #cmp-wrap.capturing #cmp-shot th.col-name,
+  #cmp-wrap.capturing #cmp-shot td.col-name,
+  #cmp-wrap.capturing #cmp-shot .staff-no {
+    white-space: nowrap;
+    overflow: visible;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+  .pop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(20, 32, 40, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .pop.hidden, .pop[hidden] { display: none; }
+  .pop-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    max-width: 520px;
+    width: 100%;
+    padding: 14px 16px;
+  }
+  .pop-card h4 { margin: 0 0 8px; color: var(--navy); }
+  .page-version {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>Course completion</h1>
+    <p class="subtitle">Match a completion xlsx to the Name List in this browser. Nothing is saved, and Training One View is left as it is.</p>
+    <div class="box" id="cmp-box">
+      <label for="cmp-file">Course completion xlsx</label>
+      <p class="note">Drop an xlsx. The table lists every Name List person, including remark SHOWS LMP. Section is the Name List section. The file’s Department column is ignored. Read in this browser only. Tick Expiry to mark a completion Outstanding after the year count. Rows due within 90 days change colour; the due day itself stays Completed.</p>
+      <div class="drop" id="cmp-drop">
+        <input id="cmp-file" type="file" lang="en" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" title="Choose an xlsx file" aria-label="Choose a course completion xlsx">
+        <p>Drop xlsx here, or choose a file.</p>
+      </div>
+      <p class="note" id="cmp-status">No completion file yet.</p>
+      <div class="toolbar cmp-tools" id="cmp-tools" hidden>
+        <span class="filter-label">Role:</span>
+        <button type="button" class="on" data-cmp-role="all">All</button>
+        <button type="button" data-cmp-role="cs">CS</button>
+        <button type="button" data-cmp-role="mech">Mechanic</button>
+        <span class="filter-label">Status:</span>
+        <button type="button" class="on" data-cmp="all">All</button>
+        <button type="button" data-cmp="completed">Completed</button>
+        <button type="button" data-cmp="outstanding">Outstanding</button>
+        <span class="filter-label">Expiry:</span>
+        <button type="button" id="cmp-expiry" aria-pressed="false" title="When on, a completion past the year count becomes Outstanding. Within 90 days the row changes colour. The due day stays Completed.">Expiry</button>
+        <label class="filter-label" for="cmp-years">Years</label>
+        <input id="cmp-years" class="cmp-years" type="number" min="1" step="1" value="2" inputmode="numeric" aria-label="Validity years" title="Years after the completed date. Default 2.">
+        <button type="button" id="cmp-export-xlsx">Export XLSX</button>
+        <button type="button" id="cmp-copy" class="pop-icon" data-copy-shot title="Copy layout" aria-label="Copy layout">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="9" y="9" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M6 15V6.5A1.5 1.5 0 0 1 7.5 5H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button type="button" id="cmp-download" class="pop-icon" data-download-shot title="Download" aria-label="Download">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 4v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="cmp-table-wrap" id="cmp-wrap" hidden>
+        <div id="cmp-shot">
+          <table class="cmp-table">
+            <colgroup>
+              <col class="col-staff"><col class="col-name"><col><col><col><col><col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="col-staff" data-cmp-sort="staff" aria-sort="none">Staff #</th>
+                <th class="col-name" data-cmp-sort="name" aria-sort="none">Name</th>
+                <th data-cmp-sort="section" aria-sort="none">Section</th>
+                <th data-cmp-sort="code" aria-sort="none">Course code</th>
+                <th data-cmp-sort="title" aria-sort="none">Course title</th>
+                <th data-cmp-sort="status" aria-sort="none">Status</th>
+                <th data-cmp-sort="done" aria-sort="none">Completed date</th>
+              </tr>
+            </thead>
+            <tbody id="cmp-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="copy-fail-pop" class="pop hidden" hidden>
+    <div class="pop-card" role="dialog" aria-modal="true" aria-labelledby="copy-fail-title">
+      <h4 id="copy-fail-title">Copy layout failed</h4>
+      <p class="note" id="copy-fail-lead"></p>
+      <ul id="copy-fail-list"></ul>
+      <div class="cmp-tools">
+        <button type="button" class="primary" id="copy-fail-ok">OK</button>
+      </div>
+    </div>
+  </div>
+  <div class="page-version" data-version="1.0" aria-label="Page version 1.0">v1.0</div>
+<script src="ocg-pax-data.js?v=10"></script>
+<script src="ocg-pax-data-unpack.js?v=1"></script>
+<script src="hx-xlsx.js?v=4"></script>
+<script>
+try { if (typeof hxUnpackRoster === "function") hxUnpackRoster(); } catch (e) {}
+const byStaff = new Map();
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+function padStaff(v) {
+  const s = String(v ?? "").trim();
+  if (!s || !/^\d+(\.0+)?$/.test(s)) return s;
+  return String(parseInt(s, 10)).padStart(6, "0");
+}
+function staffNoHtml(staff) {
+  const id = padStaff(staff);
+  return id ? "<span class=\"staff-no\">" + esc(id) + "</span>" : "";
+}
+function rosterHas(staff) {
+  return byStaff.has(padStaff(staff));
+}
+(window.PEOPLE || []).forEach((p) => {
+  const id = padStaff(p.staff);
+  if (id) byStaff.set(id, p);
+});
+function cmpKey(a, b) {
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] < b[i]) return -1;
+    if (a[i] > b[i]) return 1;
+  }
+  return 0;
+}
+function teamKey(team, home) {
+  const t = String(team || "").trim();
+  if (t === "1" || t === "2" || t === "3" || t === "4") return t;
+  const m = String(home || "").trim().toUpperCase().match(/^LTW([1-4])$/);
+  return m ? m[1] : "other";
+}
+function teamSortRank(team, home) {
+  const k = teamKey(team, home);
+  return (k === "1" || k === "2" || k === "3" || k === "4") ? Number(k) : 5;
+}
+function sectionSortKey(p) {
+  const k = teamKey(p.team, p.home);
+  const n = (k === "1" || k === "2" || k === "3" || k === "4") ? Number(k) : 0;
+  const sec = String((p && p.home) || "").trim().toUpperCase();
+  const m = sec.match(/^LTA(\d+)$/);
+  if (m) {
+    const lta = Number(m[1]);
+    return [n && lta === n ? 0 : 1, lta, sec];
+  }
+  return [2, 999, sec];
+}
+function crewSortKey(p) {
+  const s = String((p && p.shift) || "").trim().toUpperCase();
+  if (!s) return [2, 99, 999, ""];
+  const m = s.match(/^(\d+)([A-Z])$/);
+  if (m) {
+    const letterRank = { E: 1, F: 2, G: 3, A: 4, B: 5, C: 6, D: 7 };
+    return [0, letterRank[m[2]] || 50, Number(m[1]), s];
+  }
+  const special = { FLS: 0, RF: 1 };
+  return [1, special[s] != null ? special[s] : 50, 999, s];
+}
+function cmpRoster(a, b) {
+  const teamCmp = teamSortRank(a.team, a.home) - teamSortRank(b.team, b.home);
+  if (teamCmp) return teamCmp;
+  const secCmp = cmpKey(sectionSortKey(a), sectionSortKey(b));
+  if (secCmp) return secCmp;
+  const crewCmp = cmpKey(crewSortKey(a), crewSortKey(b));
+  if (crewCmp) return crewCmp;
+  return String(a.name || "").localeCompare(String(b.name || ""), undefined, { numeric: true, sensitivity: "base" })
+    || String(a.staff || "").localeCompare(String(b.staff || ""));
+}
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+function validYmd(y, m, d) {
+  if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1970 || y > 2100) return false;
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+function parseDoneDate(raw) {
+  const s = String(raw || "").trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) {
+    const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+    return validYmd(y, mo, d) ? y + "-" + pad2(mo) + "-" + pad2(d) : "";
+  }
+  m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{2})$/);
+  if (m) {
+    const d = Number(m[1]), mo = Number(m[2]), yy = Number(m[3]);
+    const y = yy <= 69 ? 2000 + yy : 1900 + yy;
+    return validYmd(y, mo, d) ? y + "-" + pad2(mo) + "-" + pad2(d) : "";
+  }
+  return "";
+}
+function dueStamp(s) {
+  const m = String(s || "").trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  return m ? Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : 0;
+}
+function decodeBytes(bytes) {
+  return new TextDecoder("utf-8").decode(bytes);
+}
+async function inflateRaw(bytes) {
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function unzipXlsx(buf) {
+  const view = new DataView(buf);
+  const files = {};
+  let offset = 0;
+  while (offset + 30 <= buf.byteLength) {
+    if (view.getUint32(offset, true) !== 0x04034b50) break;
+    const method = view.getUint16(offset + 8, true);
+    const compSize = view.getUint32(offset + 18, true);
+    const nameLen = view.getUint16(offset + 26, true);
+    const extraLen = view.getUint16(offset + 28, true);
+    const name = decodeBytes(new Uint8Array(buf, offset + 30, nameLen)).replace(/\\/g, "/");
+    const start = offset + 30 + nameLen + extraLen;
+    const data = new Uint8Array(buf, start, compSize);
+    if (method === 0) files[name] = data;
+    else if (method === 8) files[name] = await inflateRaw(data);
+    offset = start + compSize;
+  }
+  return files;
+}
+function xlsxText(el) {
+  return String(el && el.textContent || "").replace(/\s+/g, " ").trim();
+}
+function colIndex(ref) {
+  const m = String(ref || "").match(/^([A-Z]+)/i);
+  if (!m) return -1;
+  let n = 0;
+  for (const ch of m[1].toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n - 1;
+}
+function parseSharedStrings(xml) {
+  const doc = new DOMParser().parseFromString(xml, "application/xml");
+  return [...doc.getElementsByTagName("si")].map((si) => xlsxText(si));
+}
+function parseSheetGrid(xml, strings) {
+  const doc = new DOMParser().parseFromString(xml, "application/xml");
+  const grid = [];
+  [...doc.getElementsByTagName("row")].forEach((row) => {
+    const cells = [];
+    [...row.getElementsByTagName("c")].forEach((c) => {
+      const i = colIndex(c.getAttribute("r"));
+      if (i < 0 || i > 10) return;
+      const t = c.getAttribute("t") || "";
+      const v = xlsxText(c.getElementsByTagName("v")[0] || c.getElementsByTagName("t")[0]);
+      let val = v;
+      if (t === "s") val = strings[Number(v)] || "";
+      else if (t === "inlineStr") val = xlsxText(c);
+      while (cells.length < i) cells.push("");
+      cells[i] = val;
+    });
+    if (cells.some((x) => String(x || "").trim() !== "")) grid.push(cells);
+  });
+  return grid;
+}
+function xlsxSheetPath(files) {
+  const wb = files["xl/workbook.xml"];
+  const rels = files["xl/_rels/workbook.xml.rels"];
+  if (!wb) return "xl/worksheets/sheet1.xml";
+  const doc = new DOMParser().parseFromString(decodeBytes(wb), "application/xml");
+  const sheets = [...doc.getElementsByTagName("sheet")];
+  const pick = sheets.find((s) => /export/i.test(s.getAttribute("name") || "")) || sheets[0];
+  const rid = pick && (pick.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || pick.getAttribute("r:id") || pick.getAttribute("id"));
+  if (rels && rid) {
+    const rdoc = new DOMParser().parseFromString(decodeBytes(rels), "application/xml");
+    const rel = [...rdoc.getElementsByTagName("Relationship")].find((r) => r.getAttribute("Id") === rid);
+    let t = rel && rel.getAttribute("Target") || "";
+    if (t) {
+      t = t.replace(/^\//, "");
+      if (!t.startsWith("xl/")) t = "xl/" + t;
+      return t;
+    }
+  }
+  return "xl/worksheets/sheet1.xml";
+}
+let cmpModel = null;
+let cmpFilter = "all";
+let cmpRole = "all";
+let cmpSortKey = "";
+let cmpSortDir = 1;
+let cmpExpiryOn = false;
+let cmpExpiryYears = 2;
+function cmpRoleOf(rec) {
+  const title = String((rec && rec.title) || "");
+  const pos = String((rec && rec.pos) || "");
+  if (/CONTROLLER|DUTY IN CHARGE|\bDIC\b/i.test(title)) return "CS";
+  if (/ASSISTANT LICENSED ENGINEER|LICENSED ENGINEER/i.test(title) || pos === "80AEP") return "CS";
+  if (/MANAGER|OPERATIONS OFFICER|PROJECT OFFICER|LIAISON|\bSUPPORT\b/i.test(title) || /^(10|30|50|60)|80AEY|80AEZ|80PT5|80AFU/.test(pos)) return "OFFICE";
+  return "MECHANIC";
+}
+function cmpRoleMap() {
+  const map = new Map();
+  (window.FULL || []).forEach((r) => {
+    const id = padStaff(r.staff);
+    if (id && !map.has(id)) map.set(id, cmpRoleOf(r));
+  });
+  return map;
+}
+function cmpRoleOk(row) {
+  if (cmpRole === "cs") return row.role === "CS";
+  if (cmpRole === "mech") return row.role === "MECHANIC";
+  return true;
+}
+function cmpDueFromDone(iso, years) {
+  const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m || !Number.isFinite(years) || years < 1) return "";
+  const y = Number(m[1]) + years;
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCMonth() !== mo - 1) {
+    const last = new Date(Date.UTC(y, mo, 0));
+    return last.getUTCFullYear() + "-" + pad2(last.getUTCMonth() + 1) + "-" + pad2(last.getUTCDate());
+  }
+  return y + "-" + pad2(mo) + "-" + pad2(d);
+}
+function cmpView(row) {
+  const view = {
+    staff: row.staff,
+    name: row.name,
+    section: row.section,
+    code: row.code,
+    title: row.title,
+    status: row.status,
+    done: row.done,
+    doneFlag: !!row.doneFlag,
+    role: row.role,
+    band: "",
+    expired: false
+  };
+  if (!cmpExpiryOn || !view.doneFlag || !view.done) return view;
+  const due = cmpDueFromDone(view.done, cmpExpiryYears);
+  const dueAt = dueStamp(due);
+  if (!dueAt) return view;
+  const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate());
+  const remain = Math.round((dueAt - today) / 86400000);
+  if (remain < 0) {
+    view.status = "Outstanding";
+    view.doneFlag = false;
+    view.band = "hot";
+    view.expired = true;
+    return view;
+  }
+  if (remain <= 30) view.band = "hot";
+  else if (remain <= 90) view.band = "warn";
+  return view;
+}
+function cmpRoleRows() {
+  if (!cmpModel || !cmpModel.rows) return [];
+  return cmpModel.rows.map(cmpView).filter(cmpRoleOk);
+}
+function cmpShownRows() {
+  if (!cmpModel || !cmpModel.rows) return [];
+  const rows = cmpRoleRows().filter((row) => {
+    if (cmpFilter === "completed") return row.doneFlag;
+    if (cmpFilter === "outstanding") return !row.doneFlag;
+    return true;
+  });
+  if (!cmpSortKey) return rows;
+  const key = cmpSortKey;
+  const dir = cmpSortDir >= 0 ? 1 : -1;
+  return rows.slice().sort((a, b) => {
+    const av = String(a[key] == null ? "" : a[key]);
+    const bv = String(b[key] == null ? "" : b[key]);
+    if (!av && !bv) return 0;
+    if (!av) return 1;
+    if (!bv) return -1;
+    if (key === "staff") return (Number(av) - Number(bv)) * dir;
+    return av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" }) * dir;
+  });
+}
+function paintCmpSortHeaders() {
+  document.querySelectorAll("#cmp-shot th[data-cmp-sort]").forEach((th) => {
+    const key = th.getAttribute("data-cmp-sort") || "";
+    th.setAttribute("aria-sort", cmpSortKey === key ? (cmpSortDir >= 0 ? "ascending" : "descending") : "none");
+  });
+}
+function cmpExcelSerial(n) {
+  if (!Number.isFinite(n) || n < 20000 || n > 80000) return "";
+  const dt = new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 86400000);
+  const y = dt.getUTCFullYear();
+  const mo = dt.getUTCMonth() + 1;
+  const d = dt.getUTCDate();
+  return validYmd(y, mo, d) ? y + "-" + pad2(mo) + "-" + pad2(d) : "";
+}
+function cmpDoneDate(raw) {
+  const s = String(raw || "").trim();
+  if (!s) return "";
+  const iso = parseDoneDate(s);
+  if (iso) return iso;
+  if (/^\d+(\.\d+)?$/.test(s)) return cmpExcelSerial(Number(s));
+  const slash = s.match(/^(\d{1,2})[\/](\d{1,2})[\/](\d{2,4})$/);
+  if (!slash) return "";
+  const d = Number(slash[1]);
+  const mo = Number(slash[2]);
+  let y = Number(slash[3]);
+  if (y < 100) y = y <= 69 ? 2000 + y : 1900 + y;
+  return validYmd(y, mo, d) ? y + "-" + pad2(mo) + "-" + pad2(d) : "";
+}
+function cmpHeaderRow(grid) {
+  for (let i = 0; i < grid.length && i < 8; i++) {
+    const cells = grid[i].map((c) => String(c || "").trim());
+    if (cells.some((c) => /staff\s*no/i.test(c)) && cells.some((c) => /course\s*code/i.test(c))) return i;
+  }
+  return -1;
+}
+function cmpBuild(grid, fileName) {
+  if (!byStaff.size) return { error: "Name List did not load." };
+  const headAt = cmpHeaderRow(grid);
+  if (headAt < 0) return { error: fileName + " needs columns Staff no. and Course code." };
+  const header = grid[headAt].map((c) => String(c || "").trim());
+  const find = (re) => header.findIndex((h) => re.test(h));
+  const iStaff = find(/staff\s*no/i);
+  const iCode = find(/course\s*code/i);
+  const iTitle = find(/course\s*title/i);
+  const iStatus = find(/^status$/i);
+  const iDate = find(/completion\s*date|end_date/i);
+  const hits = new Map();
+  const titleByCode = new Map();
+  const codes = [];
+  let fileRows = 0;
+  let skipped = 0;
+  for (let r = headAt + 1; r < grid.length; r++) {
+    const cells = grid[r];
+    const staff = padStaff(cells[iStaff]);
+    const code = String(cells[iCode] || "").trim();
+    if (!staff && !code) continue;
+    if (!/^\d{5,7}$/.test(staff) || !code) continue;
+    fileRows++;
+    const codeKey = code.toUpperCase();
+    if (!titleByCode.has(codeKey)) {
+      titleByCode.set(codeKey, iTitle >= 0 ? String(cells[iTitle] || "").trim() : "");
+      codes.push(codeKey);
+    } else if (!titleByCode.get(codeKey) && iTitle >= 0) {
+      titleByCode.set(codeKey, String(cells[iTitle] || "").trim());
+    }
+    if (!rosterHas(staff)) {
+      skipped++;
+      continue;
+    }
+    hits.set(staff + "|" + codeKey, {
+      status: iStatus >= 0 ? String(cells[iStatus] || "").trim() : "",
+      done: iDate >= 0 ? cmpDoneDate(cells[iDate]) : ""
+    });
+  }
+  if (!codes.length) return { error: fileName + " has no course rows." };
+  const roles = cmpRoleMap();
+  const people = (window.PEOPLE || []).slice().sort(cmpRoster);
+  const rows = [];
+  codes.forEach((codeKey) => {
+    const title = titleByCode.get(codeKey) || "";
+    people.forEach((p) => {
+      const staff = padStaff(p.staff);
+      const hit = hits.get(staff + "|" + codeKey);
+      const status = hit ? (hit.status || "Completed") : "Outstanding";
+      rows.push({
+        staff: staff,
+        name: String(p.name || "").trim(),
+        section: String(p.home || "").trim(),
+        code: codeKey,
+        title: title,
+        status: status,
+        done: hit ? hit.done : "",
+        doneFlag: /completed/i.test(status),
+        role: roles.get(staff) || ""
+      });
+    });
+  });
+  return { fileName: fileName, fileRows: fileRows, skipped: skipped, rows: rows };
+}
+function paintCmp() {
+  const statusEl = document.getElementById("cmp-status");
+  const tools = document.getElementById("cmp-tools");
+  const wrap = document.getElementById("cmp-wrap");
+  const body = document.getElementById("cmp-body");
+  if (!cmpModel || cmpModel.error) {
+    tools.hidden = true;
+    wrap.hidden = true;
+    body.innerHTML = "";
+    if (statusEl) statusEl.textContent = cmpModel && cmpModel.error ? cmpModel.error : "No completion file yet.";
+    return;
+  }
+  const roleRows = cmpRoleRows();
+  const shown = cmpShownRows();
+  const completed = roleRows.filter((row) => row.doneFlag).length;
+  const outstanding = roleRows.length - completed;
+  const expired = roleRows.filter((row) => row.expired).length;
+  const nearRed = roleRows.filter((row) => row.band === "hot" && !row.expired).length;
+  const nearYellow = roleRows.filter((row) => row.band === "warn").length;
+  const roleLabel = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mechanic" : "All");
+  body.innerHTML = shown.map((row) => {
+    const cls = (row.doneFlag ? "cmp-done" : "cmp-open") +
+      (row.band === "hot" ? " cmp-hot" : "") +
+      (row.band === "warn" ? " cmp-warn" : "");
+    return "<tr class=\"" + cls + "\">" +
+      "<td class=\"col-staff\">" + staffNoHtml(row.staff) + "</td>" +
+      "<td class=\"col-name\">" + esc(row.name) + "</td>" +
+      "<td>" + esc(row.section) + "</td>" +
+      "<td>" + esc(row.code) + "</td>" +
+      "<td>" + esc(row.title) + "</td>" +
+      "<td class=\"col-status\">" + esc(row.status) + "</td>" +
+      "<td>" + esc(row.done) + "</td>" +
+      "</tr>";
+  }).join("");
+  tools.hidden = false;
+  wrap.hidden = false;
+  tools.querySelectorAll("[data-cmp]").forEach((btn) => {
+    btn.classList.toggle("on", btn.getAttribute("data-cmp") === cmpFilter);
+  });
+  tools.querySelectorAll("[data-cmp-role]").forEach((btn) => {
+    btn.classList.toggle("on", btn.getAttribute("data-cmp-role") === cmpRole);
+  });
+  const expiryBtn = document.getElementById("cmp-expiry");
+  if (expiryBtn) {
+    expiryBtn.classList.toggle("on", cmpExpiryOn);
+    expiryBtn.setAttribute("aria-pressed", cmpExpiryOn ? "true" : "false");
+  }
+  paintCmpSortHeaders();
+  if (statusEl) {
+    statusEl.textContent = cmpModel.fileName +
+      " · Role " + roleLabel +
+      " · Completed " + completed +
+      " · Outstanding " + outstanding +
+      (cmpExpiryOn
+        ? " · Expiry " + cmpExpiryYears + (cmpExpiryYears === 1 ? " year" : " years") +
+          " · Expired to Outstanding " + expired +
+          " · Near red " + nearRed + " · Near yellow " + nearYellow
+        : "") +
+      " · Skipped " + cmpModel.skipped + " (not on Name List)" +
+      " · Showing " + shown.length + ".";
+  }
+}
+function exportCmpXlsx() {
+  if (!window.HxXlsx || typeof HxXlsx.buildSync !== "function") return;
+  const shown = cmpShownRows();
+  const rows = [["Staff #", "Name", "Section", "Course code", "Course title", "Status", "Completed date"]];
+  shown.forEach((row) => {
+    rows.push([row.staff, row.name, row.section, row.code, row.title, row.status, row.done]);
+  });
+  const roleLabel = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mechanic" : "All");
+  const statusLabel = cmpFilter === "completed" ? "Completed" : (cmpFilter === "outstanding" ? "Outstanding" : "All");
+  const sortLabels = {
+    staff: "Staff #",
+    name: "Name",
+    section: "Section",
+    code: "Course code",
+    title: "Course title",
+    status: "Status",
+    done: "Completed date"
+  };
+  rows.push(
+    [],
+    ["Filters"],
+    ["Role", roleLabel],
+    ["Status", statusLabel],
+    ["Expiry", cmpExpiryOn ? "On" : "Off"],
+    ["Validity years", cmpExpiryOn ? String(cmpExpiryYears) : ""],
+    ["Sort", cmpSortKey ? (sortLabels[cmpSortKey] || cmpSortKey) + (cmpSortDir >= 0 ? " A to Z" : " Z to A") : ""],
+    ["People", String(shown.length)]
+  );
+  const titles = new Map();
+  shown.forEach((row) => {
+    if (!titles.has(row.code)) titles.set(row.code, row.title || "");
+  });
+  if (titles.size) {
+    rows.push([], ["Course code", "Course title"]);
+    [...titles.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })).forEach((code) => {
+      rows.push([code, titles.get(code) || ""]);
+    });
+  }
+  const blob = HxXlsx.buildSync(rows, "Completion");
+  const d = new Date();
+  const stamp = d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  HxXlsx.download(blob, "course-completion-" + stamp + ".xlsx");
+}
+function copyBtnOf(btn) {
+  return typeof btn === "string" ? document.getElementById(btn) : btn;
+}
+function isDownloadActionBtn(el) {
+  return !!(el && el.hasAttribute && el.hasAttribute("data-download-shot"));
+}
+function resetCopyBtn(btn) {
+  const el = copyBtnOf(btn);
+  if (!el) return;
+  el.classList.remove("ok", "bad");
+  const label = isDownloadActionBtn(el) ? "Download" : "Copy layout";
+  el.title = label;
+  el.setAttribute("aria-label", label);
+}
+function markCopyBtn(ok, btn, note) {
+  const el = copyBtnOf(btn);
+  if (!el) return;
+  el.classList.remove("ok", "bad");
+  el.classList.add(ok ? "ok" : "bad");
+  const dl = isDownloadActionBtn(el);
+  let title;
+  if (!ok) title = dl ? "Download failed" : "Copy failed";
+  else if (note === "download-fallback") title = "Downloaded";
+  else title = dl ? "Downloaded" : "Image copied";
+  el.title = title;
+  el.setAttribute("aria-label", title);
+  clearTimeout(el._copyT);
+  el._copyT = setTimeout(() => resetCopyBtn(el), 1600);
+}
+function isClearColor(c) {
+  return !c || c === "transparent" || c === "rgba(0, 0, 0, 0)";
+}
+function canvasSafeFont(cs) {
+  const size = (cs && cs.fontSize) || "15px";
+  const weightNum = parseInt(cs && cs.fontWeight, 10) || 400;
+  const weight = weightNum >= 600 ? "bold" : "normal";
+  const italic = cs && cs.fontStyle === "italic" ? "italic " : "";
+  return italic + weight + " " + size + " Arial, sans-serif";
+}
+function fillWrappedText(ctx, text, x, y, maxW, boxH, lineH, singleLine) {
+  if (singleLine) {
+    ctx.fillText(String(text || ""), x, y + boxH / 2);
+    return;
+  }
+  const raw = String(text || "");
+  const lines = [];
+  let cur = "";
+  const push = () => { if (cur) { lines.push(cur); cur = ""; } };
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    const next = cur + ch;
+    if (ctx.measureText(next).width <= maxW || !cur) cur = next;
+    else { push(); cur = ch; }
+    if (ch === " " && ctx.measureText(cur).width > maxW * 0.92) push();
+  }
+  push();
+  const use = lines.length ? lines : [raw];
+  const total = use.length * lineH;
+  let ty = y + Math.max(lineH / 2, (boxH - total) / 2 + lineH / 2);
+  use.forEach((line) => {
+    ctx.fillText(line, x, ty);
+    ty += lineH;
+  });
+}
+const CANVAS_MAX_EDGE = 16384;
+function captureScale() {
+  return Math.max(2, Math.round(window.devicePixelRatio || 1));
+}
+function visibleCaptureWidth(root) {
+  if (!root) return 1;
+  const rect = root.getBoundingClientRect();
+  return Math.max(1, Math.ceil(root.clientWidth || 0), Math.ceil(rect.width || 0));
+}
+function nodeCaptureSize(root, widthCap) {
+  const scale = captureScale();
+  const rect = root.getBoundingClientRect();
+  const visibleW = visibleCaptureWidth(root);
+  const cap = widthCap > 0 ? Math.ceil(widthCap) : visibleW;
+  const w = Math.max(1, Math.min(visibleW, cap));
+  const h = Math.max(1, Math.ceil(root.scrollHeight || 0), Math.ceil(root.clientHeight || 0), Math.ceil(rect.height || 0));
+  return { w, h, scale, cw: w * scale, ch: h * scale };
+}
+function copyLayoutFail(kind, title, detail) {
+  const err = new Error(detail || title);
+  err.name = "CopyLayoutFail";
+  err.kind = kind;
+  err.title = title;
+  err.detail = detail;
+  return err;
+}
+function clipboardCopyFail(extra) {
+  const fileUrl = location.protocol === "file:";
+  return copyLayoutFail(
+    "clipboard",
+    "Clipboard blocked",
+    (fileUrl ? "This page is opened as a local file (file://). " : "") +
+    "The browser blocked writing the image to the clipboard. Allow clipboard permission, or open this page over https, or copy a smaller view." +
+    (extra ? " (" + extra + ")" : "")
+  );
+}
+function classifyCopyError(e, size) {
+  if (e && e.name === "CopyLayoutFail") return e;
+  const msg = String(e && e.message || e || "Unknown error");
+  const name = (e && e.name) || "";
+  const low = msg.toLowerCase();
+  const clipboardish =
+    name === "NotAllowedError" || name === "SecurityError" ||
+    /clipboard|not allowed|document is not focused|permission|secure context/i.test(low);
+  if (clipboardish) return clipboardCopyFail(msg);
+  const huge = !!(size && size.ch >= 8000);
+  if (huge && /maximum|too (large|big)|out of memory|allocation/i.test(low)) {
+    return copyLayoutFail("tall", "Capture too tall", "Too many rows for one image. Filter the table, then try again.");
+  }
+  return copyLayoutFail("unknown", "Copy layout failed", msg);
+}
+function showCopyDownloadNotice() {
+  const pop = document.getElementById("copy-fail-pop");
+  document.getElementById("copy-fail-title").textContent = "Downloaded instead";
+  document.getElementById("copy-fail-lead").textContent = "Clipboard is blocked on this page, so the image was downloaded instead.";
+  document.getElementById("copy-fail-list").innerHTML = "";
+  pop.hidden = false;
+  pop.classList.remove("hidden");
+}
+function showCopyFail(err, size) {
+  const classified = classifyCopyError(err, size);
+  const pop = document.getElementById("copy-fail-pop");
+  document.getElementById("copy-fail-title").textContent = classified.title || "Copy layout failed";
+  document.getElementById("copy-fail-lead").textContent = classified.detail || classified.message || "Copy layout could not finish.";
+  document.getElementById("copy-fail-list").innerHTML = "";
+  pop.hidden = false;
+  pop.classList.remove("hidden");
+}
+function assertCanvasFits(size) {
+  if (size.ch > CANVAS_MAX_EDGE || size.cw > CANVAS_MAX_EDGE) {
+    throw copyLayoutFail("tall", "Capture too tall", "Too many rows for one image. Filter the table, then try again.");
+  }
+}
+function drawNodeToCanvas(root, widthCap) {
+  const size = nodeCaptureSize(root, widthCap);
+  assertCanvasFits(size);
+  const { w, h, scale, cw, ch } = size;
+  const canvas = document.createElement("canvas");
+  canvas.width = cw;
+  canvas.height = ch;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw copyLayoutFail("unknown", "Copy layout failed", "getContext(\"2d\") returned null.");
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+  const origin = root.getBoundingClientRect();
+  const paint = (el) => {
+    if (el.nodeType !== 1) return;
+    const cs = getComputedStyle(el);
+    if (cs.display === "none" || cs.visibility === "hidden") return;
+    const b = el.getBoundingClientRect();
+    const x = b.left - origin.left;
+    const y = b.top - origin.top;
+    if (b.width <= 0 || b.height <= 0) return;
+    if (!isClearColor(cs.backgroundColor)) {
+      ctx.fillStyle = cs.backgroundColor;
+      ctx.fillRect(x, y, b.width, b.height);
+    }
+    const bw = {
+      t: parseFloat(cs.borderTopWidth) || 0,
+      r: parseFloat(cs.borderRightWidth) || 0,
+      btm: parseFloat(cs.borderBottomWidth) || 0,
+      l: parseFloat(cs.borderLeftWidth) || 0
+    };
+    if (bw.t) { ctx.fillStyle = cs.borderTopColor; ctx.fillRect(x, y, b.width, bw.t); }
+    if (bw.btm) { ctx.fillStyle = cs.borderBottomColor; ctx.fillRect(x, y + b.height - bw.btm, b.width, bw.btm); }
+    if (bw.l) { ctx.fillStyle = cs.borderLeftColor; ctx.fillRect(x, y, bw.l, b.height); }
+    if (bw.r) { ctx.fillStyle = cs.borderRightColor; ctx.fillRect(x + b.width - bw.r, y, bw.r, b.height); }
+    const textNodes = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent && n.textContent.trim());
+    if (textNodes.length) {
+      const padL = parseFloat(cs.paddingLeft) || 0;
+      const padR = parseFloat(cs.paddingRight) || 0;
+      ctx.save();
+      ctx.fillStyle = cs.color;
+      ctx.font = canvasSafeFont(cs);
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "left";
+      const lineH = Math.max(14, parseFloat(cs.fontSize) || 12) * 1.25;
+      if (textNodes.length === 1 && el.childElementCount === 0) {
+        const keepFull = el.classList.contains("staff-no") || el.classList.contains("col-staff") || el.classList.contains("col-name");
+        if (!keepFull) {
+          ctx.beginPath();
+          ctx.rect(x + 1, y + 1, Math.max(0, b.width - 2), Math.max(0, b.height - 2));
+          ctx.clip();
+        }
+        const single = (cs.whiteSpace || "").indexOf("nowrap") === 0 || el.classList.contains("staff-no");
+        fillWrappedText(ctx, textNodes[0].textContent.replace(/\s+/g, " ").trim(), x + padL, y, Math.max(8, b.width - padL - padR), b.height, lineH, single);
+      }
+      ctx.restore();
+    }
+    [...el.children].forEach(paint);
+  };
+  paint(root);
+  return canvas;
+}
+function downloadPngBlob(blob, filename) {
+  const a = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  a.href = url;
+  a.download = filename || "course-completion.png";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+async function writeClipboardBlob(blob) {
+  if (!blob) throw copyLayoutFail("unknown", "No image", "The browser did not produce a PNG image.");
+  if (!(navigator.clipboard && window.ClipboardItem)) throw clipboardCopyFail("Clipboard API not available");
+  await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+}
+async function captureNodeAsImage(shot, frame, btn, mode) {
+  if (!shot) return;
+  const wantDownload = mode === "download";
+  const prevScroll = frame ? frame.scrollTop : 0;
+  const prevStyle = { width: shot.style.width, maxWidth: shot.style.maxWidth, boxSizing: shot.style.boxSizing };
+  if (frame) {
+    frame.classList.add("capturing");
+    frame.scrollTop = 0;
+  }
+  shot.style.width = "max-content";
+  shot.style.maxWidth = "none";
+  shot.style.boxSizing = "border-box";
+  let size;
+  try {
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const table = shot.querySelector(":scope > table");
+    const fullW = Math.max(1, Math.ceil(shot.scrollWidth || 0), Math.ceil(table ? table.scrollWidth : 0), Math.ceil(shot.getBoundingClientRect().width || 0));
+    shot.style.width = fullW + "px";
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    size = nodeCaptureSize(shot, fullW);
+    const canvas = drawNodeToCanvas(shot, fullW);
+    const blob = await new Promise((res, rej) => canvas.toBlob((b) => b ? res(b) : rej(new Error("blob")), "image/png"));
+    if (wantDownload) {
+      downloadPngBlob(blob, "course-completion.png");
+      markCopyBtn(true, btn);
+    } else {
+      try {
+        await writeClipboardBlob(blob);
+        markCopyBtn(true, btn);
+      } catch (clipErr) {
+        const classified = classifyCopyError(clipErr, size);
+        if (classified.kind === "clipboard" || location.protocol === "file:") {
+          downloadPngBlob(blob, "course-completion.png");
+          markCopyBtn(true, btn, "download-fallback");
+          showCopyDownloadNotice();
+        } else throw clipErr;
+      }
+    }
+  } catch (e) {
+    markCopyBtn(false, btn);
+    showCopyFail(e, size);
+  } finally {
+    shot.style.width = prevStyle.width;
+    shot.style.maxWidth = prevStyle.maxWidth;
+    shot.style.boxSizing = prevStyle.boxSizing;
+    if (frame) {
+      frame.classList.remove("capturing");
+      frame.scrollTop = prevScroll;
+    }
+  }
+}
+async function readCmpFile(file) {
+  const buf = await file.arrayBuffer();
+  const files = await unzipXlsx(buf);
+  const strings = files["xl/sharedStrings.xml"] ? parseSharedStrings(decodeBytes(files["xl/sharedStrings.xml"])) : [];
+  const path = xlsxSheetPath(files);
+  const sheet = files[path] || files["xl/worksheets/sheet1.xml"];
+  if (!sheet) return { error: file.name + " has no sheet." };
+  return cmpBuild(parseSheetGrid(decodeBytes(sheet), strings), file.name);
+}
+function takeCmpFile(file) {
+  const statusEl = document.getElementById("cmp-status");
+  if (!file) return;
+  if (!/\.xlsx$/i.test(file.name || "")) {
+    cmpModel = { error: "Use an .xlsx file." };
+    paintCmp();
+    return;
+  }
+  if (statusEl) statusEl.textContent = "Reading " + file.name + "…";
+  readCmpFile(file).then((model) => {
+    cmpModel = model;
+    cmpFilter = "all";
+    cmpRole = "all";
+    cmpSortKey = "";
+    cmpSortDir = 1;
+    cmpExpiryOn = false;
+    paintCmp();
+  }).catch(() => {
+    cmpModel = { error: file.name + " could not be read." };
+    paintCmp();
+  });
+}
+document.getElementById("cmp-years").addEventListener("input", (e) => {
+  const raw = String(e.target.value || "").trim();
+  if (!/^\d+$/.test(raw)) return;
+  const n = Number(raw);
+  if (n < 1) return;
+  cmpExpiryYears = n;
+  if (cmpExpiryOn) paintCmp();
+});
+document.getElementById("cmp-years").addEventListener("blur", (e) => {
+  e.target.value = String(cmpExpiryYears);
+});
+document.getElementById("cmp-file").addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  takeCmpFile(file);
+  e.target.value = "";
+});
+document.getElementById("cmp-box").addEventListener("click", (e) => {
+  const sortTh = e.target.closest("th[data-cmp-sort]");
+  if (sortTh) {
+    const key = sortTh.getAttribute("data-cmp-sort") || "";
+    if (cmpSortKey === key) cmpSortDir = cmpSortDir >= 0 ? -1 : 1;
+    else {
+      cmpSortKey = key;
+      cmpSortDir = 1;
+    }
+    paintCmp();
+    return;
+  }
+  const roleBtn = e.target.closest("[data-cmp-role]");
+  if (roleBtn) {
+    cmpRole = roleBtn.getAttribute("data-cmp-role") || "all";
+    paintCmp();
+    return;
+  }
+  if (e.target.closest("#cmp-expiry")) {
+    cmpExpiryOn = !cmpExpiryOn;
+    paintCmp();
+    return;
+  }
+  const btn = e.target.closest("[data-cmp]");
+  if (btn) {
+    cmpFilter = btn.getAttribute("data-cmp") || "all";
+    paintCmp();
+    return;
+  }
+  if (e.target.closest("#cmp-export-xlsx")) {
+    if (cmpModel && cmpModel.rows) exportCmpXlsx();
+    return;
+  }
+  const copy = e.target.closest("[data-copy-shot]");
+  if (copy) {
+    captureNodeAsImage(document.getElementById("cmp-shot"), document.getElementById("cmp-wrap"), copy, "copy");
+    return;
+  }
+  const dl = e.target.closest("[data-download-shot]");
+  if (dl) captureNodeAsImage(document.getElementById("cmp-shot"), document.getElementById("cmp-wrap"), dl, "download");
+});
+document.getElementById("copy-fail-ok").addEventListener("click", () => {
+  const pop = document.getElementById("copy-fail-pop");
+  pop.hidden = true;
+  pop.classList.add("hidden");
+});
+(function bindCmpDrop() {
+  const drop = document.getElementById("cmp-drop");
+  ["dragenter", "dragover"].forEach((ev) => {
+    drop.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); drop.classList.add("on"); });
+  });
+  drop.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    if (!drop.contains(e.relatedTarget)) drop.classList.remove("on");
+  });
+  drop.addEventListener("drop", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    drop.classList.remove("on");
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    takeCmpFile(file);
+  });
+})();
+</script>
+</body>
+</html>
