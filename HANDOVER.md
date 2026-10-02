@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **Name List Remark 清走：** `236051` CHAN SIU CHUNG 唔再有 Remark **Move to OFFICE & PAX**。人仍係 Name List PAX，section 唔改。Name List **v3.12**、`ocg-pax-data.js?v=7`、`hx-rules` **v10.33**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-10-02 公司電腦
+
 - **收工：** Course completion Expiry 已在 `main` `ed76788`（TOV **v15.27**、`hx-rules` **v10.32**、hub page-version 仍 **v17.4**）。冇新 HX 改動要 push。家庭頁 Git 顯示 modified，只係換行，內容同 HEAD 一樣，冇 commit。唔開 Chrome。
 
 ## 2026-10-02 公司電腦
