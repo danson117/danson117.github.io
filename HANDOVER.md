@@ -10,7 +10,11 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
-- **TOV Manual T.EE0771（EY Authorization · OCG Name List）：** 課程名 Etihad Airways Electronic Aircraft Technical Log (eTechLog8) Training（Course List 已有）。Name List 現有 EY 授權 **62**（CG 42／PAX 20），全部 Mechanics、未過期。Completed **61**（CG 41／PAX 20，done＝2026-10-02、due＝2028-10-02，先過 90 日 outstanding 規則）。Outstanding **1**（CG 1／PAX 0，due `2026-09-25`）。粘貼 65 個 unique；3 個唔喺 Name List、1 個喺 Name List 但冇 EY 授權，唔入。其他 Manual 行數不變（1111）。Supabase `hx_private.team_board_actions`（`hx_team_board_put` 會 snapshot `board_revisions`）。唔改 HTML。唔開 Chrome。唔寫職員明細。本機冇 `HX-outstanding-by-course.xlsx`。
+- **更正 T.EE0771 角色：** 62 人唔係 Mechanics。Name List role：Certifiers **61**（Licensed Engineer 49，其餘 DIC／Controller）、Office **1**、Mechanics **0**。TOV Role 掣跟 section（LTW＝Certifiers **19**；其他 section **43** 會標 Mechanics），唔等於職位。課程人數冇改。唔改 HTML。唔開 Chrome。
+
+## 2026-10-02 公司電腦
+
+- **TOV Manual T.EE0771（EY Authorization · OCG Name List）：** 課程名 Etihad Airways Electronic Aircraft Technical Log (eTechLog8) Training（Course List 已有）。Name List 現有 EY 授權 **62**（CG 42／PAX 20），未過期。Name List role：Certifiers **61**、Office **1**、Mechanics **0**。Completed **61**（CG 41／PAX 20，done＝2026-10-02、due＝2028-10-02，先過 90 日 outstanding 規則）。Outstanding **1**（CG 1／PAX 0，due `2026-09-25`）。粘貼 65 個 unique；3 個唔喺 Name List、1 個喺 Name List 但冇 EY 授權，唔入。其他 Manual 行數不變（1111）。Supabase `hx_private.team_board_actions`（`hx_team_board_put` 會 snapshot `board_revisions`）。唔改 HTML。唔開 Chrome。唔寫職員明細。本機冇 `HX-outstanding-by-course.xlsx`。
 
 ## 2026-10-02 公司電腦
 
