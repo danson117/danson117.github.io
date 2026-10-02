@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion 工具列 Expiry：** 標籤改做 **Expiry:**，同 Status: 同一樣式（唔再係啡色 Years）。右邊仍然只係數字，預設 2，冇開關。0 冇到期；大於 0 先按年數變 Outstanding。表頭讀法、Group、Export 不變。頁 **v1.5**、`hx-rules` **v10.43**、hub page-version **v18.0**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion Years 決定到期：** 拆走 Expiry 開關。Years 一直可以改，預設 2。打 0 冇到期，Completed 維持 Completed。大於 0 先按年數變 Outstanding（到期日當日仍 Completed，90 日內變色）。表頭讀法不變。Group 仍然 All／PAX／CG。Export 仍然一張表、跟而家個 Group。頁 **v1.4**、`hx-rules` **v10.42**、hub page-version **v17.9**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

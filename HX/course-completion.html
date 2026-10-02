@@ -185,7 +185,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Nothing is saved, and Training One View is left as it is.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Only Completed rows are listed, newest completed date first. Header names are matched in this browser. Years sets how long a completion stays valid (default 2). 0 means no expiry date. Nothing is sent out.</p>
+      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Only Completed rows are listed, newest completed date first. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. Nothing is sent out.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -204,8 +204,8 @@
         <button type="button" class="on" data-cmp="all">All</button>
         <button type="button" data-cmp="completed">Completed</button>
         <button type="button" data-cmp="outstanding">Outstanding</button>
-        <label class="filter-label" for="cmp-years">Years</label>
-        <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" aria-label="Validity years" title="Years after the completed date. Default 2. 0 means no expiry date.">
+        <span class="filter-label">Expiry:</span>
+        <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" aria-label="Expiry years" title="Years after the completed date. Default 2. 0 means no expiry date.">
         <button type="button" id="cmp-export-xlsx">Export XLSX</button>
         <button type="button" id="cmp-remap" title="Choose columns when the file uses different header names.">Match columns</button>
         <button type="button" id="cmp-copy" class="pop-icon" data-copy-shot title="Copy layout" aria-label="Copy layout">
@@ -266,7 +266,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="1.4" aria-label="Page version 1.4">v1.4</div>
+  <div class="page-version" data-version="1.5" aria-label="Page version 1.5">v1.5</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
