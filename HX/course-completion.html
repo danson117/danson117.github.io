@@ -185,13 +185,17 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Nothing is saved, and Training One View is left as it is.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. The table lists every Name List person, including remark SHOWS LMP. Section is the Name List section. The file’s Department column is ignored. Usual headers are used as they are. If a header name changes, this page matches it here in the browser — nothing is sent out. Tick Expiry to mark a completion Outstanding after the year count. Rows due within 90 days change colour; the due day itself stays Completed.</p>
+      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Only Completed rows are listed, newest completed date first. Header names are matched in this browser. Nothing is sent out.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
       </div>
       <p class="note" id="cmp-status">No completion file yet.</p>
       <div class="toolbar cmp-tools" id="cmp-tools" hidden>
+        <span class="filter-label">Group:</span>
+        <button type="button" class="on" data-cmp-org="all">All</button>
+        <button type="button" data-cmp-org="pax">PAX</button>
+        <button type="button" data-cmp-org="cg">CG</button>
         <span class="filter-label">Role:</span>
         <button type="button" class="on" data-cmp-role="all">All</button>
         <button type="button" data-cmp-role="cs">CS</button>
@@ -264,7 +268,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="1.1" aria-label="Page version 1.1">v1.1</div>
+  <div class="page-version" data-version="1.2" aria-label="Page version 1.2">v1.2</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -448,6 +452,7 @@ function xlsxSheetPath(files) {
 }
 let cmpModel = null;
 let cmpFilter = "all";
+let cmpOrg = "all";
 let cmpRole = "all";
 let cmpSortKey = "";
 let cmpSortDir = 1;
@@ -498,6 +503,7 @@ function cmpView(row) {
     done: row.done,
     doneFlag: !!row.doneFlag,
     role: row.role,
+    bucket: row.bucket || "",
     band: "",
     expired: false
   };
@@ -522,9 +528,14 @@ function cmpRoleRows() {
   if (!cmpModel || !cmpModel.rows) return [];
   return cmpModel.rows.map(cmpView).filter(cmpRoleOk);
 }
+function cmpOrgOk(row) {
+  if (cmpOrg === "pax") return row.bucket === "PAX";
+  if (cmpOrg === "cg") return row.bucket === "CG";
+  return row.bucket === "PAX" || row.bucket === "CG";
+}
 function cmpShownRows() {
   if (!cmpModel || !cmpModel.rows) return [];
-  const rows = cmpRoleRows().filter((row) => {
+  const rows = cmpRoleRows().filter(cmpOrgOk).filter((row) => {
     if (cmpFilter === "completed") return row.doneFlag;
     if (cmpFilter === "outstanding") return !row.doneFlag;
     return true;
@@ -573,7 +584,8 @@ function cmpDoneDate(raw) {
 const CMP_MAP_KEY = "hx:course-completion:colmap";
 const CMP_FIELDS = [
   { key: "staff", label: "Staff #", need: true, aliases: ["staff no", "staff number", "staff num", "staff id", "employee no", "employee number", "employee id", "employee num", "emp no", "emp id", "personnel no", "personnel number"] },
-  { key: "code", label: "Course code", need: true, aliases: ["course code", "course id", "course no", "course number", "activity code", "training code", "item code", "module code"] },
+  { key: "code", label: "Course code", need: true, aliases: ["course code", "cost code", "course id", "course no", "course number", "activity code", "training code", "item code", "module code"] },
+  { key: "dept", label: "Department", need: true, aliases: ["departments", "department", "dept", "division"] },
   { key: "title", label: "Course title", need: false, aliases: ["course title", "course name", "activity name", "training name", "course description", "module name"] },
   { key: "status", label: "Status", need: false, aliases: ["completion status", "course status", "training status", "status", "result"] },
   { key: "date", label: "Completed date", need: false, aliases: ["completion date", "completed date", "date completed", "end date", "completed on", "finish date", "finished date"] }
@@ -584,7 +596,7 @@ function cmpNormHeader(h) {
 }
 function cmpHeaderBlocked(n, key) {
   if (!n) return true;
-  if (/\b(department|dept|section|team|home)\b/.test(n)) return true;
+  if (key !== "dept" && /\b(department|dept|section|team|home)\b/.test(n)) return true;
   if (key === "staff" && /\b(name|chinese)\b/.test(n)) return true;
   if (key === "code" && /\b(title|name|description|status|date)\b/.test(n)) return true;
   if (key === "title" && /\b(code|status|date|department)\b/.test(n)) return true;
@@ -605,7 +617,7 @@ function cmpAliasScore(header, field) {
   return best;
 }
 function cmpBlankMap() {
-  return { staff: -1, code: -1, title: -1, status: -1, date: -1 };
+  return { staff: -1, code: -1, title: -1, status: -1, date: -1, dept: -1 };
 }
 function cmpHeaderSig(header) {
   return header.map(cmpNormHeader).filter(Boolean).join("|");
@@ -621,7 +633,7 @@ function cmpRememberedMap(header) {
     if (!want) return;
     map[field.key] = header.findIndex((h) => cmpNormHeader(h) === want);
   });
-  if (map.staff < 0 || map.code < 0) return null;
+  if (map.staff < 0 || map.code < 0 || map.dept < 0) return null;
   return map;
 }
 function cmpSaveMap(header, map) {
@@ -645,13 +657,23 @@ function cmpIsCodeCell(v) {
   if (/^LT[A-Z]{1,3}\d{0,2}$/i.test(s)) return false;
   if (/^LM\b/i.test(s)) return false;
   if (cmpDoneDate(s)) return false;
+  if (/^\d{1,4}[A-Za-z]{0,2}$/.test(s)) return true;
   return /^[A-Za-z][A-Za-z0-9.\/_-]*\d[A-Za-z0-9.\/_-]*$/.test(s) || /^\d[A-Za-z0-9.\/_-]*[A-Za-z]/.test(s);
 }
 function cmpIsStatusCell(v) {
   return /^(completed|outstanding|complete|incomplete|passed|failed|pass|fail|in progress|not started)$/i.test(String(v || "").trim());
 }
+function cmpDeptBucket(raw) {
+  const s = String(raw || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  if (s === "lmcxgtransit") return "PAX";
+  if (s === "lmocg") return "CG";
+  return "";
+}
+function cmpPaxSection(sec) {
+  return /^(LTC[12346]|LTCX|LTW[1-4])$/i.test(String(sec || "").trim());
+}
 function cmpIsDeptCell(v) {
-  return /^LM\b/i.test(String(v || "").trim()) && /-/.test(String(v || ""));
+  return cmpDeptBucket(v) !== "";
 }
 function cmpColValues(grid, headAt, col) {
   const out = [];
@@ -669,7 +691,7 @@ function cmpRatio(vals, pred) {
 }
 function cmpContentKind(vals) {
   if (vals.length < 2) return "";
-  if (cmpRatio(vals, cmpIsDeptCell) >= 0.5) return "";
+  if (cmpRatio(vals, cmpIsDeptCell) >= 0.5) return "dept";
   if (cmpRatio(vals, cmpIsStaffCell) >= 0.7) return "staff";
   if (cmpRatio(vals, cmpIsCodeCell) >= 0.7) return "code";
   if (cmpRatio(vals, cmpIsStatusCell) >= 0.7) return "status";
@@ -740,60 +762,86 @@ function cmpBuild(grid, fileName, headAt, header, map) {
   const iTitle = map.title;
   const iStatus = map.status;
   const iDate = map.date;
-  const hits = new Map();
-  const titleByCode = new Map();
-  const codes = [];
+  const iDept = map.dept;
+  const kept = [];
+  const codeCount = new Map();
   let fileRows = 0;
-  let skipped = 0;
+  let otherDept = 0;
   for (let r = headAt + 1; r < grid.length; r++) {
-    const cells = grid[r];
+    const cells = grid[r] || [];
     const staff = padStaff(cells[iStaff]);
     const code = String(cells[iCode] || "").trim();
     if (!staff && !code) continue;
     if (!/^\d{5,7}$/.test(staff) || !code) continue;
     fileRows++;
+    const bucket = cmpDeptBucket(iDept >= 0 ? cells[iDept] : "");
+    if (!bucket) { otherDept++; continue; }
     const codeKey = code.toUpperCase();
-    if (!titleByCode.has(codeKey)) {
-      titleByCode.set(codeKey, iTitle >= 0 ? String(cells[iTitle] || "").trim() : "");
-      codes.push(codeKey);
-    } else if (!titleByCode.get(codeKey) && iTitle >= 0) {
-      titleByCode.set(codeKey, String(cells[iTitle] || "").trim());
-    }
-    if (!rosterHas(staff)) {
-      skipped++;
-      continue;
-    }
-    hits.set(staff + "|" + codeKey, {
+    codeCount.set(codeKey, (codeCount.get(codeKey) || 0) + 1);
+    kept.push({
+      staff: staff,
+      codeKey: codeKey,
+      title: iTitle >= 0 ? String(cells[iTitle] || "").trim() : "",
       status: iStatus >= 0 ? String(cells[iStatus] || "").trim() : "",
-      done: iDate >= 0 ? cmpDoneDate(cells[iDate]) : ""
+      done: iDate >= 0 ? cmpDoneDate(cells[iDate]) : "",
+      bucket: bucket
     });
   }
-  if (!codes.length) return { error: fileName + " has no course rows." };
+  if (!codeCount.size) return { error: fileName + " has no LM CXG transit or LM OCG rows." };
+  let keptCode = "";
+  let keptN = -1;
+  codeCount.forEach((n, code) => {
+    if (n > keptN || (n === keptN && (code.length < keptCode.length || (code.length === keptCode.length && code < keptCode)))) {
+      keptCode = code;
+      keptN = n;
+    }
+  });
+  let otherCodes = 0;
+  codeCount.forEach((n, code) => { if (code !== keptCode) otherCodes += n; });
   const roles = cmpRoleMap();
-  const people = (window.PEOPLE || []).slice().sort(cmpRoster);
   const rows = [];
-  codes.forEach((codeKey) => {
-    const title = titleByCode.get(codeKey) || "";
-    people.forEach((p) => {
-      const staff = padStaff(p.staff);
-      const hit = hits.get(staff + "|" + codeKey);
-      const status = hit ? (hit.status || "Completed") : "Outstanding";
-      rows.push({
-        staff: staff,
-        name: String(p.name || "").trim(),
-        section: String(p.home || "").trim(),
-        code: codeKey,
-        title: title,
-        status: status,
-        done: hit ? hit.done : "",
-        doneFlag: /completed/i.test(status),
-        role: roles.get(staff) || ""
-      });
+  const seen = new Map();
+  let skipped = 0;
+  let notCompleted = 0;
+  let paxSection = 0;
+  kept.forEach((item) => {
+    if (item.codeKey !== keptCode) return;
+    if (!rosterHas(item.staff)) { skipped++; return; }
+    const person = byStaff.get(padStaff(item.staff));
+    const section = String((person && person.home) || "").trim();
+    if (item.bucket === "PAX" && !cmpPaxSection(section)) { paxSection++; return; }
+    const status = item.status || "Completed";
+    if (iStatus >= 0 && !/completed/i.test(status)) { notCompleted++; return; }
+    const id = padStaff(item.staff) + "|" + item.bucket;
+    if (seen.has(id)) {
+      const prev = rows[seen.get(id)];
+      if (item.done && (!prev.done || item.done > prev.done)) {
+        prev.done = item.done;
+        if (item.title) prev.title = item.title;
+      }
+      return;
+    }
+    seen.set(id, rows.length);
+    rows.push({
+      staff: padStaff(item.staff),
+      name: String((person && person.name) || "").trim(),
+      section: section,
+      code: keptCode,
+      title: item.title,
+      status: status,
+      done: item.done,
+      doneFlag: /completed/i.test(status),
+      role: roles.get(padStaff(item.staff)) || "",
+      bucket: item.bucket
     });
   });
   const columns = CMP_FIELDS.filter((field) => map[field.key] >= 0).map((field) => field.label + " = " + String(header[map[field.key]] || "").trim());
   const usual = /staff no/.test(cmpNormHeader(header[map.staff])) && /course code/.test(cmpNormHeader(header[map.code]));
-  return { fileName: fileName, fileRows: fileRows, skipped: skipped, rows: rows, columns: columns, usual: usual, headAt: headAt, header: header, map: map };
+  return {
+    fileName: fileName, fileRows: fileRows, skipped: skipped, rows: rows, columns: columns, usual: usual,
+    headAt: headAt, header: header, map: map, keptCode: keptCode, otherDept: otherDept, otherCodes: otherCodes,
+    notCompleted: notCompleted, paxSection: paxSection
+  };
 }
 function cmpPrepare(grid, fileName, forced) {
   if (!byStaff.size) return { error: "Name List did not load." };
@@ -805,7 +853,7 @@ function cmpPrepare(grid, fileName, forced) {
   const header = (grid[headAt] || []).map((c) => String(c || "").trim());
   const found = forced ? { map: forced.map } : cmpDetectMap(grid, headAt, header);
   const map = found.map;
-  if (map.staff < 0 || map.code < 0) return { needMap: true, grid: grid, fileName: fileName, headAt: headAt, header: header, map: map };
+  if (map.staff < 0 || map.code < 0 || map.dept < 0) return { needMap: true, grid: grid, fileName: fileName, headAt: headAt, header: header, map: map };
   return cmpBuild(grid, fileName, headAt, header, map);
 }
 function paintCmp() {
@@ -850,6 +898,9 @@ function paintCmp() {
   tools.querySelectorAll("[data-cmp-role]").forEach((btn) => {
     btn.classList.toggle("on", btn.getAttribute("data-cmp-role") === cmpRole);
   });
+  tools.querySelectorAll("[data-cmp-org]").forEach((btn) => {
+    btn.classList.toggle("on", btn.getAttribute("data-cmp-org") === cmpOrg);
+  });
   const expiryBtn = document.getElementById("cmp-expiry");
   if (expiryBtn) {
     expiryBtn.classList.toggle("on", cmpExpiryOn);
@@ -857,10 +908,17 @@ function paintCmp() {
   }
   paintCmpSortHeaders();
   if (statusEl) {
+    const groupLabel = cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All");
     statusEl.textContent = cmpModel.fileName +
+      " · Group " + groupLabel +
+      " · Course " + (cmpModel.keptCode || "") +
       " · Role " + roleLabel +
       " · Completed " + completed +
       " · Outstanding " + outstanding +
+      " · Other departments removed " + (cmpModel.otherDept || 0) +
+      " · Other course codes removed " + (cmpModel.otherCodes || 0) +
+      " · Not completed removed " + (cmpModel.notCompleted || 0) +
+      " · PAX other sections removed " + (cmpModel.paxSection || 0) +
       (cmpExpiryOn
         ? " · Expiry " + cmpExpiryYears + (cmpExpiryYears === 1 ? " year" : " years") +
           " · Expired to Outstanding " + expired +
@@ -892,6 +950,7 @@ function exportCmpXlsx() {
   rows.push(
     [],
     ["Filters"],
+    ["Group", cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All")],
     ["Role", roleLabel],
     ["Status", statusLabel],
     ["Expiry", cmpExpiryOn ? "On" : "Off"],
@@ -1217,8 +1276,9 @@ function cmpApplyModel(model) {
   cmpModel = model;
   cmpFilter = "all";
   cmpRole = "all";
-  cmpSortKey = "";
-  cmpSortDir = 1;
+  cmpOrg = "all";
+  cmpSortKey = "done";
+  cmpSortDir = -1;
   cmpExpiryOn = false;
   paintCmp();
 }
@@ -1234,7 +1294,7 @@ function cmpMapChoices() {
 function openCmpMap(pending) {
   cmpSource = pending;
   const lead = document.getElementById("cmp-map-lead");
-  if (lead) lead.textContent = "These column names were not recognised. Choose which column is which. Staff # and Course code are required. The choice is remembered in this browser for the same headers. Nothing is sent out.";
+  if (lead) lead.textContent = "These column names were not recognised. Choose which column is which. Staff #, Course code, and Department are required. The choice is remembered in this browser for the same headers. Nothing is sent out.";
   const box = document.getElementById("cmp-map-fields");
   const options = pending.header.map((h, i) => {
     const label = String(h || "").trim() || ("Column " + (i + 1));
@@ -1326,6 +1386,12 @@ document.getElementById("cmp-box").addEventListener("click", (e) => {
     paintCmp();
     return;
   }
+  const orgBtn = e.target.closest("[data-cmp-org]");
+  if (orgBtn) {
+    cmpOrg = orgBtn.getAttribute("data-cmp-org") || "all";
+    paintCmp();
+    return;
+  }
   const roleBtn = e.target.closest("[data-cmp-role]");
   if (roleBtn) {
     cmpRole = roleBtn.getAttribute("data-cmp-role") || "all";
@@ -1363,8 +1429,8 @@ document.getElementById("cmp-map-ok").addEventListener("click", () => {
   if (!cmpSource) return;
   const map = cmpMapChoices();
   const lead = document.getElementById("cmp-map-lead");
-  if (map.staff < 0 || map.code < 0 || map.staff === map.code) {
-    if (lead) lead.textContent = "Staff # and Course code must be two different columns.";
+  if (map.staff < 0 || map.code < 0 || map.dept < 0 || map.staff === map.code || map.staff === map.dept || map.code === map.dept) {
+    if (lead) lead.textContent = "Staff #, Course code, and Department must be different columns.";
     return;
   }
   const used = {};

@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion All／PAX／CG：** 只留 department LM CXG transit（掣 PAX）同 LM OCG（掣 CG）。其他 department 移除。課程碼只留行數最多嗰一個。PAX 再只留 Name List section LTC1／2／3／4／6／X 同 LTW1–4。Status 只留 Completed。完成日新到舊。All＝兩組合埋。HX 嘅 OCG＝PAX＋CG，同下載檔叫法唔同。唔送 AI、唔寫 Supabase。頁 **v1.2**、`hx-rules` **v10.40**、hub page-version **v17.7**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion 欄名／CSV：** 同一頁接受 xlsx 同 CSV。平常表頭照舊。欄名變咗或調位，瀏覽器自己對（常見欄名，然後格內容）。都唔肯定先彈 Match columns，選擇只記呢個瀏覽器。唔送 AI、唔寫 Supabase。頁 **v1.1**、`hx-rules` **v10.39**、hub page-version **v17.6**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
