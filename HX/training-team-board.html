@@ -640,8 +640,21 @@
   .cmp-table th[aria-sort="descending"]::after { content: " ▼"; }
   .cmp-table td { padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
   .cmp-table tr.cmp-done td.col-status { color: #0b6b2f; font-weight: 650; }
+  .cmp-table tr.cmp-hot td { background: var(--hot-bg); color: var(--hot); }
+  .cmp-table tr.cmp-warn td { background: var(--warn-bg); color: var(--warn); }
+  .cmp-table tr.cmp-done.cmp-hot td.col-status { color: var(--hot); }
+  .cmp-table tr.cmp-done.cmp-warn td.col-status { color: var(--warn); }
   .cmp-tools { flex-wrap: wrap; align-items: center; }
   .cmp-tools .filter-label { margin-right: 2px; }
+  .cmp-tools input.cmp-years {
+    width: 4.2em;
+    font: inherit;
+    font-size: 13px;
+    padding: 5px 6px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
   #cmp-wrap.capturing { overflow: visible; max-height: none; }
   #cmp-wrap.capturing #cmp-shot {
     width: max-content;
@@ -1513,7 +1526,7 @@
       </div>
       <div class="box" id="cmp-box">
         <label for="cmp-file">Course completion xlsx</label>
-        <p class="note">Drop an xlsx. The table lists every Name List person, including remark SHOWS LMP. Section is the Name List section. The file’s Department column is ignored. Read in this browser only — it does not change the board.</p>
+        <p class="note">Drop an xlsx. The table lists every Name List person, including remark SHOWS LMP. Section is the Name List section. The file’s Department column is ignored. Read in this browser only — it does not change the board. Tick Expiry to mark a completion Outstanding after the year count. Rows due within 90 days change colour; the due day itself stays Completed.</p>
         <div class="drop" id="cmp-drop">
           <input id="cmp-file" type="file" lang="en" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" title="Choose an xlsx file" aria-label="Choose a course completion xlsx">
           <p>Drop xlsx here, or choose a file.</p>
@@ -1528,6 +1541,10 @@
           <button type="button" class="on" data-cmp="all">All</button>
           <button type="button" data-cmp="completed">Completed</button>
           <button type="button" data-cmp="outstanding">Outstanding</button>
+          <span class="filter-label">Expiry:</span>
+          <button type="button" id="cmp-expiry" aria-pressed="false" title="When on, a completion past the year count becomes Outstanding. Within 90 days the row changes colour. The due day stays Completed.">Expiry</button>
+          <label class="filter-label" for="cmp-years">Years</label>
+          <input id="cmp-years" class="cmp-years" type="number" min="1" step="1" value="2" inputmode="numeric" aria-label="Validity years" title="Years after the completed date. Default 2.">
           <button type="button" id="cmp-export-xlsx">Export XLSX</button>
           <button type="button" id="cmp-copy" class="pop-icon" data-copy-shot title="Copy layout" aria-label="Copy layout">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -1873,7 +1890,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.26" aria-label="Page version 15.26">v15.26</div>
+  <div class="page-version" data-version="15.27" aria-label="Page version 15.27">v15.27</div>
 <script src="ocg-pax-data.js?v=6"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -10486,6 +10503,8 @@ let cmpFilter = "all";
 let cmpRole = "all";
 let cmpSortKey = "";
 let cmpSortDir = 1;
+let cmpExpiryOn = false;
+let cmpExpiryYears = 2;
 function cmpRoleOf(rec) {
   const title = String((rec && rec.title) || "");
   const pos = String((rec && rec.pos) || "");
@@ -10507,10 +10526,57 @@ function cmpRoleOk(row) {
   if (cmpRole === "mech") return row.role === "MECHANIC";
   return true;
 }
+function cmpDueFromDone(iso, years) {
+  const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m || !Number.isFinite(years) || years < 1) return "";
+  const y = Number(m[1]) + years;
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCMonth() !== mo - 1) {
+    const last = new Date(Date.UTC(y, mo, 0));
+    return last.getUTCFullYear() + "-" + pad2(last.getUTCMonth() + 1) + "-" + pad2(last.getUTCDate());
+  }
+  return y + "-" + pad2(mo) + "-" + pad2(d);
+}
+function cmpView(row) {
+  const view = {
+    staff: row.staff,
+    name: row.name,
+    section: row.section,
+    code: row.code,
+    title: row.title,
+    status: row.status,
+    done: row.done,
+    doneFlag: !!row.doneFlag,
+    role: row.role,
+    band: "",
+    expired: false
+  };
+  if (!cmpExpiryOn || !view.doneFlag || !view.done) return view;
+  const due = cmpDueFromDone(view.done, cmpExpiryYears);
+  const dueAt = dueStamp(due);
+  if (!dueAt) return view;
+  const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate());
+  const remain = Math.round((dueAt - today) / 86400000);
+  if (remain < 0) {
+    view.status = "Outstanding";
+    view.doneFlag = false;
+    view.band = "hot";
+    view.expired = true;
+    return view;
+  }
+  if (remain <= 30) view.band = "hot";
+  else if (remain <= 90) view.band = "warn";
+  return view;
+}
+function cmpRoleRows() {
+  if (!cmpModel || !cmpModel.rows) return [];
+  return cmpModel.rows.map(cmpView).filter(cmpRoleOk);
+}
 function cmpShownRows() {
   if (!cmpModel || !cmpModel.rows) return [];
-  const rows = cmpModel.rows.filter((row) => {
-    if (!cmpRoleOk(row)) return false;
+  const rows = cmpRoleRows().filter((row) => {
     if (cmpFilter === "completed") return row.doneFlag;
     if (cmpFilter === "outstanding") return !row.doneFlag;
     return true;
@@ -10640,22 +10706,28 @@ function paintCmp() {
     if (statusEl) statusEl.textContent = cmpModel && cmpModel.error ? cmpModel.error : "No completion file yet.";
     return;
   }
-  const roleRows = cmpModel.rows.filter(cmpRoleOk);
+  const roleRows = cmpRoleRows();
   const shown = cmpShownRows();
   const completed = roleRows.filter((row) => row.doneFlag).length;
   const outstanding = roleRows.length - completed;
+  const expired = roleRows.filter((row) => row.expired).length;
+  const nearRed = roleRows.filter((row) => row.band === "hot" && !row.expired).length;
+  const nearYellow = roleRows.filter((row) => row.band === "warn").length;
   const roleLabel = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mechanic" : "All");
-  body.innerHTML = shown.map((row) =>
-    "<tr class=\"" + (row.doneFlag ? "cmp-done" : "cmp-open") + "\">" +
-    "<td class=\"col-staff\">" + staffNoHtml(row.staff) + "</td>" +
-    "<td class=\"col-name\">" + esc(row.name) + "</td>" +
-    "<td>" + esc(row.section) + "</td>" +
-    "<td>" + esc(row.code) + "</td>" +
-    "<td>" + esc(row.title) + "</td>" +
-    "<td class=\"col-status\">" + esc(row.status) + "</td>" +
-    "<td>" + esc(row.done) + "</td>" +
-    "</tr>"
-  ).join("");
+  body.innerHTML = shown.map((row) => {
+    const cls = (row.doneFlag ? "cmp-done" : "cmp-open") +
+      (row.band === "hot" ? " cmp-hot" : "") +
+      (row.band === "warn" ? " cmp-warn" : "");
+    return "<tr class=\"" + cls + "\">" +
+      "<td class=\"col-staff\">" + staffNoHtml(row.staff) + "</td>" +
+      "<td class=\"col-name\">" + esc(row.name) + "</td>" +
+      "<td>" + esc(row.section) + "</td>" +
+      "<td>" + esc(row.code) + "</td>" +
+      "<td>" + esc(row.title) + "</td>" +
+      "<td class=\"col-status\">" + esc(row.status) + "</td>" +
+      "<td>" + esc(row.done) + "</td>" +
+      "</tr>";
+  }).join("");
   tools.hidden = false;
   wrap.hidden = false;
   tools.querySelectorAll("[data-cmp]").forEach((btn) => {
@@ -10664,12 +10736,22 @@ function paintCmp() {
   tools.querySelectorAll("[data-cmp-role]").forEach((btn) => {
     btn.classList.toggle("on", btn.getAttribute("data-cmp-role") === cmpRole);
   });
+  const expiryBtn = document.getElementById("cmp-expiry");
+  if (expiryBtn) {
+    expiryBtn.classList.toggle("on", cmpExpiryOn);
+    expiryBtn.setAttribute("aria-pressed", cmpExpiryOn ? "true" : "false");
+  }
   paintCmpSortHeaders();
   if (statusEl) {
     statusEl.textContent = cmpModel.fileName +
       " · Role " + roleLabel +
       " · Completed " + completed +
       " · Outstanding " + outstanding +
+      (cmpExpiryOn
+        ? " · Expiry " + cmpExpiryYears + (cmpExpiryYears === 1 ? " year" : " years") +
+          " · Expired to Outstanding " + expired +
+          " · Near red " + nearRed + " · Near yellow " + nearYellow
+        : "") +
       " · Skipped " + cmpModel.skipped + " (not on Name List)" +
       " · Showing " + shown.length + ".";
   }
@@ -10696,6 +10778,8 @@ function exportCmpXlsx() {
     ["Filters"],
     ["Role", roleLabel],
     ["Status", statusLabel],
+    ["Expiry", cmpExpiryOn ? "On" : "Off"],
+    ["Validity years", cmpExpiryOn ? String(cmpExpiryYears) : ""],
     ["Sort", cmpSortKey ? (sortLabels[cmpSortKey] || cmpSortKey) + (cmpSortDir >= 0 ? " A to Z" : " Z to A") : ""],
     ["People", String(shown.length)]
   );
@@ -10755,12 +10839,24 @@ function takeCmpFile(file) {
     cmpRole = "all";
     cmpSortKey = "";
     cmpSortDir = 1;
+    cmpExpiryOn = false;
     paintCmp();
   }).catch(() => {
     cmpModel = { error: file.name + " could not be read." };
     paintCmp();
   });
 }
+document.getElementById("cmp-years").addEventListener("input", (e) => {
+  const raw = String(e.target.value || "").trim();
+  if (!/^\d+$/.test(raw)) return;
+  const n = Number(raw);
+  if (n < 1) return;
+  cmpExpiryYears = n;
+  if (cmpExpiryOn) paintCmp();
+});
+document.getElementById("cmp-years").addEventListener("blur", (e) => {
+  e.target.value = String(cmpExpiryYears);
+});
 document.getElementById("cmp-file").addEventListener("change", (e) => {
   const file = e.target.files && e.target.files[0];
   takeCmpFile(file);
@@ -10781,6 +10877,11 @@ document.getElementById("cmp-box").addEventListener("click", (e) => {
   const roleBtn = e.target.closest("[data-cmp-role]");
   if (roleBtn) {
     cmpRole = roleBtn.getAttribute("data-cmp-role") || "all";
+    paintCmp();
+    return;
+  }
+  if (e.target.closest("#cmp-expiry")) {
+    cmpExpiryOn = !cmpExpiryOn;
     paintCmp();
     return;
   }
