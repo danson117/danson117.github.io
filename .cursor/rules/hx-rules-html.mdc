@@ -17,7 +17,7 @@ alwaysApply: true
 - 右下角 `page-version` **必 +0.1**（大改 +1.0）。`hx.html` 側欄 `?v=` 一齊加。
 - **Team 數字唔當 PAX：** Team No. 只係隊伍編號。CG 可以有 Team 數字，仍然係 CG。PAX 只跟 roster group，或者人喺 Crew List。詳見 `HX/hx-rules.html` 紅字。
 - **OCG 紀錄、唔再計人：** `382200`、`313495` Remark **01OCT will transfer to CXG**。只留 Full List 黃行。唔入 OCG 人數、Crew List、Name List、訓練名冊。已存訓練列唔刪，板面先濾。詳見 `HX/hx-rules.html` 紅字。
-- **Course completion xlsx：** Training One View 上載區拖入 `.xlsx`，瀏覽器自己對 Name List（包括 SHOWS LMP）出表。Section 跟 Name List。檔嘅 Department 唔用。Role＝All／CS（Name List Certifier，唔用 LTW）／Mechanic，再加 Status All／Completed／Outstanding。Export XLSX、Copy layout、Download 跟而家篩選。唔送 AI、唔寫 Supabase、唔改板。TOV v15.25。詳見 `HX/hx-rules.html` 紅字。
+- **Course completion xlsx：** Training One View 上載區拖入 `.xlsx`，瀏覽器自己對 Name List（包括 SHOWS LMP）出表。Section 跟 Name List。檔嘅 Department 唔用。Role＝All／CS（Name List Certifier，唔用 LTW）／Mechanic，再加 Status All／Completed／Outstanding。Export XLSX、Copy layout、Download 跟而家篩選。表頭可撳排序，再撳反向；匯出同下載跟該次序。唔送 AI、唔寫 Supabase、唔改板。TOV v15.26。詳見 `HX/hx-rules.html` 紅字。
 - **Outstanding course chips · Unselect all：** Detail course chips 旁 **Unselect all** 一次收起全部 course。之後逐粒 chip 加或收。只係今次畫面，refresh 恢復。唔寫 Supabase。TOV v15.25。
 - **產生 XLSX 基本要求：** 之後任何產生嘅 `.xlsx`（唔限 Training One View）都要表頭 **AutoFilter**（只包數據表，第一行全空行之後嘅註解唔入範圍）同埋欄闊跟表頭／內容（約 12–48 字寬，留少少空）。共用寫入 `HX/hx-xlsx.js`；頁面自己寫都要同一樣。詳見 `HX/hx-rules.html` 紅字。
 - 零碎筆記：畫面唔顯示「記下」／時間／caption。時間只留 `#scratch-ledger`。

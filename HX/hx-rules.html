@@ -241,7 +241,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
-        <li style="color:#b00020"><b>新 · Course completion xlsx（本機對表，唔燒 token）：</b>Training One View 上載區加 <b>Course completion xlsx</b>。拖入或選擇 <code>.xlsx</code>，瀏覽器自己讀，唔送 AI、唔寫 Supabase、唔改板。表列出全部 Name List 人（包括 Remark <b>SHOWS LMP</b>）。欄：Staff #、Name、Section（跟 Name List）、Course code、Course title、Status、Completed date。檔入面有、名冊有 → 用檔嘅 Status／完成日（<code>DD-MM-YY</code>）。名冊有、檔冇 → Outstanding。唔喺 Name List 嘅行只計 Skipped，唔上表。檔嘅 Department（例如 LM - OCG／LM - CXG Transit）同 Section code 唔用。<b>Role</b>：<b>All</b>＝全部 Name List（包括 Office）；<b>CS</b>＝Name List Certifier（Licensed Engineer／Assistant Licensed Engineer／Controller／Duty in Charge，包括 Deputy DIC；跟職位，唔用 LTW section）；<b>Mechanic</b>＝Name List Mechanic。Role 同 Status（All／Completed／Outstanding）一齊篩。<b>Export XLSX</b> 出而家篩選後嘅行（檔名 <code>TOV-completion-YYYY-MM-DD.xlsx</code>；表頭 AutoFilter 只包數據；空行下先寫 Role／Status／People 同 course title）。<b>Copy layout</b>／<b>Download</b> 同 Detail 一樣影張表，Staff # 同 Name 全文唔截。TOV <b>v15.25</b>。</li>
+        <li style="color:#b00020"><b>新 · Course completion xlsx（本機對表，唔燒 token）：</b>Training One View 上載區加 <b>Course completion xlsx</b>。拖入或選擇 <code>.xlsx</code>，瀏覽器自己讀，唔送 AI、唔寫 Supabase、唔改板。表列出全部 Name List 人（包括 Remark <b>SHOWS LMP</b>）。欄：Staff #、Name、Section（跟 Name List）、Course code、Course title、Status、Completed date。檔入面有、名冊有 → 用檔嘅 Status／完成日（<code>DD-MM-YY</code>）。名冊有、檔冇 → Outstanding。唔喺 Name List 嘅行只計 Skipped，唔上表。檔嘅 Department（例如 LM - OCG／LM - CXG Transit）同 Section code 唔用。<b>Role</b>：<b>All</b>＝全部 Name List（包括 Office）；<b>CS</b>＝Name List Certifier（Licensed Engineer／Assistant Licensed Engineer／Controller／Duty in Charge，包括 Deputy DIC；跟職位，唔用 LTW section）；<b>Mechanic</b>＝Name List Mechanic。Role 同 Status（All／Completed／Outstanding）一齊篩。<b>Export XLSX</b> 出而家篩選後嘅行（檔名 <code>TOV-completion-YYYY-MM-DD.xlsx</code>；表頭 AutoFilter 只包數據；空行下先寫 Role／Status／Sort／People 同 course title）。<b>Copy layout</b>／<b>Download</b> 同 Detail 一樣影張表，Staff # 同 Name 全文唔截。表頭可撳排序（再撳反向）；Export／Copy／Download 跟而家次序。空白格排最後。TOV <b>v15.26</b>。</li>
         <li style="color:#b00020"><b>新 · Outstanding course chips · Unselect all：</b>Detail 標題下嘅 course code chips 旁加英文掣 <b>Unselect all</b>。撳一下，而家呢排 chips 全部收起（呢個 view 唔再包任何呢啲 course）。之後撳一粒 chip 先顯示嗰一科；再撳其他 chip 就逐個加或收。只係今次畫面，唔寫 Supabase、唔改訓練資料。Refresh 恢復全顯示。TOV <b>v15.25</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · Search 多詞 OR：</b>Search 一個欄；用 <code>;</code> 分開多個詞；任一詞符合就顯示（例 <code>E195;T241</code>）。前後／連續分號空段忽略；建議跟最後一段。唔改其他 filter。TOV <b>v15.15</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · Section OCG 只顯示 Name List 人：</b>Outstanding 表、Team 板、Completed 名單喺 Section＝<b>OCG</b> 時只留 Name List 嘅 CG＋PAX。唔喺名冊嘅人唔上表（檔仍可存，板面先濾）。CG／PAX 分頁不變。TOV <b>v15.14</b>。</li>
@@ -346,6 +346,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.30">v10.30</div>
+  <div class="page-version" data-version="10.31">v10.31</div>
 </body>
 </html>

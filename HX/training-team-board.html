@@ -634,7 +634,10 @@
     text-align: left;
     padding: 6px 8px;
     white-space: nowrap;
+    cursor: pointer;
   }
+  .cmp-table th[aria-sort="ascending"]::after { content: " ▲"; }
+  .cmp-table th[aria-sort="descending"]::after { content: " ▼"; }
   .cmp-table td { padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
   .cmp-table tr.cmp-done td.col-status { color: #0b6b2f; font-weight: 650; }
   .cmp-tools { flex-wrap: wrap; align-items: center; }
@@ -1548,13 +1551,13 @@
               </colgroup>
               <thead>
                 <tr>
-                  <th class="col-staff">Staff #</th>
-                  <th class="col-name">Name</th>
-                  <th>Section</th>
-                  <th>Course code</th>
-                  <th>Course title</th>
-                  <th>Status</th>
-                  <th>Completed date</th>
+                  <th class="col-staff" data-cmp-sort="staff" aria-sort="none">Staff #</th>
+                  <th class="col-name" data-cmp-sort="name" aria-sort="none">Name</th>
+                  <th data-cmp-sort="section" aria-sort="none">Section</th>
+                  <th data-cmp-sort="code" aria-sort="none">Course code</th>
+                  <th data-cmp-sort="title" aria-sort="none">Course title</th>
+                  <th data-cmp-sort="status" aria-sort="none">Status</th>
+                  <th data-cmp-sort="done" aria-sort="none">Completed date</th>
                 </tr>
               </thead>
               <tbody id="cmp-body"></tbody>
@@ -1870,7 +1873,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.25" aria-label="Page version 15.25">v15.25</div>
+  <div class="page-version" data-version="15.26" aria-label="Page version 15.26">v15.26</div>
 <script src="ocg-pax-data.js?v=6"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -10481,6 +10484,8 @@ function xlsxSheetPath(files) {
 let cmpModel = null;
 let cmpFilter = "all";
 let cmpRole = "all";
+let cmpSortKey = "";
+let cmpSortDir = 1;
 function cmpRoleOf(rec) {
   const title = String((rec && rec.title) || "");
   const pos = String((rec && rec.pos) || "");
@@ -10504,11 +10509,29 @@ function cmpRoleOk(row) {
 }
 function cmpShownRows() {
   if (!cmpModel || !cmpModel.rows) return [];
-  return cmpModel.rows.filter((row) => {
+  const rows = cmpModel.rows.filter((row) => {
     if (!cmpRoleOk(row)) return false;
     if (cmpFilter === "completed") return row.doneFlag;
     if (cmpFilter === "outstanding") return !row.doneFlag;
     return true;
+  });
+  if (!cmpSortKey) return rows;
+  const key = cmpSortKey;
+  const dir = cmpSortDir >= 0 ? 1 : -1;
+  return rows.slice().sort((a, b) => {
+    const av = String(a[key] == null ? "" : a[key]);
+    const bv = String(b[key] == null ? "" : b[key]);
+    if (!av && !bv) return 0;
+    if (!av) return 1;
+    if (!bv) return -1;
+    if (key === "staff") return (Number(av) - Number(bv)) * dir;
+    return av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" }) * dir;
+  });
+}
+function paintCmpSortHeaders() {
+  document.querySelectorAll("#cmp-shot th[data-cmp-sort]").forEach((th) => {
+    const key = th.getAttribute("data-cmp-sort") || "";
+    th.setAttribute("aria-sort", cmpSortKey === key ? (cmpSortDir >= 0 ? "ascending" : "descending") : "none");
   });
 }
 function cmpExcelSerial(n) {
@@ -10641,6 +10664,7 @@ function paintCmp() {
   tools.querySelectorAll("[data-cmp-role]").forEach((btn) => {
     btn.classList.toggle("on", btn.getAttribute("data-cmp-role") === cmpRole);
   });
+  paintCmpSortHeaders();
   if (statusEl) {
     statusEl.textContent = cmpModel.fileName +
       " · Role " + roleLabel +
@@ -10658,11 +10682,21 @@ function exportCmpXlsx() {
   });
   const roleLabel = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mechanic" : "All");
   const statusLabel = cmpFilter === "completed" ? "Completed" : (cmpFilter === "outstanding" ? "Outstanding" : "All");
+  const sortLabels = {
+    staff: "Staff #",
+    name: "Name",
+    section: "Section",
+    code: "Course code",
+    title: "Course title",
+    status: "Status",
+    done: "Completed date"
+  };
   rows.push(
     [],
     ["Filters"],
     ["Role", roleLabel],
     ["Status", statusLabel],
+    ["Sort", cmpSortKey ? (sortLabels[cmpSortKey] || cmpSortKey) + (cmpSortDir >= 0 ? " A to Z" : " Z to A") : ""],
     ["People", String(shown.length)]
   );
   const titles = new Map();
@@ -10719,6 +10753,8 @@ function takeCmpFile(file) {
     cmpModel = model;
     cmpFilter = "all";
     cmpRole = "all";
+    cmpSortKey = "";
+    cmpSortDir = 1;
     paintCmp();
   }).catch(() => {
     cmpModel = { error: file.name + " could not be read." };
@@ -10731,6 +10767,17 @@ document.getElementById("cmp-file").addEventListener("change", (e) => {
   e.target.value = "";
 });
 document.getElementById("cmp-box").addEventListener("click", (e) => {
+  const sortTh = e.target.closest("th[data-cmp-sort]");
+  if (sortTh) {
+    const key = sortTh.getAttribute("data-cmp-sort") || "";
+    if (cmpSortKey === key) cmpSortDir = cmpSortDir >= 0 ? -1 : 1;
+    else {
+      cmpSortKey = key;
+      cmpSortDir = 1;
+    }
+    paintCmp();
+    return;
+  }
   const roleBtn = e.target.closest("[data-cmp-role]");
   if (roleBtn) {
     cmpRole = roleBtn.getAttribute("data-cmp-role") || "all";
