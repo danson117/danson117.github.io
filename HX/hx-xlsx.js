@@ -51,11 +51,58 @@
     }
     return s;
   }
+  /* Data block is the header plus rows until the first fully blank row.
+     Notes under that blank row (filters, course titles) stay outside AutoFilter. */
+  function tableBlock(rows) {
+    var end = rows.length;
+    var r, c, row, any;
+    for (r = 1; r < rows.length; r++) {
+      row = rows[r] || [];
+      any = false;
+      for (c = 0; c < row.length; c++) {
+        if (String(row[c] == null ? "" : row[c]).trim() !== "") { any = true; break; }
+      }
+      if (!any) { end = r; break; }
+    }
+    var used = end > 0 ? end : (rows.length ? 1 : 0);
+    var cols = 0;
+    for (r = 0; r < used; r++) cols = Math.max(cols, (rows[r] || []).length);
+    return { rows: used, cols: cols };
+  }
+  function textUnits(s) {
+    var t = String(s == null ? "" : s);
+    var n = 0, i, ch;
+    for (i = 0; i < t.length; i++) {
+      ch = t.charCodeAt(i);
+      n += ch > 255 ? 2 : 1;
+    }
+    return n;
+  }
+  function colWidthFor(rows, nRows, ci) {
+    var max = 0, r, row;
+    for (r = 0; r < nRows; r++) {
+      row = rows[r] || [];
+      if (ci < row.length) max = Math.max(max, textUnits(row[ci]));
+    }
+    var w = max + 3;
+    if (w < 12) w = 12;
+    if (w > 48) w = 48;
+    return w;
+  }
   function sheetXml(rows) {
+    var block = tableBlock(rows || []);
     var parts = [
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
-      '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'
+      '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
     ];
+    if (block.cols) {
+      parts.push('<cols>');
+      for (var ci = 0; ci < block.cols; ci++) {
+        parts.push('<col min="' + (ci + 1) + '" max="' + (ci + 1) + '" width="' + colWidthFor(rows, block.rows, ci) + '" customWidth="1"/>');
+      }
+      parts.push("</cols>");
+    }
+    parts.push("<sheetData>");
     for (var r = 0; r < rows.length; r++) {
       var row = rows[r] || [];
       parts.push('<row r="' + (r + 1) + '">');
@@ -68,7 +115,11 @@
       }
       parts.push("</row>");
     }
-    parts.push("</sheetData></worksheet>");
+    parts.push("</sheetData>");
+    if (block.cols && block.rows) {
+      parts.push('<autoFilter ref="A1:' + colName(block.cols - 1) + block.rows + '"/>');
+    }
+    parts.push("</worksheet>");
     return parts.join("");
   }
   /* Store-only ZIP (method 0). No CompressionStream — that was async and could stall

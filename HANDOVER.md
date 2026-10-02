@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **產生 XLSX 基本要求：** 之後所有產生嘅 xlsx 都要表頭 AutoFilter（只包數據表，空行下面註解唔入）同欄闊跟內容（約 12–48）。已用喺共用 `hx-xlsx.js`（Authorization List **v2.8**、License Records **v1.8**）同 TOV 自己嘅寫入。TOV **v15.22**、`hx-rules` **v10.24**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。唔改訓練資料。
+
+## 2026-10-02 公司電腦
+
 - **TOV Details Export XLSX：** 畫面係 Details 時，匯出一行一個人一科（跟課程表欄；唔輸出 Sign／Remove／Material）。Filter 加 Layout＝Details 同 Course rows。檔名 `TOV-details-YYYY-MM-DD.xlsx`。Table 仍然一行一個人。唔改訓練資料。TOV **v15.21**、`hx-rules` **v10.23**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-10-02 公司電腦

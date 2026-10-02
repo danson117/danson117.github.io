@@ -179,6 +179,7 @@
       <ul>
         <li>先讀交接日誌，再 pull／對齊。</li>
         <li>改 HTML：右下角 version 必改（細 +0.1，大 +1.0）。<code>hx.html</code> 側欄 <code>?v=</code> 跟住加。</li>
+        <li style="color:#b00020"><b>新 · 產生 XLSX 基本要求：</b>之後任何我們產生嘅 <code>.xlsx</code>（唔限 Training One View）都要兩樣。一、第一行係表頭，開 Excel <b>AutoFilter</b>（表頭有篩選掣）。範圍只包數據表：由第 1 行起到第一行全空行為止；下面嘅 filter／course title 等註解唔入篩選範圍。二、欄闊跟該數據表嘅表頭同儲存格內容，左右留少少空（最短約 12、最長約 48 個字寬），唔好用預設窄欄切走姓名／課程碼。共用寫入係 <code>HX/hx-xlsx.js</code>；頁面自己寫 xlsx 都要同一樣。唔改儲存嘅資料。</li>
         <li>改完：講 version；用戶自己 refresh 已開 tab。<strong>唔好開新 browser／Chrome</strong>。</li>
         <li>應上線嘅改動：更新 Vercel／Supabase；交接日誌寫重點；commit + push（令 Vercel 同屋企機都收到）。唔 push 秘密。唔 force。唔 skip hooks（除非用戶叫）。</li>
         <li><b>暗號 bye／收工</b>：即刻處理未同步事項、寫交接、push。Status／共用資料以 Supabase 為準，唔好只留本機。</li>
@@ -339,6 +340,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.23">v10.23</div>
+  <div class="page-version" data-version="10.24">v10.24</div>
 </body>
 </html>
