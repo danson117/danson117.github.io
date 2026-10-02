@@ -744,7 +744,7 @@
       </div>
     </div>
 
-    <div class="page-version" data-version="18.5">v18.5</div>
+    <div class="page-version" data-version="18.6">v18.6</div>
     <script src="ocg-pax-data.js?v=10"></script>
     <script src="ocg-pax-data-unpack.js?v=1"></script>
     <script>
@@ -752,7 +752,7 @@
       const TOPICS = [
         {
           id: "links",
-          file: "links.html?v=3.0",
+          file: "links.html?v=3.1",
           title: "Master links",
           blurb: "Open all work files in the browser",
         },
@@ -823,16 +823,10 @@
           blurb: "Name / Code / Type / Interval",
         },
         {
-          id: "sections",
-          file: "section-codes.html?v=1.2",
-          title: "Future section codes",
-          blurb: "New LT codes · later use",
-        },
-        {
           id: "ocg-pax",
-          file: "ocg-pax-mechanics-list.html?v=3.16",
+          file: "ocg-pax-mechanics-list.html?v=3.17",
           title: "OCG Name List",
-          blurb: "OCG = CG + PAX · Controller / DIC = Certifiers",
+          blurb: "OCG = CG + PAX · Future sections",
         },
         {
           id: "brs",
@@ -848,7 +842,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=10.47",
+          file: "hx-rules.html?v=10.48",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -1335,8 +1329,12 @@
             .filter(Boolean);
         return pick((id) => pins.has(id)).concat(pick((id) => !pins.has(id)));
       }
-      const TOPIC_ALIAS = { "ct-reminder": "team-board", "ual-cbt": "team-board", "ke-rs": "brs" };
+      const TOPIC_ALIAS = { "ct-reminder": "team-board", "ual-cbt": "team-board", "ke-rs": "brs", sections: "ocg-pax" };
+      const ALIAS_TAB = { sections: "sections" };
+      let aliasTab = "";
       function show(id) {
+        const tabHint = ALIAS_TAB[id] || aliasTab;
+        aliasTab = "";
         id = TOPIC_ALIAS[id] || id;
         const list = orderedTopics();
         if (!list.length) {
@@ -1350,10 +1348,15 @@
           (id && known.has(id) && list.find((x) => x.id === id)) ||
           (saved && known.has(saved) && list.find((x) => x.id === saved)) ||
           list[0];
-        frame.src = pick.file;
+        let src = pick.file;
+        if (tabHint && pick.id === "ocg-pax") src = src.split("#")[0] + "#" + tabHint;
+        if (frame.getAttribute("src") !== src) frame.src = src;
         now.textContent = (isPinned(pick.id) ? "PIN · " : "") + pick.title;
-        solo.href = pick.file;
-        location.hash = pick.id;
+        solo.href = src;
+        if (location.hash.replace(/^#/, "") !== pick.id) {
+          if (tabHint && pick.id === "ocg-pax") aliasTab = tabHint;
+          location.hash = pick.id;
+        }
         saveTopic(pick.id);
         paintOn();
       }

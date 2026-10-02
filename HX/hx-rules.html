@@ -316,7 +316,7 @@
         <li><span class="key">新 · 主色</span>：HX 畫面主色跟 HAECO 標誌（深青綠 <code>#015260</code>、青綠 <code>#00778b</code>、亮青綠 <code>#00a8ad</code>）。狀態用嘅紅、綠、橙保留。</li>
         <li><span class="key">新 · Admin section 色</span>：凡係 HX Admin 功能區（create／edit／delete／upload）一律用銅棕／沙色（header <code>#6b3e26</code>、背景 <code>#f6efe6</code>、邊 <code>#c4a484</code>），包 Briefing and R&amp;S <code>#brs-admin</code>、<b>Training One View</b> 嘅 ingest upload 同 Add course（<code>.admin-block</code>）、同 hub <b>Setting</b>（舊 Grant access；含 PIN Reset）。唔好只著色 BRS。唔改主板、狀態紅／綠／橙 badge、course 表、或 HAECO teal 頁面 chrome。</li>
         <li style="color:#b00020"><b>新 · Course completion</b>（<code>#course-completion</code>）：獨立頁，唔再喺 Training One View。拖入 completion xlsx，瀏覽器對 Name List。詳見上面 Course completion 獨立頁。</li>
-        <li><b>Future section codes</b>（<code>#sections</code>）：LT family 名（冇隊伍數字）。編號 section（LTC1、LTW1 等）已係 Name List Home／Current，見下面 v3.13。呢張表仍然唔要 TEAM 數字、唔要 duplicate。</li>
+        <li style="color:#b00020"><b>新 · Future section codes 併入 Name List：</b>舊 hub <code>#sections</code> 唔再係獨立側欄頁。LT family 表只得一份，喺 OCG Name List 嘅 <b>Future sections</b> tab（唔要隊伍數字、唔要 duplicate；LTY1–9 → LTY；字母尾碼 LTCX、LTDC、LTFA、LTXM 保留）。開 <code>#sections</code> 會去 <code>#ocg-pax</code> 並打開呢個 tab。<code>section-codes.html</code> 轉去同一 tab。編號 section（LTC1、LTW1 等）仍然係 Name List Home／Current。Name List <b>v3.17</b>。</li>
         <li><b>Authorization List</b>／<b>License Records</b>：CSV DEPT 只參考；顯示 Section／Team 跟 Name List。唔喺 Name List 嘅人唔上表。</li>
         <li style="color:#b00020"><b>新 · Authorization List Airline 欄：</b>打至少一個字就列出符合嘅 operator code／航空公司名（contains，唔使完整 code）；揀一行填入 code 同全名。全名取自該 code 嘅 auth module 標題最後一段（唔係另外一本 IATA 名冊）。唔喺 Name List、只喺 stage 嘅 code 一樣查到名，但仍然唔上表。冇符合先顯示 Not on this list。呢個 lookup 唔過濾表。</li>
         <li style="color:#b00020"><b>新 · Authorization List Operators 表：</b>Operators 表列出每個 operator code 一行（Operator code + Airline name）；航空公司名同樣取自 module 標題最後一段（含只喺 stage 嘅 code）。唔過濾、唔跟職員表。</li>
@@ -358,11 +358,11 @@
     <div class="card">
       <p>以下 hash／頁要<strong>英文 UI</strong>（職員中文姓名可留）：</p>
       <ul>
-        <li><code>#links</code> <code>#flow</code> <code>#training</code> <code>#auth-list</code> <code>#lic-records</code> <code>#audit</code> <code>#team-board</code> <span class="key"><code>#course-completion</code></span> <code>#courses</code> <code>#sections</code> <code>#ocg-pax</code> <span class="key"><code>#brs</code></span>（舊 <code>#ke-rs</code>＝alias）</li>
+        <li><code>#links</code> <code>#flow</code> <code>#training</code> <code>#auth-list</code> <code>#lic-records</code> <code>#audit</code> <code>#team-board</code> <span class="key"><code>#course-completion</code></span> <code>#courses</code> <span class="key"><code>#sections</code></span>（alias 去 <code>#ocg-pax</code> Future sections）<code>#ocg-pax</code> <span class="key"><code>#brs</code></span>（舊 <code>#ke-rs</code>＝alias）</li>
       </ul>
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.47">v10.47</div>
+  <div class="page-version" data-version="10.48">v10.48</div>
 </body>
 </html>

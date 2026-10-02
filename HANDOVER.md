@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-03 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Future section codes 併入 OCG Name List：** 舊 hub `#sections` 唔再係獨立側欄頁。LT family 表只得 Name List 嘅 **Future sections** tab。開 `#sections` 會去 `#ocg-pax` 並打開該 tab。`section-codes.html` 轉去同一 tab。Name List **v3.17**、`section-codes` **v1.3**（轉頁）、links **v3.1**、`hx-rules` **v10.48**、hub page-version **v18.6**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-03 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Auth / Lic CSV 更新（Name List only 出街）：** 由 Downloads 搬入較新 `Auth_Records_Dept.csv`／`Lic_Records_Dept.csv`（2026-10-02）；Auth 同步覆寫 `QA_Auth_Full_Detailed_List.csv`。重新 pack：出街表只 Name List（OCG）同事；其餘留 `stage`。Auth 出街約 116 人／6300 行；Lic 出街約 131 人／1767 行。Section／Team 仍跟 Name List。Auth **v2.12**、Lic **v2.1**、hub page-version **v18.5**；`authorization-list-data.js?v=7`、`lic-records-data.js?v=3`。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-03 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
