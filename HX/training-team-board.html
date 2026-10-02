@@ -1764,7 +1764,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.20" aria-label="Page version 15.20">v15.20</div>
+  <div class="page-version" data-version="15.21" aria-label="Page version 15.21">v15.21</div>
 <script src="ocg-pax-data.js?v=2"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -9122,6 +9122,7 @@ function exportFilterRows(peopleCount) {
     rows.push(["Board item", (picked && picked.title) ? picked.title : String(pick.id)]);
   }
   rows.push(
+    ["Layout", listView === "cards" ? "Details" : "Table"],
     ["Role", roleName[role] || String(role || "")],
     ["Show completed (≤30 days)", showRecentCompleted ? "On" : "Off"],
     ["Courses shown", shown.length ? shown.join(", ") : "(none)"],
@@ -9165,14 +9166,54 @@ function exportCourseTitleRows(people) {
   codes.forEach((code) => rows.push([code, exportCourseTitle(code, people)]));
   return rows;
 }
-function exportDetailXlsx() {
-  const people = detailPeople || [];
+function exportCourseStatusText(who, row) {
+  if (isBrsCourseRow(row)) return brsStatusLabel(who.staff, row);
+  const rec = readCourseStatus(who.staff, row);
+  return rec.status || "Not Started";
+}
+function exportCourseDoneText(who, row) {
+  if (isBrsCourseRow(row)) return "";
+  const rec = readCourseStatus(who.staff, row);
+  return rec.status === "Completed" && rec.done ? fmtDoneDisplay(rec.done) : "";
+}
+function exportCourseRemarkText(who, row) {
+  return readCourseStatus(who.staff, row).remark || "";
+}
+function exportDetailsRows(people) {
+  const headers = ["Staff #", "Name", "Team", "Section (Crew)", "BRS REF. NO.", "Course", "Course name", "Due day", "Remaining", "Source", "Status", "Completed date", "Remark"];
+  const rows = [headers];
+  (people || []).forEach((x) => {
+    const courses = personCourseRows(x).slice().sort((a, b) =>
+      (Number(a.remain) || 0) - (Number(b.remain) || 0) || String(a.code || "").localeCompare(String(b.code || ""))
+    );
+    courses.forEach((r) => {
+      const n = remainNum(r.remain);
+      rows.push([
+        x.staff || "",
+        x.name || "",
+        teamLabel(x.team, x.home),
+        formatSectionCrewText(x.crew || crewOf(x) || x.section || ""),
+        r.brsRef || "",
+        r.code || "",
+        displayCourseName(r.code, r.name) || "",
+        fmtDueDate(r.due),
+        remainText(r.remain, n > 0),
+        srcLabel(r),
+        exportCourseStatusText(x, r),
+        exportCourseDoneText(x, r),
+        exportCourseRemarkText(x, r)
+      ]);
+    });
+  });
+  return rows;
+}
+function exportTableRows(people) {
   const showUal = srcHas("ual");
   const headers = ["Staff #", "Name", "Team", "Section (Crew)", "Course code", "Overdue or will expire due day", "Overdue remaining"];
   if (showUal) headers.push("UA Employee #", "Coming due courses", "Coming due day", "Coming due remaining");
   if (showRecentCompleted) headers.push("Completed (≤30 days)");
   const rows = [headers];
-  people.forEach((x) => {
+  (people || []).forEach((x) => {
     const row = [
       x.staff || "",
       x.name || "",
@@ -9193,13 +9234,21 @@ function exportDetailXlsx() {
     if (showRecentCompleted) row.push((x.completedCourses || []).join(", "));
     rows.push(row);
   });
-  exportFilterRows(people.length).forEach((row) => rows.push(row));
+  return rows;
+}
+function exportDetailXlsx() {
+  const people = detailPeople || [];
+  const details = listView === "cards";
+  const rows = details ? exportDetailsRows(people) : exportTableRows(people);
+  const filter = exportFilterRows(people.length);
+  if (details) filter.push(["Course rows", String(Math.max(0, rows.length - 1))]);
+  filter.forEach((row) => rows.push(row));
   exportCourseTitleRows(people).forEach((row) => rows.push(row));
-  const bytes = xlsxBytes(rows, "Outstanding");
+  const bytes = xlsxBytes(rows, details ? "Details" : "Outstanding");
   const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   const d = new Date();
   const stamp = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-  downloadPngBlob(blob, "TOV-outstanding-" + stamp + ".xlsx");
+  downloadPngBlob(blob, (details ? "TOV-details-" : "TOV-outstanding-") + stamp + ".xlsx");
 }
 function downloadPngBlob(blob, filename) {
   const a = document.createElement("a");

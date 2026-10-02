@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **TOV Details Export XLSX：** 畫面係 Details 時，匯出一行一個人一科（跟課程表欄；唔輸出 Sign／Remove／Material）。Filter 加 Layout＝Details 同 Course rows。檔名 `TOV-details-YYYY-MM-DD.xlsx`。Table 仍然一行一個人。唔改訓練資料。TOV **v15.21**、`hx-rules` **v10.23**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-10-02 公司電腦
+
 - **TOV Export XLSX 最底寫 course title：** filter 下面再空一行，列出結果入面每個 Course code 對應嘅 Course title（Course List；冇先用該行課程名；收起嘅 course 一併列）。唔改訓練資料。TOV **v15.20**、`hx-rules` **v10.22**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-10-02 公司電腦

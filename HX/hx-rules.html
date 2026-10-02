@@ -253,6 +253,7 @@
         <li style="color:#b00020"><b>新 · Training One View · Export XLSX：</b>Outstanding 工具列有英文掣 <b>Export XLSX</b>。下載而家篩選後嘅表（Search／Sources／Section／Team／role／Show completed／暫時收起嘅 course 都跟畫面）。一行一個人。欄同而家 Table：Staff #、Name、Team、Section (Crew)、Course code、Overdue or will expire due day、Overdue remaining；UAL 開住先加 Coming due 四欄；Show completed 開住先加 Completed。唔改訓練資料。Table 同 Details 都用同一份名單。檔名 <code>TOV-outstanding-YYYY-MM-DD.xlsx</code>。</li>
         <li style="color:#b00020"><b>新 · Training One View · Export XLSX 最底寫 filter：</b>數據行下面空一行，再寫今次結果用緊嘅條件（英文，跟畫面標籤）：<b>Search</b>、<b>Sources</b>、<b>Section</b>、<b>Team</b>、<b>Role</b>、<b>Show completed (≤30 days)</b>、<b>Courses shown</b>、<b>Courses hidden</b>。有揀中 board 一格先加 <b>Board item</b>。最後一行 <b>People</b>＝呢份檔嘅人數。唔改上面數據行、唔改訓練資料。TOV <b>v15.19</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · Export XLSX 最底寫 course title：</b>filter 下面再空一行，列出呢份結果出現過嘅 <b>Course code</b> 同對應 <b>Course title</b>（Course List 名；冇先用該行課程名）。收起咗嘅 course 一併列出。唔改上面數據行、唔改訓練資料。TOV <b>v15.20</b>。</li>
+        <li style="color:#b00020"><b>新 · Training One View · Details Export XLSX：</b>畫面係 <b>Details</b> 時，Export XLSX 一行＝一個人、一科（跟該人課程表次序）。欄：Staff #、Name、Team、Section (Crew)、BRS REF. NO.、Course、Course name、Due day、Remaining、Source、Status、Completed date、Remark。唔輸出 Sign／Remove／Material 掣。Filter 加 <b>Layout</b>＝Details，同 <b>Course rows</b>。檔名 <code>TOV-details-YYYY-MM-DD.xlsx</code>。<b>Table</b> 仍然一行一個人，檔名 <code>TOV-outstanding-YYYY-MM-DD.xlsx</code>。唔改訓練資料。TOV <b>v15.21</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · Outstanding course 暫時收起：</b>Detail 標題旁，每個符合而家 filter 嘅 outstanding course 一個掣（course code）。預設全部顯示（掣亮）。撳一下暫時唔顯示該 course：人如果淨係得呢科就離開列表；仲有其他科就留低，due／remaining 跟仲顯示嘅科。再撳一次顯示返。只係今次開頁，唔寫入 Save as default，refresh 恢復全顯示。Table 同 Details 都跟。唔改訓練資料。</li>
         <li style="color:#b00020"><b>新 · Training One View · 非預設 narrowing filter 紅框：</b>Search／Sources／Section／role（All／Certifiers／Mechanics／Show completed）同有效預設唔同時，該控件外框紅（status red）。Team／Other 表頭唔用紅框（用亮青綠底）。有效預設＝已 <b>Save as default</b> 嘅 snapshot；冇就用廠預設（Search 空、Sources All、Section OCG、all teams、role All、Show completed off）。掣標籤固定英文 <b>Save as default</b>／<b>Restore original</b>（Restore＝廠預設畫面；唔刪已存 default）。Table／Details 只係版面、唔當人數 filter。存 localStorage（登入後按 staff #：<code>hx:team-board:filter-default:&lt;staff&gt;</code>）。唔改訓練列／Manual／BRS。</li>
         <li style="color:#b00020"><b>新 · Training One View · Manual Detail 三欄：</b>Manual（同非 UAL coming-due）outstanding 行一定填 <b>Course code</b>、有 due 就填 <b>Overdue or will expire due day</b> 同 <b>remaining</b>；唔再因為 remain &gt;30／&gt;90 就留空灰格。UAL 31–90 日仍只入 Coming due 四欄。冇 due 嘅 Manual 仍顯示 code，due／remaining 可空。</li>
@@ -338,6 +339,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.22">v10.22</div>
+  <div class="page-version" data-version="10.23">v10.23</div>
 </body>
 </html>
