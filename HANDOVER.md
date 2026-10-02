@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **Authorization List Eng Gnd Run 同 Team No.：** 貼上 EY 資格嘅 Auth_050 Add: Eng Gnd Run 同而家授權行一樣，冇改授權 pack。Team No. 只填 Crew List 原本空白、已經係 PAX 嘅 **19** 人（Authorization List 同 Crew List 一齊見）。CG **36** 人唔寫 Team（有 Team 數字會當 PAX）。唔喺 Name List 嘅 `156811`、`216136`、`258203` 唔加、唔上表。Name List **v3.10**、`ocg-pax-data.js?v=5`、`hx-rules` **v10.27**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-10-02 公司電腦
+
 - **Authorization List 同一 Staff # 只顯示一行：** 工具列掣 **One per Staff #**。開住時，而家篩選同排序入面每個 Staff # 只留第一行；再撳或 Clear filters 恢復。Copy／XLSX 跟畫面。Auth **v2.10**、`hx-rules` **v10.26**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。唔改授權資料。
 
 ## 2026-10-02 公司電腦
