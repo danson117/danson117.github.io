@@ -1764,7 +1764,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.19" aria-label="Page version 15.19">v15.19</div>
+  <div class="page-version" data-version="15.20" aria-label="Page version 15.20">v15.20</div>
 <script src="ocg-pax-data.js?v=2"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -9130,6 +9130,41 @@ function exportFilterRows(peopleCount) {
   );
   return rows;
 }
+function exportCourseTitle(code, people) {
+  const named = displayCourseName(code, courseNameFor(code));
+  if (named && normCode(named) !== normCode(code)) return named;
+  const k = normCode(code);
+  let found = "";
+  (people || []).forEach((x) => {
+    if (found) return;
+    personCourseRows(x).forEach((r) => {
+      if (found || normCode(r.code) !== k) return;
+      const n = displayCourseName(code, r.cname || r.name);
+      if (n && normCode(n) !== k) found = n;
+    });
+  });
+  return found;
+}
+function exportCourseTitleRows(people) {
+  const seen = new Map();
+  function add(code) {
+    const raw = String(code || "").trim();
+    const k = normCode(raw);
+    if (!k || seen.has(k)) return;
+    seen.set(k, raw);
+  }
+  (people || []).forEach((x) => {
+    (x.overdueCourses || []).forEach(add);
+    (x.soonCourses || []).forEach(add);
+    (x.completedCourses || []).forEach(add);
+  });
+  (detailCourseChoices || []).forEach((pair) => add(pair[1] || pair[0]));
+  const codes = [...seen.values()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+  if (!codes.length) return [];
+  const rows = [[], ["Course code", "Course title"]];
+  codes.forEach((code) => rows.push([code, exportCourseTitle(code, people)]));
+  return rows;
+}
 function exportDetailXlsx() {
   const people = detailPeople || [];
   const showUal = srcHas("ual");
@@ -9159,6 +9194,7 @@ function exportDetailXlsx() {
     rows.push(row);
   });
   exportFilterRows(people.length).forEach((row) => rows.push(row));
+  exportCourseTitleRows(people).forEach((row) => rows.push(row));
   const bytes = xlsxBytes(rows, "Outstanding");
   const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   const d = new Date();

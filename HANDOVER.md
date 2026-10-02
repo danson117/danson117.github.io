@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **TOV Export XLSX 最底寫 course title：** filter 下面再空一行，列出結果入面每個 Course code 對應嘅 Course title（Course List；冇先用該行課程名；收起嘅 course 一併列）。唔改訓練資料。TOV **v15.20**、`hx-rules` **v10.22**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-10-02 公司電腦
+
 - **TOV Export XLSX 最底寫 filter：** 數據行下面空一行，再寫今次條件（Search、Sources、Section、Team、Role、Show completed、Courses shown、Courses hidden；有揀中 board 格先加 Board item；最後 People）。唔改訓練資料。TOV **v15.19**、`hx-rules` **v10.21**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-10-01 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
