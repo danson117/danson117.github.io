@@ -79,11 +79,6 @@
     background: #fff;
     color: var(--ink);
   }
-  .cmp-tools input.cmp-years:disabled {
-    background: #e4e4e4;
-    color: #6b7280;
-    cursor: not-allowed;
-  }
   .pop-icon {
     width: 34px;
     height: 34px;
@@ -190,7 +185,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Nothing is saved, and Training One View is left as it is.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Only Completed rows are listed, newest completed date first. Header names are matched in this browser. Expiry off keeps the file status and locks Years. Expiry on uses the year count (default 2). 0 means no expiry date. Nothing is sent out.</p>
+      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Only Completed rows are listed, newest completed date first. Header names are matched in this browser. Years sets how long a completion stays valid (default 2). 0 means no expiry date. Nothing is sent out.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -209,10 +204,8 @@
         <button type="button" class="on" data-cmp="all">All</button>
         <button type="button" data-cmp="completed">Completed</button>
         <button type="button" data-cmp="outstanding">Outstanding</button>
-        <span class="filter-label">Expiry:</span>
-        <button type="button" id="cmp-expiry" aria-pressed="false" title="Off: rows keep the file status and Years is locked. On: type a year count. Default 2. 0 means no expiry date. A completion older than that becomes Outstanding. Within 90 days the row changes colour. The due day stays Completed.">Expiry</button>
         <label class="filter-label" for="cmp-years">Years</label>
-        <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" disabled aria-label="Validity years" title="Turn Expiry on to edit the year count. Default 2. 0 means no expiry date.">
+        <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" aria-label="Validity years" title="Years after the completed date. Default 2. 0 means no expiry date.">
         <button type="button" id="cmp-export-xlsx">Export XLSX</button>
         <button type="button" id="cmp-remap" title="Choose columns when the file uses different header names.">Match columns</button>
         <button type="button" id="cmp-copy" class="pop-icon" data-copy-shot title="Copy layout" aria-label="Copy layout">
@@ -273,7 +266,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="1.3" aria-label="Page version 1.3">v1.3</div>
+  <div class="page-version" data-version="1.4" aria-label="Page version 1.4">v1.4</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -478,7 +471,6 @@ let cmpOrg = "all";
 let cmpRole = "all";
 let cmpSortKey = "";
 let cmpSortDir = 1;
-let cmpExpiryOn = false;
 let cmpExpiryYears = 2;
 function cmpRoleOf(rec) {
   const title = String((rec && rec.title) || "");
@@ -529,7 +521,7 @@ function cmpView(row) {
     band: "",
     expired: false
   };
-  if (!cmpExpiryOn || !view.doneFlag || !view.done) return view;
+  if (!view.doneFlag || !view.done) return view;
   const due = cmpDueFromDone(view.done, cmpExpiryYears);
   const dueAt = dueStamp(due);
   if (!dueAt) return view;
@@ -886,14 +878,6 @@ function cmpPrepare(grid, fileName, forced) {
   if (map.staff < 0 || map.code < 0 || map.dept < 0) return { needMap: true, grid: grid, fileName: fileName, headAt: headAt, header: header, map: map };
   return cmpBuild(grid, fileName, headAt, header, map);
 }
-function syncCmpYears() {
-  const input = document.getElementById("cmp-years");
-  if (!input) return;
-  input.disabled = !cmpExpiryOn;
-  input.title = cmpExpiryOn
-    ? "Years after the completed date. Default 2. 0 means no expiry date."
-    : "Turn Expiry on to edit the year count. Default 2. 0 means no expiry date.";
-}
 function paintCmp() {
   const statusEl = document.getElementById("cmp-status");
   const tools = document.getElementById("cmp-tools");
@@ -939,12 +923,6 @@ function paintCmp() {
   tools.querySelectorAll("[data-cmp-org]").forEach((btn) => {
     btn.classList.toggle("on", btn.getAttribute("data-cmp-org") === cmpOrg);
   });
-  const expiryBtn = document.getElementById("cmp-expiry");
-  syncCmpYears();
-  if (expiryBtn) {
-    expiryBtn.classList.toggle("on", cmpExpiryOn);
-    expiryBtn.setAttribute("aria-pressed", cmpExpiryOn ? "true" : "false");
-  }
   paintCmpSortHeaders();
   if (statusEl) {
     const groupLabel = cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All");
@@ -958,11 +936,11 @@ function paintCmp() {
       " · Other course codes removed " + (cmpModel.otherCodes || 0) +
       " · Not completed removed " + (cmpModel.notCompleted || 0) +
       " · PAX other sections removed " + (cmpModel.paxSection || 0) +
-      (cmpExpiryOn
-        ? " · Expiry " + cmpExpiryYears + (cmpExpiryYears === 1 ? " year" : " years") +
-          " · Expired to Outstanding " + expired +
+      " · Years " + cmpExpiryYears +
+      (cmpExpiryYears > 0
+        ? " · Expired to Outstanding " + expired +
           " · Near red " + nearRed + " · Near yellow " + nearYellow
-        : "") +
+        : " · No expiry") +
       " · Skipped " + cmpModel.skipped + " (not on Name List)" +
       " · Showing " + shown.length + "." +
       (cmpModel.usual || !(cmpModel.columns && cmpModel.columns.length) ? "" : " · Columns " + cmpModel.columns.join(", ") + ".");
@@ -992,8 +970,7 @@ function exportCmpXlsx() {
     ["Group", cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All")],
     ["Role", roleLabel],
     ["Status", statusLabel],
-    ["Expiry", cmpExpiryOn ? "On" : "Off"],
-    ["Validity years", cmpExpiryOn ? String(cmpExpiryYears) : ""],
+    ["Validity years", String(cmpExpiryYears)],
     ["Sort", cmpSortKey ? (sortLabels[cmpSortKey] || cmpSortKey) + (cmpSortDir >= 0 ? " A to Z" : " Z to A") : ""],
     ["People", String(shown.length)]
   );
@@ -1318,7 +1295,6 @@ function cmpApplyModel(model) {
   cmpOrg = "all";
   cmpSortKey = "done";
   cmpSortDir = -1;
-  cmpExpiryOn = false;
   paintCmp();
 }
 function cmpMapChoices() {
@@ -1398,7 +1374,6 @@ function takeCmpFile(file) {
   });
 }
 document.getElementById("cmp-years").addEventListener("input", (e) => {
-  if (!cmpExpiryOn) return;
   const raw = String(e.target.value || "").trim();
   if (!/^\d+$/.test(raw)) return;
   const n = Number(raw);
@@ -1413,7 +1388,7 @@ document.getElementById("cmp-years").addEventListener("blur", (e) => {
     if (n >= 0) cmpExpiryYears = n;
   }
   e.target.value = String(cmpExpiryYears);
-  if (cmpExpiryOn) paintCmp();
+  paintCmp();
 });
 document.getElementById("cmp-file").addEventListener("change", (e) => {
   const file = e.target.files && e.target.files[0];
@@ -1441,11 +1416,6 @@ document.getElementById("cmp-box").addEventListener("click", (e) => {
   const roleBtn = e.target.closest("[data-cmp-role]");
   if (roleBtn) {
     cmpRole = roleBtn.getAttribute("data-cmp-role") || "all";
-    paintCmp();
-    return;
-  }
-  if (e.target.closest("#cmp-expiry")) {
-    cmpExpiryOn = !cmpExpiryOn;
     paintCmp();
     return;
   }

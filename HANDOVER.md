@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion Years 決定到期：** 拆走 Expiry 開關。Years 一直可以改，預設 2。打 0 冇到期，Completed 維持 Completed。大於 0 先按年數變 Outstanding（到期日當日仍 Completed，90 日內變色）。表頭讀法不變。Group 仍然 All／PAX／CG。Export 仍然一張表、跟而家個 Group。頁 **v1.4**、`hx-rules` **v10.42**、hub page-version **v17.9**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion 表頭同 Expiry 開關：** 有啲 xlsx 用命名空間前綴，而且格冇欄位字母，讀到空白所以話 no header row。而家讀到 Staff no.／Course code／Course title／Status／end_date（包括 Hierarchy - Completion Date）／Department，日期序號當完成日。LM - CXG Transit＝PAX、LM - OCG＝CG；其他 department 唔當 CG。Status 實字 Complete 當 Completed。Expiry 關住唔可以改 Years，Status 跟檔。開住預設 2 年；打 0 冇到期、Completed 維持 Completed。Export 仍然一張表、跟而家個 Group。頁 **v1.3**、`hx-rules` **v10.41**、hub page-version **v17.8**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

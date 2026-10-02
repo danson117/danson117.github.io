@@ -241,6 +241,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · Years 決定到期：</b>唔再有 Expiry 開關。工具列只留 <b>Years</b>，一直可以改，預設 <b>2</b>。打 <b>0</b>＝冇到期日，Completed 維持 Completed，唔變色。大於 0：完成日舊過嗰多少年先變 Outstanding；到期日當日仍係 Completed；剩餘 ≤30 日紅、&gt;30 且 ≤90 日黃。表頭讀法不變（<code>x:</code> 命名空間、格冇欄位字母、inline 字、Excel 日期序號、<b>end_date</b>）。Group 仍然 All／PAX／CG。Export XLSX 一張表，跟而家揀嘅組，最底寫 Validity years。唔送 AI、唔寫 Supabase。頁 <b>v1.4</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 表頭同 Expiry 開關：</b>有啲下載 xlsx 用 <code>x:</code> 命名空間，而且格冇欄位字母。舊讀法搵唔到行，又跳過冇欄位字母嘅格，成張表變空，所以話 <b>has no header row</b>。而家按本地名讀格（有欄位字母照用；冇就跟住順序），inline 字同 Excel 日期序號都讀。表頭對 <b>Staff no.</b>、<b>Course code</b>（cost code）、<b>Course title</b>、<b>Status</b>、<b>end_date</b>（包括 <b>end_date Hierarchy - Completion Date</b>）、<b>Department</b>。<b>LM - CXG Transit</b>＝PAX，<b>LM - OCG</b>＝CG；其他 department（Planning、Avionics 等）唔當 CG。Status 實字 <b>Complete</b> 當 <b>Completed</b>；<b>Outstanding</b>／<b>Incomplete</b> 唔當完成。Section 仍然跟 Name List。<b>Expiry</b> 係真正開關：關住 <b>Years</b> 唔可以改，Status 跟檔，Completed 維持 Completed。開住先可以打年數，預設 <b>2</b>。打 <b>0</b>＝冇到期日，全部 Completed 維持 Completed，唔彈返 2。開住而且年數大於 0：完成日舊過嗰多少年先變 Outstanding；90 日內變色；到期日當日仍係 Completed。Group 仍然 All／PAX／CG。Export XLSX 一張表，跟而家揀嘅組。唔送 AI、唔寫 Supabase。頁 <b>v1.3</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · All／PAX／CG：</b>拖入之後只留 department <b>LM CXG transit</b>（畫面掣 <b>PAX</b>）同 <b>LM OCG</b>（畫面掣 <b>CG</b>）。其他 department 整行移除。HX 入面 OCG＝PAX＋CG；下載檔嘅叫法唔同，所以掣名跟我哋，唔跟檔入面嗰兩個名。Course code（檔有時叫 cost code）只留行數最多嗰一個，其餘碼移除。PAX 再只留 Name List section <b>LTC1／LTC2／LTC3／LTC4／LTC6／LTCX</b> 同 <b>LTW1–LTW4</b>。Status 只留 Completed。表由完成日新到舊。All＝兩組加埋。唔再將成個 Name List 補做 Outstanding。唔送 AI、唔寫 Supabase。頁 <b>v1.2</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion 欄名變咗都對到：</b>同一頁接受 <code>.xlsx</code> 同 <code>.csv</code>。平常表頭（Staff no.、Course code、Course title、Status、Completion date）照舊。欄名變咗（例如 Employee ID、Activity code）或者欄位調位，瀏覽器自己對：先對常見欄名，對唔到就睇格入面係咪員工編號、課程碼、完成狀態、日期。兩樣都唔肯定先彈 <b>Match columns</b> 俾你揀；揀完只記喺呢個瀏覽器，同一組表頭下次唔再問。Department 用來分 PAX／CG（見上面 All／PAX／CG）。唔送 AI、唔寫 Supabase、唔改 Training One View。頁 <b>v1.1</b>。</li>
@@ -357,6 +358,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.41">v10.41</div>
+  <div class="page-version" data-version="10.42">v10.42</div>
 </body>
 </html>
