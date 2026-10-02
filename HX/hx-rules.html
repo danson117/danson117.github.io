@@ -241,6 +241,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion xlsx（本機對表，唔燒 token）：</b>Training One View 上載區加 <b>Course completion xlsx</b>。拖入或選擇 <code>.xlsx</code>，瀏覽器自己讀，唔送 AI、唔寫 Supabase、唔改板。表列出全部 Name List 人（包括 Remark <b>SHOWS LMP</b>）。欄：Staff #、Name、Section（跟 Name List）、Course code、Course title、Status、Completed date。檔入面有、名冊有 → 用檔嘅 Status／完成日（<code>DD-MM-YY</code>）。名冊有、檔冇 → Outstanding。唔喺 Name List 嘅行只計 Skipped，唔上表。檔嘅 Department（例如 LM - OCG／LM - CXG Transit）同 Section code 唔用。TOV <b>v15.24</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · Search 多詞 OR：</b>Search 一個欄；用 <code>;</code> 分開多個詞；任一詞符合就顯示（例 <code>E195;T241</code>）。前後／連續分號空段忽略；建議跟最後一段。唔改其他 filter。TOV <b>v15.15</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · Section OCG 只顯示 Name List 人：</b>Outstanding 表、Team 板、Completed 名單喺 Section＝<b>OCG</b> 時只留 Name List 嘅 CG＋PAX。唔喺名冊嘅人唔上表（檔仍可存，板面先濾）。CG／PAX 分頁不變。TOV <b>v15.14</b>。</li>
         <li style="color:#b00020"><b>新 · Briefing and R&amp;S · duplicate BRS Ref. No. while typing：</b>Create／edit 嘅 <b>BRS Ref. No.</b> 欄，打字即刻檢查：號已存在（已確認 item 或另一個 draft）→ 欄旁英文短警告 <b>That number is already used.</b>；即刻 block <b>Create BRS</b>（同 Save Draft 唔寫入重複號）；唔等按 Create／confirm。Create New 自動號＝下一個未用號（唔預填已用號）。Draft 號撞已確認 → 清走 draft 嗰個號、唔覆寫已確認 item。Create 成功（自由號）後關 new-item editor（其他 dirty 關閉規則不變）。</li>
@@ -344,6 +345,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.28">v10.28</div>
+  <div class="page-version" data-version="10.29">v10.29</div>
 </body>
 </html>

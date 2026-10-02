@@ -616,6 +616,27 @@
     margin: 0 0 12px;
     box-sizing: border-box;
   }
+  #cmp-box { grid-column: 1 / -1; }
+  .cmp-tools { display: flex; gap: 6px; margin-top: 8px; }
+  .cmp-table-wrap {
+    max-height: 420px;
+    overflow: auto;
+    margin-top: 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .cmp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .cmp-table th {
+    position: sticky;
+    top: 0;
+    background: var(--navy);
+    color: #fff;
+    text-align: left;
+    padding: 6px 8px;
+    white-space: nowrap;
+  }
+  .cmp-table td { padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .cmp-table tr.cmp-done td:nth-child(6) { color: #0b6b2f; font-weight: 650; }
   .box { padding: 10px 12px; }
   .box label { display: block; font-weight: 650; margin-bottom: 4px; }
   textarea {
@@ -1456,6 +1477,36 @@
         <button type="button" class="ingest-card-sync" data-ingest-sync hidden>Synchronize now</button>
         <span class="box-sync-ico check" aria-hidden="true" title="Checking synchronization">…</span>
       </div>
+      <div class="box" id="cmp-box">
+        <label for="cmp-file">Course completion xlsx</label>
+        <p class="note">Drop an xlsx. The table lists every Name List person, including remark SHOWS LMP. Section is the Name List section. The file’s Department column is ignored. Read in this browser only — it does not change the board.</p>
+        <div class="drop" id="cmp-drop">
+          <input id="cmp-file" type="file" lang="en" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" title="Choose an xlsx file" aria-label="Choose a course completion xlsx">
+          <p>Drop xlsx here, or choose a file.</p>
+        </div>
+        <p class="note" id="cmp-status">No completion file yet.</p>
+        <div class="toolbar cmp-tools" id="cmp-tools" hidden>
+          <button type="button" class="on" data-cmp="all">All</button>
+          <button type="button" data-cmp="completed">Completed</button>
+          <button type="button" data-cmp="outstanding">Outstanding</button>
+        </div>
+        <div class="cmp-table-wrap" id="cmp-wrap" hidden>
+          <table class="cmp-table">
+            <thead>
+              <tr>
+                <th>Staff #</th>
+                <th>Name</th>
+                <th>Section</th>
+                <th>Course code</th>
+                <th>Course title</th>
+                <th>Status</th>
+                <th>Completed date</th>
+              </tr>
+            </thead>
+            <tbody id="cmp-body"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <div class="add-course write-zone admin-block" id="add-course" hidden aria-label="Admin add course">
@@ -1764,7 +1815,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.23" aria-label="Page version 15.23">v15.23</div>
+  <div class="page-version" data-version="15.24" aria-label="Page version 15.24">v15.24</div>
 <script src="ocg-pax-data.js?v=6"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -10364,6 +10415,199 @@ function xlsxSheetPath(files) {
   }
   return "xl/worksheets/sheet1.xml";
 }
+let cmpModel = null;
+let cmpFilter = "all";
+function cmpExcelSerial(n) {
+  if (!Number.isFinite(n) || n < 20000 || n > 80000) return "";
+  const dt = new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 86400000);
+  const y = dt.getUTCFullYear();
+  const mo = dt.getUTCMonth() + 1;
+  const d = dt.getUTCDate();
+  return validYmd(y, mo, d) ? y + "-" + pad2(mo) + "-" + pad2(d) : "";
+}
+function cmpDoneDate(raw) {
+  const s = String(raw || "").trim();
+  if (!s) return "";
+  const iso = parseDoneDate(s);
+  if (iso) return iso;
+  if (/^\d+(\.\d+)?$/.test(s)) return cmpExcelSerial(Number(s));
+  const slash = s.match(/^(\d{1,2})[\/](\d{1,2})[\/](\d{2,4})$/);
+  if (!slash) return "";
+  const d = Number(slash[1]);
+  const mo = Number(slash[2]);
+  let y = Number(slash[3]);
+  if (y < 100) y = y <= 69 ? 2000 + y : 1900 + y;
+  return validYmd(y, mo, d) ? y + "-" + pad2(mo) + "-" + pad2(d) : "";
+}
+function cmpHeaderRow(grid) {
+  for (let i = 0; i < grid.length && i < 8; i++) {
+    const cells = grid[i].map((c) => String(c || "").trim());
+    if (cells.some((c) => /staff\s*no/i.test(c)) && cells.some((c) => /course\s*code/i.test(c))) return i;
+  }
+  return -1;
+}
+function cmpBuild(grid, fileName) {
+  const headAt = cmpHeaderRow(grid);
+  if (headAt < 0) {
+    return { error: fileName + " needs columns Staff no. and Course code." };
+  }
+  const header = grid[headAt].map((c) => String(c || "").trim());
+  const find = (re) => header.findIndex((h) => re.test(h));
+  const iStaff = find(/staff\s*no/i);
+  const iCode = find(/course\s*code/i);
+  const iTitle = find(/course\s*title/i);
+  const iStatus = find(/^status$/i);
+  const iDate = find(/completion\s*date|end_date/i);
+  const hits = new Map();
+  const titleByCode = new Map();
+  const codes = [];
+  let fileRows = 0;
+  let skipped = 0;
+  for (let r = headAt + 1; r < grid.length; r++) {
+    const cells = grid[r];
+    const staff = padStaff(cells[iStaff]);
+    const code = String(cells[iCode] || "").trim();
+    if (!staff && !code) continue;
+    if (!/^\d{5,7}$/.test(staff) || !code) continue;
+    fileRows++;
+    const codeKey = code.toUpperCase();
+    if (!titleByCode.has(codeKey)) {
+      titleByCode.set(codeKey, iTitle >= 0 ? String(cells[iTitle] || "").trim() : "");
+      codes.push(codeKey);
+    } else if (!titleByCode.get(codeKey) && iTitle >= 0) {
+      titleByCode.set(codeKey, String(cells[iTitle] || "").trim());
+    }
+    if (!rosterHas(staff)) {
+      skipped++;
+      continue;
+    }
+    hits.set(staff + "|" + codeKey, {
+      status: iStatus >= 0 ? String(cells[iStatus] || "").trim() : "",
+      done: iDate >= 0 ? cmpDoneDate(cells[iDate]) : ""
+    });
+  }
+  if (!codes.length) return { error: fileName + " has no course rows." };
+  const people = PEOPLE.slice().sort(cmpRoster);
+  const rows = [];
+  codes.forEach((codeKey) => {
+    const title = titleByCode.get(codeKey) || "";
+    people.forEach((p) => {
+      const staff = padStaff(p.staff);
+      const hit = hits.get(staff + "|" + codeKey);
+      const status = hit ? (hit.status || "Completed") : "Outstanding";
+      rows.push({
+        staff: staff,
+        name: String(p.name || "").trim(),
+        section: String(p.home || "").trim(),
+        code: codeKey,
+        title: title,
+        status: status,
+        done: hit ? hit.done : "",
+        doneFlag: /completed/i.test(status)
+      });
+    });
+  });
+  return { fileName: fileName, fileRows: fileRows, skipped: skipped, rows: rows };
+}
+function paintCmp() {
+  const statusEl = document.getElementById("cmp-status");
+  const tools = document.getElementById("cmp-tools");
+  const wrap = document.getElementById("cmp-wrap");
+  const body = document.getElementById("cmp-body");
+  if (!cmpModel || cmpModel.error) {
+    tools.hidden = true;
+    wrap.hidden = true;
+    body.innerHTML = "";
+    if (statusEl) statusEl.textContent = cmpModel && cmpModel.error ? cmpModel.error : "No completion file yet.";
+    return;
+  }
+  const shown = cmpModel.rows.filter((row) => {
+    if (cmpFilter === "completed") return row.doneFlag;
+    if (cmpFilter === "outstanding") return !row.doneFlag;
+    return true;
+  });
+  const completed = cmpModel.rows.filter((row) => row.doneFlag).length;
+  const outstanding = cmpModel.rows.length - completed;
+  body.innerHTML = shown.map((row) =>
+    "<tr class=\"" + (row.doneFlag ? "cmp-done" : "cmp-open") + "\">" +
+    "<td>" + esc(row.staff) + "</td>" +
+    "<td>" + esc(row.name) + "</td>" +
+    "<td>" + esc(row.section) + "</td>" +
+    "<td>" + esc(row.code) + "</td>" +
+    "<td>" + esc(row.title) + "</td>" +
+    "<td>" + esc(row.status) + "</td>" +
+    "<td>" + esc(row.done) + "</td>" +
+    "</tr>"
+  ).join("");
+  tools.hidden = false;
+  wrap.hidden = false;
+  tools.querySelectorAll("[data-cmp]").forEach((btn) => {
+    btn.classList.toggle("on", btn.getAttribute("data-cmp") === cmpFilter);
+  });
+  if (statusEl) {
+    statusEl.textContent = cmpModel.fileName +
+      " · Name List " + cmpModel.rows.length +
+      " · Completed " + completed +
+      " · Outstanding " + outstanding +
+      " · Skipped " + cmpModel.skipped + " (not on Name List)" +
+      " · Showing " + shown.length + ".";
+  }
+}
+async function readCmpFile(file) {
+  const buf = await file.arrayBuffer();
+  const files = await unzipXlsx(buf);
+  const strings = files["xl/sharedStrings.xml"] ? parseSharedStrings(decodeBytes(files["xl/sharedStrings.xml"])) : [];
+  const path = xlsxSheetPath(files);
+  const sheet = files[path] || files["xl/worksheets/sheet1.xml"];
+  if (!sheet) return { error: file.name + " has no sheet." };
+  return cmpBuild(parseSheetGrid(decodeBytes(sheet), strings), file.name);
+}
+function takeCmpFile(file) {
+  const statusEl = document.getElementById("cmp-status");
+  if (!file) return;
+  if (!/\.xlsx$/i.test(file.name || "")) {
+    cmpModel = { error: "Use an .xlsx file." };
+    paintCmp();
+    return;
+  }
+  if (statusEl) statusEl.textContent = "Reading " + file.name + "…";
+  readCmpFile(file).then((model) => {
+    cmpModel = model;
+    cmpFilter = "all";
+    paintCmp();
+  }).catch(() => {
+    cmpModel = { error: file.name + " could not be read." };
+    paintCmp();
+  });
+}
+document.getElementById("cmp-file").addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  takeCmpFile(file);
+  e.target.value = "";
+});
+document.getElementById("cmp-tools").addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-cmp]");
+  if (!btn) return;
+  cmpFilter = btn.getAttribute("data-cmp") || "all";
+  paintCmp();
+});
+(function bindCmpDrop() {
+  const drop = document.getElementById("cmp-drop");
+  ["dragenter", "dragover"].forEach((ev) => {
+    drop.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); drop.classList.add("on"); });
+  });
+  drop.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    if (!drop.contains(e.relatedTarget)) drop.classList.remove("on");
+  });
+  drop.addEventListener("drop", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    drop.classList.remove("on");
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    takeCmpFile(file);
+  });
+})();
 async function ingestOmtXlsx(buf) {
   const files = await unzipXlsx(buf);
   const strings = files["xl/sharedStrings.xml"] ? parseSharedStrings(decodeBytes(files["xl/sharedStrings.xml"])) : [];
