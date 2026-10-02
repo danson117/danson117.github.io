@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **刪 Manual T.EE0686 全部紀錄：** 課程名 SWISS INTERNATIONAL AIRLINES Docs & Proc Training。Manual 行 **34** 同 status **10** 已從 Supabase `hx_private.team_board_actions` 移除（`hx_team_board_put` snapshot `board_revisions`）。其他 Manual 1141 行保留（1175 → 1141）。Course List 唔刪。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-02 公司電腦
+
 - **TOV Course completion xlsx：** 上載區拖入 `.xlsx`，瀏覽器自己對全部 Name List（包括 Remark SHOWS LMP）出表。Section 跟 Name List；檔嘅 Department 唔用。唔喺 Name List 的行只計 Skipped。唔送 AI、唔寫 Supabase、唔改板。TOV **v15.24**、`hx-rules` **v10.29**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-02 公司電腦
