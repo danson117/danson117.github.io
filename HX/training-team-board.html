@@ -636,7 +636,33 @@
     white-space: nowrap;
   }
   .cmp-table td { padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  .cmp-table tr.cmp-done td:nth-child(6) { color: #0b6b2f; font-weight: 650; }
+  .cmp-table tr.cmp-done td.col-status { color: #0b6b2f; font-weight: 650; }
+  .cmp-tools { flex-wrap: wrap; align-items: center; }
+  .cmp-tools .filter-label { margin-right: 2px; }
+  #cmp-wrap.capturing { overflow: visible; max-height: none; }
+  #cmp-wrap.capturing #cmp-shot {
+    width: max-content;
+    max-width: none;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+  #cmp-wrap.capturing #cmp-shot > table {
+    table-layout: auto;
+    width: max-content;
+    min-width: 0;
+  }
+  #cmp-wrap.capturing #cmp-shot col.col-staff,
+  #cmp-wrap.capturing #cmp-shot col.col-name { width: auto; }
+  #cmp-wrap.capturing #cmp-shot th.col-staff,
+  #cmp-wrap.capturing #cmp-shot td.col-staff,
+  #cmp-wrap.capturing #cmp-shot th.col-name,
+  #cmp-wrap.capturing #cmp-shot td.col-name,
+  #cmp-wrap.capturing #cmp-shot .staff-no {
+    white-space: nowrap;
+    overflow: visible;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
   .box { padding: 10px 12px; }
   .box label { display: block; font-weight: 650; margin-bottom: 4px; }
   textarea {
@@ -914,6 +940,11 @@
   .course-hide-bar button:not(.on) {
     text-decoration: line-through;
     opacity: 0.55;
+  }
+  .course-hide-bar button.course-unselect {
+    text-decoration: none;
+    opacity: 1;
+    font-weight: 650;
   }
   .detail-head .toolbar { margin: 0; }
   .detail table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -1486,25 +1517,49 @@
         </div>
         <p class="note" id="cmp-status">No completion file yet.</p>
         <div class="toolbar cmp-tools" id="cmp-tools" hidden>
+          <span class="filter-label">Role:</span>
+          <button type="button" class="on" data-cmp-role="all">All</button>
+          <button type="button" data-cmp-role="cs">CS</button>
+          <button type="button" data-cmp-role="mech">Mechanic</button>
+          <span class="filter-label">Status:</span>
           <button type="button" class="on" data-cmp="all">All</button>
           <button type="button" data-cmp="completed">Completed</button>
           <button type="button" data-cmp="outstanding">Outstanding</button>
+          <button type="button" id="cmp-export-xlsx">Export XLSX</button>
+          <button type="button" id="cmp-copy" class="pop-icon" data-copy-shot title="Copy layout" aria-label="Copy layout">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M6 15V6.5A1.5 1.5 0 0 1 7.5 5H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button type="button" id="cmp-download" class="pop-icon" data-download-shot title="Download" aria-label="Download">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 4v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
         <div class="cmp-table-wrap" id="cmp-wrap" hidden>
-          <table class="cmp-table">
-            <thead>
-              <tr>
-                <th>Staff #</th>
-                <th>Name</th>
-                <th>Section</th>
-                <th>Course code</th>
-                <th>Course title</th>
-                <th>Status</th>
-                <th>Completed date</th>
-              </tr>
-            </thead>
-            <tbody id="cmp-body"></tbody>
-          </table>
+          <div id="cmp-shot">
+            <table class="cmp-table">
+              <colgroup>
+                <col class="col-staff"><col class="col-name"><col><col><col><col><col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th class="col-staff">Staff #</th>
+                  <th class="col-name">Name</th>
+                  <th>Section</th>
+                  <th>Course code</th>
+                  <th>Course title</th>
+                  <th>Status</th>
+                  <th>Completed date</th>
+                </tr>
+              </thead>
+              <tbody id="cmp-body"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -1815,7 +1870,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.24" aria-label="Page version 15.24">v15.24</div>
+  <div class="page-version" data-version="15.25" aria-label="Page version 15.25">v15.25</div>
 <script src="ocg-pax-data.js?v=6"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -4765,6 +4820,7 @@ function personOmitHiddenCourses(who) {
 function courseHideBarHtml(codes) {
   if (!codes || !codes.length) return "";
   return "<div class=\"course-hide-bar\" role=\"group\" aria-label=\"Outstanding courses\">" +
+    "<button type=\"button\" class=\"course-unselect\" data-unselect-courses title=\"Clear every course chip. Then click the courses you want.\">Unselect all</button>" +
     codes.map(([key, label]) => {
       const shown = !hiddenCourseCodes.has(key);
       return "<button type=\"button\" data-hide-course=\"" + esc(key) + "\"" +
@@ -9379,7 +9435,8 @@ async function captureNodeAsImage(shot, frame, btn, mode, filename) {
     maxWidth: shot.style.maxWidth,
     boxSizing: shot.style.boxSizing
   };
-  const detailTable = shot.id === "detail-shot" ? shot.querySelector(":scope > table") : null;
+  const wideTable = (shot.id === "detail-shot" || shot.id === "cmp-shot") ? shot.querySelector(":scope > table") : null;
+  const detailTable = wideTable;
   let widthCap;
   if (frame) {
     frame.classList.add("capturing");
@@ -9753,6 +9810,12 @@ document.getElementById("detail").addEventListener("click", (e) => {
     paint();
     return;
   }
+  const unselectCourses = e.target.closest("[data-unselect-courses]");
+  if (unselectCourses) {
+    (detailCourseChoices || []).forEach((pair) => hiddenCourseCodes.add(pair[0]));
+    paint();
+    return;
+  }
   const hideCourse = e.target.closest("[data-hide-course]");
   if (hideCourse) {
     const key = hideCourse.getAttribute("data-hide-course");
@@ -9830,7 +9893,7 @@ document.getElementById("detail").addEventListener("click", (e) => {
     downloadDetailImage(dl);
     return;
   }
-  if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]") || e.target.closest("[data-show-completed]") || e.target.closest("[data-hide-course]") || e.target.closest("#detail-export-xlsx")) return;
+  if (e.target.closest("[data-role]") || e.target.closest("[data-list-view]") || e.target.closest("[data-show-completed]") || e.target.closest("[data-hide-course]") || e.target.closest("[data-unselect-courses]") || e.target.closest("#detail-export-xlsx")) return;
   const brsBtn = e.target.closest("[data-brs-open]");
   if (brsBtn) {
     e.preventDefault();
@@ -10417,6 +10480,37 @@ function xlsxSheetPath(files) {
 }
 let cmpModel = null;
 let cmpFilter = "all";
+let cmpRole = "all";
+function cmpRoleOf(rec) {
+  const title = String((rec && rec.title) || "");
+  const pos = String((rec && rec.pos) || "");
+  if (/CONTROLLER|DUTY IN CHARGE|\bDIC\b/i.test(title)) return "CS";
+  if (/ASSISTANT LICENSED ENGINEER|LICENSED ENGINEER/i.test(title) || pos === "80AEP") return "CS";
+  if (/MANAGER|OPERATIONS OFFICER|PROJECT OFFICER|LIAISON|\bSUPPORT\b/i.test(title) || /^(10|30|50|60)|80AEY|80AEZ|80PT5|80AFU/.test(pos)) return "OFFICE";
+  return "MECHANIC";
+}
+function cmpRoleMap() {
+  const map = new Map();
+  (window.FULL || []).forEach((r) => {
+    const id = padStaff(r.staff);
+    if (id && !map.has(id)) map.set(id, cmpRoleOf(r));
+  });
+  return map;
+}
+function cmpRoleOk(row) {
+  if (cmpRole === "cs") return row.role === "CS";
+  if (cmpRole === "mech") return row.role === "MECHANIC";
+  return true;
+}
+function cmpShownRows() {
+  if (!cmpModel || !cmpModel.rows) return [];
+  return cmpModel.rows.filter((row) => {
+    if (!cmpRoleOk(row)) return false;
+    if (cmpFilter === "completed") return row.doneFlag;
+    if (cmpFilter === "outstanding") return !row.doneFlag;
+    return true;
+  });
+}
 function cmpExcelSerial(n) {
   if (!Number.isFinite(n) || n < 20000 || n > 80000) return "";
   const dt = new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 86400000);
@@ -10487,6 +10581,7 @@ function cmpBuild(grid, fileName) {
     });
   }
   if (!codes.length) return { error: fileName + " has no course rows." };
+  const roles = cmpRoleMap();
   const people = PEOPLE.slice().sort(cmpRoster);
   const rows = [];
   codes.forEach((codeKey) => {
@@ -10503,7 +10598,8 @@ function cmpBuild(grid, fileName) {
         title: title,
         status: status,
         done: hit ? hit.done : "",
-        doneFlag: /completed/i.test(status)
+        doneFlag: /completed/i.test(status),
+        role: roles.get(staff) || ""
       });
     });
   });
@@ -10521,21 +10617,19 @@ function paintCmp() {
     if (statusEl) statusEl.textContent = cmpModel && cmpModel.error ? cmpModel.error : "No completion file yet.";
     return;
   }
-  const shown = cmpModel.rows.filter((row) => {
-    if (cmpFilter === "completed") return row.doneFlag;
-    if (cmpFilter === "outstanding") return !row.doneFlag;
-    return true;
-  });
-  const completed = cmpModel.rows.filter((row) => row.doneFlag).length;
-  const outstanding = cmpModel.rows.length - completed;
+  const roleRows = cmpModel.rows.filter(cmpRoleOk);
+  const shown = cmpShownRows();
+  const completed = roleRows.filter((row) => row.doneFlag).length;
+  const outstanding = roleRows.length - completed;
+  const roleLabel = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mechanic" : "All");
   body.innerHTML = shown.map((row) =>
     "<tr class=\"" + (row.doneFlag ? "cmp-done" : "cmp-open") + "\">" +
-    "<td>" + esc(row.staff) + "</td>" +
-    "<td>" + esc(row.name) + "</td>" +
+    "<td class=\"col-staff\">" + staffNoHtml(row.staff) + "</td>" +
+    "<td class=\"col-name\">" + esc(row.name) + "</td>" +
     "<td>" + esc(row.section) + "</td>" +
     "<td>" + esc(row.code) + "</td>" +
     "<td>" + esc(row.title) + "</td>" +
-    "<td>" + esc(row.status) + "</td>" +
+    "<td class=\"col-status\">" + esc(row.status) + "</td>" +
     "<td>" + esc(row.done) + "</td>" +
     "</tr>"
   ).join("");
@@ -10544,14 +10638,64 @@ function paintCmp() {
   tools.querySelectorAll("[data-cmp]").forEach((btn) => {
     btn.classList.toggle("on", btn.getAttribute("data-cmp") === cmpFilter);
   });
+  tools.querySelectorAll("[data-cmp-role]").forEach((btn) => {
+    btn.classList.toggle("on", btn.getAttribute("data-cmp-role") === cmpRole);
+  });
   if (statusEl) {
     statusEl.textContent = cmpModel.fileName +
-      " · Name List " + cmpModel.rows.length +
+      " · Role " + roleLabel +
       " · Completed " + completed +
       " · Outstanding " + outstanding +
       " · Skipped " + cmpModel.skipped + " (not on Name List)" +
       " · Showing " + shown.length + ".";
   }
+}
+function exportCmpXlsx() {
+  const shown = cmpShownRows();
+  const rows = [["Staff #", "Name", "Section", "Course code", "Course title", "Status", "Completed date"]];
+  shown.forEach((row) => {
+    rows.push([row.staff, row.name, row.section, row.code, row.title, row.status, row.done]);
+  });
+  const roleLabel = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mechanic" : "All");
+  const statusLabel = cmpFilter === "completed" ? "Completed" : (cmpFilter === "outstanding" ? "Outstanding" : "All");
+  rows.push(
+    [],
+    ["Filters"],
+    ["Role", roleLabel],
+    ["Status", statusLabel],
+    ["People", String(shown.length)]
+  );
+  const titles = new Map();
+  shown.forEach((row) => {
+    if (!titles.has(row.code)) titles.set(row.code, row.title || "");
+  });
+  if (titles.size) {
+    rows.push([], ["Course code", "Course title"]);
+    [...titles.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })).forEach((code) => {
+      rows.push([code, titles.get(code) || ""]);
+    });
+  }
+  const bytes = xlsxBytes(rows, "Completion");
+  const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const d = new Date();
+  const stamp = d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  downloadPngBlob(blob, "TOV-completion-" + stamp + ".xlsx");
+}
+function copyCmpImage(btn) {
+  return copyNodeAsImage(
+    document.getElementById("cmp-shot"),
+    document.getElementById("cmp-wrap"),
+    btn || document.getElementById("cmp-copy"),
+    "TOV-completion.png"
+  );
+}
+function downloadCmpImage(btn) {
+  return downloadNodeAsImage(
+    document.getElementById("cmp-shot"),
+    document.getElementById("cmp-wrap"),
+    btn || document.getElementById("cmp-download"),
+    "TOV-completion.png"
+  );
 }
 async function readCmpFile(file) {
   const buf = await file.arrayBuffer();
@@ -10574,6 +10718,7 @@ function takeCmpFile(file) {
   readCmpFile(file).then((model) => {
     cmpModel = model;
     cmpFilter = "all";
+    cmpRole = "all";
     paintCmp();
   }).catch(() => {
     cmpModel = { error: file.name + " could not be read." };
@@ -10585,11 +10730,30 @@ document.getElementById("cmp-file").addEventListener("change", (e) => {
   takeCmpFile(file);
   e.target.value = "";
 });
-document.getElementById("cmp-tools").addEventListener("click", (e) => {
+document.getElementById("cmp-box").addEventListener("click", (e) => {
+  const roleBtn = e.target.closest("[data-cmp-role]");
+  if (roleBtn) {
+    cmpRole = roleBtn.getAttribute("data-cmp-role") || "all";
+    paintCmp();
+    return;
+  }
   const btn = e.target.closest("[data-cmp]");
-  if (!btn) return;
-  cmpFilter = btn.getAttribute("data-cmp") || "all";
-  paintCmp();
+  if (btn) {
+    cmpFilter = btn.getAttribute("data-cmp") || "all";
+    paintCmp();
+    return;
+  }
+  if (e.target.closest("#cmp-export-xlsx")) {
+    if (cmpModel && cmpModel.rows) exportCmpXlsx();
+    return;
+  }
+  const copy = e.target.closest("[data-copy-shot]");
+  if (copy) {
+    copyCmpImage(copy);
+    return;
+  }
+  const dl = e.target.closest("[data-download-shot]");
+  if (dl) downloadCmpImage(dl);
 });
 (function bindCmpDrop() {
   const drop = document.getElementById("cmp-drop");

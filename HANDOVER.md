@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **TOV course chips Unselect all，同 completion 表 Role／匯出：** Detail course chips 旁英文 **Unselect all**，一次收起而家全部 course；之後逐粒 chip 加或收。只係今次畫面，refresh 恢復，唔寫 Supabase。Course completion xlsx 加 Role **All**／**CS**（Name List Certifier，唔用 LTW）／**Mechanic**，同 Status 一齊篩。Export XLSX（`TOV-completion-YYYY-MM-DD.xlsx`）、Copy layout、Download 跟而家篩選；Staff #／Name 全文。唔改訓練資料。TOV **v15.25**、`hx-rules` **v10.30**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-02 公司電腦
+
 - **刪 Manual T.EE0686 全部紀錄：** 課程名 SWISS INTERNATIONAL AIRLINES Docs & Proc Training。Manual 行 **34** 同 status **10** 已從 Supabase `hx_private.team_board_actions` 移除（`hx_team_board_put` snapshot `board_revisions`）。其他 Manual 1141 行保留（1175 → 1141）。Course List 唔刪。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-02 公司電腦
