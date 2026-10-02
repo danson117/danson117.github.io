@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-02 公司電腦
 
+- **Team 數字唔再當 PAX：** Name List 唔再用 Team 格判 PAX。CG 可以有 Team No.，仍然係 CG。PAX 跟 roster group，或者人喺 Crew List。已填之前停低嘅 CG Team No. **36** 人（空白先填；冇加入 Crew List；section 冇改；Auth_050 冇改）。Name List **v3.11**、`ocg-pax-data.js?v=6`、`hx-rules` **v10.28**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。
+
+## 2026-10-02 公司電腦
+
 - **Authorization List Eng Gnd Run 同 Team No.：** 貼上 EY 資格嘅 Auth_050 Add: Eng Gnd Run 同而家授權行一樣，冇改授權 pack。Team No. 只填 Crew List 原本空白、已經係 PAX 嘅 **19** 人（Authorization List 同 Crew List 一齊見）。CG **36** 人唔寫 Team（有 Team 數字會當 PAX）。唔喺 Name List 嘅 `156811`、`216136`、`258203` 唔加、唔上表。Name List **v3.10**、`ocg-pax-data.js?v=5`、`hx-rules` **v10.27**；hub `?v=`（page-version 仍 **v17.4**）。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-10-02 公司電腦

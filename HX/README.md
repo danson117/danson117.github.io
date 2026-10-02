@@ -43,7 +43,7 @@ Name list / PAX / CG / 角色 / staff # 有新規則，唔好只改一頁。要�
 - `course-catalog.html`（Course List：Name / Code / Type / Interval；course 冇 Expiry；board Mandatory 空白 Course Name 跟 Code 對呢頁）
 - 呢份 README / `links.html` 用詞
 
-而家規則：staff # 6 位；CHIU = 303173；**OCG = CG + PAX**（總數 / All，唔係第三類）；人只係 **CG** 或 **PAX**；PAX = Crew List（包 FLS / RF）；CG = Name List 唔喺 Crew List；例外 **236051 CHAN SIU CHUNG** 係 PAX 但唔喺 Crew List（唔好自己加去出街 Crew List）；Certifiers = Licensed / Assistant Licensed Engineer / Controller / Duty in Charge（包 Deputy DIC、OCG PAX/CARGO/UPS DIC）；Mechanics 包 Supervisor；Office = Manager / Assistant Manager / support / liaison / project officer / operations officer（唔包 Controller、唔包 DIC）。Counter / filter：**OCG | CG | PAX**。欄名 **CG/PAX**，值只係 CG 或 PAX。改 version **唔清**已載入嘅 UAL / CT / Mandatory / Course List。
+而家規則：staff # 6 位；CHIU = 303173；**OCG = CG + PAX**（總數 / All，唔係第三類）；人只係 **CG** 或 **PAX**；PAX = roster 已標 PAX，或者喺 Crew List（包 FLS / RF）；CG 仍然係 CG；Team 數字唔當 PAX；例外 **236051 CHAN SIU CHUNG** 係 PAX 但唔喺 Crew List（唔好自己加去出街 Crew List）；Certifiers = Licensed / Assistant Licensed Engineer / Controller / Duty in Charge（包 Deputy DIC、OCG PAX/CARGO/UPS DIC）；Mechanics 包 Supervisor；Office = Manager / Assistant Manager / support / liaison / project officer / operations officer（唔包 Controller、唔包 DIC）。Counter / filter：**OCG | CG | PAX**。欄名 **CG/PAX**，值只係 CG 或 PAX。改 version **唔清**已載入嘅 UAL / CT / Mandatory / Course List。
 
 新資訊先對 HTML。預設只改背底（group／Remark／邏輯 PAX）；已出街嘅 Team／Shift／姓名唔好自己改，等下次正式更新。有 Team／Shift／session／名單出入要先講。
 

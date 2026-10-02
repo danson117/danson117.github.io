@@ -115,11 +115,11 @@
       <p><b>UA</b> shows the V number (30 Sep 2026). A cell that still says UA has authorization and no V number.</p>
       <p><b>Full List</b> shows every staff record. <b>Name List</b> columns come first (CG/PAX, Staff No, Staff Name, Chinese Name, Home Section, Current Section, Staff Position, Position Title, Class, Status, Date join, Date Term, Revenue Code), then <b>Crew List</b> columns that are not duplicates (Team, Shift, Ω, UA, MM Refueller, JL, JJP). <b>Remark</b> sits after the name. A Remark <b>01OCT will transfer to CXG</b> is a record only: they used to be OCG. They stay on Full List (yellow row) and are not in the OCG / CG / PAX / role counts, not on Crew List or Name List, and not in training.</p>
       <p><b>Future sections</b> are <strong>new section codes for later</strong>. They are not current Home / Current on the Name List. Do not overwrite published sections until a formal update. The table shows LT families only. Team numbers 1–9 and duplicate rows are dropped (LTY1–9 → LTY). Letter suffixes stay (LTCX, LTDC, LTFA, LTXM).</p>
-      <p><b>OCG</b> = CG + PAX (the total). A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = Crew List, including FLS and RF. <b>CG</b> = Name List, not on Crew List. <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC). <b>Office</b> = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
+      <p><b>OCG</b> = CG + PAX (the total). A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = already marked PAX on the roster, or on the Crew List (including FLS and RF). <b>CG</b> stays CG. A <b>Team</b> number is only a team number and does not make someone PAX, so CG can have a Team number. <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC). <b>Office</b> = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
     </div>
   </div>
-  <div class="page-version" data-version="3.10">v3.10</div>
-<script src="ocg-pax-data.js?v=5"></script>
+  <div class="page-version" data-version="3.11">v3.11</div>
+<script src="ocg-pax-data.js?v=6"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script>
 hxUnpackRoster();
@@ -315,7 +315,7 @@ function groupOk(r, g){
 function orgOf(r){
   if (r.group === "PAX") return "PAX";
   const raw = String(r.staff || "").trim();
-  if (r.team || CREW_IDS.has(raw) || (raw && CREW_IDS.has(raw.padStart(6, "0")))) return "PAX";
+  if (CREW_IDS.has(raw) || (raw && CREW_IDS.has(raw.padStart(6, "0")))) return "PAX";
   return "CG";
 }
 function roleOf(r){

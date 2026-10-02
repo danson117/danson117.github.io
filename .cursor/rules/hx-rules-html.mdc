@@ -15,6 +15,7 @@ alwaysApply: true
 - After an HX update, **do not open a new browser / Chrome**. Tell the user the **page version number(s)** in the chat. The user will **manually refresh** the tab they already have.
 - 改完 HX **唔好開新 browser / Chrome**。喺對話講 **version 號** 就得；用戶自己 refresh 已開嘅 tab。
 - 右下角 `page-version` **必 +0.1**（大改 +1.0）。`hx.html` 側欄 `?v=` 一齊加。
+- **Team 數字唔當 PAX：** Team No. 只係隊伍編號。CG 可以有 Team 數字，仍然係 CG。PAX 只跟 roster group，或者人喺 Crew List。詳見 `HX/hx-rules.html` 紅字。
 - **OCG 紀錄、唔再計人：** `382200`、`313495` Remark **01OCT will transfer to CXG**。只留 Full List 黃行。唔入 OCG 人數、Crew List、Name List、訓練名冊。已存訓練列唔刪，板面先濾。詳見 `HX/hx-rules.html` 紅字。
 - **產生 XLSX 基本要求：** 之後任何產生嘅 `.xlsx`（唔限 Training One View）都要表頭 **AutoFilter**（只包數據表，第一行全空行之後嘅註解唔入範圍）同埋欄闊跟表頭／內容（約 12–48 字寬，留少少空）。共用寫入 `HX/hx-xlsx.js`；頁面自己寫都要同一樣。詳見 `HX/hx-rules.html` 紅字。
 - 零碎筆記：畫面唔顯示「記下」／時間／caption。時間只留 `#scratch-ledger`。
