@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-03 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **Course completion Match columns 紅提示：** 平常表頭（Staff no. 同 Course code，而且 Department 已對到）掣保持原樣。欄位對唔到、必要欄缺、或者只係由唔平常表頭估到，Match columns 用狀態紅外框，直到確認三個唔同嘅必要欄。偵測做唔完而對話彈出，掣維持紅色。人數、Outstanding、Years 0、Export、表頭讀法不變。頁 **v1.9**、`hx-rules` **v10.47**、hub page-version **v18.4**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
 ## 2026-10-02 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **Course completion 掣下面人數：** Group／Role／Status 每粒掣個字下面有人數，跟其他已選條件同 Expiry 年數。Status 揀 Completed 時，CS／Mechanic 只計未過期 Completed。Outstanding＝過期＋名冊未喺檔。統計句縮短，唔再重複 Group／Role／Status 總數，放喺掣下面；仍然寫檔名、課程碼、移除數、Never in file、年數、近期紅／黃、Skipped。頁 **v1.8**、`hx-rules` **v10.46**、hub page-version **v18.3**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。

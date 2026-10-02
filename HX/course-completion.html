@@ -15,6 +15,7 @@
     --navy-soft: #e5f4f6;
     --hot: #b42318;
     --hot-bg: #fee4e2;
+    --out: #ef4444;
     --warn: #8a5a00;
     --warn-bg: #fff3b0;
     --admin: #6b3e26;
@@ -84,6 +85,14 @@
   }
   button:hover { background: var(--navy-soft); }
   button.on { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 650; }
+  #cmp-remap.cmp-need-map {
+    outline: 2px solid var(--out);
+    outline-offset: 2px;
+    border-color: var(--out);
+    background: var(--hot-bg);
+    color: var(--hot);
+  }
+  #cmp-remap.cmp-need-map:hover { background: var(--hot-bg); }
   button.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
   .cmp-tools input.cmp-years {
     width: 4.2em;
@@ -281,7 +290,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="1.8" aria-label="Page version 1.8">v1.8</div>
+  <div class="page-version" data-version="1.9" aria-label="Page version 1.9">v1.9</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -656,6 +665,7 @@ const CMP_FIELDS = [
   { key: "date", label: "Completed date", need: false, aliases: ["completion date", "completed date", "date completed", "end date", "end date hierarchy completion date", "completed on", "finish date", "finished date"] }
 ];
 let cmpSource = null;
+let cmpMapNeedsConfirm = false;
 function cmpNormHeader(h) {
   return String(h || "").toLowerCase().replace(/[_./#]+/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -813,10 +823,30 @@ function cmpDetectMap(grid, headAt, header) {
       usedCol[cols[0]] = true;
     }
   });
-  const usual = map.staff >= 0 && map.code >= 0 &&
-    /staff no/.test(cmpNormHeader(header[map.staff])) &&
-    /course code/.test(cmpNormHeader(header[map.code]));
+  const usual = cmpUsualHeaders(header, map);
   return { map: map, how: usual ? "usual" : "matched" };
+}
+function cmpRequiredMapOk(map) {
+  return !!(map && map.staff >= 0 && map.code >= 0 && map.dept >= 0 &&
+    map.staff !== map.code && map.staff !== map.dept && map.code !== map.dept);
+}
+function cmpUsualHeaders(header, map) {
+  if (!cmpRequiredMapOk(map)) return false;
+  const staff = cmpNormHeader((header || [])[map.staff] || "");
+  const code = cmpNormHeader((header || [])[map.code] || "");
+  return /staff no/.test(staff) && /course code/.test(code);
+}
+function cmpMapNeedsUser(header, map, how) {
+  if (!cmpRequiredMapOk(map)) return true;
+  if (how === "remembered") return false;
+  return !cmpUsualHeaders(header, map);
+}
+function paintCmpMapHint() {
+  const btn = document.getElementById("cmp-remap");
+  if (!btn) return;
+  btn.classList.toggle("cmp-need-map", !!cmpMapNeedsConfirm);
+  if (cmpMapNeedsConfirm) btn.setAttribute("aria-invalid", "true");
+  else btn.removeAttribute("aria-invalid");
 }
 function cmpHeaderRow(grid) {
   const limit = Math.min(grid.length, 12);
@@ -959,10 +989,12 @@ function cmpPrepare(grid, fileName, forced) {
   }
   if (headAt < 0) return { error: fileName + " has no header row." };
   const header = (grid[headAt] || []).map((c) => String(c || "").trim());
-  const found = forced ? { map: forced.map } : cmpDetectMap(grid, headAt, header);
+  const found = forced ? { map: forced.map, how: "confirmed" } : cmpDetectMap(grid, headAt, header);
   const map = found.map;
-  if (map.staff < 0 || map.code < 0 || map.dept < 0) return { needMap: true, grid: grid, fileName: fileName, headAt: headAt, header: header, map: map };
-  return cmpBuild(grid, fileName, headAt, header, map);
+  if (!cmpRequiredMapOk(map)) return { needMap: true, grid: grid, fileName: fileName, headAt: headAt, header: header, map: map, mapHow: found.how };
+  const built = cmpBuild(grid, fileName, headAt, header, map);
+  if (built && !built.error) built.mapHow = found.how;
+  return built;
 }
 function paintCmp() {
   const statusEl = document.getElementById("cmp-status");
@@ -974,6 +1006,7 @@ function paintCmp() {
     wrap.hidden = true;
     body.innerHTML = "";
     if (statusEl) statusEl.textContent = cmpModel && cmpModel.error ? cmpModel.error : "No completion file yet.";
+    paintCmpMapHint();
     return;
   }
   const shown = cmpShownRows();
@@ -1021,6 +1054,7 @@ function paintCmp() {
       " · Skipped " + cmpModel.skipped + " (not on Name List)." +
       (cmpModel.usual || !(cmpModel.columns && cmpModel.columns.length) ? "" : " Columns " + cmpModel.columns.join(", ") + ".");
   }
+  paintCmpMapHint();
 }
 function exportCmpXlsx() {
   if (!window.HxXlsx || typeof HxXlsx.buildSync !== "function") return;
@@ -1427,6 +1461,7 @@ function takeCmpFile(file) {
   const statusEl = document.getElementById("cmp-status");
   if (!file) return;
   if (!/\.(xlsx|csv)$/i.test(file.name || "")) {
+    cmpMapNeedsConfirm = false;
     cmpModel = { error: "Use an .xlsx or .csv file." };
     paintCmp();
     return;
@@ -1434,18 +1469,31 @@ function takeCmpFile(file) {
   if (statusEl) statusEl.textContent = "Reading " + file.name + "…";
   readCmpGrid(file).then((grid) => {
     if (!grid) {
+      cmpMapNeedsConfirm = false;
       cmpModel = { error: file.name + " has no sheet." };
       paintCmp();
       return;
     }
     const model = cmpPrepare(grid, file.name);
     if (model.needMap) {
+      cmpMapNeedsConfirm = true;
       openCmpMap(model);
+      const tools = document.getElementById("cmp-tools");
+      if (tools) tools.hidden = false;
+      paintCmpMapHint();
       return;
     }
+    if (model.error) {
+      cmpMapNeedsConfirm = false;
+      cmpModel = model;
+      paintCmp();
+      return;
+    }
+    cmpMapNeedsConfirm = cmpMapNeedsUser(model.header, model.map, model.mapHow);
     cmpSource = { grid: grid, fileName: file.name, headAt: model.headAt, header: model.header, map: model.map };
     cmpApplyModel(model);
   }).catch(() => {
+    cmpMapNeedsConfirm = false;
     cmpModel = { error: file.name + " could not be read." };
     paintCmp();
   });
@@ -1540,15 +1588,25 @@ document.getElementById("cmp-map-ok").addEventListener("click", () => {
   cmpSaveMap(cmpSource.header, map);
   const model = cmpBuild(cmpSource.grid, cmpSource.fileName, cmpSource.headAt, cmpSource.header, map);
   cmpSource.map = map;
+  cmpMapNeedsConfirm = false;
   cmpApplyModel(model);
   closeCmpMap();
 });
 document.getElementById("cmp-map-cancel").addEventListener("click", () => {
   closeCmpMap();
-  if (!cmpModel || !cmpModel.rows) {
-    const statusEl = document.getElementById("cmp-status");
-    if (statusEl) statusEl.textContent = "No completion file yet.";
+  if (cmpModel && cmpModel.rows) {
+    paintCmp();
+    return;
   }
+  const statusEl = document.getElementById("cmp-status");
+  const tools = document.getElementById("cmp-tools");
+  if (cmpMapNeedsConfirm) {
+    if (tools) tools.hidden = false;
+    if (statusEl) statusEl.textContent = (cmpSource && cmpSource.fileName ? cmpSource.fileName + " · " : "") + "Match columns to continue.";
+    paintCmpMapHint();
+    return;
+  }
+  if (statusEl) statusEl.textContent = "No completion file yet.";
 });
 document.getElementById("copy-fail-ok").addEventListener("click", () => {
   const pop = document.getElementById("copy-fail-pop");

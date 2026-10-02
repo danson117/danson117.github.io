@@ -241,6 +241,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · Match columns 紅提示：</b>平常表頭（<b>Staff no.</b> 同 <b>Course code</b>，而且 <b>Department</b> 已經對到，三個必要欄係不同欄）<b>Match columns</b> 保持原樣，唔好變紅。欄位對唔到、Staff #／Course code／Department 缺、或者只係由唔平常嘅表頭估到：呢粒掣用狀態紅外框（同其他非預設紅框一樣，<code>#ef4444</code>）。英文仍然係 <b>Match columns</b>。撳開原有配對對話。確認三個唔同嘅必要欄之後，呢份檔嘅紅提示收起。偵測做唔完、對話彈出，掣維持紅色直到確認。人數、Outstanding、Years 0、Export 一張表、表頭讀法不變。頁 <b>v1.9</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 掣下面人數：</b>Group <b>All／PAX／CG</b>、Role <b>All／CS／Mechanic</b>、Status <b>All／Completed／Outstanding</b> 每粒掣個字下面有人數，跟其他已選條件同 <b>Expiry:</b> 年數。Group 跟而家 Role 同 Status；All＝嗰組 PAX＋CG。Role 跟而家 Group 同 Status；All 包括 Office；CS 同 Mechanic 只計自己。Status 跟而家 Group 同 Role；Completed＝未過期完成；Outstanding＝過期＋名冊未喺檔。揀中嘅掣仍然亮。統計句唔再重複 Group／Role／Status 總數，仍然寫檔名、課程碼、其他 department／課程碼／未完成移除、PAX 其他 section、Never in file、年數、近期紅／黃、Skipped（not on Name List）。統計行仍然喺掣下面。頁 <b>v1.8</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 狀態行喺掣下面：</b>同一條 <code>#cmp-status</code>。未載入檔時 <b>No completion file yet.</b> 仍喺拖放區下面。載入之後統計行直接喺 Group／Role／Status／<b>Expiry:</b> 同 Export／Match columns／Copy／Download 下面，唔再喺上面。唔好再抄多一行。Outstanding 仍然係過期＋名冊未喺檔（見下面）。頁 <b>v1.7</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Outstanding 包括未做過：</b>Outstanding 唔止過期。Name List（包括 Remark SHOWS LMP；紀錄行已經唔喺 PEOPLE）入面，呢個保留課程碼喺允許 department 冇出現過嘅員工編號，都係 Outstanding：完成日空白、Status Outstanding。PAX／CG 跟名冊。PAX 仍然只留 LTC1／LTC2／LTC3／LTC4／LTC6／LTCX 同 LTW1–LTW4。CG 冇額外 section 限制。All＝兩組。檔入面該科允許 department 已經有嘅員工編號唔當未做過，唔重複；過期就用嗰一行做 Outstanding。唔喺 Name List 仍然 Skipped。Status：Outstanding＝過期＋未喺檔；Completed＝未過期 Completed；All＝兩邊。預設完成日新到舊，空白日期最後。狀態行寫 Never in file 幾多。Group 仍然 All／PAX／CG。Export 一張表，跟而家顯示嘅行。表頭讀法不變。唔送 AI、唔寫 Supabase。同掣下面人數一齊出街，頁 <b>v1.8</b>。</li>
@@ -362,6 +363,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.46">v10.46</div>
+  <div class="page-version" data-version="10.47">v10.47</div>
 </body>
 </html>
