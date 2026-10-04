@@ -315,7 +315,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Optional: add Manual outstanding rows to Training One View.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. <b>T.F162</b> recurrent uses initial <b>T.F241 or T.F319</b> (either counts). <b>T.C775CT</b> recurrent uses initial <b>T.C774 or T.C775</b>; if T.C775CT exists it always takes over. Analyse every file in that family before outstanding is final. People who completed initial and are still inside Expiry years are <b>Not due</b> with a Remark. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. Each analysed course is stored in the check log below.</p>
+      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. <b>T.F162</b> recurrent uses initial <b>T.F241 or T.F319</b> (either counts). <b>T.C775CT</b> recurrent uses initial <b>T.C774 or T.C775</b>; if T.C775CT exists it always takes over. <b>T.C104CT</b> recurrent uses old initial <b>T.C104</b> only through <b>2020-09-12</b>; after that, initial is <b>T.C104T or T.C104P</b> (either counts). If T.C104CT exists it always takes over. Analyse every file in that family before outstanding is final. People who completed initial and are still inside Expiry years are <b>Not due</b> with a Remark. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. Each analysed course is stored in the check log below.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -463,7 +463,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.5" aria-label="Page version 2.5">v2.5</div>
+  <div class="page-version" data-version="2.6" aria-label="Page version 2.6">v2.6</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -760,6 +760,13 @@ const CMP_FAMILIES = [
     recurrent: ["T.C775CT", "T.C774"],
     initials: ["T.C774", "T.C775"],
     files: ["T.C774", "T.C775", "T.C775CT"]
+  },
+  {
+    takeover: "T.C104CT",
+    recurrent: ["T.C104CT"],
+    initials: ["T.C104T", "T.C104P", "T.C104"],
+    oldInitialUntil: { "T.C104": "2020-09-12" },
+    files: ["T.C104", "T.C104T", "T.C104P", "T.C104CT"]
   }
 ];
 function cmpNormCourseCode(code) {
@@ -805,11 +812,16 @@ function cmpFamilyOf(code) {
         });
       }
     });
+    const oldInitialUntil = {};
+    Object.keys(found.oldInitialUntil || {}).forEach((k) => {
+      oldInitialUntil[cmpNormCourseCode(k)] = String(found.oldInitialUntil[k] || "").trim();
+    });
     return {
       takeover: cmpNormCourseCode(found.takeover),
       recurrent: (found.recurrent || []).map(cmpNormCourseCode),
       initials: Array.from(initials),
-      files: (found.files || []).map(cmpNormCourseCode)
+      files: (found.files || []).map(cmpNormCourseCode),
+      oldInitialUntil: oldInitialUntil
     };
   }
   return null;
@@ -846,6 +858,12 @@ function cmpFamilyDoneHits(staff) {
   }
   return Array.from(byCode.values());
 }
+function cmpFamilyInitialCounts(fam, code, doneIso) {
+  const until = fam && fam.oldInitialUntil && fam.oldInitialUntil[cmpNormCourseCode(code)];
+  if (!until) return true;
+  const done = String(doneIso || "").slice(0, 10);
+  return !!(done && done <= until);
+}
 function cmpDoneStillValid(doneIso) {
   if (cmpExpiryYears < 1) return false;
   const due = cmpDueFromDone(doneIso, cmpExpiryYears);
@@ -855,16 +873,27 @@ function cmpDoneStillValid(doneIso) {
   return Math.round((dueAt - today) / 86400000) >= 0;
 }
 function cmpApplyFamilyHold(view) {
-  if (!view || view.doneFlag) return view;
+  if (!view) return view;
   const code = cmpNormCourseCode(view.code);
   const fam = cmpFamilyOf(code);
   if (!fam) return view;
+  if (fam.oldInitialUntil && fam.oldInitialUntil[code] && (view.done || view.doneFlag || view.fromFile) && !cmpFamilyInitialCounts(fam, code, view.done)) {
+    view.note = (code || "This course") + " only counts as initial through " +
+      fam.oldInitialUntil[code] + ". Later completions are not a current initial.";
+    if (view.doneFlag) {
+      view.doneFlag = false;
+      view.expired = true;
+      view.status = "Outstanding";
+    }
+  }
+  if (view.doneFlag) return view;
   const hits = cmpFamilyDoneHits(view.staff);
-  const hitOf = (list) => {
+  const hitOf = (list, asInitial) => {
     const want = new Set((list || []).map(cmpNormCourseCode));
     let best = null;
     hits.forEach((h) => {
       if (!want.has(h.code)) return;
+      if (asInitial && !cmpFamilyInitialCounts(fam, h.code, h.done)) return;
       if (!best || (h.done && (!best.done || h.done > best.done))) best = h;
     });
     return best;
@@ -893,7 +922,7 @@ function cmpApplyFamilyHold(view) {
   const expiredHere = !!(view.fromFile && (view.expired || view.done));
   if (code === fam.takeover && expiredHere) return view;
   if (code === "T.C774" && expiredHere) return view;
-  const init = hitOf(fam.initials);
+  const init = hitOf(fam.initials, true);
   if (fam.recurrent.indexOf(code) >= 0 || code === fam.takeover) {
     if (init && cmpDoneStillValid(init.done)) {
       return markHold(
@@ -908,7 +937,7 @@ function cmpApplyFamilyHold(view) {
     return view;
   }
   if (fam.initials.indexOf(code) >= 0) {
-    const sib = hitOf(fam.initials.filter((c) => c !== code));
+    const sib = hitOf(fam.initials.filter((c) => c !== code), true);
     if (sib) {
       return markHold(
         "Completed initial " + sib.code +

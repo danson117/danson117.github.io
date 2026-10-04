@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · T.C104 family：** T.C104 舊 initial 只計到 2020-09-12；之後 initial＝T.C104T 或 T.C104P。Course List 已有 T.C104CT（Continuation Training）＝recurrent，有就永遠 takeover。四個檔齊先定 outstanding。Course completion **v2.6**、Course List **v2.1**、`hx-rules` **v10.57**、hub page-version **v19.5**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · Initial／recurrent family：** T.F162 用 T.F241 或 T.F319 做 initial；T.C775CT 用 T.C774 或 T.C775，有 775CT 就永遠 takeover。Family 三個檔齊先定 outstanding。Initial 未滿 Expiry 年數 → Not due＋Remark。Course completion **v2.5**、`hx-rules` **v10.56**、hub page-version **v19.4**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
