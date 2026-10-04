@@ -242,6 +242,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · Check log 較新遠端贏：</b>本機 <code>hx:course-completion:checks</code> 要記住 shared doc 嘅 <code>updated</code>。開頁同步用呢個時間，唔好每次打包都改成而家。舊陣列冇時間 → 當較舊，遠端較新嘅完成狀態會蓋過本機 outstanding。只有分析檔、改 Remark、加／移除 TOV 先把時間改成而家再上傳。已經開住嘅舊頁仍然會用舊程式把本機名單蓋返伺服器，要閂咗佢，等呢版載入之後先再開。頁 <b>v2.19</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Check log 表頭排序：</b>Check log 每一欄表頭可撳。第一次撳：文字 A→Z、人數同 Expiry 由大到細、Checked 由新到舊。再撳同一欄就反向。空白排最後。Remove 欄唔排序。排序只改畫面同 Export check log 次序，唔改存檔次序。Remark／Remove／撳人數仍然對返同一行。頁 <b>v2.17</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 唔喺 Name List 唔留 Check log：</b>撳人數彈出嘅名單係該次檢查存低嘅人（<code>cgMechPeople</code> 等），唔係即場再由名冊計。人已經離開 Name List，就唔可以再留喺呢啲 outstanding 名單。載入同儲存（本機 <code>hx:course-completion:checks</code> 同 shared doc <code>course-completion-checks</code>）都會剔走唔喺 Name List 嘅員工，並把該格人數改做剔完之後嘅名單長度。已經開住嘅舊頁可以再上傳舊名單，要 refresh 呢版先會停低。頁 <b>v2.15</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 290990 強制 PAX、288531 強制 CG：</b>讀 Excel／CSV 一開始，未做 department／section 篩選之前，staff <b>290990</b> 強制入 <b>PAX</b>（Planning、唔係 LM CXG transit、section 唔喺 LTC／LTW 白名單都唔剔），staff <b>288531</b> 強制入 <b>CG</b>（LTGC、唔係 LM OCG 都唔剔），之後當佢哋已經喺嗰組。只係呢兩個 staff #。唔改出街 Crew List。頁 <b>v2.16</b>。</li>
@@ -387,6 +388,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.73">v10.73</div>
+  <div class="page-version" data-version="10.74">v10.74</div>
 </body>
 </html>

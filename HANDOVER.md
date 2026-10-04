@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · 窗口內完成唔再當 outstanding：** 兩份個人完成檔入面、Expiry 2 年窗口內 Completed 嘅科目，已從 `course-completion-checks` outstanding 名單移去 donePeople，並把文件 `updated` 改成而家。過期完成同檔內冇嘅科留喺 outstanding。呢兩人喺窗口內完成嘅科，TOV Manual outstanding 已經係 0，冇再刪其他人。畫面之前仲顯示，係因為舊頁每次同步把本機 `updated` 改成而家，舊 outstanding 名單蓋過伺服器。Course completion **v2.19** 記住文件時間；舊本機名單冇時間就當較舊，較新遠端贏。Hub **v21.2**、`hx-rules` **v10.74**。Supabase `hx_private.team_board_actions` ＋ GitHub 後備 → Vercel。要閂舊 Course completion 分頁，等 v2.19 載入先再開。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Training One View · Search 包括 Remark：** Search 對 Remark，同 course／name／staff # 一樣（大小寫唔分）。空白 Remark 唔影響搜尋。分號 `;` 仍然係 OR。Table、Cards、Detail、Completed 用同一個 Search。TOV **v15.37**、hub **v21.1**、`hx-rules` **v10.73**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

@@ -464,7 +464,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.18" aria-label="Page version 2.18">v2.18</div>
+  <div class="page-version" data-version="2.19" aria-label="Page version 2.19">v2.19</div>
 <script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -716,6 +716,7 @@ const CMP_GATE_STAFF = "hx:hub:gate-staff";
 const CMP_CHECK_STORE = "hx:course-completion:checks";
 const CMP_CHECK_DOC = "course-completion-checks";
 let cmpChecks = [];
+let cmpChecksUpdated = "";
 let cmpCheckCloudReady = false;
 let cmpCheckSuppressPush = false;
 function cmpRoleOf(rec) {
@@ -1491,21 +1492,40 @@ function cmpFitOsCount(stored, rawList, keptList) {
   return stored;
 }
 function cmpLoadChecks() {
+  cmpChecks = [];
+  cmpChecksUpdated = "";
   try {
     const parsed = JSON.parse(cmpLsGet(CMP_CHECK_STORE) || "[]");
-    cmpChecks = Array.isArray(parsed) ? parsed.map(cmpNormCheck).filter((r) => r.code) : [];
+    if (Array.isArray(parsed)) {
+      cmpChecks = parsed.map(cmpNormCheck).filter((r) => r.code);
+      cmpChecksUpdated = "";
+    } else if (parsed && typeof parsed === "object") {
+      const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
+      cmpChecks = rows.map(cmpNormCheck).filter((r) => r.code);
+      cmpChecksUpdated = String(parsed.updated || "");
+    }
   } catch (e) {
     cmpChecks = [];
+    cmpChecksUpdated = "";
   }
 }
+function cmpWriteChecksLocal() {
+  try {
+    cmpLsSet(CMP_CHECK_STORE, JSON.stringify({
+      updated: cmpChecksUpdated || "",
+      rows: cmpChecks.map(cmpNormCheck)
+    }));
+  } catch (e) {}
+}
 function cmpPersistChecks() {
-  try { cmpLsSet(CMP_CHECK_STORE, JSON.stringify(cmpChecks.map(cmpNormCheck))); } catch (e) {}
+  cmpChecksUpdated = new Date().toISOString();
+  cmpWriteChecksLocal();
   scheduleCmpCheckPush();
 }
 function cmpPackCheckDoc() {
   return {
     v: 1,
-    updated: new Date().toISOString(),
+    updated: cmpChecksUpdated || "",
     app: "course-completion-checks",
     rows: cmpChecks.map(cmpNormCheck)
   };
@@ -1513,8 +1533,9 @@ function cmpPackCheckDoc() {
 function cmpApplyCheckDoc(doc) {
   if (!doc || !Array.isArray(doc.rows)) return;
   cmpCheckSuppressPush = true;
+  cmpChecksUpdated = String((doc && doc.updated) || "");
   cmpChecks = doc.rows.map(cmpNormCheck).filter((r) => r.code);
-  try { cmpLsSet(CMP_CHECK_STORE, JSON.stringify(cmpChecks)); } catch (e) {}
+  cmpWriteChecksLocal();
   window.setTimeout(() => { cmpCheckSuppressPush = false; }, 50);
 }
 const scheduleCmpCheckPush = (window.HxSharedSync && window.HxSharedSync.schedule)
