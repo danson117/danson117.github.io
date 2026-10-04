@@ -142,7 +142,7 @@
       <p><b>Course List is independent</b> of Training One View CSV ingest. Loading CT Reminder, Mandatory, or UAL does <b>not</b> delete or replace these rows. New codes from the board only <b>add</b> or fill empty fields. If a CSV has the same code with a different name (or the same name with a different code), Training One View asks which to use — it does not silently overwrite this list. Code-only CSV rows use the <b>Name</b> typed here.</p>
       <p><b>Award</b> is carried from the CT Reminder CSV column headed Award (stored beside Issued By and Description). This page does not define what Award means in LMS terms — it keeps the field as imported. <b>Interval</b> is how often the course is done (e.g. 12 months, 24 months, annual). Courses do not have an expiry date — staff due / expire dates stay on CT / UAL / Mandatory.</p>
       <p><b>Related</b> lists the other course code when two codes are variants (the same code plus CT, REV, or T, or Operator and Trainer) or the titles are very similar even if the codes differ. Both rows list each other, separated by commas when there is more than one. Suggestions fill in automatically. Edit a cell to keep your own text.</p>
-      <p>Known initial courses: <b>T.C774</b> Online, recurrent T.C774 or T.C775CT, applicable to AF / ST. <b>T.C775</b> Classroom, recurrent T.C775CT, applicable to Certifiers / AV / CTG / CTG(SM). <b>T.F319</b> and <b>T.F241</b> are TBD, recurrent T.F162, applicable to TBD. <b>T.C104</b> is an old initial only (last valid as initial through 2020-09-12). After that, initial is <b>T.C104T or T.C104P</b> (either counts). Recurrent <b>T.C104CT</b> (Headset Communications Continuation Training) always takes over. Empty Type, Recurrent, Applicable To, and Description on those codes are filled from this list. A value you already typed stays.</p>
+      <p>Known initial courses: <b>T.C774</b> Online, recurrent T.C774 or T.C775CT, applicable to AF / ST. <b>T.C775</b> Classroom, recurrent T.C775CT, applicable to Certifiers / AV / CTG / CTG(SM). <b>T.F319</b> and <b>T.F241</b> are TBD, recurrent T.F162, applicable to TBD. Current initial for headset continuation is <b>T.C104P</b> only, recurrent <b>T.C104CT</b>. <b>T.C104T</b> is not used. Old <b>T.C104</b> after 2020-09-12 is not a current initial. Empty Type, Recurrent, Applicable To, and Description on those codes are filled from this list. A value you already typed stays.</p>
     </div>
   </div>
   <datalist id="interval-hints">
@@ -152,7 +152,7 @@
     <option value="annual"></option>
     <option value="one-time"></option>
   </datalist>
-  <div class="page-version" data-version="2.1" aria-label="Page version 2.1">v2.1</div>
+  <div class="page-version" data-version="2.2" aria-label="Page version 2.2">v2.2</div>
 <script src="hx-shared-sync.js?v=1.0"></script>
 <script>
 const COURSE_STORE = "hx:course-catalog:rows";
@@ -170,10 +170,10 @@ const COURSE_FACTS = [
   { code: "T.C775", type: "Classroom", recurrent: "T.C775CT", applies: "Certifiers / AV / CTG / CTG(SM)" },
   { code: "T.F319", type: "TBD", recurrent: "T.F162", applies: "TBD" },
   { code: "T.F241", type: "TBD", recurrent: "T.F162", applies: "TBD" },
-  { code: "T.C104", type: "TBD", recurrent: "T.C104CT", applies: "TBD", desc: "Old initial only. Last valid as initial through 2020-09-12. After that, initial is T.C104T or T.C104P (either counts). Recurrent T.C104CT always takes over." },
-  { code: "T.C104T", type: "TBD", recurrent: "T.C104CT", applies: "TBD", desc: "Initial after 2020-09-12 (either T.C104T or T.C104P). Recurrent T.C104CT always takes over. Replaced old initial T.C104 (valid through 2020-09-12)." },
-  { code: "T.C104P", type: "TBD", recurrent: "T.C104CT", applies: "TBD", desc: "Initial after 2020-09-12 (either T.C104T or T.C104P). Recurrent T.C104CT always takes over. Replaced old initial T.C104 (valid through 2020-09-12)." },
-  { code: "T.C104CT", type: "TBD", recurrent: "T.C104CT", applies: "TBD", desc: "Headset Communications Continuation Training. Takes over recurrent. Initials: T.C104 through 2020-09-12; after that T.C104T or T.C104P." }
+  { code: "T.C104", type: "TBD", recurrent: "", applies: "TBD", desc: "Old code. A date after 2020-09-12 is not a current initial. Current initial is T.C104P only. Not a required family file." },
+  { code: "T.C104T", type: "TBD", recurrent: "", applies: "TBD", desc: "Not used. Current initial is T.C104P only. Recurrent course is T.C104CT." },
+  { code: "T.C104P", type: "TBD", recurrent: "T.C104CT", applies: "TBD", desc: "Current initial only. Recurrent is T.C104CT. An in-window completion covers T.C104CT. An expired completion starts the T.C104CT clock." },
+  { code: "T.C104CT", type: "TBD", recurrent: "T.C104CT", applies: "TBD", desc: "Headset Communications Continuation Training. Initial is T.C104P only. In-window T.C104P or in-window T.C104CT counts as Completed. An expired date is outstanding, not cover." }
 ];
 
 let rows = [];
