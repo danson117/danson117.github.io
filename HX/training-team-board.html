@@ -1769,7 +1769,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.35" aria-label="Page version 15.35">v15.35</div>
+  <div class="page-version" data-version="15.36" aria-label="Page version 15.36">v15.36</div>
 <script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -4453,7 +4453,7 @@ function persistCtFiles(opts) {
     })));
   } catch (e) {}
   lsSet(CT_CLEARED, "0");
-  if (persistArmed && !suppressIngestPush) schedulePushIngest();
+  if (persistArmed && !suppressIngestPush && !(opts && opts.quiet)) schedulePushIngest();
 }
 function paintCtFiles() {
   const n = ctRows.length;
@@ -6363,6 +6363,85 @@ function schedulePushIngest() {
     pushIngestToEdge();
   }, PUSH_MS);
 }
+function ingestFileRows(f) {
+  return Array.isArray(f && f.rows) ? f.rows.length : (Number(f && f.rowCount) || 0);
+}
+/**
+ * Server accepts a source only when uploadedAt is strictly newer.
+ * Synchronize now: same minute but different rows would otherwise stay orange forever.
+ * Stamp only the blocked files, and only on that button — opening the page does not.
+ */
+function stampIngestForForcedSync(remote, plan) {
+  if (!plan || !plan.needPush) return;
+  const now = nowIso();
+  if (plan.needPush.ct && maxFileUploadAt(ctFiles) <= maxFileUploadAt(remote && remote.ctFiles)) {
+    const remoteFiles = (remote && remote.ctFiles) || [];
+    const times = ctSlotTimeMap(remoteFiles);
+    const meta = new Map(ctIngestMetaEntries(remoteFiles).map((e) => [e[0], e[2]]));
+    const dup = ctRemoteHasDuplicateSlots(remoteFiles);
+    let changed = false;
+    ctFiles.forEach((f) => {
+      if (!f) return;
+      const key = ctFileSlotKey(f.name, f.kind || ctKindOf(f.name));
+      const lt = ctUploadedAtMs(f.uploadedAt);
+      const rt = times.has(key) ? times.get(key) : 0;
+      const remoteRows = meta.has(key) ? meta.get(key) : null;
+      const differ = remoteRows == null || remoteRows !== ingestFileRows(f);
+      const blocked = times.has(key) ? lt <= rt : true;
+      if (blocked && (differ || dup)) {
+        f.uploadedAt = now;
+        changed = true;
+      }
+    });
+    if (maxFileUploadAt(ctFiles) <= maxFileUploadAt(remoteFiles)) {
+      let best = null;
+      ctFiles.forEach((f) => {
+        if (!f) return;
+        if (!best || ctUploadedAtMs(f.uploadedAt) >= ctUploadedAtMs(best.uploadedAt)) best = f;
+      });
+      if (best) { best.uploadedAt = now; changed = true; }
+    }
+    if (changed) {
+      persistCtFiles({ quiet: true });
+      paintCtFiles();
+    }
+  }
+  if (plan.needPush.omt && maxFileUploadAt(omtFiles) <= maxFileUploadAt(remote && remote.omtFiles)) {
+    const remoteFiles = (remote && remote.omtFiles) || [];
+    const byName = new Map();
+    remoteFiles.forEach((f) => { if (f) byName.set(String(f.name || ""), f); });
+    let changed = false;
+    omtFiles.forEach((f) => {
+      if (!f) return;
+      const rf = byName.get(String(f.name || ""));
+      const lt = ctUploadedAtMs(f.uploadedAt);
+      const rt = rf ? ctUploadedAtMs(rf.uploadedAt) : 0;
+      const remoteRows = rf ? ingestFileRows(rf) : null;
+      if ((!rf || lt <= rt) && (remoteRows == null || remoteRows !== ingestFileRows(f))) {
+        f.uploadedAt = now;
+        changed = true;
+      }
+    });
+    if (maxFileUploadAt(omtFiles) <= maxFileUploadAt(remoteFiles) && omtFiles.length) {
+      omtFiles.forEach((f) => { if (f) f.uploadedAt = now; });
+      changed = true;
+    }
+    if (changed) {
+      persistOmtFiles({ quiet: true });
+      paintOmtFiles();
+    }
+  }
+  if (plan.needPush.ual) {
+    const localAt = ingestSourceAt(localIngestSnapshot(), "ual");
+    const remoteAt = ingestSourceAt(remote, "ual");
+    if (remoteAt > 0 && localAt <= remoteAt) {
+      const text = String((document.getElementById("ual-src") || {}).value || "");
+      ualUploadedAt = now;
+      persistUal(text, ualUploadedAt, { quiet: true });
+      paintUalStatus(text);
+    }
+  }
+}
 async function pushIngestToEdge() {
   if (!canRemoteWrite()) return false;
   if (!ingestTimeSyncDone || !remoteBoardConfirmed) return false;
@@ -6385,7 +6464,11 @@ async function pushIngestToEdge() {
         setSaveSync("Not synchronized");
         return true;
       }
-      const plan = planIngestByDataTime(localIngestSnapshot(), remote);
+      let plan = planIngestByDataTime(localIngestSnapshot(), remote);
+      if (ingestForceStamp && plan.anyPush) {
+        stampIngestForForcedSync(remote, plan);
+        plan = planIngestByDataTime(localIngestSnapshot(), remote);
+      }
       if (plan.anyRemote) applyServerIngest(remote, { keepDirty: true });
       if (!plan.anyPush) {
         dirtyIngest = false;
@@ -6427,6 +6510,18 @@ async function pushIngestToEdge() {
       } else {
         lastRemoteIngestHadContent = ingestHasContent(localIngestSnapshot());
         lastRemoteIngestMetaSig = ingestMetaSig(localIngestSnapshot());
+      }
+      const pushedNames = [];
+      if (plan.needPush.ual) pushedNames.push("UAL");
+      if (plan.needPush.ct) pushedNames.push("CT Reminder");
+      if (plan.needPush.omt) pushedNames.push("Mandatory");
+      const rejected = ingestDiffNames().filter((n) => pushedNames.indexOf(n) >= 0);
+      if (rejected.length) {
+        ingestSyncFailed = true;
+        dirtyIngest = true;
+        showPushFail("Could not sync uploads. The server kept the existing copy. This upload is saved in this browser only.");
+        setSaveSync("Not synchronized");
+        return true;
       }
       setSaveSync("Saved");
     } while (ingestPushQueued);
@@ -10210,6 +10305,7 @@ document.addEventListener("click", (e) => {
     return;
   }
   ingestSyncFailed = false;
+  ingestForceStamp = true;
   setSaveSync("Saving…");
   paintIngestSync();
   Promise.resolve(syncIngestWithRemote()).catch(() => {
@@ -10218,7 +10314,7 @@ document.addEventListener("click", (e) => {
     showPushFail("Could not reach the server. This upload is saved in this browser only.");
     setSaveSync("Not synchronized");
     paintIngestSync();
-  });
+  }).finally(() => { ingestForceStamp = false; });
 });
 document.getElementById("ual-parse").addEventListener("click", () => {
   setUal(document.getElementById("ual-src").value, "Pasted email");
@@ -10434,7 +10530,7 @@ function persistOmtFiles(opts) {
     })));
   } catch (e) {}
   lsSet(OMT_CLEARED, "0");
-  if (persistArmed && !suppressIngestPush) schedulePushIngest();
+  if (persistArmed && !suppressIngestPush && !(opts && opts.quiet)) schedulePushIngest();
 }
 function paintOmtFiles() {
   const n = omtRows.length;

@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **CT Reminder Synchronize now：** 上傳時間同伺服器同一分鐘、但本機行數唔同時，伺服器只收嚴格較新嘅 `uploadedAt`，所以 PUT 成功都唔換檔，卡一直橙。而家撳 Synchronize now 先把未嚴格新過、而且內容唔同嗰幾份檔嘅時間改成而家再 PUT。開頁唔會自動改時間。仍然拒收就出 Save failed。TOV **v15.36**、hub **v21.0**、`hx-rules` **v10.72**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion 存檔：** `288531`／`290990` 窗口內完成（包括 MM00001E）已從 `course-completion-checks` outstanding 移去 donePeople。同一對 staff＋course 嘅 TOV Manual outstanding 刪咗 7 行（`hx_team_board_put` `_manualDeleted`）。過期或檔內冇嘅科留低。冇改 HTML，版本不變。Supabase `hx_private.team_board_actions`。唔開 Chrome。
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
