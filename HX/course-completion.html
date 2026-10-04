@@ -212,6 +212,44 @@
   .pop-card h4 { margin: 0 0 8px; color: var(--navy); }
   .cmp-map-row { display: grid; grid-template-columns: 150px 1fr; gap: 8px; align-items: center; margin: 0 0 8px; }
   .cmp-map-row select { font: inherit; font-size: 13px; padding: 5px 6px; border: 1px solid var(--line); background: #fff; width: 100%; }
+  h2.check-h {
+    font-size: 16px;
+    margin: 18px 0 4px;
+    color: var(--navy);
+    font-weight: 700;
+  }
+  .check-log-wrap {
+    overflow: auto;
+    margin-top: 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .check-log { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .check-log th {
+    position: sticky;
+    top: 0;
+    background: var(--navy);
+    color: #fff;
+    text-align: left;
+    padding: 6px 8px;
+    white-space: nowrap;
+  }
+  .check-log td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .check-log td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .check-log textarea {
+    font: inherit;
+    font-size: 12px;
+    width: 100%;
+    min-width: 10em;
+    min-height: 2.6em;
+    border: 1px solid var(--line);
+    padding: 3px 5px;
+    resize: vertical;
+  }
+  .check-log button.check-del {
+    font-size: 12px;
+    padding: 3px 7px;
+  }
   .page-version {
     position: fixed;
     right: max(12px, env(safe-area-inset-right));
@@ -235,7 +273,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Optional: add Manual outstanding rows to Training One View.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early.</p>
+      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. Each analysed course is stored in the check log below.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -246,13 +284,13 @@
         <button type="button" class="cmp-split" data-cmp-org="pax"><span>PAX</span><span class="cmp-n" data-cmp-n="org-pax">0</span></button>
         <button type="button" class="cmp-split" data-cmp-org="cg"><span>CG</span><span class="cmp-n" data-cmp-n="org-cg">0</span></button>
         <span class="filter-label">Role:</span>
-        <button type="button" class="on cmp-split" data-cmp-role="all"><span>All</span><span class="cmp-n" data-cmp-n="role-all">0</span></button>
+        <button type="button" class="cmp-split" data-cmp-role="all"><span>All</span><span class="cmp-n" data-cmp-n="role-all">0</span></button>
         <button type="button" class="cmp-split" data-cmp-role="cs"><span>CS</span><span class="cmp-n" data-cmp-n="role-cs">0</span></button>
-        <button type="button" class="cmp-split" data-cmp-role="mech"><span>Mechanic</span><span class="cmp-n" data-cmp-n="role-mech">0</span></button>
+        <button type="button" class="on cmp-split" data-cmp-role="mech"><span>Mechanic</span><span class="cmp-n" data-cmp-n="role-mech">0</span></button>
         <span class="filter-label">Status:</span>
-        <button type="button" class="on cmp-split" data-cmp="all"><span>All</span><span class="cmp-n" data-cmp-n="status-all">0</span></button>
+        <button type="button" class="cmp-split" data-cmp="all"><span>All</span><span class="cmp-n" data-cmp-n="status-all">0</span></button>
         <button type="button" class="cmp-split" data-cmp="completed"><span>Completed</span><span class="cmp-n" data-cmp-n="status-completed">0</span></button>
-        <button type="button" class="cmp-split" data-cmp="outstanding"><span>Outstanding</span><span class="cmp-n" data-cmp-n="status-outstanding">0</span></button>
+        <button type="button" class="on cmp-split" data-cmp="outstanding"><span>Outstanding</span><span class="cmp-n" data-cmp-n="status-outstanding">0</span></button>
         <span class="filter-label">Expiry:</span>
         <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" aria-label="Expiry years" title="Years after the completed date. Default 2. 0 means no expiry date.">
         <label class="cmp-near" id="cmp-near-wrap" for="cmp-include-near" title="Also add Completed rows that are red (≤30 days) or yellow (≤90 days) so they can train early.">
@@ -298,6 +336,32 @@
           </table>
         </div>
       </div>
+      <h2 class="check-h">Check log</h2>
+      <p class="note">One row per course from each file you analyse. Counts are outstanding at that check (Cargo = CG). Remark is yours. TOV Creation records whether you added outstanding to Training One View. Hub unlock syncs this log across devices.</p>
+      <div class="cmp-tools" id="cmp-log-tools">
+        <button type="button" id="cmp-log-export">Export check log</button>
+      </div>
+      <div class="check-log-wrap" id="cmp-log-wrap">
+        <table class="check-log" id="cmp-log">
+          <thead>
+            <tr>
+              <th>Course code</th>
+              <th>Course title</th>
+              <th>PAX Mech O/S</th>
+              <th>CG Mech O/S</th>
+              <th>PAX CS O/S</th>
+              <th>CG CS O/S</th>
+              <th>Expiry</th>
+              <th>Checked</th>
+              <th>File</th>
+              <th>TOV Creation</th>
+              <th>Remark</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="cmp-log-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
   <div id="copy-fail-pop" class="pop hidden" hidden>
@@ -331,7 +395,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="2.1" aria-label="Page version 2.1">v2.1</div>
+  <div class="page-version" data-version="2.2" aria-label="Page version 2.2">v2.2</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -557,9 +621,9 @@ function cmpSheetBucket(name) {
   return "";
 }
 let cmpModel = null;
-let cmpFilter = "all";
+let cmpFilter = "outstanding";
 let cmpOrg = "all";
-let cmpRole = "all";
+let cmpRole = "mech";
 let cmpSortKey = "";
 let cmpSortDir = 1;
 let cmpExpiryYears = 2;
@@ -571,6 +635,11 @@ const CMP_MANUAL_STORE = "hx:team-board:manual-courses";
 const CMP_SYNC_KEY = "hx:team-board:sync-key";
 const CMP_GATE_PW = "hx:hub:gate-pw";
 const CMP_GATE_STAFF = "hx:hub:gate-staff";
+const CMP_CHECK_STORE = "hx:course-completion:checks";
+const CMP_CHECK_DOC = "course-completion-checks";
+let cmpChecks = [];
+let cmpCheckCloudReady = false;
+let cmpCheckSuppressPush = false;
 function cmpRoleOf(rec) {
   const title = String((rec && rec.title) || "");
   const pos = String((rec && rec.pos) || "");
@@ -943,6 +1012,186 @@ function cmpLsGet(key) {
 function cmpLsSet(key, value) {
   try { localStorage.setItem(key, value); } catch (e) {}
 }
+function cmpNowHkt() {
+  try {
+    return new Date().toLocaleString("sv-SE", { timeZone: "Asia/Hong_Kong" }).slice(0, 16).replace("T", " ");
+  } catch (e) {
+    const d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+}
+function cmpBlankCheck(code) {
+  return {
+    code: String(code || "").trim(),
+    title: "",
+    paxMech: 0,
+    cgMech: 0,
+    paxCs: 0,
+    cgCs: 0,
+    expiry: 2,
+    checked: "",
+    file: "",
+    sheets: "",
+    tov: "Not created",
+    remark: ""
+  };
+}
+function cmpNormCheck(row) {
+  const o = cmpBlankCheck(row && row.code);
+  o.title = row && row.title != null ? String(row.title) : "";
+  o.paxMech = Math.max(0, parseInt(row && row.paxMech, 10) || 0);
+  o.cgMech = Math.max(0, parseInt(row && row.cgMech, 10) || 0);
+  o.paxCs = Math.max(0, parseInt(row && row.paxCs, 10) || 0);
+  o.cgCs = Math.max(0, parseInt(row && row.cgCs, 10) || 0);
+  o.expiry = Math.max(0, parseInt(row && row.expiry, 10) || 0);
+  o.checked = row && row.checked != null ? String(row.checked) : "";
+  o.file = row && row.file != null ? String(row.file) : "";
+  o.sheets = row && row.sheets != null ? String(row.sheets) : "";
+  o.tov = row && row.tov != null && String(row.tov).trim() ? String(row.tov) : "Not created";
+  o.remark = row && row.remark != null ? String(row.remark) : "";
+  return o;
+}
+function cmpLoadChecks() {
+  try {
+    const parsed = JSON.parse(cmpLsGet(CMP_CHECK_STORE) || "[]");
+    cmpChecks = Array.isArray(parsed) ? parsed.map(cmpNormCheck).filter((r) => r.code) : [];
+  } catch (e) {
+    cmpChecks = [];
+  }
+}
+function cmpPersistChecks() {
+  try { cmpLsSet(CMP_CHECK_STORE, JSON.stringify(cmpChecks.map(cmpNormCheck))); } catch (e) {}
+  scheduleCmpCheckPush();
+}
+function cmpPackCheckDoc() {
+  return {
+    v: 1,
+    updated: new Date().toISOString(),
+    app: "course-completion-checks",
+    rows: cmpChecks.map(cmpNormCheck)
+  };
+}
+function cmpApplyCheckDoc(doc) {
+  if (!doc || !Array.isArray(doc.rows)) return;
+  cmpCheckSuppressPush = true;
+  cmpChecks = doc.rows.map(cmpNormCheck).filter((r) => r.code);
+  try { cmpLsSet(CMP_CHECK_STORE, JSON.stringify(cmpChecks)); } catch (e) {}
+  window.setTimeout(() => { cmpCheckSuppressPush = false; }, 50);
+}
+const scheduleCmpCheckPush = (window.HxSharedSync && window.HxSharedSync.schedule)
+  ? window.HxSharedSync.schedule(async () => {
+      if (!cmpCheckCloudReady || cmpCheckSuppressPush) return;
+      if (!(window.HxSharedSync && window.HxSharedSync.getPassword())) return;
+      try {
+        await window.HxSharedSync.pushDoc(CMP_CHECK_DOC, cmpPackCheckDoc());
+      } catch (e) {}
+    }, 1200)
+  : function () {};
+async function cmpSyncChecksFromCloud() {
+  if (!window.HxSharedSync) return;
+  try {
+    await window.HxSharedSync.syncDoc(CMP_CHECK_DOC, {
+      getLocal: () => cmpPackCheckDoc(),
+      localEmpty: (doc) => !(doc && Array.isArray(doc.rows) && doc.rows.length),
+      applyRemote: (doc) => {
+        cmpApplyCheckDoc(doc);
+        paintCmpCheckLog();
+      },
+      onStatus: () => {}
+    });
+  } catch (e) {}
+  cmpCheckCloudReady = true;
+}
+function cmpOsCount(bucket, role) {
+  if (!cmpModel || !cmpModel.rows) return 0;
+  return cmpModel.rows.map(cmpView).filter((row) => {
+    return !row.doneFlag && cmpOrgMatch(row, bucket) && cmpRoleMatch(row, role);
+  }).length;
+}
+function cmpFindCheck(code) {
+  const want = String(code || "").trim().toUpperCase();
+  return cmpChecks.find((r) => String(r.code || "").trim().toUpperCase() === want);
+}
+function cmpTovCreationLabel() {
+  const org = cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All");
+  const role = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mech" : "All");
+  return org + " (" + role + ") outstanding added" + (cmpIncludeNear ? " + near expiry" : "");
+}
+function cmpMergeTovText(prev, add) {
+  const cur = String(prev || "").trim() || "Not created";
+  const next = String(add || "").trim();
+  if (!next) return cur;
+  if (cur === "Not created") return next;
+  if (cur.indexOf(next) >= 0) return cur;
+  return cur + "; " + next;
+}
+function cmpRecordCheck(opts) {
+  opts = opts || {};
+  if (!cmpModel || cmpModel.error || !cmpModel.keptCode) return;
+  const code = String(cmpModel.keptCode || "").trim();
+  if (!code) return;
+  let row = cmpFindCheck(code);
+  if (!row) {
+    row = cmpBlankCheck(code);
+    cmpChecks.push(row);
+  }
+  let title = String((cmpModel.rows || []).map((r) => r.title).find(Boolean) || row.title || "").trim();
+  row.code = code;
+  if (title) row.title = title;
+  row.paxMech = cmpOsCount("pax", "mech");
+  row.cgMech = cmpOsCount("cg", "mech");
+  row.paxCs = cmpOsCount("pax", "cs");
+  row.cgCs = cmpOsCount("cg", "cs");
+  row.expiry = cmpExpiryYears;
+  if (!opts.keepChecked) row.checked = cmpNowHkt();
+  if (cmpModel.fileName) row.file = String(cmpModel.fileName);
+  if (cmpModel.sheetNames && cmpModel.sheetNames.length) row.sheets = cmpModel.sheetNames.join(", ");
+  if (opts.tovAdd) row.tov = cmpMergeTovText(row.tov, cmpTovCreationLabel());
+  if (!row.tov) row.tov = "Not created";
+  cmpPersistChecks();
+  paintCmpCheckLog();
+}
+function paintCmpCheckLog() {
+  const body = document.getElementById("cmp-log-body");
+  if (!body) return;
+  if (!cmpChecks.length) {
+    body.innerHTML = "<tr><td colspan=\"12\">No checks yet. Analyse a file to add a row.</td></tr>";
+    return;
+  }
+  body.innerHTML = cmpChecks.map((row, i) => {
+    return "<tr data-check-i=\"" + i + "\">" +
+      "<td>" + esc(row.code) + "</td>" +
+      "<td>" + esc(row.title) + "</td>" +
+      "<td class=\"num\">" + row.paxMech + "</td>" +
+      "<td class=\"num\">" + row.cgMech + "</td>" +
+      "<td class=\"num\">" + row.paxCs + "</td>" +
+      "<td class=\"num\">" + row.cgCs + "</td>" +
+      "<td class=\"num\">" + row.expiry + "</td>" +
+      "<td>" + esc(row.checked) + "</td>" +
+      "<td>" + esc(row.file) + "</td>" +
+      "<td>" + esc(row.tov) + "</td>" +
+      "<td><textarea data-check-remark=\"" + i + "\" rows=\"2\" aria-label=\"Remark for " + esc(row.code) + "\">" + esc(row.remark) + "</textarea></td>" +
+      "<td><button type=\"button\" class=\"check-del\" data-check-del=\"" + i + "\">Remove</button></td>" +
+      "</tr>";
+  }).join("");
+}
+function exportCmpCheckLog() {
+  if (!window.HxXlsx || typeof HxXlsx.buildSync !== "function") return;
+  const rows = [[
+    "Course code", "Course title", "PAX Mech O/S", "CG Mech O/S", "PAX CS O/S", "CG CS O/S",
+    "Expiry", "Checked", "File", "TOV Creation", "Remark"
+  ]];
+  cmpChecks.forEach((row) => {
+    rows.push([
+      row.code, row.title, row.paxMech, row.cgMech, row.paxCs, row.cgCs,
+      row.expiry, row.checked, row.file, row.tov, row.remark
+    ]);
+  });
+  const blob = HxXlsx.buildSync(rows, "Check log");
+  const d = new Date();
+  const stamp = d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  HxXlsx.download(blob, "course-completion-check-log-" + stamp + ".xlsx");
+}
 function cmpGatePassword() {
   if (cmpHubGate.password) return String(cmpHubGate.password).trim();
   if (window.HxSharedSync && typeof window.HxSharedSync.getPassword === "function") {
@@ -1090,6 +1339,7 @@ function applyCmpHubGate(msg) {
     } catch (e) {}
   }
   paintCmpTovControls();
+  void cmpSyncChecksFromCloud();
 }
 async function cmpFetchLiteBoard() {
   const res = await fetch(CMP_SYNC_EDGE + "?lite=1", {
@@ -1230,6 +1480,7 @@ async function cmpDoAddToTov(people, code, courseTitle) {
       });
     });
     if (!toAdd.length) {
+      if (skipped) cmpRecordCheck({ tovAdd: true });
       openCmpTovPop({
         mode: "info",
         title: "Add to Training One View",
@@ -1241,6 +1492,7 @@ async function cmpDoAddToTov(people, code, courseTitle) {
     }
     await cmpPushManualRows(toAdd);
     cmpMergeLocalManual(toAdd);
+    cmpRecordCheck({ tovAdd: true });
     openCmpTovPop({
       mode: "info",
       title: "Add to Training One View",
@@ -1906,12 +2158,13 @@ function parseCmpCsv(text) {
 }
 function cmpApplyModel(model) {
   cmpModel = model;
-  cmpFilter = "all";
-  cmpRole = "all";
+  cmpFilter = "outstanding";
+  cmpRole = "mech";
   cmpOrg = "all";
   cmpSortKey = "done";
   cmpSortDir = -1;
   paintCmp();
+  cmpRecordCheck();
 }
 function cmpMapChoices() {
   const map = cmpBlankMap();
@@ -2040,6 +2293,7 @@ document.getElementById("cmp-years").addEventListener("blur", (e) => {
   }
   e.target.value = String(cmpExpiryYears);
   paintCmp();
+  cmpRecordCheck();
 });
 document.getElementById("cmp-include-near").addEventListener("change", (e) => {
   cmpIncludeNear = !!e.target.checked && cmpExpiryYears >= 1;
@@ -2103,6 +2357,20 @@ document.getElementById("cmp-box").addEventListener("click", (e) => {
     if (cmpModel && cmpModel.rows) exportCmpXlsx();
     return;
   }
+  if (e.target.closest("#cmp-log-export")) {
+    exportCmpCheckLog();
+    return;
+  }
+  const del = e.target.closest("[data-check-del]");
+  if (del) {
+    const i = Number(del.getAttribute("data-check-del"));
+    if (Number.isInteger(i) && i >= 0 && i < cmpChecks.length) {
+      cmpChecks.splice(i, 1);
+      cmpPersistChecks();
+      paintCmpCheckLog();
+    }
+    return;
+  }
   const copy = e.target.closest("[data-copy-shot]");
   if (copy) {
     captureNodeAsImage(document.getElementById("cmp-shot"), document.getElementById("cmp-wrap"), copy, "copy");
@@ -2110,6 +2378,14 @@ document.getElementById("cmp-box").addEventListener("click", (e) => {
   }
   const dl = e.target.closest("[data-download-shot]");
   if (dl) captureNodeAsImage(document.getElementById("cmp-shot"), document.getElementById("cmp-wrap"), dl, "download");
+});
+document.getElementById("cmp-box").addEventListener("input", (e) => {
+  const ta = e.target.closest("[data-check-remark]");
+  if (!ta) return;
+  const i = Number(ta.getAttribute("data-check-remark"));
+  if (!Number.isInteger(i) || i < 0 || i >= cmpChecks.length) return;
+  cmpChecks[i].remark = ta.value;
+  cmpPersistChecks();
 });
 document.getElementById("cmp-map-ok").addEventListener("click", () => {
   if (!cmpSource) return;
@@ -2193,6 +2469,9 @@ document.getElementById("copy-fail-ok").addEventListener("click", () => {
     takeCmpFile(file);
   });
 })();
+cmpLoadChecks();
+paintCmpCheckLog();
+void cmpSyncChecksFromCloud();
 </script>
 </body>
 </html>

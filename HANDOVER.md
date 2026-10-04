@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · 預設 Outstanding／Mechanic ＋ Check log：** 開檔預設 Outstanding + Mechanic。下面 Check log 記每科人數（PAX／CG 嘅 Mech 同 CS O/S）、Expiry、Checked、File、有冇加 TOV、Remark。同一 course 再分析就更新人數。HX unlock 同步 shared doc；唔寫職員名單。頁 **v2.2**、`hx-rules` **v10.53**、hub page-version **v19.1**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · 全部 workbook tab：** xlsx 有幾個工作表就分析幾個；唔再只讀第一張／export。Tab 名 PAX／CG 當該組（即使冇 Department 欄）。頁 **v2.1**、`hx-rules` **v10.52**、hub page-version **v19.0**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
