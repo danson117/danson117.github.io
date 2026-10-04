@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Name List · 290990 Remark：** THAPA BABEENA。報告 Current section code 係 LTGC。出街 Home／Current 仍然 LTC4，仍然 PAX，仍然喺 Name List 同 Crew List。Remark 寫 **Current section code is LTGC in reports**。Name List **v3.22**、`ocg-pax-data.js?v=15`、hub **v20.9**、`hx-rules` **v10.71**。Auth **v2.17**、Lic **v2.6**、TOV **v15.35**、Course completion **v2.18**、BRS **v5.4**。GitHub 後備 → Vercel。唔開 Chrome。唔寫訓練明細。
+
+## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Manual · T.EE0544：** 而家有效 LX 授權只得 A340、冇 B777 嘅人唔使呢科。未完成 Manual 刪 **6**，留低 **0**。Completed **1** 行保留。T.EE0686 未完成仍然 **24**。T.X432 未完成仍然 **268**。Supabase `hx_private.team_board_actions`（`hx_team_board_put` snapshot `board_revisions`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

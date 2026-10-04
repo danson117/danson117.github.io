@@ -1769,8 +1769,8 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.34" aria-label="Page version 15.34">v15.34</div>
-<script src="ocg-pax-data.js?v=14"></script>
+  <div class="page-version" data-version="15.35" aria-label="Page version 15.35">v15.35</div>
+<script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -1858,6 +1858,7 @@ let ingestSyncFailed = false;
 let ingestPushTimer = null;
 let ingestPushBusy = false;
 let ingestPushQueued = false;
+let ingestForceStamp = false;
 let lastRemoteIngestHadContent = false;
 let dirtyStatusKeys = new Set();
 let dirtyManualIds = new Set();
@@ -2895,11 +2896,11 @@ function parseUalSaved(raw) {
   }
   return { text: s, uploadedAt: "" };
 }
-function persistUal(text, uploadedAt) {
+function persistUal(text, uploadedAt, opts) {
   const rec = { text: String(text || "") };
   if (uploadedAt) rec.uploadedAt = uploadedAt;
   try { lsSet(UAL_STORE, JSON.stringify(rec)); } catch (e) {}
-  if (persistArmed && !suppressIngestPush) schedulePushIngest();
+  if (persistArmed && !suppressIngestPush && !(opts && opts.quiet)) schedulePushIngest();
 }
 function srcHas(k) { return srcOn.indexOf(k) >= 0; }
 function srcIsAll() { return SRC_ALL.every(srcHas); }
