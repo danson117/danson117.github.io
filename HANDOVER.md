@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · Not due 併入 Completed：** Family 覆蓋（initial 仍喺 Expiry 年數內、sibling initial、takeover）而家當 Completed（綠、Completed 掣；呢科冇日期就用覆蓋完成日）。Outstanding 只留真 outstanding。Need family files 仍然 waiting。Check log 唔再有獨立 Not due 欄／掣。Add to TOV 仍然 skip。Course completion **v2.7**、`hx-rules` **v10.58**、hub page-version **v19.6**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · T.C104 family：** T.C104 舊 initial 只計到 2020-09-12；之後 initial＝T.C104T 或 T.C104P。Course List 已有 T.C104CT（Continuation Training）＝recurrent，有就永遠 takeover。四個檔齊先定 outstanding。Course completion **v2.6**、Course List **v2.1**、`hx-rules` **v10.57**、hub page-version **v19.5**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
