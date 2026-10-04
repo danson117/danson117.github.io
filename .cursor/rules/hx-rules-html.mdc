@@ -19,7 +19,7 @@ alwaysApply: true
 - **Team 數字唔當 PAX：** Team No. 只係隊伍編號。CG 可以有 Team 數字，仍然係 CG。PAX 只跟 roster group，或者人喺 Crew List。詳見 `HX/hx-rules.html` 紅字。
 - **Section 尾數定 Team：** Home 同 Current 同一個 section code，最後一字係 1／2／3／4 → Team 跟該數字（只填空白）。尾數 5 或 X 維持 TBD。兩邊 section 唔同，或者新資料同已有 Team 有衝突 → 問邊個先跟。Team 數字唔改 CG／PAX，唔加入 Crew List。Name List v3.18。詳見 `HX/hx-rules.html` 紅字。
 - **CG crew code 就係 Team：** Crew 欄（1P、E1、D1、00、CG）寫入 Team。只限 Name List 內、CG、Home 同 Current 都等於該 Sect。唔喺名冊、PAX、section 唔同 → 唔改，先問。開頭 1–4 嘅 crew，TOV 仍歸 Team 1–4。Name List v3.19。詳見 `HX/hx-rules.html` 紅字。
-- **320531 不再係 OCG：** Remark **No longer OCG**（冇日期）。只留 Full List 黃行。唔入 OCG 人數、Crew List、Name List、訓練名冊。已存訓練列唔刪，板面先濾。Name List v3.20。詳見 `HX/hx-rules.html` 紅字。
+- **320531 已從成個 HX 刪走：** 唔留 Full List 黃行。名冊、TOV 存檔、Course completion 檢查名單都冇佢。其他員工唔郁。Name List v3.21。詳見 `HX/hx-rules.html` 紅字。
 - **288531 Current 8TAC：** Remark **Current 8TAC Planning / Light Check**（原 SHOWS LMP）。Home 仍然 LGA2，仍然 CG，仍然喺 Name List。Name List v3.20。詳見 `HX/hx-rules.html` 紅字。
 - **OCG 紀錄、唔再計人：** `382200`、`313495` Remark **01OCT will transfer to CXG**。只留 Full List 黃行。唔入 OCG 人數、Crew List、Name List、訓練名冊。已存訓練列唔刪，板面先濾。詳見 `HX/hx-rules.html` 紅字。
 - **236051 Remark 已清：** CHAN SIU CHUNG 唔再有 Remark **Move to OFFICE & PAX**。人仍係 Name List PAX。Name List v3.12。詳見 `HX/hx-rules.html` 紅字。
