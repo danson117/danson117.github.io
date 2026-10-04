@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion 存檔：** `288531`／`290990` 窗口內完成（包括 MM00001E）已從 `course-completion-checks` outstanding 移去 donePeople。同一對 staff＋course 嘅 TOV Manual outstanding 刪咗 7 行（`hx_team_board_put` `_manualDeleted`）。過期或檔內冇嘅科留低。冇改 HTML，版本不變。Supabase `hx_private.team_board_actions`。唔開 Chrome。
+
+## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Name List · 290990 Remark：** THAPA BABEENA。報告 Current section code 係 LTGC。出街 Home／Current 仍然 LTC4，仍然 PAX，仍然喺 Name List 同 Crew List。Remark 寫 **Current section code is LTGC in reports**。Name List **v3.22**、`ocg-pax-data.js?v=15`、hub **v20.9**、`hx-rules` **v10.71**。Auth **v2.17**、Lic **v2.6**、TOV **v15.35**、Course completion **v2.18**、BRS **v5.4**。GitHub 後備 → Vercel。唔開 Chrome。唔寫訓練明細。
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
