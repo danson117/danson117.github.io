@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **Course completion · Check log 表頭可排序：** 撳欄名排序，再撳反向。人數同 Expiry 由大到細；Checked 由新到舊；文字 A→Z。空白最後。只改畫面同 Export 次序，唔改存檔。Course completion **v2.17**、hub **v20.8**、`hx-rules` **v10.70**。GitHub 後備 → Vercel。唔開 Chrome。唔寫課程明細。
+
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **Course completion 讀檔例外：** staff `290990` 強制 PAX、`288531` 強制 CG。Planning／LTGC／唔係平常 department 或 PAX section 白名單都唔剔呢兩行。只係篩選例外，唔改出街 Crew List。Check log 同 Training One View Manual 已按而家 Expiry 2 年窗口改分類。Course completion **v2.16**、`hx-rules` **v10.69**、hub **v20.7**。Supabase `hx_private.team_board_actions`。GitHub 後備 → Vercel。唔開 Chrome。唔寫課程明細。

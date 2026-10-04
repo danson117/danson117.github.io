@@ -251,6 +251,9 @@
     padding: 6px 8px;
     white-space: nowrap;
   }
+  .check-log th[data-log-sort] { cursor: pointer; user-select: none; }
+  .check-log th[aria-sort="ascending"]::after { content: " ▲"; }
+  .check-log th[aria-sort="descending"]::after { content: " ▼"; }
   .check-log td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
   .check-log td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .check-log button.check-n {
@@ -380,7 +383,7 @@
         </div>
       </div>
       <h2 class="check-h">Check log</h2>
-      <p class="note">One row per course from each file you analyse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. People still covered by a valid initial, sibling initial, or takeover sit in Completed, not in a separate Not due count. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
+      <p class="note">One row per course from each file you analyse. Click a column header to sort; click it again to reverse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. People still covered by a valid initial, sibling initial, or takeover sit in Completed, not in a separate Not due count. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
       <div class="cmp-tools" id="cmp-log-tools">
         <button type="button" id="cmp-log-export">Export check log</button>
       </div>
@@ -388,17 +391,17 @@
         <table class="check-log" id="cmp-log">
           <thead>
             <tr>
-              <th>Course code</th>
-              <th>Course title</th>
-              <th>PAX Mech O/S</th>
-              <th>CG Mech O/S</th>
-              <th>PAX CS O/S</th>
-              <th>CG CS O/S</th>
-              <th>Expiry</th>
-              <th>Checked</th>
-              <th>File</th>
-              <th>TOV Creation</th>
-              <th>Remark</th>
+              <th data-log-sort="code" aria-sort="none">Course code</th>
+              <th data-log-sort="title" aria-sort="none">Course title</th>
+              <th data-log-sort="paxMech" aria-sort="none">PAX Mech O/S</th>
+              <th data-log-sort="cgMech" aria-sort="none">CG Mech O/S</th>
+              <th data-log-sort="paxCs" aria-sort="none">PAX CS O/S</th>
+              <th data-log-sort="cgCs" aria-sort="none">CG CS O/S</th>
+              <th data-log-sort="expiry" aria-sort="none">Expiry</th>
+              <th data-log-sort="checked" aria-sort="none">Checked</th>
+              <th data-log-sort="file" aria-sort="none">File</th>
+              <th data-log-sort="tov" aria-sort="none">TOV Creation</th>
+              <th data-log-sort="remark" aria-sort="none">Remark</th>
               <th></th>
             </tr>
           </thead>
@@ -461,7 +464,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.16" aria-label="Page version 2.16">v2.16</div>
+  <div class="page-version" data-version="2.17" aria-label="Page version 2.17">v2.17</div>
 <script src="ocg-pax-data.js?v=14"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -697,6 +700,10 @@ let cmpOrg = "all";
 let cmpRole = "mech";
 let cmpSortKey = "";
 let cmpSortDir = 1;
+let cmpLogSortKey = "";
+let cmpLogSortDir = 1;
+const CMP_LOG_NUM = { paxMech: 1, cgMech: 1, paxCs: 1, cgCs: 1, expiry: 1 };
+const CMP_LOG_DESC_FIRST = { paxMech: 1, cgMech: 1, paxCs: 1, cgCs: 1, expiry: 1, checked: 1 };
 let cmpExpiryYears = 2;
 let cmpIncludeNear = false;
 let cmpHubGate = { role: "view", password: "", editActions: [], accessStaff: "", accessRole: "view" };
@@ -1740,15 +1747,54 @@ function cmpRecordCheck(opts) {
   cmpPersistChecks();
   paintCmpCheckLog();
 }
+function cmpLogSortValue(row, key) {
+  if (key === "remark") return [row.sysNote, row.remark].filter(Boolean).join(" ");
+  const v = row[key];
+  return v == null ? "" : v;
+}
+function cmpSortedChecks() {
+  const indexed = cmpChecks.map((row, i) => ({ row: row, i: i }));
+  if (!cmpLogSortKey) return indexed;
+  const key = cmpLogSortKey;
+  const dir = cmpLogSortDir >= 0 ? 1 : -1;
+  const numeric = !!CMP_LOG_NUM[key];
+  return indexed.slice().sort((a, b) => {
+    const av = cmpLogSortValue(a.row, key);
+    const bv = cmpLogSortValue(b.row, key);
+    if (numeric) {
+      const an = Number(av);
+      const bn = Number(bv);
+      const aBad = !Number.isFinite(an);
+      const bBad = !Number.isFinite(bn);
+      if (aBad && bBad) return a.i - b.i;
+      if (aBad) return 1;
+      if (bBad) return -1;
+      return (an - bn) * dir || (a.i - b.i);
+    }
+    const as = String(av).trim();
+    const bs = String(bv).trim();
+    if (!as && !bs) return a.i - b.i;
+    if (!as) return 1;
+    if (!bs) return -1;
+    return as.localeCompare(bs, undefined, { numeric: true, sensitivity: "base" }) * dir || (a.i - b.i);
+  });
+}
+function paintCmpLogSortHeaders() {
+  document.querySelectorAll("#cmp-log th[data-log-sort]").forEach((th) => {
+    const key = th.getAttribute("data-log-sort") || "";
+    th.setAttribute("aria-sort", cmpLogSortKey === key ? (cmpLogSortDir >= 0 ? "ascending" : "descending") : "none");
+  });
+}
 function paintCmpCheckLog() {
   const body = document.getElementById("cmp-log-body");
   if (!body) return;
+  paintCmpLogSortHeaders();
   if (!cmpChecks.length) {
     body.innerHTML = "<tr><td colspan=\"12\">No checks yet. Analyse a file to add a row.</td></tr>";
     return;
   }
   cmpChecks.forEach(cmpRefreshCheckFamily);
-  body.innerHTML = cmpChecks.map((row, i) => {
+  body.innerHTML = cmpSortedChecks().map(({ row, i }) => {
     const num = (key) => {
       const n = row[key];
       if (n > 0) {
@@ -1841,7 +1887,7 @@ function exportCmpCheckLog() {
     "Course code", "Course title", "PAX Mech O/S", "CG Mech O/S", "PAX CS O/S", "CG CS O/S",
     "Expiry", "Checked", "File", "TOV Creation", "Remark"
   ]];
-  cmpChecks.forEach((row) => {
+  cmpSortedChecks().forEach(({ row }) => {
     rows.push([
       row.code, row.title, row.paxMech, row.cgMech, row.paxCs, row.cgCs,
       row.expiry, row.checked, row.file, row.tov, [row.sysNote, row.remark].filter(Boolean).join(" ")
@@ -3070,6 +3116,17 @@ document.getElementById("cmp-file").addEventListener("change", (e) => {
   e.target.value = "";
 });
 document.getElementById("cmp-box").addEventListener("click", (e) => {
+  const logTh = e.target.closest("#cmp-log th[data-log-sort]");
+  if (logTh) {
+    const key = logTh.getAttribute("data-log-sort") || "";
+    if (cmpLogSortKey === key) cmpLogSortDir = cmpLogSortDir >= 0 ? -1 : 1;
+    else {
+      cmpLogSortKey = key;
+      cmpLogSortDir = CMP_LOG_DESC_FIRST[key] ? -1 : 1;
+    }
+    paintCmpCheckLog();
+    return;
+  }
   const sortTh = e.target.closest("th[data-cmp-sort]");
   if (sortTh) {
     const key = sortTh.getAttribute("data-cmp-sort") || "";
