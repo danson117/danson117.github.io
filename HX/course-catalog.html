@@ -106,14 +106,14 @@
 <body>
   <div class="page">
     <h1>Course List</h1>
-    <p class="subtitle">Course master data in this browser · independent of CSV ingest · Name / Code / Related / Type (Online / Classroom) / Interval.</p>
+    <p class="subtitle">Course master data in this browser · independent of CSV ingest · Name / Code / Type (Online / Classroom / TBD) / Recurrent / Applicable To / Related / Interval.</p>
     <div class="stats">
       <div class="stat"><b id="n-all">0</b><span>Courses</span></div>
       <div class="stat"><b id="n-named">0</b><span>With a name</span></div>
       <div class="stat"><b id="n-typed">0</b><span>Type set</span></div>
     </div>
     <div class="toolbar">
-      <input id="q" type="search" placeholder="Search name / code / related / type / award / issued by / interval">
+      <input id="q" type="search" placeholder="Search name / code / type / recurrent / applicable to / related / award / issued by / interval">
       <button type="button" class="primary" id="add-row">Add row</button>
     </div>
     <p class="note" id="status">No courses yet. Codes from Training One View seed this list.</p>
@@ -125,6 +125,8 @@
             <th>Name</th>
             <th>Related</th>
             <th>Type</th>
+            <th>Recurrent</th>
+            <th>Applicable To</th>
             <th>Award</th>
             <th>Issued By</th>
             <th>Description</th>
@@ -136,10 +138,11 @@
       </table>
     </div>
     <div class="why">
-      <p>This page stores course master data <b>in this browser</b> (same idea as OCG Name List). <b>Code</b> is the unique key. <b>Type</b> is Online or Classroom; leave blank until you set it. <b>Name</b> is the course / certification name.</p>
+      <p>This page stores course master data <b>in this browser</b> (same idea as OCG Name List). <b>Code</b> is the unique key. <b>Type</b> is the method: Online, Classroom, or TBD. <b>Name</b> is the course / certification name. <b>Recurrent</b> is the recurrent course code for that initial course. <b>Applicable To</b> is who the initial course is for.</p>
       <p><b>Course List is independent</b> of Training One View CSV ingest. Loading CT Reminder, Mandatory, or UAL does <b>not</b> delete or replace these rows. New codes from the board only <b>add</b> or fill empty fields. If a CSV has the same code with a different name (or the same name with a different code), Training One View asks which to use — it does not silently overwrite this list. Code-only CSV rows use the <b>Name</b> typed here.</p>
       <p><b>Award</b> is carried from the CT Reminder CSV column headed Award (stored beside Issued By and Description). This page does not define what Award means in LMS terms — it keeps the field as imported. <b>Interval</b> is how often the course is done (e.g. 12 months, 24 months, annual). Courses do not have an expiry date — staff due / expire dates stay on CT / UAL / Mandatory.</p>
       <p><b>Related</b> lists the other course code when two codes are variants (the same code plus CT, REV, or T, or Operator and Trainer) or the titles are very similar even if the codes differ. Both rows list each other, separated by commas when there is more than one. Suggestions fill in automatically. Edit a cell to keep your own text.</p>
+      <p>Known initial courses: <b>T.C774</b> Online, recurrent T.C774 or T.C775CT, applicable to AF / ST. <b>T.C775</b> Classroom, recurrent T.C775CT, applicable to Certifiers / AV / CTG / CTG(SM). <b>T.F319</b> and <b>T.F241</b> are TBD, recurrent T.F162, applicable to TBD. Empty Type, Recurrent, and Applicable To on those codes are filled from this list. A value you already typed stays.</p>
     </div>
   </div>
   <datalist id="interval-hints">
@@ -149,7 +152,7 @@
     <option value="annual"></option>
     <option value="one-time"></option>
   </datalist>
-  <div class="page-version" data-version="1.9" aria-label="Page version 1.9">v1.9</div>
+  <div class="page-version" data-version="2.0" aria-label="Page version 2.0">v2.0</div>
 <script src="hx-shared-sync.js?v=1.0"></script>
 <script>
 const COURSE_STORE = "hx:course-catalog:rows";
@@ -161,7 +164,13 @@ const UAL_KEYS = ["hx-ual-cbt-mail", "hx:ual-cbt:mail", "hx:ual-cbt:text", "hx:t
 const CT_FILE_KEYS = ["hx:team-board:ct-files", "hx-team-board-ct-files", "hx:ct-reminder:files", "hx-ct-files"];
 const OMT_FILE_KEYS = ["hx:team-board:omt-files", "hx-team-board-omt-files", "hx:team-board:omt", "hx-omt-files"];
 const UAL_CODE_RE = /\b(ANSP|CATA|DRGA|EISA|ETOPSA|ETPDSC|ETPT|GMMV|IPCT4|RIIA2|RVSMA|SCEPLOG|FGENR|FTSA|SRMAL)\b/gi;
-const COLS = ["code", "name", "related", "type", "award", "issued", "desc", "interval"];
+const COLS = ["code", "name", "related", "type", "recurrent", "applies", "award", "issued", "desc", "interval"];
+const COURSE_FACTS = [
+  { code: "T.C774", type: "Online", recurrent: "T.C774 or T.C775CT", applies: "AF / ST" },
+  { code: "T.C775", type: "Classroom", recurrent: "T.C775CT", applies: "Certifiers / AV / CTG / CTG(SM)" },
+  { code: "T.F319", type: "TBD", recurrent: "T.F162", applies: "TBD" },
+  { code: "T.F241", type: "TBD", recurrent: "T.F162", applies: "TBD" }
+];
 
 let rows = [];
 let q = "";
@@ -274,7 +283,7 @@ function normCode(s) {
   return String(s || "").trim().toLowerCase();
 }
 function blankRow(code) {
-  return { code: String(code || "").trim(), name: "", related: "", relatedManual: false, type: "", award: "", issued: "", desc: "", interval: "" };
+  return { code: String(code || "").trim(), name: "", related: "", relatedManual: false, type: "", recurrent: "", applies: "", award: "", issued: "", desc: "", interval: "" };
 }
 function normRow(r) {
   const o = blankRow(r && r.code);
@@ -283,7 +292,7 @@ function normRow(r) {
     o[k] = r && r[k] != null ? String(r[k]) : "";
   });
   o.relatedManual = !!(r && r.relatedManual);
-  if (o.type !== "Online" && o.type !== "Classroom") o.type = "";
+  if (o.type !== "Online" && o.type !== "Classroom" && o.type !== "TBD") o.type = "";
   return o;
 }
 function persist() {
@@ -551,6 +560,20 @@ function fillRelated() {
   });
   return changed;
 }
+function applyCourseFacts() {
+  let changed = false;
+  COURSE_FACTS.forEach((fact) => {
+    let row = null;
+    for (let i = 0; i < rows.length; i++) {
+      if (normCode(rows[i].code) === normCode(fact.code)) { row = rows[i]; break; }
+    }
+    if (!row) return;
+    if (!String(row.type || "").trim() && fact.type) { row.type = fact.type; changed = true; }
+    if (!String(row.recurrent || "").trim() && fact.recurrent) { row.recurrent = fact.recurrent; changed = true; }
+    if (!String(row.applies || "").trim() && fact.applies) { row.applies = fact.applies; changed = true; }
+  });
+  return changed;
+}
 function filtered() {
   const s = q.trim().toLowerCase();
   const list = rows.slice().sort((a, b) => String(a.code).localeCompare(String(b.code), undefined, { numeric: true, sensitivity: "base" }));
@@ -560,7 +583,7 @@ function filtered() {
 function paintStatus(extra) {
   const n = rows.length;
   const named = rows.filter((r) => String(r.name || "").trim()).length;
-  const typed = rows.filter((r) => r.type === "Online" || r.type === "Classroom").length;
+  const typed = rows.filter((r) => r.type === "Online" || r.type === "Classroom" || r.type === "TBD").length;
   document.getElementById("n-all").textContent = String(n);
   document.getElementById("n-named").textContent = String(named);
   document.getElementById("n-typed").textContent = String(typed);
@@ -569,7 +592,7 @@ function paintStatus(extra) {
     : "No courses yet. Codes from Training One View seed this list.");
 }
 function typeOptions(cur) {
-  return [["", "—"], ["Online", "Online"], ["Classroom", "Classroom"]].map(([v, l]) =>
+  return [["", "—"], ["Online", "Online"], ["Classroom", "Classroom"], ["TBD", "TBD"]].map(([v, l]) =>
     "<option value=\"" + v + "\"" + (cur === v ? " selected" : "") + ">" + l + "</option>"
   ).join("");
 }
@@ -631,13 +654,15 @@ function paint() {
       "<td><input class=\"cell\" data-k=\"name\" value=\"" + esc(r.name) + "\"></td>" +
       "<td><input class=\"cell\" data-k=\"related\" value=\"" + esc(r.related) + "\" placeholder=\"\"></td>" +
       "<td><select class=\"cell\" data-k=\"type\">" + typeOptions(r.type) + "</select></td>" +
+      "<td><input class=\"cell\" data-k=\"recurrent\" value=\"" + esc(r.recurrent) + "\"></td>" +
+      "<td><input class=\"cell\" data-k=\"applies\" value=\"" + esc(r.applies) + "\"></td>" +
       "<td><input class=\"cell\" data-k=\"award\" value=\"" + esc(r.award) + "\"></td>" +
       "<td><input class=\"cell\" data-k=\"issued\" value=\"" + esc(r.issued) + "\"></td>" +
       "<td><input class=\"cell\" data-k=\"desc\" value=\"" + esc(r.desc) + "\"></td>" +
       "<td><input class=\"cell\" data-k=\"interval\" list=\"interval-hints\" placeholder=\"e.g. 12 months\" value=\"" + esc(r.interval) + "\"></td>" +
       "<td class=\"act\"><button type=\"button\" data-del=\"" + i + "\">Remove</button></td>" +
       "</tr>";
-  }).join("") || "<tr><td colspan=\"9\">No rows. Add a course, or load UAL / CT / Mandatory on Training One View.</td></tr>";
+  }).join("") || "<tr><td colspan=\"11\">No rows. Add a course, or load UAL / CT / Mandatory on Training One View.</td></tr>";
   paintStatus();
   fitCols();
 }
@@ -667,7 +692,7 @@ document.getElementById("body").addEventListener("change", (e) => {
   if (!rows[i]) return;
   const k = cell.dataset.k;
   let v = cell.value;
-  if (k === "type" && v !== "Online" && v !== "Classroom") v = "";
+  if (k === "type" && v !== "Online" && v !== "Classroom" && v !== "TBD") v = "";
   if (k === "code") {
     v = String(v || "").trim();
     if (otherHasCode(i, v)) {
@@ -708,6 +733,7 @@ window.addEventListener("storage", (e) => {
   if (e.key !== COURSE_STORE) return;
   loadSaved();
   if (fillRelated()) persist();
+  if (applyCourseFacts()) persist();
   paint();
 });
 (async function init() {
@@ -716,7 +742,8 @@ window.addEventListener("storage", (e) => {
   await syncCoursesFromCloud();
   const added = seedFromBoard();
   const relatedChanged = fillRelated();
-  if (added || relatedChanged) persist();
+  const factsChanged = applyCourseFacts();
+  if (added || relatedChanged || factsChanged) persist();
   const savedQ = lsPeek(UI_Q);
   if (savedQ != null) {
     q = savedQ;

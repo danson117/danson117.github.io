@@ -275,8 +275,9 @@
         <li style="color:#b00020"><b>新 · Training One View · Detail 欄寬／Section (Crew)：</b>表頭 <b>Section (Crew)</b>（原 Section + Crew）。格顯示 <code>LTA1 (1E)</code> 式（section＋括號內 crew／shift）；只改可見字，唔改存檔 section／shift。<b>Course code</b> 闊約 +33%（140→186px）；其餘因 equalize／縮欄騰出嘅 px 加喺 Course code 上面。<b>Overdue／Coming due remaining</b> 兩欄闊度同對應 due-day 欄（而家 104px）。<code>table-layout: fixed</code>＋固定 px；UAL 四欄一齊 show／唔 render，隱藏時其他欄唔拉闊。空格灰底 <code>blank</code> 保留。上載三卡卡面用淡青綠灰（唔用沙色 <code>#f6efe6</code>）；未同步卡轉橙。</li>
         <li>而家起 UAL／CT／Mandatory 上載全機同步。舊「ignore」只係唔好特登帶舊檔。</li>
         <li>Mandatory 只留 Name List（OCG）staff。Course 缺名時跟 Course List／CT／UAL。</li>
+        <li style="color:#b00020"><b>新 · Course List · Initial / Recurrent：</b>Code 就係 Initial。Type 係方法：Online／Classroom／<b>TBD</b>。加欄 <b>Recurrent</b>（recurrent course code）同 <b>Applicable To</b>。已知：<b>T.C774</b> Online，recurrent <b>T.C774 or T.C775CT</b>，AF / ST。<b>T.C775</b> Classroom，recurrent <b>T.C775CT</b>，Certifiers / AV / CTG / CTG(SM)。<b>T.F319</b>、<b>T.F241</b> 都係 TBD，recurrent <b>T.F162</b>，Applicable To TBD。呢三欄空住先填；已經打咗字就保留。Course List <b>v2.0</b>。</li>
         <li style="color:#b00020"><b>新 · Course List · Related：</b>Course List 加欄 <b>Related</b>。兩科 course code 係變體（同一碼加 CT／REV／T，或者 Operator 同 Trainer），或者個 title 非常似（code 可以完全唔同），Related 就寫低對方 course code。兩邊都寫，睇任何一邊都見到。一科可以多過一個 code，逗號分隔。自動填；改咗嗰格就保留你打嘅字，唔再覆蓋。Course List <b>v1.9</b>。</li>
-        <li style="color:#b00020"><b>新 · Course List 欄闊跟內容：</b>每一欄闊到格內全文（Code／Name／Related／Type／Award／Issued By／Description／Interval）一行睇得晒，唔截斷。字少嘅欄收到內容同表頭咁窄。總闊超過畫面就喺表內橫向捲。Course List <b>v1.8</b>。</li>
+        <li style="color:#b00020"><b>新 · Course List 欄闊跟內容：</b>每一欄闊到格內全文（Code／Name／Related／Type／Recurrent／Applicable To／Award／Issued By／Description／Interval）一行睇得晒，唔截斷。字少嘅欄收到內容同表頭咁窄。總闊超過畫面就喺表內橫向捲。Course List <b>v1.8</b>。</li>
         <li><span class="key">新 · Course List 獨立於 CSV ingest</span>：Course List（<code>course-catalog.html</code>）自己存；上 CT Reminder／Mandatory／UAL <b>唔刪、唔整份取代</b> Course List。CSV 只有 course code → 自動用 Course List 名。Code／名同存檔唔夾（同 code 唔同名，或同名唔同 code）→ 頁內 dialog 問用 Course List 定 CSV；<b>唔靜默覆寫</b>。夾嘅就用存檔名、唔彈窗。</li>
         <li style="color:#b00020"><b>新 · Training One View · Detail 欄寬鎖定：</b>Detail 表每欄固定闊度（<code>table-layout: fixed</code>＋明確 px／col 寬），跟 UAL 顯示時嘅緊密佈局。UAL 四欄（<b>UA Employee #</b>、<b>Coming due courses</b>、<b>Coming due day</b>、<b>Coming due remaining</b>）只係一齊顯示或一齊唔 render；隱藏時其他欄<strong>唔</strong>拉闊填滿空隙。表可窄過容器（右邊留空）或全部欄可見時橫向 scroll。唔用會令欄寬重分配嘅 <code>width:100%</code>。唔改欄出現規則、Course code 表頭、行色、filter、資料。</li>
         <li style="color:#b00020"><b>新 · Training One View · Detail 欄 grow／scroll／overdue-remaining 50%：</b>每欄 <code>min-width</code>＝固定 px（Overdue or will expire remaining 由 104→<b>52</b>；Coming due remaining 仍 104，唔共用半闊）。視窗<strong>闊過</strong>欄 min 總和 → 表 <code>width:100%</code> 按比例拉闊；視窗<strong>窄過</strong> → 唔縮欄，<code>#detail-shot</code> <code>overflow-x:auto</code> 橫向 scroll。唔用 transform scale。UAL 隱藏時唔拉闊兄弟低過 min。同步：Owner role <code>me</code> 都可寫 Edge；冇 GitHub token 唔當 Save failed（SoT＝Supabase Edge）。</li>
@@ -365,6 +366,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.50">v10.50</div>
+  <div class="page-version" data-version="10.51">v10.51</div>
 </body>
 </html>

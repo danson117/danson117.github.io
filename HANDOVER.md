@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course List · Initial / Recurrent：** Type 加 TBD。加欄 Recurrent、Applicable To。T.C774 Online → T.C774 or T.C775CT，AF / ST。T.C775 Classroom → T.C775CT，Certifiers / AV / CTG / CTG(SM)。T.F319、T.F241 TBD → T.F162。空欄先填。Course List **v2.0**、`hx-rules` **v10.51**、hub page-version **v18.9**。開頁之後寫入瀏覽器並同步 Supabase（要 HX unlock）。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course List · Related：** 加欄 Related。course code 係變體（CT／REV／T，或 Operator／Trainer），或者 title 非常似（code 可以完全唔同），兩邊都寫對方 course code。可改；改完唔再自動覆蓋。Course List **v1.9**、`hx-rules` **v10.50**、hub page-version **v18.8**。開頁之後先寫入瀏覽器並同步 Supabase（要 HX unlock）。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-03 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
