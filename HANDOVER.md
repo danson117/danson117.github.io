@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · Recurrent clock from initial：** T.F162／T.C775CT／T.C104CT outstanding 只喺過期 initial（鐘由最遲 initial 起、冇窗口內 CT）或過期 CT。從未 initial 又從未 CT → 唔入 CT outstanding（只入 initial）。窗口內 initial 或 CT → CT Completed。Need family files 仍然等齊檔。Course completion **v2.8**、`hx-rules` **v10.59**、hub page-version **v19.7**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · Not due 併入 Completed：** Family 覆蓋（initial 仍喺 Expiry 年數內、sibling initial、takeover）而家當 Completed（綠、Completed 掣；呢科冇日期就用覆蓋完成日）。Outstanding 只留真 outstanding。Need family files 仍然 waiting。Check log 唔再有獨立 Not due 欄／掣。Add to TOV 仍然 skip。Course completion **v2.7**、`hx-rules` **v10.58**、hub page-version **v19.6**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
