@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **320531 仲喺 Course completion Check log：** 彈窗讀存低嘅 outstanding 名單，唔係即場名冊。瀏覽器之後再上傳咗舊名單，T.F241 CG Mech outstanding 仍有佢（8）。而家已從 `hx_private.team_board_actions` 嘅 `course-completion-checks` 剔走，該科 CG Mech 人數係 7，其他員工留低。載入／儲存會剔唔喺 Name List 嘅人，避免 refresh 再寫返。Course completion **v2.15**、hub **v20.6**、`hx-rules` **v10.68**。GitHub 後備 → Vercel。唔開 Chrome。唔寫其他課程明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **320531 從成個 HX 刪走：** KO SUM YEE SAMMIE 唔再留 Full List。名冊行刪咗。Supabase `hx_private.team_board_actions` 同 `board_revisions` 入面佢嘅 status／Manual／CT／Course completion 檢查名單／manual-hold 刪咗。Authorization、License、BRS PIN、Line MX weekly、GitHub `team-board-actions.json` 本來冇佢。288531 唔郁。Name List **v3.21**、`ocg-pax-data.js?v=14`、hub **v20.5**、`hx-rules` **v10.67**。Auth **v2.16**、Lic **v2.5**、TOV **v15.34**、Course completion **v2.14**、BRS **v5.3**。GitHub 後備 → Vercel。唔開 Chrome。唔寫課程明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

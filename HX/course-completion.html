@@ -461,7 +461,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.14" aria-label="Page version 2.14">v2.14</div>
+  <div class="page-version" data-version="2.15" aria-label="Page version 2.15">v2.15</div>
 <script src="ocg-pax-data.js?v=14"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -1415,24 +1415,32 @@ function cmpNormCheck(row) {
   o.tov = row && row.tov != null && String(row.tov).trim() ? String(row.tov) : "Not created";
   o.remark = row && row.remark != null ? String(row.remark) : "";
   o.sysNote = row && row.sysNote != null ? String(row.sysNote) : "";
-  o.paxMechPeople = cmpNormPeople(row && row.paxMechPeople);
-  o.cgMechPeople = cmpNormPeople(row && row.cgMechPeople);
-  o.paxCsPeople = cmpNormPeople(row && row.paxCsPeople);
-  o.cgCsPeople = cmpNormPeople(row && row.cgCsPeople);
-  o.heldPeople = cmpNormPeople(row && row.heldPeople).map((p, i) => {
+  const paxMechRaw = cmpNormPeople(row && row.paxMechPeople);
+  const cgMechRaw = cmpNormPeople(row && row.cgMechPeople);
+  const paxCsRaw = cmpNormPeople(row && row.paxCsPeople);
+  const cgCsRaw = cmpNormPeople(row && row.cgCsPeople);
+  o.paxMechPeople = cmpPeopleOnRoster(paxMechRaw);
+  o.cgMechPeople = cmpPeopleOnRoster(cgMechRaw);
+  o.paxCsPeople = cmpPeopleOnRoster(paxCsRaw);
+  o.cgCsPeople = cmpPeopleOnRoster(cgCsRaw);
+  o.paxMech = cmpFitOsCount(o.paxMech, paxMechRaw, o.paxMechPeople);
+  o.cgMech = cmpFitOsCount(o.cgMech, cgMechRaw, o.cgMechPeople);
+  o.paxCs = cmpFitOsCount(o.paxCs, paxCsRaw, o.paxCsPeople);
+  o.cgCs = cmpFitOsCount(o.cgCs, cgCsRaw, o.cgCsPeople);
+  o.heldPeople = cmpPeopleOnRoster(cmpNormPeople(row && row.heldPeople).map((p, i) => {
     const src = (row.heldPeople && row.heldPeople[i]) || {};
     p.note = String(src.note || "");
     p.done = String(src.done || "");
     return p;
-  });
-  o.donePeople = Array.isArray(row && row.donePeople)
+  }));
+  o.donePeople = cmpPeopleOnRoster(Array.isArray(row && row.donePeople)
     ? row.donePeople.map((p) => ({
         staff: padStaff(p && p.staff),
         done: String((p && p.done) || ""),
         code: String((p && p.code) || o.code)
       })).filter((p) => /^\d{5,7}$/.test(p.staff) && p.done)
-    : [];
-  o.openPeople = Array.isArray(row && row.openPeople)
+    : []);
+  o.openPeople = cmpPeopleOnRoster(Array.isArray(row && row.openPeople)
     ? row.openPeople.map((p) => {
         const rec = cmpNormPerson(p);
         rec.role = String((p && p.role) || "");
@@ -1443,7 +1451,7 @@ function cmpNormCheck(row) {
         rec.note = String((p && p.note) || "");
         return rec;
       }).filter((p) => /^\d{5,7}$/.test(p.staff))
-    : [];
+    : []);
   return o;
 }
 function cmpNormPerson(p) {
@@ -1458,6 +1466,16 @@ function cmpNormPerson(p) {
 function cmpNormPeople(list) {
   if (!Array.isArray(list)) return [];
   return list.map(cmpNormPerson).filter((p) => /^\d{5,7}$/.test(p.staff));
+}
+function cmpPeopleOnRoster(list) {
+  if (!byStaff.size || !Array.isArray(list)) return Array.isArray(list) ? list : [];
+  return list.filter((p) => rosterHas(p && p.staff));
+}
+function cmpFitOsCount(stored, rawList, keptList) {
+  if (!byStaff.size) return stored;
+  const rawN = Array.isArray(rawList) ? rawList.length : 0;
+  if (keptList.length < rawN) return keptList.length;
+  return stored;
 }
 function cmpLoadChecks() {
   try {
@@ -1557,10 +1575,10 @@ const CMP_CHECK_LISTS = [
   { key: "cgCs", people: "cgCsPeople", bucket: "cg", role: "cs", label: "CG CS outstanding" }
 ];
 function cmpOpenPeopleOf(row) {
-  if (row && Array.isArray(row.openPeople) && row.openPeople.length) return row.openPeople;
+  if (row && Array.isArray(row.openPeople) && row.openPeople.length) return cmpPeopleOnRoster(row.openPeople);
   const out = [];
   CMP_CHECK_LISTS.forEach((spec) => {
-    cmpNormPeople(row && row[spec.people]).forEach((p) => {
+    cmpPeopleOnRoster(cmpNormPeople(row && row[spec.people])).forEach((p) => {
       out.push(Object.assign({}, p, {
         role: spec.role === "cs" ? "CS" : "MECHANIC",
         bucket: spec.bucket === "pax" ? "PAX" : "CG"
@@ -1686,7 +1704,7 @@ function cmpRecordCheck(opts) {
   (cmpModel.rows || []).forEach((r) => {
     if (!r.fromFile || !r.done) return;
     const id = padStaff(r.staff);
-    if (!id || seenDone.has(id)) return;
+    if (!id || seenDone.has(id) || !rosterHas(id)) return;
     seenDone.add(id);
     row.donePeople.push({ staff: id, done: r.done, code: r.code || code });
   });
@@ -1694,6 +1712,7 @@ function cmpRecordCheck(opts) {
   (cmpModel.rows || []).forEach((r) => {
     const view = cmpViewExpiry(r);
     if (view.doneFlag) return;
+    if (!rosterHas(view.staff)) return;
     const rec = cmpRosterPerson(view.staff);
     rec.role = view.role;
     rec.bucket = view.bucket;
@@ -1758,7 +1777,7 @@ let cmpPeopleView = { people: [], title: "", file: "" };
 function cmpPeopleFor(row, key) {
   const spec = CMP_CHECK_LISTS.find((s) => s.key === key);
   if (!spec || !row) return [];
-  const stored = cmpNormPeople(row[spec.people]);
+  const stored = cmpPeopleOnRoster(cmpNormPeople(row[spec.people]));
   if (stored.length) return stored;
   if (cmpModel && !cmpModel.error && String(cmpModel.keptCode || "").toUpperCase() === String(row.code || "").toUpperCase()) {
     return cmpOsPeople(spec.bucket, spec.role);
