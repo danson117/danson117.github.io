@@ -106,14 +106,14 @@
 <body>
   <div class="page">
     <h1>Course List</h1>
-    <p class="subtitle">Course master data in this browser · independent of CSV ingest · Name / Code / Type (Online / Classroom) / Interval.</p>
+    <p class="subtitle">Course master data in this browser · independent of CSV ingest · Name / Code / Related / Type (Online / Classroom) / Interval.</p>
     <div class="stats">
       <div class="stat"><b id="n-all">0</b><span>Courses</span></div>
       <div class="stat"><b id="n-named">0</b><span>With a name</span></div>
       <div class="stat"><b id="n-typed">0</b><span>Type set</span></div>
     </div>
     <div class="toolbar">
-      <input id="q" type="search" placeholder="Search name / code / type / award / issued by / interval">
+      <input id="q" type="search" placeholder="Search name / code / related / type / award / issued by / interval">
       <button type="button" class="primary" id="add-row">Add row</button>
     </div>
     <p class="note" id="status">No courses yet. Codes from Training One View seed this list.</p>
@@ -123,6 +123,7 @@
           <tr>
             <th>Code</th>
             <th>Name</th>
+            <th>Related</th>
             <th>Type</th>
             <th>Award</th>
             <th>Issued By</th>
@@ -138,6 +139,7 @@
       <p>This page stores course master data <b>in this browser</b> (same idea as OCG Name List). <b>Code</b> is the unique key. <b>Type</b> is Online or Classroom; leave blank until you set it. <b>Name</b> is the course / certification name.</p>
       <p><b>Course List is independent</b> of Training One View CSV ingest. Loading CT Reminder, Mandatory, or UAL does <b>not</b> delete or replace these rows. New codes from the board only <b>add</b> or fill empty fields. If a CSV has the same code with a different name (or the same name with a different code), Training One View asks which to use — it does not silently overwrite this list. Code-only CSV rows use the <b>Name</b> typed here.</p>
       <p><b>Award</b> is carried from the CT Reminder CSV column headed Award (stored beside Issued By and Description). This page does not define what Award means in LMS terms — it keeps the field as imported. <b>Interval</b> is how often the course is done (e.g. 12 months, 24 months, annual). Courses do not have an expiry date — staff due / expire dates stay on CT / UAL / Mandatory.</p>
+      <p><b>Related</b> lists the other course code when two codes are variants (the same code plus CT, REV, or T, or Operator and Trainer) or the titles are very similar even if the codes differ. Both rows list each other, separated by commas when there is more than one. Suggestions fill in automatically. Edit a cell to keep your own text.</p>
     </div>
   </div>
   <datalist id="interval-hints">
@@ -147,7 +149,7 @@
     <option value="annual"></option>
     <option value="one-time"></option>
   </datalist>
-  <div class="page-version" data-version="1.8" aria-label="Page version 1.8">v1.8</div>
+  <div class="page-version" data-version="1.9" aria-label="Page version 1.9">v1.9</div>
 <script src="hx-shared-sync.js?v=1.0"></script>
 <script>
 const COURSE_STORE = "hx:course-catalog:rows";
@@ -159,7 +161,7 @@ const UAL_KEYS = ["hx-ual-cbt-mail", "hx:ual-cbt:mail", "hx:ual-cbt:text", "hx:t
 const CT_FILE_KEYS = ["hx:team-board:ct-files", "hx-team-board-ct-files", "hx:ct-reminder:files", "hx-ct-files"];
 const OMT_FILE_KEYS = ["hx:team-board:omt-files", "hx-team-board-omt-files", "hx:team-board:omt", "hx-omt-files"];
 const UAL_CODE_RE = /\b(ANSP|CATA|DRGA|EISA|ETOPSA|ETPDSC|ETPT|GMMV|IPCT4|RIIA2|RVSMA|SCEPLOG|FGENR|FTSA|SRMAL)\b/gi;
-const COLS = ["code", "name", "type", "award", "issued", "desc", "interval"];
+const COLS = ["code", "name", "related", "type", "award", "issued", "desc", "interval"];
 
 let rows = [];
 let q = "";
@@ -272,7 +274,7 @@ function normCode(s) {
   return String(s || "").trim().toLowerCase();
 }
 function blankRow(code) {
-  return { code: String(code || "").trim(), name: "", type: "", award: "", issued: "", desc: "", interval: "" };
+  return { code: String(code || "").trim(), name: "", related: "", relatedManual: false, type: "", award: "", issued: "", desc: "", interval: "" };
 }
 function normRow(r) {
   const o = blankRow(r && r.code);
@@ -280,6 +282,7 @@ function normRow(r) {
     if (k === "code") return;
     o[k] = r && r[k] != null ? String(r[k]) : "";
   });
+  o.relatedManual = !!(r && r.relatedManual);
   if (o.type !== "Online" && o.type !== "Classroom") o.type = "";
   return o;
 }
@@ -409,6 +412,145 @@ function seedFromBoard() {
   if (added || seen.size) persist();
   return added;
 }
+const RELATED_STOP = new Set("a an the and of for to in on with by from including training course courses procedure procedures initial recurrent continuation refresher revalidation awareness company program requirements authorization theory theoretical phase renewal code po 5y".split(" "));
+const RELATED_ROLE = new Set(["operator", "trainer", "staff", "support"]);
+function relatedDropToken(t) {
+  return /^\d+$/.test(t) || /^(mtg|mxp|cq|ieva)\d+$/.test(t);
+}
+function relatedTitleBody(code, name) {
+  let s = String(name || "");
+  const c = String(code || "");
+  if (c && s.toLowerCase().startsWith(c.toLowerCase())) s = s.slice(c.length);
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+}
+function relatedRaw(code, name) {
+  let s = relatedTitleBody(code, name);
+  s = s.replace(/\b(operator|trainer)\b/g, "role");
+  s = s.replace(/\bcourse code\b/g, " ");
+  s = s.replace(/\b5y po\b/g, " ");
+  return s.replace(/\s+/g, " ").trim();
+}
+function relatedTokenSet(code, name) {
+  const set = new Set();
+  relatedTitleBody(code, name).split(" ").forEach((t) => {
+    if (!t || RELATED_STOP.has(t) || RELATED_ROLE.has(t) || relatedDropToken(t) || t.length <= 1) return;
+    set.add(t);
+  });
+  return set;
+}
+function codeStems(code) {
+  const x = String(code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const opts = new Set();
+  if (!x) return opts;
+  opts.add(x);
+  ["CT", "REV", "REC"].forEach((suf) => {
+    if (x.length > suf.length + 2 && x.endsWith(suf)) opts.add(x.slice(0, -suf.length));
+  });
+  const y = x.endsWith("CT") ? x.slice(0, -2) : x;
+  if (y.length > 4 && y.endsWith("T")) opts.add(y.slice(0, -1));
+  const keep = new Set();
+  opts.forEach((s) => { if (s.length >= 4) keep.add(s); });
+  return keep;
+}
+function codeFamily(a, b) {
+  const A = String(a || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const B = String(b || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!A || !B || A === B) return false;
+  const sb = codeStems(b);
+  let hit = false;
+  codeStems(a).forEach((s) => { if (sb.has(s)) hit = true; });
+  return hit;
+}
+function seqRatio(a, b) {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  function match(i1, i2, j1, j2) {
+    let best = 0, bi = 0, bj = 0;
+    for (let i = i1; i < i2; i++) {
+      for (let j = j1; j < j2; j++) {
+        if (a.charCodeAt(i) !== b.charCodeAt(j)) continue;
+        let k = 1;
+        while (i + k < i2 && j + k < j2 && a.charCodeAt(i + k) === b.charCodeAt(j + k)) k++;
+        if (k > best) { best = k; bi = i; bj = j; }
+      }
+    }
+    if (!best) return 0;
+    return best + match(i1, bi, j1, bj) + match(bi + best, i2, bj + best, j2);
+  }
+  return (2 * match(0, a.length, 0, b.length)) / (a.length + b.length);
+}
+function titlesRelated(a, b) {
+  if (!a.raw || !b.raw) return false;
+  const inter = new Set();
+  a.set.forEach((t) => { if (b.set.has(t)) inter.add(t); });
+  const onlyA = [];
+  const onlyB = [];
+  a.set.forEach((t) => { if (!b.set.has(t)) onlyA.push(t); });
+  b.set.forEach((t) => { if (!a.set.has(t)) onlyB.push(t); });
+  const uni = a.set.size + b.set.size - inter.size;
+  const jac = uni ? inter.size / uni : 0;
+  const short = a.set.size <= b.set.size ? a.set : b.set;
+  const long = a.set.size <= b.set.size ? b.set : a.set;
+  let subset = short.size > 0;
+  short.forEach((t) => { if (!long.has(t)) subset = false; });
+  const extra = long.size - short.size;
+  const fam = codeFamily(a.code, b.code);
+  const sraw = a.raw.length <= b.raw.length ? a.raw : b.raw;
+  const lraw = a.raw.length <= b.raw.length ? b.raw : a.raw;
+  const phrase = sraw.length >= 12 && sraw !== lraw && lraw.indexOf(sraw) >= 0;
+  if (a.raw === b.raw && a.raw.length >= 12) return true;
+  if (jac >= 0.65 && inter.size >= 3) return true;
+  if (subset && short.size >= 3 && extra <= 2) return true;
+  if (fam && inter.size >= 2 && (jac >= 0.5 || subset || phrase)) return true;
+  const ua = onlyA.length === 1 ? onlyA[0] : "";
+  const ub = onlyB.length === 1 ? onlyB[0] : "";
+  if (ua && ub && inter.size >= 3 && ua.length <= 4 && ub.length <= 4) return true;
+  if (phrase && inter.size >= 1 && extra <= 3) return true;
+  if (inter.size < 2) return false;
+  const rr = seqRatio(a.raw, b.raw);
+  if (rr >= 0.88 && inter.size >= 3 && onlyA.length <= 2 && onlyB.length <= 2) return true;
+  if (rr >= 0.84 && inter.size >= 4 && onlyA.length <= 4 && onlyB.length <= 4) return true;
+  if (rr >= 0.92 && inter.size >= 2 && onlyA.length <= 1 && onlyB.length <= 1) return true;
+  return false;
+}
+function fillRelated() {
+  const items = rows.map((r) => ({
+    code: String(r.code || "").trim(),
+    raw: relatedRaw(r.code, r.name),
+    set: relatedTokenSet(r.code, r.name)
+  }));
+  const by = new Map();
+  items.forEach((it) => {
+    const k = normCode(it.code);
+    if (!k) return;
+    if (!by.has(k)) by.set(k, new Set());
+  });
+  for (let i = 0; i < items.length; i++) {
+    if (!items[i].code) continue;
+    for (let j = i + 1; j < items.length; j++) {
+      if (!items[j].code) continue;
+      if (normCode(items[i].code) === normCode(items[j].code)) continue;
+      if (!titlesRelated(items[i], items[j])) continue;
+      const ka = normCode(items[i].code);
+      const kb = normCode(items[j].code);
+      if (by.has(ka)) by.get(ka).add(items[j].code);
+      if (by.has(kb)) by.get(kb).add(items[i].code);
+    }
+  }
+  let changed = false;
+  rows.forEach((r) => {
+    if (r.relatedManual) return;
+    const k = normCode(r.code);
+    const next = (k && by.get(k))
+      ? Array.from(by.get(k)).filter((c) => normCode(c) !== k).sort((x, y) => String(x).localeCompare(String(y), undefined, { numeric: true, sensitivity: "base" })).join(", ")
+      : "";
+    if (String(r.related || "") !== next) {
+      r.related = next;
+      changed = true;
+    }
+  });
+  return changed;
+}
 function filtered() {
   const s = q.trim().toLowerCase();
   const list = rows.slice().sort((a, b) => String(a.code).localeCompare(String(b.code), undefined, { numeric: true, sensitivity: "base" }));
@@ -487,6 +629,7 @@ function paint() {
     return "<tr data-i=\"" + i + "\">" +
       "<td class=\"code\"><input class=\"cell\" data-k=\"code\" value=\"" + esc(r.code) + "\"></td>" +
       "<td><input class=\"cell\" data-k=\"name\" value=\"" + esc(r.name) + "\"></td>" +
+      "<td><input class=\"cell\" data-k=\"related\" value=\"" + esc(r.related) + "\" placeholder=\"\"></td>" +
       "<td><select class=\"cell\" data-k=\"type\">" + typeOptions(r.type) + "</select></td>" +
       "<td><input class=\"cell\" data-k=\"award\" value=\"" + esc(r.award) + "\"></td>" +
       "<td><input class=\"cell\" data-k=\"issued\" value=\"" + esc(r.issued) + "\"></td>" +
@@ -494,7 +637,7 @@ function paint() {
       "<td><input class=\"cell\" data-k=\"interval\" list=\"interval-hints\" placeholder=\"e.g. 12 months\" value=\"" + esc(r.interval) + "\"></td>" +
       "<td class=\"act\"><button type=\"button\" data-del=\"" + i + "\">Remove</button></td>" +
       "</tr>";
-  }).join("") || "<tr><td colspan=\"8\">No rows. Add a course, or load UAL / CT / Mandatory on Training One View.</td></tr>";
+  }).join("") || "<tr><td colspan=\"9\">No rows. Add a course, or load UAL / CT / Mandatory on Training One View.</td></tr>";
   paintStatus();
   fitCols();
 }
@@ -533,7 +676,20 @@ document.getElementById("body").addEventListener("change", (e) => {
       return;
     }
   }
+  if (k === "related") {
+    rows[i].related = String(v || "");
+    rows[i].relatedManual = true;
+    persist();
+    paintStatus();
+    fitCols();
+    return;
+  }
   rows[i][k] = v;
+  if ((k === "code" || k === "name") && fillRelated()) {
+    persist();
+    paint();
+    return;
+  }
   persist();
   paintStatus();
   fitCols();
@@ -544,12 +700,14 @@ document.getElementById("body").addEventListener("click", (e) => {
   const i = Number(b.dataset.del);
   if (!rows[i]) return;
   rows.splice(i, 1);
+  fillRelated();
   persist();
   paint();
 });
 window.addEventListener("storage", (e) => {
   if (e.key !== COURSE_STORE) return;
   loadSaved();
+  if (fillRelated()) persist();
   paint();
 });
 (async function init() {
@@ -557,9 +715,8 @@ window.addEventListener("storage", (e) => {
   loadSaved();
   await syncCoursesFromCloud();
   const added = seedFromBoard();
-  if (added) {
-    persist();
-  }
+  const relatedChanged = fillRelated();
+  if (added || relatedChanged) persist();
   const savedQ = lsPeek(UI_Q);
   if (savedQ != null) {
     q = savedQ;

@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **Course List · Related：** 加欄 Related。course code 係變體（CT／REV／T，或 Operator／Trainer），或者 title 非常似（code 可以完全唔同），兩邊都寫對方 course code。可改；改完唔再自動覆蓋。Course List **v1.9**、`hx-rules` **v10.50**、hub page-version **v18.8**。開頁之後先寫入瀏覽器並同步 Supabase（要 HX unlock）。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
 ## 2026-10-03 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **Course completion → TOV Manual：** 工具列加 **Include near expiry**（年數 ≥1）同 **Add to TOV**。跟而家 Group／Role 嘅 Outstanding（可連紅／黃就嚟到期）寫入 Training One View Manual；冇完成日 → due＝一星期前；有完成日 → 完成日＋Expiry 年數。同一 staff＋course 已有 Manual 就 skip。要 hub edit／Manual 寫權。頁 **v2.0**、`hx-rules` **v10.49**、hub page-version **v18.7**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
