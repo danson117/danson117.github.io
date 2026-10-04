@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Name List · 288531 同 320531：** 288531 YAM YIM CHIU Remark 改 **Current 8TAC Planning / Light Check**（Current 原本已係 8TAC；Home LGA2；仍然 CG、仍然喺 Name List）。320531 KO SUM YEE SAMMIE 不再係 OCG：Remark **No longer OCG**，只留 Full List 黃行；離開 Crew List、Name List、訓練名冊。已存訓練列唔刪。Name List **v3.20**、`ocg-pax-data.js?v=13`、hub **v20.4**、`hx-rules` **v10.66**。Auth **v2.15**、Lic **v2.4**、TOV **v15.33**、Course completion **v2.13**、BRS **v5.2**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員訓練明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Training One View · Section 尾數定 Team：** Team 未係 1–4 時，Section 尾數 1／2／3／4 歸 Team 1–4，冇括號 crew。尾數 5／6／X 仍然 TBD。欄名改 **Team (Crew)**、**Section**。只改可見字同歸隊，唔改 Name List 存檔。TOV **v15.32**、hub **v20.3**、`hx-rules` **v10.65**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

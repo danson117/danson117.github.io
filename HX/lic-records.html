@@ -102,8 +102,8 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.3">v2.3</div>
-<script src="ocg-pax-data.js?v=12"></script>
+  <div class="page-version" data-version="2.4">v2.4</div>
+<script src="ocg-pax-data.js?v=13"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
 <script src="lic-records-data.js?v=3"></script>
@@ -149,6 +149,11 @@ function daysLeft(n){
   const d = new Date(Number(s.slice(0,4)), Number(s.slice(4,6))-1, Number(s.slice(6,8)));
   return Math.round((d - TODAY) / 86400000);
 }
+function rosterLive(person){
+  if (!person) return false;
+  const note = String(person.note || "");
+  return note !== "No longer OCG" && note !== "01OCT will transfer to CXG";
+}
 function rosterIndex(){
   const map = Object.create(null);
   try {
@@ -182,7 +187,7 @@ function unpack(){
   const people = pack.p.map(p => {
     const staff = String(p[0]).padStart(6, "0");
     const nl = roster[staff];
-    if (!nl) return null;
+    if (!rosterLive(nl)) return null;
     return {
       staff,
       name: D.name[p[1]] || nl.name || "",

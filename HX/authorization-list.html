@@ -139,8 +139,8 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.14">v2.14</div>
-<script src="ocg-pax-data.js?v=12"></script>
+  <div class="page-version" data-version="2.15">v2.15</div>
+<script src="ocg-pax-data.js?v=13"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -195,6 +195,11 @@ function blankAuthRow(staff, name, group, dept, team, email){
     issueN: 0, expiryN: 0, issue: "", expiry: "", lim: "", ref: ""
   };
 }
+function rosterLive(person){
+  if (!person) return false;
+  const note = String(person.note || "");
+  return note !== "No longer OCG" && note !== "01OCT will transfer to CXG";
+}
 function rosterIndex(){
   const map = Object.create(null);
   try {
@@ -230,7 +235,7 @@ function unpack(){
   const people = pack.p.map(p => {
     const staff = String(p[0]).padStart(6, "0");
     const nl = roster[staff];
-    if (!nl) return null;
+    if (!rosterLive(nl)) return null;
     let email = D.email[p[4]] || "";
     if (overlay[staff]) email = overlay[staff];
     return {
@@ -259,7 +264,7 @@ function unpack(){
   Object.keys(overlay).sort().forEach(staff => {
     if (present.has(staff)) return;
     const nl = roster[staff];
-    if (!nl) return;
+    if (!rosterLive(nl)) return;
     AUTH_ROWS.push(blankAuthRow(
       staff,
       nl.name || fallbackNames[staff] || "",
