@@ -235,7 +235,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Optional: add Manual outstanding rows to Training One View.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early.</p>
+      <p class="note">Drop an xlsx or CSV. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG. In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -331,7 +331,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="2.0" aria-label="Page version 2.0">v2.0</div>
+  <div class="page-version" data-version="2.1" aria-label="Page version 2.1">v2.1</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -511,25 +511,50 @@ function parseSheetGrid(xml, strings) {
   });
   return grid;
 }
-function xlsxSheetPath(files) {
+function xlsxRelPath(target) {
+  let t = String(target || "").replace(/^\//, "");
+  if (!t) return "";
+  if (!t.startsWith("xl/")) t = "xl/" + t;
+  return t;
+}
+function xlsxSheetEntries(files) {
   const wb = files["xl/workbook.xml"];
   const rels = files["xl/_rels/workbook.xml.rels"];
-  if (!wb) return "xl/worksheets/sheet1.xml";
+  if (!wb) {
+    if (files["xl/worksheets/sheet1.xml"]) return [{ name: "Sheet1", path: "xl/worksheets/sheet1.xml" }];
+    return [];
+  }
   const doc = new DOMParser().parseFromString(String(decodeBytes(wb) || "").replace(/^\uFEFF/, ""), "application/xml");
   const sheets = xmlEls(doc, "sheet");
-  const pick = sheets.find((s) => /export/i.test(s.getAttribute("name") || "")) || sheets[0];
-  const rid = pick && (pick.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || pick.getAttribute("r:id") || pick.getAttribute("id"));
-  if (rels && rid) {
+  let relList = [];
+  if (rels) {
     const rdoc = new DOMParser().parseFromString(String(decodeBytes(rels) || "").replace(/^\uFEFF/, ""), "application/xml");
-    const rel = xmlEls(rdoc, "Relationship").find((r) => r.getAttribute("Id") === rid);
-    let t = rel && rel.getAttribute("Target") || "";
-    if (t) {
-      t = t.replace(/^\//, "");
-      if (!t.startsWith("xl/")) t = "xl/" + t;
-      return t;
-    }
+    relList = xmlEls(rdoc, "Relationship");
   }
-  return "xl/worksheets/sheet1.xml";
+  const out = [];
+  const seen = {};
+  sheets.forEach((sheet, i) => {
+    const name = String(sheet.getAttribute("name") || "").trim() || ("Sheet" + (i + 1));
+    const rid = sheet.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || sheet.getAttribute("r:id") || sheet.getAttribute("id");
+    const rel = rid ? relList.find((r) => r.getAttribute("Id") === rid) : null;
+    let path = xlsxRelPath(rel && rel.getAttribute("Target") || "");
+    if (/chartsheet/i.test(path) || /dialogsheet/i.test(path)) return;
+    if (!path) path = "xl/worksheets/sheet" + (i + 1) + ".xml";
+    if (!files[path] || seen[path]) return;
+    seen[path] = true;
+    out.push({ name: name, path: path });
+  });
+  if (out.length) return out;
+  if (files["xl/worksheets/sheet1.xml"]) return [{ name: "Sheet1", path: "xl/worksheets/sheet1.xml" }];
+  return [];
+}
+function cmpSheetBucket(name) {
+  const n = String(name || "").trim();
+  if (!n) return "";
+  if (/\bpax\b/i.test(n) && /\b(cg|ocg)\b/i.test(n)) return "";
+  if (/^(pax|lm[\s_-]*cxg[\s_-]*transit)$/i.test(n) || /\bpax\b/i.test(n)) return "PAX";
+  if (/^(cg|ocg|lm[\s_-]*ocg)$/i.test(n) || /\b(cg|ocg)\b/i.test(n)) return "CG";
+  return "";
 }
 let cmpModel = null;
 let cmpFilter = "all";
@@ -758,7 +783,7 @@ function cmpRememberedMap(header) {
     if (!want) return;
     map[field.key] = header.findIndex((h) => cmpNormHeader(h) === want);
   });
-  if (map.staff < 0 || map.code < 0 || map.dept < 0) return null;
+  if (map.staff < 0 || map.code < 0) return null;
   return map;
 }
 function cmpSaveMap(header, map) {
@@ -873,23 +898,29 @@ function cmpDetectMap(grid, headAt, header) {
       usedCol[cols[0]] = true;
     }
   });
-  const usual = cmpUsualHeaders(header, map);
+  const usual = cmpUsualHeaders(header, map, "");
   return { map: map, how: usual ? "usual" : "matched" };
 }
-function cmpRequiredMapOk(map) {
-  return !!(map && map.staff >= 0 && map.code >= 0 && map.dept >= 0 &&
-    map.staff !== map.code && map.staff !== map.dept && map.code !== map.dept);
+function cmpRequiredMapOk(map, sheetBucket) {
+  if (!(map && map.staff >= 0 && map.code >= 0 && map.staff !== map.code)) return false;
+  if (sheetBucket) return map.dept < 0 || (map.dept !== map.staff && map.dept !== map.code);
+  return map.dept >= 0 && map.staff !== map.dept && map.code !== map.dept;
 }
-function cmpUsualHeaders(header, map) {
-  if (!cmpRequiredMapOk(map)) return false;
+function cmpUsualHeaders(header, map, sheetBucket) {
+  if (!cmpRequiredMapOk(map, sheetBucket)) return false;
   const staff = cmpNormHeader((header || [])[map.staff] || "");
   const code = cmpNormHeader((header || [])[map.code] || "");
   return /staff no/.test(staff) && /course code/.test(code);
 }
-function cmpMapNeedsUser(header, map, how) {
-  if (!cmpRequiredMapOk(map)) return true;
-  if (how === "remembered") return false;
-  return !cmpUsualHeaders(header, map);
+function cmpMapNeedsUser(header, map, how, sheetBucket) {
+  if (!cmpRequiredMapOk(map, sheetBucket)) return true;
+  if (how === "remembered" || how === "confirmed") return false;
+  return !cmpUsualHeaders(header, map, sheetBucket);
+}
+function cmpSourceNeedsDept(src) {
+  const sheets = src && src.sheets;
+  if (sheets && sheets.length) return sheets.some((s) => !cmpSheetBucket(s.name));
+  return !cmpSheetBucket(src && src.sheetName);
 }
 function paintCmpMapHint() {
   const btn = document.getElementById("cmp-remap");
@@ -1249,8 +1280,7 @@ function cmpHeaderRow(grid) {
   }
   return -1;
 }
-function cmpBuild(grid, fileName, headAt, header, map) {
-  if (!byStaff.size) return { error: "Name List did not load." };
+function cmpCollectKept(grid, headAt, map, sheetBucket) {
   const iStaff = map.staff;
   const iCode = map.code;
   const iTitle = map.title;
@@ -1258,7 +1288,6 @@ function cmpBuild(grid, fileName, headAt, header, map) {
   const iDate = map.date;
   const iDept = map.dept;
   const kept = [];
-  const codeCount = new Map();
   let fileRows = 0;
   let otherDept = 0;
   for (let r = headAt + 1; r < grid.length; r++) {
@@ -1268,19 +1297,30 @@ function cmpBuild(grid, fileName, headAt, header, map) {
     if (!staff && !code) continue;
     if (!/^\d{5,7}$/.test(staff) || !code) continue;
     fileRows++;
-    const bucket = cmpDeptBucket(iDept >= 0 ? cells[iDept] : "");
+    const bucket = cmpDeptBucket(iDept >= 0 ? cells[iDept] : "") || sheetBucket || "";
     if (!bucket) { otherDept++; continue; }
-    const codeKey = code.toUpperCase();
-    codeCount.set(codeKey, (codeCount.get(codeKey) || 0) + 1);
     kept.push({
       staff: staff,
-      codeKey: codeKey,
+      codeKey: code.toUpperCase(),
       title: iTitle >= 0 ? String(cells[iTitle] || "").trim() : "",
       status: iStatus >= 0 ? cmpCanonStatus(cells[iStatus]) : "",
       done: iDate >= 0 ? cmpDoneDate(cells[iDate]) : "",
-      bucket: bucket
+      bucket: bucket,
+      hasStatus: iStatus >= 0
     });
   }
+  return { kept: kept, fileRows: fileRows, otherDept: otherDept };
+}
+function cmpBuildFromKept(kept, fileName, header, map, extra) {
+  if (!byStaff.size) return { error: "Name List did not load." };
+  extra = extra || {};
+  const fileRows = extra.fileRows || 0;
+  const otherDept = extra.otherDept || 0;
+  const headAt = extra.headAt;
+  const codeCount = new Map();
+  kept.forEach((item) => {
+    codeCount.set(item.codeKey, (codeCount.get(item.codeKey) || 0) + 1);
+  });
   if (!codeCount.size) return { error: fileName + " has no LM CXG transit or LM OCG rows." };
   let keptCode = "";
   let keptN = -1;
@@ -1305,7 +1345,7 @@ function cmpBuild(grid, fileName, headAt, header, map) {
     const section = String((person && person.home) || "").trim();
     if (item.bucket === "PAX" && !cmpPaxSection(section)) { paxSection++; return; }
     const status = cmpCanonStatus(item.status || "Completed");
-    if (iStatus >= 0 && !cmpIsCompletedStatus(status)) { notCompleted++; return; }
+    if (item.hasStatus && !cmpIsCompletedStatus(status)) { notCompleted++; return; }
     const id = padStaff(item.staff) + "|" + item.bucket;
     if (seen.has(id)) {
       const prev = rows[seen.get(id)];
@@ -1363,23 +1403,99 @@ function cmpBuild(grid, fileName, headAt, header, map) {
   return {
     fileName: fileName, fileRows: fileRows, skipped: skipped, rows: rows, columns: columns, usual: usual,
     headAt: headAt, header: header, map: map, keptCode: keptCode, otherDept: otherDept, otherCodes: otherCodes,
-    notCompleted: notCompleted, paxSection: paxSection, neverInFile: neverInFile
+    notCompleted: notCompleted, paxSection: paxSection, neverInFile: neverInFile,
+    sheetNames: extra.sheetNames || []
   };
 }
-function cmpPrepare(grid, fileName, forced) {
+function cmpBuild(grid, fileName, headAt, header, map, sheetBucket) {
   if (!byStaff.size) return { error: "Name List did not load." };
-  let headAt = forced ? forced.headAt : cmpHeaderRow(grid);
+  const part = cmpCollectKept(grid, headAt, map, sheetBucket || "");
+  return cmpBuildFromKept(part.kept, fileName, header, map, {
+    fileRows: part.fileRows,
+    otherDept: part.otherDept,
+    headAt: headAt,
+    sheetNames: []
+  });
+}
+function cmpInspectSheet(sheet, forced) {
+  const grid = (sheet && sheet.grid) || [];
+  const sheetBucket = cmpSheetBucket(sheet && sheet.name);
+  let headAt = -1;
+  if (forced && Number.isInteger(forced.headAt) && forced.header) {
+    const same = cmpHeaderSig((grid[forced.headAt] || []).map((c) => String(c || "").trim())) === cmpHeaderSig(forced.header);
+    if (same) headAt = forced.headAt;
+  }
+  if (headAt < 0) headAt = cmpHeaderRow(grid);
   if (headAt < 0) {
     headAt = grid.findIndex((row) => (row || []).filter((c) => String(c || "").trim()).length >= 2);
   }
-  if (headAt < 0) return { error: fileName + " has no header row." };
+  if (headAt < 0) return { empty: true, name: (sheet && sheet.name) || "" };
   const header = (grid[headAt] || []).map((c) => String(c || "").trim());
-  const found = forced ? { map: forced.map, how: "confirmed" } : cmpDetectMap(grid, headAt, header);
-  const map = found.map;
-  if (!cmpRequiredMapOk(map)) return { needMap: true, grid: grid, fileName: fileName, headAt: headAt, header: header, map: map, mapHow: found.how };
-  const built = cmpBuild(grid, fileName, headAt, header, map);
-  if (built && !built.error) built.mapHow = found.how;
+  let found;
+  if (forced && forced.map && forced.map.staff >= 0 && forced.map.code >= 0) {
+    const idxs = [forced.map.staff, forced.map.code, forced.map.dept, forced.map.title, forced.map.status, forced.map.date].filter((n) => n >= 0);
+    const need = idxs.length ? Math.max.apply(null, idxs) : 0;
+    found = header.length > need ? { map: forced.map, how: forced.how || "confirmed" } : cmpDetectMap(grid, headAt, header);
+  } else {
+    found = cmpDetectMap(grid, headAt, header);
+  }
+  return {
+    name: (sheet && sheet.name) || "",
+    grid: grid,
+    headAt: headAt,
+    header: header,
+    map: found.map,
+    mapHow: found.how,
+    sheetBucket: sheetBucket
+  };
+}
+function cmpPrepareSheets(sheets, fileName, forced) {
+  if (!byStaff.size) return { error: "Name List did not load." };
+  const inspected = [];
+  let needMap = null;
+  (sheets || []).forEach((sheet) => {
+    const info = cmpInspectSheet(sheet, forced);
+    if (info.empty) return;
+    inspected.push(info);
+    if (!cmpRequiredMapOk(info.map, info.sheetBucket) && !needMap) needMap = info;
+  });
+  if (!inspected.length) return { error: fileName + " has no header row." };
+  if (needMap) {
+    return {
+      needMap: true,
+      sheets: sheets,
+      grid: needMap.grid,
+      fileName: fileName,
+      headAt: needMap.headAt,
+      header: needMap.header,
+      map: needMap.map,
+      mapHow: needMap.mapHow,
+      sheetName: needMap.name
+    };
+  }
+  let kept = [];
+  let fileRows = 0;
+  let otherDept = 0;
+  inspected.forEach((info) => {
+    const part = cmpCollectKept(info.grid, info.headAt, info.map, info.sheetBucket);
+    fileRows += part.fileRows;
+    otherDept += part.otherDept;
+    kept = kept.concat(part.kept);
+  });
+  const built = cmpBuildFromKept(kept, fileName, inspected[0].header, inspected[0].map, {
+    fileRows: fileRows,
+    otherDept: otherDept,
+    headAt: inspected[0].headAt,
+    sheetNames: inspected.map((info) => info.name).filter(Boolean)
+  });
+  if (built && !built.error) {
+    built.mapHow = inspected[0].mapHow;
+    built.needMapHint = inspected.some((info) => cmpMapNeedsUser(info.header, info.map, info.mapHow, info.sheetBucket));
+  }
   return built;
+}
+function cmpPrepare(grid, fileName, forced) {
+  return cmpPrepareSheets([{ name: "", grid: grid }], fileName, forced);
 }
 function paintCmp() {
   const statusEl = document.getElementById("cmp-status");
@@ -1428,6 +1544,7 @@ function paintCmp() {
   paintCmpSortHeaders();
   if (statusEl) {
     statusEl.textContent = cmpModel.fileName +
+      " · Sheets " + ((cmpModel.sheetNames && cmpModel.sheetNames.length) ? (cmpModel.sheetNames.length + " (" + cmpModel.sheetNames.join(", ") + ")") : "1") +
       " · Course " + (cmpModel.keptCode || "") +
       " · Other departments removed " + (cmpModel.otherDept || 0) +
       " · Other course codes removed " + (cmpModel.otherCodes || 0) +
@@ -1464,6 +1581,7 @@ function exportCmpXlsx() {
   rows.push(
     [],
     ["Filters"],
+    ["Sheets", (cmpModel && cmpModel.sheetNames && cmpModel.sheetNames.length) ? cmpModel.sheetNames.join(", ") : "1"],
     ["Group", cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All")],
     ["Role", roleLabel],
     ["Status", statusLabel],
@@ -1807,7 +1925,11 @@ function cmpMapChoices() {
 function openCmpMap(pending) {
   cmpSource = pending;
   const lead = document.getElementById("cmp-map-lead");
-  if (lead) lead.textContent = "These column names were not recognised. Choose which column is which. Staff #, Course code, and Department are required. The choice is remembered in this browser for the same headers. Nothing is sent out.";
+  if (lead) {
+    lead.textContent = cmpSourceNeedsDept(pending)
+      ? "These column names were not recognised. Choose which column is which. Staff #, Course code, and Department are required. The choice is remembered in this browser for the same headers. Nothing is sent out."
+      : "These column names were not recognised. Choose which column is which. Staff # and Course code are required. Department is optional when the workbook tab is named PAX or CG. The choice is remembered in this browser for the same headers. Nothing is sent out.";
+  }
   const box = document.getElementById("cmp-map-fields");
   const options = pending.header.map((h, i) => {
     const label = String(h || "").trim() || ("Column " + (i + 1));
@@ -1834,15 +1956,24 @@ function closeCmpMap() {
   pop.hidden = true;
   pop.classList.add("hidden");
 }
-async function readCmpGrid(file) {
-  if (/\.csv$/i.test(file.name || "")) return parseCmpCsv(await file.text());
+async function readCmpSheets(file) {
+  if (/\.csv$/i.test(file.name || "")) {
+    const grid = parseCmpCsv(await file.text());
+    return grid && grid.length ? [{ name: "", grid: grid }] : [];
+  }
   const buf = await file.arrayBuffer();
   const files = await unzipXlsx(buf);
   const strings = files["xl/sharedStrings.xml"] ? parseSharedStrings(decodeBytes(files["xl/sharedStrings.xml"])) : [];
-  const path = xlsxSheetPath(files);
-  const sheet = files[path] || files["xl/worksheets/sheet1.xml"];
-  if (!sheet) return null;
-  return parseSheetGrid(decodeBytes(sheet), strings);
+  const entries = xlsxSheetEntries(files);
+  const out = [];
+  entries.forEach((ent) => {
+    const xml = files[ent.path];
+    if (!xml) return;
+    const grid = parseSheetGrid(decodeBytes(xml), strings);
+    if (!grid || !grid.length) return;
+    out.push({ name: ent.name, grid: grid });
+  });
+  return out;
 }
 function takeCmpFile(file) {
   const statusEl = document.getElementById("cmp-status");
@@ -1854,14 +1985,14 @@ function takeCmpFile(file) {
     return;
   }
   if (statusEl) statusEl.textContent = "Reading " + file.name + "…";
-  readCmpGrid(file).then((grid) => {
-    if (!grid) {
+  readCmpSheets(file).then((sheets) => {
+    if (!sheets || !sheets.length) {
       cmpMapNeedsConfirm = false;
       cmpModel = { error: file.name + " has no sheet." };
       paintCmp();
       return;
     }
-    const model = cmpPrepare(grid, file.name);
+    const model = cmpPrepareSheets(sheets, file.name);
     if (model.needMap) {
       cmpMapNeedsConfirm = true;
       openCmpMap(model);
@@ -1876,8 +2007,16 @@ function takeCmpFile(file) {
       paintCmp();
       return;
     }
-    cmpMapNeedsConfirm = cmpMapNeedsUser(model.header, model.map, model.mapHow);
-    cmpSource = { grid: grid, fileName: file.name, headAt: model.headAt, header: model.header, map: model.map };
+    cmpMapNeedsConfirm = !!model.needMapHint;
+    cmpSource = {
+      sheets: sheets,
+      grid: sheets[0].grid,
+      fileName: file.name,
+      headAt: model.headAt,
+      header: model.header,
+      map: model.map,
+      sheetName: sheets[0].name || ""
+    };
     cmpApplyModel(model);
   }).catch(() => {
     cmpMapNeedsConfirm = false;
@@ -1976,8 +2115,17 @@ document.getElementById("cmp-map-ok").addEventListener("click", () => {
   if (!cmpSource) return;
   const map = cmpMapChoices();
   const lead = document.getElementById("cmp-map-lead");
-  if (map.staff < 0 || map.code < 0 || map.dept < 0 || map.staff === map.code || map.staff === map.dept || map.code === map.dept) {
+  if (map.staff < 0 || map.code < 0 || map.staff === map.code) {
+    if (lead) lead.textContent = "Staff # and Course code must be different columns.";
+    return;
+  }
+  const needDept = cmpSourceNeedsDept(cmpSource);
+  if (needDept && (map.dept < 0 || map.staff === map.dept || map.code === map.dept)) {
     if (lead) lead.textContent = "Staff #, Course code, and Department must be different columns.";
+    return;
+  }
+  if (!needDept && map.dept >= 0 && (map.dept === map.staff || map.dept === map.code)) {
+    if (lead) lead.textContent = "Each column can be used once.";
     return;
   }
   const used = {};
@@ -1992,9 +2140,18 @@ document.getElementById("cmp-map-ok").addEventListener("click", () => {
     return;
   }
   cmpSaveMap(cmpSource.header, map);
-  const model = cmpBuild(cmpSource.grid, cmpSource.fileName, cmpSource.headAt, cmpSource.header, map);
+  const sheets = cmpSource.sheets && cmpSource.sheets.length
+    ? cmpSource.sheets
+    : [{ name: cmpSource.sheetName || "", grid: cmpSource.grid }];
+  const model = cmpPrepareSheets(sheets, cmpSource.fileName, {
+    map: map, headAt: cmpSource.headAt, header: cmpSource.header, how: "confirmed"
+  });
   cmpSource.map = map;
-  cmpMapNeedsConfirm = false;
+  cmpMapNeedsConfirm = !!(model && model.needMap);
+  if (model && model.needMap) {
+    if (lead) lead.textContent = "Staff #, Course code, and Department must be different columns.";
+    return;
+  }
   cmpApplyModel(model);
   closeCmpMap();
 });

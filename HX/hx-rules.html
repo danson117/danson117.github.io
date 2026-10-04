@@ -241,6 +241,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · 全部 tab：</b>xlsx／CSV 有幾個工作表就分析幾個（2 個就兩個、3 個就三個）。唔好再只揀第一張或名叫 export 嗰張。Tab 名係 <b>PAX</b>／<b>CG</b>（或 LM CXG transit／LM OCG）＝嗰組，即使冇 Department 欄。空表／圖表 sheet 跳過。狀態行寫 Sheets 同 tab 名。其餘規則不變（Name List、課程碼最多嗰個、PAX section、Expiry、Add to TOV）。頁 <b>v2.1</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Add to TOV Manual：</b>工具列 <b>Expiry:</b> 右邊有 <b>Include near expiry</b>（年數 ≥1 先顯示）同銅棕掣 <b>Add to TOV (N)</b>。跟而家 Group／Role 嘅 Outstanding 人（唔跟 Status 掣）寫入 Training One View <b>Manual</b> outstanding（同一 course code／course title）。冇 completed date → Due＝今日減 7 日（已過期）。有完成日 → Due＝完成日＋Expiry 年數。勾 <b>Include near expiry</b> 時，把而家 Group／Role 嘅紅（≤30 日）／黃（≤90 日）Completed 一併加（仍然用完成日＋年數做 Due），方便早啲做。同一 staff＋course 已有 Manual → skip。要 hub 已 Log in 而且有 Manual 寫權（Owner／Admin／team-board-manual）。寫入 locked Edge／Supabase；本機 <code>hx:team-board:manual-courses</code> 一併 merge。確認用頁內 dialog。Export／表頭讀法／人數掣不變。頁 <b>v2.0</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Match columns 紅提示：</b>平常表頭（<b>Staff no.</b> 同 <b>Course code</b>，而且 <b>Department</b> 已經對到，三個必要欄係不同欄）<b>Match columns</b> 保持原樣，唔好變紅。欄位對唔到、Staff #／Course code／Department 缺、或者只係由唔平常嘅表頭估到：呢粒掣用狀態紅外框（同其他非預設紅框一樣，<code>#ef4444</code>）。英文仍然係 <b>Match columns</b>。撳開原有配對對話。確認三個唔同嘅必要欄之後，呢份檔嘅紅提示收起。偵測做唔完、對話彈出，掣維持紅色直到確認。人數、Outstanding、Years 0、Export 一張表、表頭讀法不變。頁 <b>v1.9</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 掣下面人數：</b>Group <b>All／PAX／CG</b>、Role <b>All／CS／Mechanic</b>、Status <b>All／Completed／Outstanding</b> 每粒掣個字下面有人數，跟其他已選條件同 <b>Expiry:</b> 年數。Group 跟而家 Role 同 Status；All＝嗰組 PAX＋CG。Role 跟而家 Group 同 Status；All 包括 Office；CS 同 Mechanic 只計自己。Status 跟而家 Group 同 Role；Completed＝未過期完成；Outstanding＝過期＋名冊未喺檔。揀中嘅掣仍然亮。統計句唔再重複 Group／Role／Status 總數，仍然寫檔名、課程碼、其他 department／課程碼／未完成移除、PAX 其他 section、Never in file、年數、近期紅／黃、Skipped（not on Name List）。統計行仍然喺掣下面。頁 <b>v1.8</b>。</li>
@@ -366,6 +367,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.51">v10.51</div>
+  <div class="page-version" data-version="10.52">v10.52</div>
 </body>
 </html>
