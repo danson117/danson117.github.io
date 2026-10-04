@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Manual · LX audit remark：** T.EE0686 加未完成 **24**（due `2026-09-28`）。T.EE0544 未完成收成 **6**（多出 17 行刪走；已有行 due 維持 `2026-09-25`；Completed 1 行唔郁）。T.X432 未完成 **268** 只加 Remark，名單唔改；Completed **71** 唔加 Remark。Remark 全部 **EASA (LX) AUDIT**（status：staff｜course｜manual）。Supabase `hx_private.team_board_actions`（`hx_team_board_put` snapshot `board_revisions` manual／status）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · Check log 表頭可排序：** 撳欄名排序，再撳反向。人數同 Expiry 由大到細；Checked 由新到舊；文字 A→Z。空白最後。只改畫面同 Export 次序，唔改存檔。Course completion **v2.17**、hub **v20.8**、`hx-rules` **v10.70**。GitHub 後備 → Vercel。唔開 Chrome。唔寫課程明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
