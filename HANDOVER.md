@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Manual · T.EE0544：** 而家有效 LX 授權只得 A340、冇 B777 嘅人唔使呢科。未完成 Manual 刪 **6**，留低 **0**。Completed **1** 行保留。T.EE0686 未完成仍然 **24**。T.X432 未完成仍然 **268**。Supabase `hx_private.team_board_actions`（`hx_team_board_put` snapshot `board_revisions`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Manual · LX audit remark：** T.EE0686 加未完成 **24**（due `2026-09-28`）。T.EE0544 未完成收成 **6**（多出 17 行刪走；已有行 due 維持 `2026-09-25`；Completed 1 行唔郁）。T.X432 未完成 **268** 只加 Remark，名單唔改；Completed **71** 唔加 Remark。Remark 全部 **EASA (LX) AUDIT**（status：staff｜course｜manual）。Supabase `hx_private.team_board_actions`（`hx_team_board_put` snapshot `board_revisions` manual／status）。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
