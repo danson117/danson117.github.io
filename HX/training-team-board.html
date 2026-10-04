@@ -912,17 +912,17 @@
   .detail-table table {
     table-layout: fixed;
     width: 100%;
-    min-width: 778px; /* staff+name+team+crew+course+due(128)+remain(104) */
+    min-width: 814px; /* staff+name+team(108)+crew+course+due(128)+remain(104) */
     max-width: none;
     border-collapse: collapse;
     font-size: 12px;
   }
-  .detail-table table.has-ual-cols { min-width: 1258px; }
-  .detail-table table.has-completed-col { min-width: 918px; }
-  .detail-table table.has-ual-cols.has-completed-col { min-width: 1398px; }
+  .detail-table table.has-ual-cols { min-width: 1294px; }
+  .detail-table table.has-completed-col { min-width: 954px; }
+  .detail-table table.has-ual-cols.has-completed-col { min-width: 1434px; }
   .detail-table col.col-staff { width: 72px; }
   .detail-table col.col-name { width: 120px; }
-  .detail-table col.col-team { width: 72px; }
+  .detail-table col.col-team { width: 108px; }
   .detail-table col.col-crew { width: 96px; }
   /* Due-day pair 128px; remaining pair 104px (short 2-line headers, whole words). */
   .detail-table col.col-course { width: 186px; }
@@ -1769,7 +1769,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.30" aria-label="Page version 15.30">v15.30</div>
+  <div class="page-version" data-version="15.31" aria-label="Page version 15.31">v15.31</div>
 <script src="ocg-pax-data.js?v=12"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -3379,6 +3379,28 @@ function teamLabel(team, home) {
   const k = teamKey(team, home);
   return (k === "1" || k === "2" || k === "3" || k === "4") ? TEAM_LABEL[k] : "TBD";
 }
+function shiftOf(who) {
+  const sh = String((who && who.shift) || "").trim();
+  if (sh) return sh;
+  const raw = String((who && who.crew) || "").trim();
+  const m = raw.match(/\(([^)]+)\)\s*$/);
+  return m ? m[1].trim() : "";
+}
+function sectionOnlyText(who) {
+  const home = String((who && who.home) || "").trim();
+  if (home) return home;
+  const sec = String((who && who.section) || "").trim();
+  if (sec && !/[\s(]/.test(sec)) return sec;
+  const raw = String((who && (who.crew || who.section)) || "").trim();
+  const m = raw.match(/^([^(]+)/);
+  return (m ? m[1] : raw).trim();
+}
+/** Team column: `Team 1` plus the shift that used to sit on Section (Crew), e.g. `Team 1 (1F)`. */
+function teamColumnLabel(who) {
+  const base = teamLabel(who && who.team, who && who.home);
+  const sh = shiftOf(who);
+  return sh ? base + " (" + sh + ")" : base;
+}
 function personOf(staff, name) {
   const id = padStaff(staff);
   const p = byStaff.get(id);
@@ -4587,8 +4609,8 @@ function hayHasAny(terms, vals) {
 function personIdentityMatch(who, needle) {
   if (!who || !needle) return !needle;
   return hayHas(needle, [
-    who.staff, who.name, who.team, teamLabel(who.team, who.home),
-    who.home, who.shift, who.crew, personCrewLabel(who), who.section, who.area, who.emp
+    who.staff, who.name, who.team, teamLabel(who.team, who.home), teamColumnLabel(who),
+    who.home, who.shift, who.crew, personCrewLabel(who), sectionOnlyText(who), who.section, who.area, who.emp
   ]);
 }
 function courseRowMatch(row, needle) {
@@ -5453,13 +5475,14 @@ function paintCompletedArchive() {
     rows.map((r) => {
       const doneText = fmtCompletedDoneCell(r.done, r.doneRaw);
       const byText = formatCompletedByLabel(r.completedBy, r.completedByName);
-      const crew = formatSectionCrewText(r.crew || crewOf(r) || r.home || "");
+      const crew = sectionOnlyText(r);
+      const teamTxt = teamColumnLabel(r);
       return "<tr>" +
         "<td>" + esc(doneText) + "</td>" +
         "<td" + (byText ? "" : " class=\"blank\"") + ">" + esc(byText) + "</td>" +
         "<td>" + staffNoHtml(r.staff) + "</td>" +
         "<td>" + esc(r.name || "") + "</td>" +
-        "<td>" + esc(teamLabel(r.team, r.home)) + "</td>" +
+        "<td>" + esc(teamTxt) + "</td>" +
         "<td" + (crew ? "" : " class=\"blank\"") + ">" + esc(crew) + "</td>" +
         "<td>" + esc(r.code || "") + "</td>" +
         "<td" + (r.cname ? "" : " class=\"blank\"") + ">" + esc(r.cname || "") + "</td>" +
@@ -5721,8 +5744,8 @@ function paintDetail() {
     if (key === "src") return x.srcs.join("+");
     if (key === "staff") return x.staff;
     if (key === "name") return x.name;
-    if (key === "team") return teamLabel(x.team, x.home);
-    if (key === "home" || key === "crew") return x.crew || crewOf(x) || x.section || "";
+    if (key === "team") return teamColumnLabel(x);
+    if (key === "home" || key === "crew") return sectionOnlyText(x);
     if (key === "emp") return x.emp;
     if (key === "overdue") return x.overdueCourses.join(", ");
     if (key === "soon") return x.soonCourses.join(", ");
@@ -5830,8 +5853,8 @@ function paintDetail() {
       return "<tr class=\"" + rowCls + "\" data-staff=\"" + sid + "\">" +
         "<td class=\"col-staff\">" + staffNoHtml(x.staff) + "</td>" +
         "<td class=\"col-name\">" + esc(x.name || "") + flagChip(staffReasons) + "</td>" +
-        tdCell(teamLabel(x.team, x.home), "col-team") +
-        tdCell(formatSectionCrewText(x.crew || crewOf(x) || x.section || ""), "col-crew") +
+        tdCell(teamColumnLabel(x), "col-team") +
+        tdCell(sectionOnlyText(x), "col-crew") +
         "<td class=\"" + (overdueEmpty ? "col-course blank" : "col-course") + "\">" + courseListHtml(x.overdueCourses) + "</td>" +
         tdSlot(fmtDueDate(x.due), "col-due") +
         tdSlot(remainText(x.remain, Number(x.remain) > 0), "col-remain remain") +
@@ -5877,7 +5900,11 @@ function srcLabel(row) {
   return row.src === "ct" ? "CT Reminder" : (row.src || "");
 }
 function personCrewLabel(who) {
-  return formatSectionCrewText((who && (who.crew || crewOf(who) || who.section)) || "");
+  const sec = sectionOnlyText(who);
+  const sh = shiftOf(who);
+  if (!sh) return sec;
+  const teamTxt = teamColumnLabel(who);
+  return [teamTxt, sec].filter(Boolean).join(" · ");
 }
 function personCourseRows(who) {
   if (who.courseRows && who.courseRows.length) return who.courseRows;
@@ -9240,8 +9267,8 @@ function exportDetailsRows(people) {
       rows.push([
         x.staff || "",
         x.name || "",
-        teamLabel(x.team, x.home),
-        formatSectionCrewText(x.crew || crewOf(x) || x.section || ""),
+        teamColumnLabel(x),
+        sectionOnlyText(x),
         r.brsRef || "",
         r.code || "",
         displayCourseName(r.code, r.name) || "",
@@ -9266,8 +9293,8 @@ function exportTableRows(people) {
     const row = [
       x.staff || "",
       x.name || "",
-      teamLabel(x.team, x.home),
-      formatSectionCrewText(x.crew || crewOf(x) || x.section || ""),
+      teamColumnLabel(x),
+      sectionOnlyText(x),
       (x.overdueCourses || []).join(", "),
       fmtDueDate(x.due),
       remainText(x.remain, Number(x.remain) > 0)

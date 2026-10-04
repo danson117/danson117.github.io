@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Training One View · Shift 搬去 Team 欄：** Section (Crew) 括號內 shift（例 `LTC1 (1F)`）而家顯示喺 Team，做 `Team 1 (1F)`。Section (Crew) 只留 section code。冇 shift 嘅行不變。Table、Cards、Completed、Export 同一樣。只改可見字。TOV **v15.31**、hub **v20.2**、`hx-rules` **v10.64**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Name List · Crew code 寫入 Team：** 貼上 CG crew 表。人係 CG 而且 Home＝Current＝Sect 先寫 Team（crew code）。寫咗 **208**。未改：唔喺名冊 **42**、而家 PAX **30**、section 唔同 **56**。`1P` 呢類 TOV 仍歸 Team 1–4。Name List **v3.19**、`ocg-pax-data.js?v=12`、`hx-rules` **v10.63**、hub **v20.1**、TOV **v15.30**。Auth **v2.14**、Lic **v2.3**、Course completion **v2.12**、BRS **v5.1**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
