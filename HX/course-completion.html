@@ -177,6 +177,9 @@
   .cmp-table th[aria-sort="descending"]::after { content: " ▼"; }
   .cmp-table td { padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
   .cmp-table tr.cmp-done td.col-status { color: #0b6b2f; font-weight: 650; }
+  .cmp-table tr.cmp-wait td { background: #e4e4e4; color: #4a5564; }
+  .cmp-table tr.cmp-wait td.col-status { font-weight: 650; }
+  .check-sys { font-size: 11px; color: #1d4e89; margin: 0 0 4px; }
   .cmp-table tr.cmp-hot td { background: var(--hot-bg); color: var(--hot); }
   .cmp-table tr.cmp-warn td { background: var(--warn-bg); color: var(--warn); }
   .cmp-table tr.cmp-done.cmp-hot td.col-status { color: var(--hot); }
@@ -312,7 +315,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Optional: add Manual outstanding rows to Training One View.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. Each analysed course is stored in the check log below.</p>
+      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List, including remark SHOWS LMP. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. <b>T.F162</b> recurrent uses initial <b>T.F241 or T.F319</b> (either counts). <b>T.C775CT</b> recurrent uses initial <b>T.C774 or T.C775</b>; if T.C775CT exists it always takes over. Analyse every file in that family before outstanding is final. People who completed initial and are still inside Expiry years are <b>Not due</b> with a Remark. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. Each analysed course is stored in the check log below.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -330,6 +333,7 @@
         <button type="button" class="cmp-split" data-cmp="all"><span>All</span><span class="cmp-n" data-cmp-n="status-all">0</span></button>
         <button type="button" class="cmp-split" data-cmp="completed"><span>Completed</span><span class="cmp-n" data-cmp-n="status-completed">0</span></button>
         <button type="button" class="on cmp-split" data-cmp="outstanding"><span>Outstanding</span><span class="cmp-n" data-cmp-n="status-outstanding">0</span></button>
+        <button type="button" class="cmp-split" data-cmp="held"><span>Not due</span><span class="cmp-n" data-cmp-n="status-held">0</span></button>
         <span class="filter-label">Expiry:</span>
         <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" aria-label="Expiry years" title="Years after the completed date. Default 2. 0 means no expiry date.">
         <label class="cmp-near" id="cmp-near-wrap" for="cmp-include-near" title="Also add Completed rows that are red (≤30 days) or yellow (≤90 days) so they can train early.">
@@ -358,7 +362,7 @@
         <div id="cmp-shot">
           <table class="cmp-table">
             <colgroup>
-              <col class="col-staff"><col class="col-name"><col><col><col><col><col>
+              <col class="col-staff"><col class="col-name"><col><col><col><col><col><col>
             </colgroup>
             <thead>
               <tr>
@@ -369,6 +373,7 @@
                 <th data-cmp-sort="title" aria-sort="none">Course title</th>
                 <th data-cmp-sort="status" aria-sort="none">Status</th>
                 <th data-cmp-sort="done" aria-sort="none">Completed date</th>
+                <th data-cmp-sort="note" aria-sort="none">Remark</th>
               </tr>
             </thead>
             <tbody id="cmp-body"></tbody>
@@ -376,7 +381,7 @@
         </div>
       </div>
       <h2 class="check-h">Check log</h2>
-      <p class="note">One row per course from each file you analyse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
+      <p class="note">One row per course from each file you analyse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. Not due is initial still inside Expiry years, or the other initial / recurrent already covers them. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
       <div class="cmp-tools" id="cmp-log-tools">
         <button type="button" id="cmp-log-export">Export check log</button>
       </div>
@@ -390,6 +395,7 @@
               <th>CG Mech O/S</th>
               <th>PAX CS O/S</th>
               <th>CG CS O/S</th>
+              <th>Not due</th>
               <th>Expiry</th>
               <th>Checked</th>
               <th>File</th>
@@ -450,13 +456,14 @@
             <th>Session</th>
             <th>Team</th>
             <th>Section</th>
+            <th>Remark</th>
           </tr>
         </thead>
         <tbody id="cmp-people-body"></tbody>
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.4" aria-label="Page version 2.4">v2.4</div>
+  <div class="page-version" data-version="2.5" aria-label="Page version 2.5">v2.5</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -740,7 +747,182 @@ function cmpDueFromDone(iso, years) {
   }
   return y + "-" + pad2(mo) + "-" + pad2(d);
 }
-function cmpView(row) {
+const CMP_CATALOG_STORE = "hx:course-catalog:rows";
+const CMP_FAMILIES = [
+  {
+    takeover: "T.F162",
+    recurrent: ["T.F162"],
+    initials: ["T.F241", "T.F319", "T.F241_REC", "T.F320"],
+    files: ["T.F162", "T.F241", "T.F319"]
+  },
+  {
+    takeover: "T.C775CT",
+    recurrent: ["T.C775CT", "T.C774"],
+    initials: ["T.C774", "T.C775"],
+    files: ["T.C774", "T.C775", "T.C775CT"]
+  }
+];
+function cmpNormCourseCode(code) {
+  return String(code || "").trim().toUpperCase().replace(/\s+/g, "");
+}
+function cmpCodesFromText(text) {
+  const out = [];
+  const seen = new Set();
+  String(text || "").toUpperCase().replace(/[A-Z]\.[A-Z0-9._]+/g, (m) => {
+    if (!seen.has(m)) {
+      seen.add(m);
+      out.push(m);
+    }
+    return m;
+  });
+  return out;
+}
+function cmpLoadCatalogRows() {
+  try {
+    const parsed = JSON.parse(cmpLsGet(CMP_CATALOG_STORE) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+function cmpFamilyOf(code) {
+  const want = cmpNormCourseCode(code);
+  if (!want) return null;
+  let found = null;
+  CMP_FAMILIES.forEach((fam) => {
+    const bag = [].concat(fam.takeover || [], fam.recurrent || [], fam.initials || [], fam.files || []).map(cmpNormCourseCode);
+    if (bag.indexOf(want) >= 0) found = fam;
+  });
+  if (found) {
+    const initials = new Set((found.initials || []).map(cmpNormCourseCode));
+    cmpLoadCatalogRows().forEach((row) => {
+      const rowCode = cmpNormCourseCode(row && row.code);
+      const recs = cmpCodesFromText(row && row.recurrent);
+      if (rowCode && recs.indexOf(found.takeover) >= 0 && rowCode !== found.takeover) initials.add(rowCode);
+      if (rowCode === found.takeover) {
+        cmpCodesFromText(row && (row.desc || row.description)).forEach((c) => {
+          if (c !== found.takeover) initials.add(c);
+        });
+      }
+    });
+    return {
+      takeover: cmpNormCourseCode(found.takeover),
+      recurrent: (found.recurrent || []).map(cmpNormCourseCode),
+      initials: Array.from(initials),
+      files: (found.files || []).map(cmpNormCourseCode)
+    };
+  }
+  return null;
+}
+function cmpFamilyFileReady(code) {
+  const want = cmpNormCourseCode(code);
+  if (cmpModel && !cmpModel.error && cmpNormCourseCode(cmpModel.keptCode) === want) return true;
+  const row = (cmpChecks || []).find((r) => cmpNormCourseCode(r.code) === want);
+  return !!(row && (row.file || (row.donePeople && row.donePeople.length) || (row.openPeople && row.openPeople.length) || row.checked));
+}
+function cmpFamilyMissingFiles(fam) {
+  if (!fam) return [];
+  return (fam.files || []).filter((c) => !cmpFamilyFileReady(c));
+}
+function cmpFamilyDoneHits(staff) {
+  const id = padStaff(staff);
+  const byCode = new Map();
+  const add = (code, done) => {
+    const c = cmpNormCourseCode(code);
+    if (!id || !c) return;
+    const prev = byCode.get(c);
+    const next = String(done || "");
+    if (!prev || (next && (!prev.done || next > prev.done))) byCode.set(c, { code: c, done: next });
+  };
+  (cmpChecks || []).forEach((row) => {
+    (row.donePeople || []).forEach((p) => {
+      if (padStaff(p.staff) === id) add(p.code || row.code, p.done);
+    });
+  });
+  if (cmpModel && Array.isArray(cmpModel.rows)) {
+    cmpModel.rows.forEach((r) => {
+      if (r && r.fromFile && padStaff(r.staff) === id && r.done) add(r.code, r.done);
+    });
+  }
+  return Array.from(byCode.values());
+}
+function cmpDoneStillValid(doneIso) {
+  if (cmpExpiryYears < 1) return false;
+  const due = cmpDueFromDone(doneIso, cmpExpiryYears);
+  const dueAt = dueStamp(due);
+  if (!dueAt) return false;
+  const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate());
+  return Math.round((dueAt - today) / 86400000) >= 0;
+}
+function cmpApplyFamilyHold(view) {
+  if (!view || view.doneFlag) return view;
+  const code = cmpNormCourseCode(view.code);
+  const fam = cmpFamilyOf(code);
+  if (!fam) return view;
+  const hits = cmpFamilyDoneHits(view.staff);
+  const hitOf = (list) => {
+    const want = new Set((list || []).map(cmpNormCourseCode));
+    let best = null;
+    hits.forEach((h) => {
+      if (!want.has(h.code)) return;
+      if (!best || (h.done && (!best.done || h.done > best.done))) best = h;
+    });
+    return best;
+  };
+  const markHold = (note, doneIso) => {
+    view.heldFlag = true;
+    view.waitFlag = false;
+    view.status = "Not due yet";
+    view.band = "";
+    view.note = note;
+    if (doneIso && !view.done) view.done = doneIso;
+    return view;
+  };
+  const markWait = (missing) => {
+    view.waitFlag = true;
+    view.heldFlag = false;
+    view.status = "Need family files";
+    view.band = "";
+    view.note = "Analyse " + missing.join(", ") + " before outstanding is decided.";
+    return view;
+  };
+  const takeoverHit = hitOf([fam.takeover]);
+  if (takeoverHit && code !== fam.takeover) {
+    return markHold(fam.takeover + " has taken over recurrent training.", takeoverHit.done);
+  }
+  const expiredHere = !!(view.fromFile && (view.expired || view.done));
+  if (code === fam.takeover && expiredHere) return view;
+  if (code === "T.C774" && expiredHere) return view;
+  const init = hitOf(fam.initials);
+  if (fam.recurrent.indexOf(code) >= 0 || code === fam.takeover) {
+    if (init && cmpDoneStillValid(init.done)) {
+      return markHold(
+        "Completed initial " + init.code +
+          (init.done ? " on " + init.done : "") +
+          "; not yet " + cmpExpiryYears + " year(s), so " + code + " not due.",
+        init.done
+      );
+    }
+    const missing = cmpFamilyMissingFiles(fam);
+    if (missing.length && !expiredHere) return markWait(missing);
+    return view;
+  }
+  if (fam.initials.indexOf(code) >= 0) {
+    const sib = hitOf(fam.initials.filter((c) => c !== code));
+    if (sib) {
+      return markHold(
+        "Completed initial " + sib.code +
+          (sib.done ? " on " + sib.done : "") +
+          "; " + code + " or " + sib.code + " both count as initial.",
+        sib.done
+      );
+    }
+    const missing = cmpFamilyMissingFiles(fam);
+    if (missing.length) return markWait(missing);
+  }
+  return view;
+}
+function cmpViewExpiry(row) {
   const view = {
     staff: row.staff,
     name: row.name,
@@ -753,24 +935,31 @@ function cmpView(row) {
     role: row.role,
     bucket: row.bucket || "",
     band: "",
-    expired: false
+    expired: false,
+    fromFile: !!row.fromFile,
+    heldFlag: false,
+    waitFlag: false,
+    note: String(row.note || "")
   };
-  if (!view.doneFlag || !view.done) return view;
-  const due = cmpDueFromDone(view.done, cmpExpiryYears);
-  const dueAt = dueStamp(due);
-  if (!dueAt) return view;
-  const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate());
-  const remain = Math.round((dueAt - today) / 86400000);
-  if (remain < 0) {
-    view.status = "Outstanding";
-    view.doneFlag = false;
-    view.band = "hot";
-    view.expired = true;
-    return view;
+  if (view.doneFlag && view.done) {
+    const due = cmpDueFromDone(view.done, cmpExpiryYears);
+    const dueAt = dueStamp(due);
+    if (dueAt) {
+      const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate());
+      const remain = Math.round((dueAt - today) / 86400000);
+      if (remain < 0) {
+        view.status = "Outstanding";
+        view.doneFlag = false;
+        view.band = "hot";
+        view.expired = true;
+      } else if (remain <= 30) view.band = "hot";
+      else if (remain <= 90) view.band = "warn";
+    }
   }
-  if (remain <= 30) view.band = "hot";
-  else if (remain <= 90) view.band = "warn";
   return view;
+}
+function cmpView(row) {
+  return cmpApplyFamilyHold(cmpViewExpiry(row));
 }
 function cmpRoleRows() {
   if (!cmpModel || !cmpModel.rows) return [];
@@ -788,7 +977,8 @@ function cmpRoleMatch(row, role) {
 }
 function cmpStatusOk(row, filter) {
   if (filter === "completed") return !!row.doneFlag;
-  if (filter === "outstanding") return !row.doneFlag;
+  if (filter === "outstanding") return !row.doneFlag && !row.heldFlag && !row.waitFlag;
+  if (filter === "held") return !!row.heldFlag;
   return true;
 }
 function cmpOrgOk(row) {
@@ -816,12 +1006,14 @@ function paintCmpCounts() {
   set("status-all", cmpFacetCount(rows, "status", "all"));
   set("status-completed", cmpFacetCount(rows, "status", "completed"));
   set("status-outstanding", cmpFacetCount(rows, "status", "outstanding"));
+  set("status-held", cmpFacetCount(rows, "status", "held"));
 }
 function cmpShownRows() {
   if (!cmpModel || !cmpModel.rows) return [];
   const rows = cmpRoleRows().filter(cmpOrgOk).filter((row) => {
     if (cmpFilter === "completed") return row.doneFlag;
-    if (cmpFilter === "outstanding") return !row.doneFlag;
+    if (cmpFilter === "outstanding") return !row.doneFlag && !row.heldFlag && !row.waitFlag;
+    if (cmpFilter === "held") return !!row.heldFlag;
     return true;
   });
   if (!cmpSortKey) return rows;
@@ -1100,10 +1292,14 @@ function cmpBlankCheck(code) {
     sheets: "",
     tov: "Not created",
     remark: "",
+    sysNote: "",
     paxMechPeople: [],
     cgMechPeople: [],
     paxCsPeople: [],
-    cgCsPeople: []
+    cgCsPeople: [],
+    heldPeople: [],
+    donePeople: [],
+    openPeople: []
   };
 }
 function cmpNormCheck(row) {
@@ -1119,10 +1315,36 @@ function cmpNormCheck(row) {
   o.sheets = row && row.sheets != null ? String(row.sheets) : "";
   o.tov = row && row.tov != null && String(row.tov).trim() ? String(row.tov) : "Not created";
   o.remark = row && row.remark != null ? String(row.remark) : "";
+  o.sysNote = row && row.sysNote != null ? String(row.sysNote) : "";
   o.paxMechPeople = cmpNormPeople(row && row.paxMechPeople);
   o.cgMechPeople = cmpNormPeople(row && row.cgMechPeople);
   o.paxCsPeople = cmpNormPeople(row && row.paxCsPeople);
   o.cgCsPeople = cmpNormPeople(row && row.cgCsPeople);
+  o.heldPeople = cmpNormPeople(row && row.heldPeople).map((p, i) => {
+    const src = (row.heldPeople && row.heldPeople[i]) || {};
+    p.note = String(src.note || "");
+    p.done = String(src.done || "");
+    return p;
+  });
+  o.donePeople = Array.isArray(row && row.donePeople)
+    ? row.donePeople.map((p) => ({
+        staff: padStaff(p && p.staff),
+        done: String((p && p.done) || ""),
+        code: String((p && p.code) || o.code)
+      })).filter((p) => /^\d{5,7}$/.test(p.staff) && p.done)
+    : [];
+  o.openPeople = Array.isArray(row && row.openPeople)
+    ? row.openPeople.map((p) => {
+        const rec = cmpNormPerson(p);
+        rec.role = String((p && p.role) || "");
+        rec.bucket = String((p && p.bucket) || "");
+        rec.done = String((p && p.done) || "");
+        rec.fromFile = !!(p && p.fromFile);
+        rec.expired = !!(p && p.expired);
+        rec.note = String((p && p.note) || "");
+        return rec;
+      }).filter((p) => /^\d{5,7}$/.test(p.staff))
+    : [];
   return o;
 }
 function cmpNormPerson(p) {
@@ -1209,7 +1431,7 @@ function cmpOsPeople(bucket, role) {
   const seen = new Set();
   const out = [];
   cmpModel.rows.map(cmpView).forEach((row) => {
-    if (row.doneFlag) return;
+    if (row.doneFlag || row.heldFlag || row.waitFlag) return;
     if (!cmpOrgMatch(row, bucket) || !cmpRoleMatch(row, role)) return;
     const id = padStaff(row.staff);
     if (!id || seen.has(id)) return;
@@ -1233,8 +1455,85 @@ const CMP_CHECK_LISTS = [
   { key: "paxMech", people: "paxMechPeople", bucket: "pax", role: "mech", label: "PAX Mech outstanding" },
   { key: "cgMech", people: "cgMechPeople", bucket: "cg", role: "mech", label: "CG Mech outstanding" },
   { key: "paxCs", people: "paxCsPeople", bucket: "pax", role: "cs", label: "PAX CS outstanding" },
-  { key: "cgCs", people: "cgCsPeople", bucket: "cg", role: "cs", label: "CG CS outstanding" }
+  { key: "cgCs", people: "cgCsPeople", bucket: "cg", role: "cs", label: "CG CS outstanding" },
+  { key: "held", people: "heldPeople", bucket: "all", role: "all", label: "Not due yet" }
 ];
+function cmpOpenPeopleOf(row) {
+  if (row && Array.isArray(row.openPeople) && row.openPeople.length) return row.openPeople;
+  const out = [];
+  CMP_CHECK_LISTS.forEach((spec) => {
+    if (spec.key === "held") return;
+    cmpNormPeople(row && row[spec.people]).forEach((p) => {
+      out.push(Object.assign({}, p, {
+        role: spec.role === "cs" ? "CS" : "MECHANIC",
+        bucket: spec.bucket === "pax" ? "PAX" : "CG"
+      }));
+    });
+  });
+  return out;
+}
+function cmpRefreshCheckFamily(row) {
+  if (!row) return row;
+  const held = [];
+  let waitN = 0;
+  let waitNote = "";
+  const bags = { paxMechPeople: [], cgMechPeople: [], paxCsPeople: [], cgCsPeople: [] };
+  const roles = cmpRoleMap();
+  cmpOpenPeopleOf(row).forEach((p) => {
+    const staff = padStaff(p.staff);
+    const mini = {
+      staff: staff,
+      name: p.name,
+      section: p.section,
+      code: row.code,
+      title: row.title,
+      status: "Outstanding",
+      done: p.done || "",
+      doneFlag: false,
+      role: p.role || roles.get(staff) || "",
+      bucket: p.bucket || "",
+      fromFile: !!p.fromFile
+    };
+    const view = cmpView(mini);
+    const person = Object.assign(cmpNormPerson(p), {
+      note: view.note || p.note || "",
+      done: view.done || p.done || "",
+      role: view.role,
+      bucket: view.bucket
+    });
+    if (view.heldFlag) {
+      held.push(person);
+      return;
+    }
+    if (view.waitFlag) {
+      waitN += 1;
+      if (view.note) waitNote = view.note;
+      return;
+    }
+    const bag = (view.bucket === "PAX" ? "pax" : (view.bucket === "CG" ? "cg" : "")) +
+      (view.role === "CS" ? "CsPeople" : (view.role === "MECHANIC" ? "MechPeople" : ""));
+    if (bags[bag]) bags[bag].push(person);
+  });
+  row.heldPeople = held;
+  row.paxMechPeople = bags.paxMechPeople;
+  row.cgMechPeople = bags.cgMechPeople;
+  row.paxCsPeople = bags.paxCsPeople;
+  row.cgCsPeople = bags.cgCsPeople;
+  row.paxMech = bags.paxMechPeople.length;
+  row.cgMech = bags.cgMechPeople.length;
+  row.paxCs = bags.paxCsPeople.length;
+  row.cgCs = bags.cgCsPeople.length;
+  const notes = [];
+  if (held.length) {
+    notes.push(held.length + " not due yet. Initial still inside " + cmpExpiryYears + " year(s), or the other initial / recurrent already covers them.");
+  }
+  if (waitN) {
+    notes.push(waitN + " waiting. " + (waitNote || "Analyse every file in this course family before outstanding is decided."));
+  }
+  if (held.length || waitN) notes.push("Outstanding is people with neither initial nor the recurrent that has taken over.");
+  row.sysNote = notes.join(" ");
+  return row;
+}
 function cmpFindCheck(code) {
   const want = String(code || "").trim().toUpperCase();
   return cmpChecks.find((r) => String(r.code || "").trim().toUpperCase() === want);
@@ -1265,20 +1564,37 @@ function cmpRecordCheck(opts) {
   let title = String((cmpModel.rows || []).map((r) => r.title).find(Boolean) || row.title || "").trim();
   row.code = code;
   if (title) row.title = title;
-  row.paxMechPeople = cmpOsPeople("pax", "mech");
-  row.cgMechPeople = cmpOsPeople("cg", "mech");
-  row.paxCsPeople = cmpOsPeople("pax", "cs");
-  row.cgCsPeople = cmpOsPeople("cg", "cs");
-  row.paxMech = row.paxMechPeople.length;
-  row.cgMech = row.cgMechPeople.length;
-  row.paxCs = row.paxCsPeople.length;
-  row.cgCs = row.cgCsPeople.length;
+  const seenDone = new Set();
+  row.donePeople = [];
+  (cmpModel.rows || []).forEach((r) => {
+    if (!r.fromFile || !r.done) return;
+    const id = padStaff(r.staff);
+    if (!id || seenDone.has(id)) return;
+    seenDone.add(id);
+    row.donePeople.push({ staff: id, done: r.done, code: r.code || code });
+  });
+  row.openPeople = [];
+  (cmpModel.rows || []).forEach((r) => {
+    const view = cmpViewExpiry(r);
+    if (view.doneFlag) return;
+    const rec = cmpRosterPerson(view.staff);
+    rec.role = view.role;
+    rec.bucket = view.bucket;
+    rec.done = view.done || "";
+    rec.fromFile = !!view.fromFile;
+    rec.expired = !!view.expired;
+    rec.section = rec.section || view.section;
+    rec.name = rec.name || view.name;
+    row.openPeople.push(rec);
+  });
+  cmpRefreshCheckFamily(row);
   row.expiry = cmpExpiryYears;
   if (!opts.keepChecked) row.checked = cmpNowHkt();
   if (cmpModel.fileName) row.file = String(cmpModel.fileName);
   if (cmpModel.sheetNames && cmpModel.sheetNames.length) row.sheets = cmpModel.sheetNames.join(", ");
   if (opts.tovAdd) row.tov = cmpMergeTovText(row.tov, cmpTovCreationLabel());
   if (!row.tov) row.tov = "Not created";
+  cmpChecks.forEach(cmpRefreshCheckFamily);
   cmpPersistChecks();
   paintCmpCheckLog();
 }
@@ -1286,29 +1602,35 @@ function paintCmpCheckLog() {
   const body = document.getElementById("cmp-log-body");
   if (!body) return;
   if (!cmpChecks.length) {
-    body.innerHTML = "<tr><td colspan=\"12\">No checks yet. Analyse a file to add a row.</td></tr>";
+    body.innerHTML = "<tr><td colspan=\"13\">No checks yet. Analyse a file to add a row.</td></tr>";
     return;
   }
+  cmpChecks.forEach(cmpRefreshCheckFamily);
   body.innerHTML = cmpChecks.map((row, i) => {
-    const num = (key, peopleKey) => {
-      const n = row[key];
+    const num = (key) => {
+      const n = key === "held" ? (row.heldPeople || []).length : row[key];
       if (n > 0) {
         return "<td class=\"num\"><button type=\"button\" class=\"check-n\" data-check-list=\"" + key + "\" data-check-i=\"" + i + "\">" + n + "</button></td>";
       }
       return "<td class=\"num\">" + n + "</td>";
     };
+    const remarkCell = (row.sysNote
+      ? "<div class=\"check-sys\">" + esc(row.sysNote) + "</div>"
+      : "") +
+      "<textarea data-check-remark=\"" + i + "\" rows=\"2\" aria-label=\"Remark for " + esc(row.code) + "\">" + esc(row.remark) + "</textarea>";
     return "<tr data-check-i=\"" + i + "\">" +
       "<td>" + esc(row.code) + "</td>" +
       "<td>" + esc(row.title) + "</td>" +
-      num("paxMech", "paxMechPeople") +
-      num("cgMech", "cgMechPeople") +
-      num("paxCs", "paxCsPeople") +
-      num("cgCs", "cgCsPeople") +
+      num("paxMech") +
+      num("cgMech") +
+      num("paxCs") +
+      num("cgCs") +
+      num("held") +
       "<td class=\"num\">" + row.expiry + "</td>" +
       "<td>" + esc(row.checked) + "</td>" +
       "<td>" + esc(row.file) + "</td>" +
       "<td>" + esc(row.tov) + "</td>" +
-      "<td><textarea data-check-remark=\"" + i + "\" rows=\"2\" aria-label=\"Remark for " + esc(row.code) + "\">" + esc(row.remark) + "</textarea></td>" +
+      "<td>" + remarkCell + "</td>" +
       "<td class=\"check-actions\">" +
         "<button type=\"button\" class=\"check-tov-del\" data-check-tov-del=\"" + i + "\">Remove from TOV</button>" +
         "<button type=\"button\" class=\"check-del\" data-check-del=\"" + i + "\">Remove</button>" +
@@ -1320,6 +1642,12 @@ let cmpPeopleView = { people: [], title: "", file: "" };
 function cmpPeopleFor(row, key) {
   const spec = CMP_CHECK_LISTS.find((s) => s.key === key);
   if (!spec || !row) return [];
+  if (key === "held") {
+    return (row.heldPeople || []).map((p) => Object.assign(cmpNormPerson(p), {
+      note: String((p && p.note) || ""),
+      done: String((p && p.done) || "")
+    }));
+  }
   const stored = cmpNormPeople(row[spec.people]);
   if (stored.length) return stored;
   if (cmpModel && !cmpModel.error && String(cmpModel.keptCode || "").toUpperCase() === String(row.code || "").toUpperCase()) {
@@ -1339,7 +1667,9 @@ function openCmpPeople(row, key) {
   if (titleEl) titleEl.textContent = title;
   if (lead) {
     lead.textContent = people.length
-      ? (row.file ? row.file + " · " : "") + "Staff #, name, session, and team at this check."
+      ? (row.file ? row.file + " · " : "") + (key === "held"
+        ? "Staff #, name, session, team, and why they are not due yet."
+        : "Staff #, name, session, and team at this check.")
       : "No names stored for this count yet. Drop the completion file again to refresh the list.";
   }
   if (body) {
@@ -1350,8 +1680,9 @@ function openCmpPeople(row, key) {
           "<td>" + esc(p.session) + "</td>" +
           "<td>" + esc(p.team) + "</td>" +
           "<td>" + esc(p.section) + "</td>" +
+          "<td>" + esc(p.note || "") + "</td>" +
           "</tr>").join("")
-      : "<tr><td colspan=\"5\">No people in this list.</td></tr>";
+      : "<tr><td colspan=\"6\">No people in this list.</td></tr>";
   }
   pop.hidden = false;
   pop.classList.remove("hidden");
@@ -1365,8 +1696,8 @@ function closeCmpPeople() {
 function exportCmpPeople() {
   if (!window.HxXlsx || typeof HxXlsx.buildSync !== "function") return;
   const people = cmpPeopleView.people || [];
-  const rows = [["Staff #", "Name", "Session", "Team", "Section"]];
-  people.forEach((p) => rows.push([p.staff, p.name, p.session, p.team, p.section]));
+  const rows = [["Staff #", "Name", "Session", "Team", "Section", "Remark"]];
+  people.forEach((p) => rows.push([p.staff, p.name, p.session, p.team, p.section, p.note || ""]));
   const blob = HxXlsx.buildSync(rows, "People");
   const code = String(cmpPeopleView.code || "course").replace(/[^\w.-]+/g, "_");
   HxXlsx.download(blob, "course-completion-" + code + "-people.xlsx");
@@ -1375,12 +1706,13 @@ function exportCmpCheckLog() {
   if (!window.HxXlsx || typeof HxXlsx.buildSync !== "function") return;
   const rows = [[
     "Course code", "Course title", "PAX Mech O/S", "CG Mech O/S", "PAX CS O/S", "CG CS O/S",
-    "Expiry", "Checked", "File", "TOV Creation", "Remark"
+    "Not due", "Expiry", "Checked", "File", "TOV Creation", "Remark"
   ]];
   cmpChecks.forEach((row) => {
     rows.push([
       row.code, row.title, row.paxMech, row.cgMech, row.paxCs, row.cgCs,
-      row.expiry, row.checked, row.file, row.tov, row.remark
+      (row.heldPeople || []).length,
+      row.expiry, row.checked, row.file, row.tov, [row.sysNote, row.remark].filter(Boolean).join(" ")
     ]);
   });
   const blob = HxXlsx.buildSync(rows, "Check log");
@@ -1429,7 +1761,7 @@ function cmpTovCandidates() {
   const out = [];
   const seen = new Set();
   scoped.forEach((row) => {
-    if (row.doneFlag) return;
+    if (row.doneFlag || row.heldFlag || row.waitFlag) return;
     const id = padStaff(row.staff);
     if (!id || seen.has(id)) return;
     seen.add(id);
@@ -1900,7 +2232,8 @@ function cmpBuildFromKept(kept, fileName, header, map, extra) {
       done: item.done,
       doneFlag: cmpIsCompletedStatus(status),
       role: roles.get(padStaff(item.staff)) || "",
-      bucket: item.bucket
+      bucket: item.bucket,
+      fromFile: true
     });
   });
   const covered = new Set();
@@ -1929,7 +2262,8 @@ function cmpBuildFromKept(kept, fileName, header, map, extra) {
       done: "",
       doneFlag: false,
       role: roles.get(id) || "",
-      bucket: bucket
+      bucket: bucket,
+      fromFile: false
     });
   });
   const columns = CMP_FIELDS.filter((field) => map[field.key] >= 0).map((field) => field.label + " = " + String(header[map[field.key]] || "").trim());
@@ -2043,6 +2377,7 @@ function paintCmp() {
     if (statusEl) statusEl.textContent = cmpModel && cmpModel.error ? cmpModel.error : "No completion file yet.";
     paintCmpMapHint();
     paintCmpTovControls();
+    paintCmpCheckLog();
     return;
   }
   const shown = cmpShownRows();
@@ -2050,9 +2385,9 @@ function paintCmp() {
   const nearRed = scoped.filter((row) => row.band === "hot" && !row.expired).length;
   const nearYellow = scoped.filter((row) => row.band === "warn").length;
   body.innerHTML = shown.map((row) => {
-    const cls = (row.doneFlag ? "cmp-done" : "cmp-open") +
-      (row.band === "hot" ? " cmp-hot" : "") +
-      (row.band === "warn" ? " cmp-warn" : "");
+    const cls = (row.waitFlag ? "cmp-wait" : (row.heldFlag ? "cmp-held" : (row.doneFlag ? "cmp-done" : "cmp-open"))) +
+      ((row.heldFlag || row.waitFlag) ? "" : (row.band === "hot" ? " cmp-hot" : "")) +
+      ((row.heldFlag || row.waitFlag) ? "" : (row.band === "warn" ? " cmp-warn" : ""));
     return "<tr class=\"" + cls + "\">" +
       "<td class=\"col-staff\">" + staffNoHtml(row.staff) + "</td>" +
       "<td class=\"col-name\">" + esc(row.name) + "</td>" +
@@ -2061,6 +2396,7 @@ function paintCmp() {
       "<td>" + esc(row.title) + "</td>" +
       "<td class=\"col-status\">" + esc(row.status) + "</td>" +
       "<td>" + esc(row.done) + "</td>" +
+      "<td>" + esc(row.note || "") + "</td>" +
       "</tr>";
   }).join("");
   tools.hidden = false;
@@ -2086,6 +2422,8 @@ function paintCmp() {
       " · PAX other sections removed " + (cmpModel.paxSection || 0) +
       " · Never in file " + (cmpModel.neverInFile || 0) +
       " · Years " + cmpExpiryYears +
+      " · Not due " + scoped.filter((row) => row.heldFlag).length +
+      " · Need family files " + scoped.filter((row) => row.waitFlag).length +
       " · Near red " + nearRed +
       " · Near yellow " + nearYellow +
       " · Skipped " + cmpModel.skipped + " (not on Name List)." +
@@ -2093,16 +2431,17 @@ function paintCmp() {
   }
   paintCmpMapHint();
   paintCmpTovControls();
+  paintCmpCheckLog();
 }
 function exportCmpXlsx() {
   if (!window.HxXlsx || typeof HxXlsx.buildSync !== "function") return;
   const shown = cmpShownRows();
-  const rows = [["Staff #", "Name", "Section", "Course code", "Course title", "Status", "Completed date"]];
+  const rows = [["Staff #", "Name", "Section", "Course code", "Course title", "Status", "Completed date", "Remark"]];
   shown.forEach((row) => {
-    rows.push([row.staff, row.name, row.section, row.code, row.title, row.status, row.done]);
+    rows.push([row.staff, row.name, row.section, row.code, row.title, row.status, row.done, row.note || ""]);
   });
   const roleLabel = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mechanic" : "All");
-  const statusLabel = cmpFilter === "completed" ? "Completed" : (cmpFilter === "outstanding" ? "Outstanding" : "All");
+  const statusLabel = cmpFilter === "completed" ? "Completed" : (cmpFilter === "outstanding" ? "Outstanding" : (cmpFilter === "held" ? "Not due" : "All"));
   const sortLabels = {
     staff: "Staff #",
     name: "Name",
@@ -2110,7 +2449,8 @@ function exportCmpXlsx() {
     code: "Course code",
     title: "Course title",
     status: "Status",
-    done: "Completed date"
+    done: "Completed date",
+    note: "Remark"
   };
   rows.push(
     [],
