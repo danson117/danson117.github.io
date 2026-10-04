@@ -241,6 +241,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · 只窗口內先算 family Completed：</b>Sibling initial／呢科 initial／recurrent／CT 要<strong>完成日仍喺 Expiry 年數內</strong>（預設 2；<code>done + years</code>，到期日當日仍算）先可以當 <b>Completed</b> 去遮另一科／CT 嘅 outstanding。檔入面有過期日期 ≠ 已覆蓋。過期 initial 只係開始 CT 鐘（initial 行 Status <b>Complete recurrent</b>，唔係綠 Completed）。過期 CT 或過期最遲 initial（又冇窗口內 CT）→ CT outstanding。頁 <b>v2.9</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Recurrent clock from initial：</b>做完 initial，Expiry 年數（預設 2）嘅鐘由<strong>最遲嗰個 initial</strong> 開始，之後先要 recurrent／CT。<b>T.F162</b>／<b>T.C775CT</b>／<b>T.C104CT</b> outstanding 只喺：(1) 做過 initial（241 或 319；774 或 775；104T／104P／截止前 104），最遲嗰個已過期，而且冇窗口內 CT；或 (2) 做過嗰科 CT 而 CT 日期已過期。從未做 initial 又從未做 CT → <b>唔入</b> CT outstanding（只入 initial OS；Status <b>Not required yet</b>；唔入 Check log OS／Add to TOV）。窗口內 initial 或 CT → CT 當 <b>Completed</b>。Initial 鐘已開始（有過期 initial／過期 CT）→ 唔再入 initial outstanding（Status <b>Complete recurrent</b>）。Need family files 仍然等齊檔先定。唔再「有 CT 就永遠 takeover」。頁 <b>v2.8</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Initial / recurrent family：</b>Check log 同一 family 嘅檔一齊睇。Family 1：<b>T.F162</b>＝recurrent，initial＝<b>T.F241 或 T.F319</b>（T.F241_REC／T.F320 都算）；三個檔（162、241、319）齊先定 outstanding。Family 2：<b>T.C774</b>／<b>T.C775</b>＝initial（任一），recurrent 可以係 T.C774 或 <b>T.C775CT</b>；有 <b>T.C775CT</b> 就用 775CT 做 recurrent（鐘由最遲 774／775 起，唔係永遠蓋過 initial）。三個檔（774、775、775CT）齊先定 outstanding。Family 3：<b>T.C104</b>＝好舊 initial，只計到 <b>2020-09-12</b>（之後嘅 T.C104 完成唔當而家 initial）；之後 initial＝<b>T.C104T 或 T.C104P</b>（任一，好似 241／319）。Course List 已有 <b>T.C104CT</b>（Headset Communications Continuation Training；Description 寫 Initial Course T.C104T, then T.C104P）＝recurrent（鐘由最遲有效 initial 起，唔係永遠 takeover）。四個檔（104、104T、104P、104CT）齊先定 outstanding。有 initial 而且仍喺 Expiry 年數（預設 2）內、或者 sibling initial／takeover 已覆蓋 → Status <b>Completed</b>（綠、歸 Completed 掣；呢科冇完成日就用覆蓋完成日），Remark 寫已做邊個 initial／takeover。唔再獨立 Not due 掣／Check log Not due 欄（可寫入 Remark）。2020-09-12 嘅 T.C104 喺預設 2 年下已經過期，所以冇 104T／104P／104CT 就係 outstanding；Expiry 年數改咗截止規則仍然準。兩邊／三邊 initial 都冇、又冇 takeover recurrent → 真 outstanding。已過期嘅 takeover／774 recurrent 行仍然 outstanding。Need family files 仍然 waiting（唔當 Completed）。Add to TOV 唔加呢啲已覆蓋 Completed／Need family files。頁 <b>v2.8</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Remove from TOV：</b>Check log 每行銅棕 <b>Remove from TOV</b> 刪嗰科全部 Training One View Manual outstanding（唔刪 Check log 行；灰色 <b>Remove</b> 先刪 log）。成功 → TOV Creation 寫 <b>Removed from TOV</b>。要 hub edit／Manual 寫權。頁 <b>v2.4</b>。</li>
@@ -372,6 +373,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.59">v10.59</div>
+  <div class="page-version" data-version="10.60">v10.60</div>
 </body>
 </html>
