@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Name List · Crew code 寫入 Team：** 貼上 CG crew 表。人係 CG 而且 Home＝Current＝Sect 先寫 Team（crew code）。寫咗 **208**。未改：唔喺名冊 **42**、而家 PAX **30**、section 唔同 **56**。`1P` 呢類 TOV 仍歸 Team 1–4。Name List **v3.19**、`ocg-pax-data.js?v=12`、`hx-rules` **v10.63**、hub **v20.1**、TOV **v15.30**。Auth **v2.14**、Lic **v2.3**、Course completion **v2.12**、BRS **v5.1**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · T.C104 家族只係 104P + 104CT：** 三個 family 都係窗口內完成先算覆蓋；過期日期唔算覆蓋，只開始 CT 鐘。Family C initial 只係 T.C104P，CT 係 T.C104CT。T.C104T 唔使用、唔使檔。舊 T.C104 唔使上傳；2020-09-12 之後唔算而家 initial。要齊嘅檔只係 T.C104P 同 T.C104CT。Course List 已打字嘅 Description 唔覆蓋，空欄先填。Course completion **v2.10**、Course List **v2.2**、`hx-rules` **v10.61**、hub page-version **v19.9**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

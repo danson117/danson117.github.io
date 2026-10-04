@@ -1769,8 +1769,8 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.29" aria-label="Page version 15.29">v15.29</div>
-<script src="ocg-pax-data.js?v=11"></script>
+  <div class="page-version" data-version="15.30" aria-label="Page version 15.30">v15.30</div>
+<script src="ocg-pax-data.js?v=12"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -3370,6 +3370,8 @@ function staffNoHtml(staff) {
 function teamKey(team, home) {
   const t = String(team || "").trim();
   if (t === "1" || t === "2" || t === "3" || t === "4") return t;
+  const lead = t.match(/^([1-4])/);
+  if (lead) return lead[1];
   const m = String(home || "").trim().toUpperCase().match(/^LTW([1-4])$/);
   return m ? m[1] : "other";
 }
