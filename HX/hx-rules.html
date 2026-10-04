@@ -242,6 +242,7 @@
       <h3>上載同顯示</h3>
       <ul>
         <li style="color:#b00020"><b>新 · Course completion · 唔喺 Name List 唔留 Check log：</b>撳人數彈出嘅名單係該次檢查存低嘅人（<code>cgMechPeople</code> 等），唔係即場再由名冊計。人已經離開 Name List，就唔可以再留喺呢啲 outstanding 名單。載入同儲存（本機 <code>hx:course-completion:checks</code> 同 shared doc <code>course-completion-checks</code>）都會剔走唔喺 Name List 嘅員工，並把該格人數改做剔完之後嘅名單長度。已經開住嘅舊頁可以再上傳舊名單，要 refresh 呢版先會停低。頁 <b>v2.15</b>。</li>
+        <li style="color:#b00020"><b>新 · Course completion · 290990 強制 PAX、288531 強制 CG：</b>讀 Excel／CSV 一開始，未做 department／section 篩選之前，staff <b>290990</b> 強制入 <b>PAX</b>（Planning、唔係 LM CXG transit、section 唔喺 LTC／LTW 白名單都唔剔），staff <b>288531</b> 強制入 <b>CG</b>（LTGC、唔係 LM OCG 都唔剔），之後當佢哋已經喺嗰組。只係呢兩個 staff #。唔改出街 Crew List。頁 <b>v2.16</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · T.C104 家族只係 104P + 104CT：</b>三個 family 都係：完成日要喺 Expiry 年數內（預設 2；<code>done + years</code>，到期日當日仍算）先算覆蓋。過期日期唔算覆蓋，只係開始 CT 鐘。Family A：<b>T.F241 或 T.F319</b>（任一，T.F241_REC／T.F320 都算）＝initial，<b>T.F162</b>＝CT；三個檔齊先定 outstanding。窗口內 sibling 遮另一個 initial（Completed）。從未 241、從未 319、又從未 162 → 唔入 162 OS。做過 241 或 319 而最遲 initial 已過期、又冇窗口內 162 → 162 OS。162 自己過期 → 162 OS。窗口內 162 或窗口內 initial → 162 Completed。Family B：<b>T.C774 或 T.C775</b>＝initial，<b>T.C775CT</b>＝CT；同一套，775CT 要窗口內先 takeover；三個檔齊。Family C：initial 只係 <b>T.C104P</b>。<b>T.C104T 當冇呢科</b>（唔使檔、唔算 either initial）。CT＝<b>T.C104CT</b>。要齊嘅檔只係 <b>T.C104P + T.C104CT</b>。窗口內 104P → 104CT 唔 OS。104P 過期又冇窗口內 104CT → 104CT OS。104CT 自己過期 → 104CT OS。從未 104P 又從未 104CT → 唔入 104CT OS（只入 104P initial OS）。舊 T.C104 唔使上傳；Check log 已有嘅 T.C104，<b>2020-09-12</b> 之後唔算而家 initial，亦唔會因為等 104T 或舊 104 檔而卡住。Course List 已打嘅 Description 唔覆蓋；空欄先填新備註。下面舊段如果寫 104T 或四個檔齊，以呢段為準。頁 <b>v2.10</b>。Course List <b>v2.2</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 只窗口內先算 family Completed：</b>Sibling initial／呢科 initial／recurrent／CT 要<strong>完成日仍喺 Expiry 年數內</strong>（預設 2；<code>done + years</code>，到期日當日仍算）先可以當 <b>Completed</b> 去遮另一科／CT 嘅 outstanding。檔入面有過期日期 ≠ 已覆蓋。過期 initial 只係開始 CT 鐘（initial 行 Status <b>Complete recurrent</b>，唔係綠 Completed）。過期 CT 或過期最遲 initial（又冇窗口內 CT）→ CT outstanding。頁 <b>v2.9</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Recurrent clock from initial：</b>做完 initial，Expiry 年數（預設 2）嘅鐘由<strong>最遲嗰個 initial</strong> 開始，之後先要 recurrent／CT。<b>T.F162</b>／<b>T.C775CT</b>／<b>T.C104CT</b> outstanding 只喺：(1) 做過 initial（241 或 319；774 或 775；104P。T.C104T 同舊 T.C104 唔算；見 v2.10），最遲嗰個已過期，而且冇窗口內 CT；或 (2) 做過嗰科 CT 而 CT 日期已過期。從未做 initial 又從未做 CT → <b>唔入</b> CT outstanding（只入 initial OS；Status <b>Not required yet</b>；唔入 Check log OS／Add to TOV）。窗口內 initial 或 CT → CT 當 <b>Completed</b>。Initial 鐘已開始（有過期 initial／過期 CT）→ 唔再入 initial outstanding（Status <b>Complete recurrent</b>）。Need family files 仍然等齊檔先定。唔再「有 CT 就永遠 takeover」。頁 <b>v2.8</b>。</li>
@@ -382,6 +383,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.68">v10.68</div>
+  <div class="page-version" data-version="10.69">v10.69</div>
 </body>
 </html>

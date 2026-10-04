@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion 讀檔例外：** staff `290990` 強制 PAX、`288531` 強制 CG。Planning／LTGC／唔係平常 department 或 PAX section 白名單都唔剔呢兩行。只係篩選例外，唔改出街 Crew List。Check log 同 Training One View Manual 已按而家 Expiry 2 年窗口改分類。Course completion **v2.16**、`hx-rules` **v10.69**、hub **v20.7**。Supabase `hx_private.team_board_actions`。GitHub 後備 → Vercel。唔開 Chrome。唔寫課程明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **320531 仲喺 Course completion Check log：** 彈窗讀存低嘅 outstanding 名單，唔係即場名冊。瀏覽器之後再上傳咗舊名單，T.F241 CG Mech outstanding 仍有佢（8）。而家已從 `hx_private.team_board_actions` 嘅 `course-completion-checks` 剔走，該科 CG Mech 人數係 7，其他員工留低。載入／儲存會剔唔喺 Name List 嘅人，避免 refresh 再寫返。Course completion **v2.15**、hub **v20.6**、`hx-rules` **v10.68**。GitHub 後備 → Vercel。唔開 Chrome。唔寫其他課程明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
