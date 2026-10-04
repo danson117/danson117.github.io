@@ -912,17 +912,17 @@
   .detail-table table {
     table-layout: fixed;
     width: 100%;
-    min-width: 814px; /* staff+name+team(108)+crew+course+due(128)+remain(104) */
+    min-width: 826px; /* staff+name+team(120)+crew+course+due(128)+remain(104) */
     max-width: none;
     border-collapse: collapse;
     font-size: 12px;
   }
-  .detail-table table.has-ual-cols { min-width: 1294px; }
-  .detail-table table.has-completed-col { min-width: 954px; }
-  .detail-table table.has-ual-cols.has-completed-col { min-width: 1434px; }
+  .detail-table table.has-ual-cols { min-width: 1306px; }
+  .detail-table table.has-completed-col { min-width: 966px; }
+  .detail-table table.has-ual-cols.has-completed-col { min-width: 1446px; }
   .detail-table col.col-staff { width: 72px; }
   .detail-table col.col-name { width: 120px; }
-  .detail-table col.col-team { width: 108px; }
+  .detail-table col.col-team { width: 120px; }
   .detail-table col.col-crew { width: 96px; }
   /* Due-day pair 128px; remaining pair 104px (short 2-line headers, whole words). */
   .detail-table col.col-course { width: 186px; }
@@ -1769,7 +1769,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.31" aria-label="Page version 15.31">v15.31</div>
+  <div class="page-version" data-version="15.32" aria-label="Page version 15.32">v15.32</div>
 <script src="ocg-pax-data.js?v=12"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -3372,8 +3372,8 @@ function teamKey(team, home) {
   if (t === "1" || t === "2" || t === "3" || t === "4") return t;
   const lead = t.match(/^([1-4])/);
   if (lead) return lead[1];
-  const m = String(home || "").trim().toUpperCase().match(/^LTW([1-4])$/);
-  return m ? m[1] : "other";
+  const suf = String(home || "").trim().toUpperCase().match(/([1-4])$/);
+  return suf ? suf[1] : "other";
 }
 function teamLabel(team, home) {
   const k = teamKey(team, home);
@@ -3395,9 +3395,10 @@ function sectionOnlyText(who) {
   const m = raw.match(/^([^(]+)/);
   return (m ? m[1] : raw).trim();
 }
-/** Team column: `Team 1` plus the shift that used to sit on Section (Crew), e.g. `Team 1 (1F)`. */
+/** Team (Crew): `Team 1 (1F)` when a shift exists. Section suffix 1–4 with no shift is `Team 2`, no crew. */
 function teamColumnLabel(who) {
-  const base = teamLabel(who && who.team, who && who.home);
+  const home = (who && who.home) || sectionOnlyText(who);
+  const base = teamLabel(who && who.team, home);
   const sh = shiftOf(who);
   return sh ? base + " (" + sh + ")" : base;
 }
@@ -5469,7 +5470,7 @@ function paintCompletedArchive() {
   }
   box.innerHTML = "<div class=\"completed-archive-shot\"><table>" +
     "<thead><tr>" +
-    "<th>Completed</th><th>Completed by</th><th>Staff #</th><th>Name</th><th>Team</th><th>Section (Crew)</th>" +
+    "<th>Completed</th><th>Completed by</th><th>Staff #</th><th>Name</th><th>Team (Crew)</th><th>Section</th>" +
     "<th>Course code</th><th>Course name</th><th>Source</th>" +
     "</tr></thead><tbody>" +
     rows.map((r) => {
@@ -5827,7 +5828,7 @@ function paintDetail() {
     showUalCols ? ["has-ual-cols"] : [],
     showRecentCompleted ? ["has-completed-col"] : []
   ).join(" ");
-  const tableShot = "<div id=\"detail-shot\"><table class=\"" + tableCls + "\">" + colgroup + "<thead><tr>" + dth("Staff #", "staff", "col-staff") + dth("Name", "name", "col-name") + dth("Team", "team", "col-team") + dth("Section (Crew)", "crew", "col-crew") +
+  const tableShot = "<div id=\"detail-shot\"><table class=\"" + tableCls + "\">" + colgroup + "<thead><tr>" + dth("Staff #", "staff", "col-staff") + dth("Name", "name", "col-name") + dth("Team (Crew)", "team", "col-team") + dth("Section", "crew", "col-crew") +
     dth("Course code", "overdue", "col-course") + dth("Overdue or will<br>expire due day", "due", "col-due") + dth("Overdue<br>remaining", "remain", "col-remain") +
     ualColsHead +
     completedCol + "</tr></thead><tbody>" +
@@ -9256,7 +9257,7 @@ function exportCourseRemarkText(who, row) {
   return readCourseStatus(who.staff, row).remark || "";
 }
 function exportDetailsRows(people) {
-  const headers = ["Staff #", "Name", "Team", "Section (Crew)", "BRS REF. NO.", "Course", "Course name", "Due day", "Remaining", "Source", "Status", "Completed date", "Remark"];
+  const headers = ["Staff #", "Name", "Team (Crew)", "Section", "BRS REF. NO.", "Course", "Course name", "Due day", "Remaining", "Source", "Status", "Completed date", "Remark"];
   const rows = [headers];
   (people || []).forEach((x) => {
     const courses = personCourseRows(x).slice().sort((a, b) =>
@@ -9285,7 +9286,7 @@ function exportDetailsRows(people) {
 }
 function exportTableRows(people) {
   const showUal = srcHas("ual");
-  const headers = ["Staff #", "Name", "Team", "Section (Crew)", "Course code", "Overdue or will expire due day", "Overdue remaining"];
+  const headers = ["Staff #", "Name", "Team (Crew)", "Section", "Course code", "Overdue or will expire due day", "Overdue remaining"];
   if (showUal) headers.push("UA Employee #", "Coming due courses", "Coming due day", "Coming due remaining");
   if (showRecentCompleted) headers.push("Completed (≤30 days)");
   const rows = [headers];
