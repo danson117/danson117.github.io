@@ -1549,7 +1549,7 @@
     <div class="search-bar">
       <label for="q">Search</label>
       <div class="typeahead-wrap">
-        <input id="q" type="search" placeholder="Course / name / staff # (; = OR)" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="q-suggest" aria-expanded="false">
+        <input id="q" type="search" placeholder="Course / name / staff # / remark (; = OR)" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="q-suggest" aria-expanded="false">
         <ul id="q-suggest" class="typeahead" hidden role="listbox" aria-label="Search suggestions"></ul>
       </div>
     </div>
@@ -1769,7 +1769,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.36" aria-label="Page version 15.36">v15.36</div>
+  <div class="page-version" data-version="15.37" aria-label="Page version 15.37">v15.37</div>
 <script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -4608,6 +4608,15 @@ function hayHasAny(terms, vals) {
   if (!terms || !terms.length) return true;
   return terms.some((n) => hayHas(n, vals));
 }
+function courseRemarkText(staff, row) {
+  if (!staff || !row) return "";
+  try {
+    const rec = readCourseStatus(staff, row);
+    return rec && rec.remark ? String(rec.remark) : "";
+  } catch (e) {
+    return "";
+  }
+}
 function personIdentityMatch(who, needle) {
   if (!who || !needle) return !needle;
   return hayHas(needle, [
@@ -4615,23 +4624,28 @@ function personIdentityMatch(who, needle) {
     who.home, who.shift, who.crew, personCrewLabel(who), sectionOnlyText(who), who.section, who.area, who.emp
   ]);
 }
-function courseRowMatch(row, needle) {
+function courseRowMatch(row, needle, staff) {
   if (!row || !needle) return !needle;
   return hayHas(needle, [
     row.code, row.brsRef, row.name, displayCourseName(row.code, row.name),
     row.due, fmtDueDate(row.due), row.remain, remainText(row.remain),
-    row.src, row.kind, srcLabel(row)
+    row.src, row.kind, srcLabel(row),
+    courseRemarkText(staff || row.staff, row)
   ]);
 }
 function personRowMatch(p, item, needle) {
   if (!p || !needle) return !needle;
+  const src = (p && (p.src || p.kind)) || (item && item.src) || "";
   return hayHas(needle, [
     p.staff, p.name, p.team, teamLabel(p.team, p.home),
     p.home, p.shift, p.crew, crewOf(p), p.section, p.area, p.emp,
     p.code, p.brsRef, p.cname, displayCourseName(p.code, p.cname),
     p.due, fmtDueDate(p.due), p.remain, remainText(p.remain), p.extra, p.kind,
     item && item.src, item && item.key, item && item.title,
-    srcLabel(p)
+    srcLabel(p),
+    courseRemarkText(p.staff, {
+      code: p.code, name: p.cname || p.name, src: src, kind: p.kind || src, brsId: p.brsId
+    })
   ]);
 }
 function bundledPersonMatch(who, needle) {
@@ -4643,7 +4657,7 @@ function bundledPersonMatch(who, needle) {
     who.soonDue, fmtDueDate(who.soonDue), who.soonRemain, remainText(who.soonRemain), who.status
   ])) return true;
   if ((who.courses || []).some((c) => hayHas(needle, [c]))) return true;
-  return personCourseRows(who).some((r) => courseRowMatch(r, needle));
+  return personCourseRows(who).some((r) => courseRowMatch(r, needle, who.staff));
 }
 function personWithRows(who, rows) {
   const overdueRows = [];
@@ -4715,7 +4729,7 @@ function applyQueryToPerson(who, needleOrTerms) {
     ? needleOrTerms.filter(Boolean)
     : (needleOrTerms ? [needleOrTerms] : []);
   if (!terms.length || terms.some((n) => personIdentityMatch(who, n))) return who;
-  const rows = personCourseRows(who).filter((r) => terms.some((n) => courseRowMatch(r, n)));
+  const rows = personCourseRows(who).filter((r) => terms.some((n) => courseRowMatch(r, n, who.staff)));
   if (!rows.length) return null;
   return personWithRows(who, rows);
 }
@@ -5377,7 +5391,8 @@ function collectCompletedArchiveRows() {
       who.staff, who.name, who.home, who.shift, crewOf(who),
       teamLabel(who.team, who.home), code, cname, src, completedSrcDisplay(src),
       doneIso, fmtDoneDisplay(doneIso),
-      rec.completedBy, rec.completedByName, formatCompletedByLabel(rec.completedBy, rec.completedByName)
+      rec.completedBy, rec.completedByName, formatCompletedByLabel(rec.completedBy, rec.completedByName),
+      rec.remark
     ])) return;
     const dedupe = staff + "|" + code.toUpperCase() + "|" + src;
     if (seen.has(dedupe)) return;
@@ -5418,7 +5433,8 @@ function collectCompletedArchiveRows() {
         if (terms.length && !hayHasAny(terms, [
           who.staff, who.name, who.home, who.shift, crewOf(who),
           teamLabel(who.team, who.home), code, title, src, completedSrcDisplay(src),
-          p.ackAt, byLabel
+          p.ackAt, byLabel,
+          courseRemarkText(who.staff, { code: code, name: title, src: src, kind: src })
         ])) return;
         const dedupe = padStaff(who.staff) + "|" + (code || title).toUpperCase() + "|" + src + "|" + String(it.id || "");
         if (seen.has(dedupe)) return;
