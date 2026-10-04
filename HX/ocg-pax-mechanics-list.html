@@ -113,13 +113,14 @@
     <div class="notes">
       <p>Crew List (Pax Teams 1–4) joined to OCS staff extract. Updated 20 Sep 2026.</p>
       <p><b>UA</b> shows the V number (30 Sep 2026). A cell that still says UA has authorization and no V number.</p>
-      <p><b>Full List</b> shows every staff record. <b>Name List</b> columns come first (CG/PAX, Staff No, Staff Name, Chinese Name, Home Section, Current Section, Staff Position, Position Title, Class, Status, Date join, Date Term, Revenue Code), then <b>Crew List</b> columns that are not duplicates (Team, Shift, Ω, UA, MM Refueller, JL, JJP). <b>Remark</b> sits after the name. A Remark <b>01OCT will transfer to CXG</b> is a record only: they used to be OCG. They stay on Full List (yellow row) and are not in the OCG / CG / PAX / role counts, not on Crew List or Name List, and not in training.</p>
+      <p><b>Full List</b> shows every staff record. <b>Name List</b> columns come first (CG/PAX, Staff No, Staff Name, Chinese Name, Home Section, Current Section, Team, Staff Position, Position Title, Class, Status, Date join, Date Term, Revenue Code), then <b>Crew List</b> columns that are not duplicates (Shift, Ω, UA, MM Refueller, JL, JJP). <b>Remark</b> sits after the name. A Remark <b>01OCT will transfer to CXG</b> is a record only: they used to be OCG. They stay on Full List (yellow row) and are not in the OCG / CG / PAX / role counts, not on Crew List or Name List, and not in training.</p>
       <p><b>Home / Current</b> for the 2 Oct 2026 update uses the numbered sections <b>LTC1, LTC2, LTC3, LTC4, LTC6, LTCX</b> and <b>LTW1–LTW4</b>. The old LTA / LGEX / LTDX codes for those people are no longer their section. <b>Future sections</b> is the only LT family list (no team digit). Team digits 1–9 and duplicate rows stay off that table (LTY1–9 → LTY). Letter suffixes stay (LTCX, LTDC, LTFA, LTXM). The hub hash <b>#sections</b> opens this tab.</p>
+      <p>When <b>Home</b> and <b>Current</b> are the same code and the last character is <b>1, 2, 3, or 4</b>, <b>Team</b> follows that digit. A last character of <b>5</b> or <b>X</b> stays <b>TBD</b>. If Home and Current disagree, Team stays <b>TBD</b> until you choose which code to follow. A Team number does not change CG / PAX.</p>
       <p><b>OCG</b> = CG + PAX (the total). A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = already marked PAX on the roster, or on the Crew List (including FLS and RF). <b>CG</b> stays CG. A <b>Team</b> number is only a team number and does not make someone PAX, so CG can have a Team number. <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC). <b>Office</b> = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
     </div>
   </div>
-  <div class="page-version" data-version="3.17">v3.17</div>
-<script src="ocg-pax-data.js?v=10"></script>
+  <div class="page-version" data-version="3.18">v3.18</div>
+<script src="ocg-pax-data.js?v=11"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script>
 hxUnpackRoster();
@@ -129,7 +130,7 @@ const TEAM_COLS = [
   ["title","Position title"],["omega","Ω"],["ua","UA"],["refuel","MM Refueller"],["jl","JL"],["jjp","JJP"]
 ];
 const STAFF_COLS = [
-  ["org","CG/PAX"],["role","Role"],["staff","Staff No"],["name","Staff Name"],["chinese","Chinese Name"],["note","Remark"],["home","Home Section"],["current","Current Section"],
+  ["org","CG/PAX"],["role","Role"],["staff","Staff No"],["name","Staff Name"],["chinese","Chinese Name"],["note","Remark"],["home","Home Section"],["current","Current Section"],["team","Team"],
   ["pos","Staff Position"],["title","Position Title"],["klass","Class"],["status","Status"],
   ["joined","Date join"],["term","Date Term"],["revenue","Revenue Code"]
 ];
@@ -249,8 +250,13 @@ function loadColOrder(){
         migrated = true;
         return;
       }
+      const hadTeam = raw[t].includes("team");
       const next = raw[t].filter(k => allow.has(k));
       def.forEach(k => { if (!next.includes(k)) next.push(k); });
+      if (t === "staff" && !hadTeam && next.includes("team") && next.includes("current")) {
+        next.splice(next.indexOf("team"), 1);
+        next.splice(next.indexOf("current") + 1, 0, "team");
+      }
       colOrder[t] = next;
     });
     if (migrated) persistColOrder();
@@ -311,6 +317,11 @@ function rowsAll(){
   if (tab === "sections") return SECTIONS;
   return STAFF;
 }
+const TEAM_BY_STAFF = new Map(FULL.map(r => [padStaff(r.staff), String(r.team || "").trim()]));
+function teamOf(r){
+  if (r && Object.prototype.hasOwnProperty.call(r, "team")) return String(r.team || "").trim();
+  return TEAM_BY_STAFF.get(padStaff(r && r.staff)) || "";
+}
 const RECORD_NOTE = "01OCT will transfer to CXG";
 function recordOnly(r){
   return String(r && r.note || "") === RECORD_NOTE;
@@ -346,6 +357,7 @@ function cellVal(r, k){
   if (k === "org") return orgOf(r);
   if (k === "role") return roleOf(r);
   if (k === "staff" || k === "mStaff") return padStaff(r[k]);
+  if (k === "team") return teamOf(r) || "TBD";
   return r[k];
 }
 function rowPasses(r, skip){
@@ -364,7 +376,7 @@ function rowPasses(r, skip){
   }
   if (tab === "full") {
     if (fGroup && fGroup !== "ocg" && fGroup !== "all" && !groupOk(r, fGroup)) return false;
-    if (skip !== "team" && fTeam && r.team !== fTeam) return false;
+    if (skip !== "team" && fTeam && (teamOf(r) || "TBD") !== fTeam) return false;
     if (skip !== "home" && fHome && r.home !== fHome) return false;
     if (skip !== "match" && fMatch && r.match !== fMatch) return false;
   }
@@ -404,7 +416,7 @@ function syncFacets(){
   for (let pass = 0; pass < spec.length; pass++) {
     let changed = false;
     spec.forEach(([id, key, read, write]) => {
-      const next = fillFacet(id, rowsAll().filter(r => rowPasses(r, key)).map(r => r[key]), read());
+      const next = fillFacet(id, rowsAll().filter(r => rowPasses(r, key)).map(r => key === "team" ? (teamOf(r) || "TBD") : r[key]), read());
       if (next !== read()) { write(next); changed = true; }
     });
     if (!changed) break;

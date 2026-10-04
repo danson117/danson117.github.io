@@ -14,6 +14,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Name List · section 尾數定 Team：** Home 同 Current 同一個 code、尾數 1／2／3／4、Team 原本空白 → 跟尾數。填咗 **233** 人（CG，冇加入 Crew List）。尾數 5 或 X 維持 TBD。Home／Current 唔同嘅 **16** 人未填，等用戶揀。Name List 加 Team 欄。Name List **v3.18**、`ocg-pax-data.js?v=11`、`hx-rules` **v10.62**、hub **v20.0**。同包名冊嘅頁 cache：Auth **v2.13**、Lic **v2.2**、TOV **v15.29**、Course completion **v2.11**、BRS **v5.0**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Manual · CAD PLIS：** Course List 加 `CAD-PLIS`（CAD PLIS registration form submission；Applicable To Licensed holders）。貼出嘅 license outstanding 名單只對 OCG 名冊開 Manual，due **2026-10-15**。111 人（唔喺名冊嘅 Transit／Cargo 唔加）。Supabase `hx_private.team_board_actions`（manual + course-catalog）。GitHub 只交接。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
