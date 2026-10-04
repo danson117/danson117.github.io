@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Manual · CAD PLIS：** Course List 加 `CAD-PLIS`（CAD PLIS registration form submission；Applicable To Licensed holders）。貼出嘅 license outstanding 名單只對 OCG 名冊開 Manual，due **2026-10-15**。111 人（唔喺名冊嘅 Transit／Cargo 唔加）。Supabase `hx_private.team_board_actions`（manual + course-catalog）。GitHub 只交接。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · 只窗口內先算 family Completed：** Sibling initial／呢科 initial／recurrent／CT 要完成日仍喺 Expiry 年數內先當 Completed 去遮另一科／CT outstanding。過期日期唔算已覆蓋。過期 initial 只開始 CT 鐘。Course completion **v2.9**、`hx-rules` **v10.60**、hub page-version **v19.8**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
