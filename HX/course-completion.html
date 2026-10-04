@@ -106,6 +106,20 @@
     cursor: not-allowed;
     background: #f6efe6;
   }
+  .check-log button.check-tov-del {
+    font-size: 12px;
+    padding: 3px 7px;
+    background: #f6efe6;
+    border-color: #c4a484;
+    color: #6b3e26;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .check-log td.check-actions {
+    white-space: nowrap;
+  }
+  .check-log td.check-actions button { display: block; margin: 0 0 4px; }
+  .check-log td.check-actions button:last-child { margin-bottom: 0; }
   .cmp-near {
     display: inline-flex;
     align-items: center;
@@ -362,7 +376,7 @@
         </div>
       </div>
       <h2 class="check-h">Check log</h2>
-      <p class="note">One row per course from each file you analyse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. TOV Creation records whether you added outstanding to Training One View. Hub unlock syncs this log across devices.</p>
+      <p class="note">One row per course from each file you analyse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
       <div class="cmp-tools" id="cmp-log-tools">
         <button type="button" id="cmp-log-export">Export check log</button>
       </div>
@@ -442,7 +456,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.3" aria-label="Page version 2.3">v2.3</div>
+  <div class="page-version" data-version="2.4" aria-label="Page version 2.4">v2.4</div>
 <script src="ocg-pax-data.js?v=10"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -1295,7 +1309,10 @@ function paintCmpCheckLog() {
       "<td>" + esc(row.file) + "</td>" +
       "<td>" + esc(row.tov) + "</td>" +
       "<td><textarea data-check-remark=\"" + i + "\" rows=\"2\" aria-label=\"Remark for " + esc(row.code) + "\">" + esc(row.remark) + "</textarea></td>" +
-      "<td><button type=\"button\" class=\"check-del\" data-check-del=\"" + i + "\">Remove</button></td>" +
+      "<td class=\"check-actions\">" +
+        "<button type=\"button\" class=\"check-tov-del\" data-check-tov-del=\"" + i + "\">Remove from TOV</button>" +
+        "<button type=\"button\" class=\"check-del\" data-check-del=\"" + i + "\">Remove</button>" +
+      "</td>" +
       "</tr>";
   }).join("");
 }
@@ -1534,15 +1551,14 @@ async function cmpFetchLiteBoard() {
   const data = await res.json();
   return data && typeof data === "object" ? data : null;
 }
-async function cmpPushManualRows(rows) {
+async function cmpPushManualRows(rows, deleted) {
   const payload = {
     v: 1,
     updated: new Date().toISOString(),
     status: {},
-    manual: rows.map((r) => Object.assign({}, r, { baseV: 0 })),
+    manual: (rows || []).map((r) => Object.assign({}, r, { baseV: 0 })),
     _statusDeleted: [],
-    _manualDeleted: [],
-    log: []
+    _manualDeleted: Array.isArray(deleted) ? deleted : []
   };
   const res = await fetch(CMP_SYNC_EDGE, {
     method: "PUT",
@@ -1579,6 +1595,93 @@ function cmpMergeLocalManual(added) {
     if (r && r.id) byId.set(String(r.id), r);
   });
   cmpLsSet(CMP_MANUAL_STORE, JSON.stringify(Array.from(byId.values())));
+}
+function cmpCourseEq(a, b) {
+  return String(a || "").trim().toUpperCase() === String(b || "").trim().toUpperCase();
+}
+function cmpStripLocalManualByCode(code) {
+  let list = [];
+  try {
+    const raw = cmpLsGet(CMP_MANUAL_STORE);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(parsed)) list = parsed;
+  } catch (e) {}
+  const next = list.filter((r) => r && !cmpCourseEq(r.code, code));
+  try { cmpLsSet(CMP_MANUAL_STORE, JSON.stringify(next)); } catch (e) {}
+  return list.length - next.length;
+}
+function runCmpRemoveFromTov(i) {
+  const row = cmpChecks[i];
+  if (!row || !row.code) return;
+  if (!cmpGatePassword() && !String(cmpLsGet(CMP_SYNC_KEY) || "").trim()) {
+    openCmpTovPop({
+      mode: "info",
+      title: "Remove from Training One View",
+      lead: "Log in on the HX hub with edit rights first, then try again."
+    });
+    return;
+  }
+  if (!cmpCanWriteManual()) {
+    openCmpTovPop({
+      mode: "info",
+      title: "Remove from Training One View",
+      lead: "This account cannot change Manual courses. Need Training One View Manual edit rights."
+    });
+    return;
+  }
+  openCmpTovPop({
+    mode: "confirm",
+    title: "Remove from Training One View",
+    lead: "Remove all Manual outstanding rows for course " + row.code + " from Training One View? Check log row stays.",
+    okLabel: "Remove from TOV",
+    onOk: () => { void cmpDoRemoveFromTov(i); }
+  });
+}
+async function cmpDoRemoveFromTov(i) {
+  const row = cmpChecks[i];
+  if (!row || !row.code || cmpTovBusy) return;
+  cmpTovBusy = true;
+  paintCmpTovControls();
+  try {
+    const board = await cmpFetchLiteBoard();
+    const remoteManual = Array.isArray(board && board.manual) ? board.manual : [];
+    const deleted = [];
+    remoteManual.forEach((r) => {
+      if (!r || !cmpCourseEq(r.code, row.code)) return;
+      const id = String(r.id || "").trim();
+      if (!id) return;
+      deleted.push({
+        id: id,
+        baseV: Math.max(0, parseInt(r.v, 10) || 0)
+      });
+    });
+    if (deleted.length) await cmpPushManualRows([], deleted);
+    cmpStripLocalManualByCode(row.code);
+    row.tov = "Removed from TOV";
+    cmpPersistChecks();
+    paintCmpCheckLog();
+    openCmpTovPop({
+      mode: "info",
+      title: "Remove from Training One View",
+      lead: deleted.length
+        ? ("Removed " + deleted.length + " Manual outstanding row(s) for " + row.code + ". Refresh Training One View if it is already open.")
+        : ("No Manual outstanding rows left for " + row.code + " on Training One View. Check log marked Removed from TOV.")
+    });
+  } catch (e) {
+    const codeName = e && e.code ? String(e.code) : "";
+    let msg = "Could not remove Manual rows.";
+    if (codeName === "unauthorized") msg = "Sync was rejected. Log in on the HX hub with edit rights, then try again.";
+    else if (codeName === "conflict") msg = "Someone else just changed Training One View. Nothing was removed. Try again.";
+    else if (e && e.message) msg = "Could not remove Manual rows (" + e.message + ").";
+    openCmpTovPop({
+      mode: "info",
+      title: "Remove from Training One View",
+      lead: msg
+    });
+  } finally {
+    cmpTovBusy = false;
+    paintCmpTovControls();
+  }
 }
 async function runCmpAddToTov() {
   const people = cmpTovCandidates();
@@ -2545,6 +2648,12 @@ document.getElementById("cmp-box").addEventListener("click", (e) => {
     const i = Number(listBtn.getAttribute("data-check-i"));
     const key = listBtn.getAttribute("data-check-list") || "";
     if (Number.isInteger(i) && i >= 0 && cmpChecks[i]) openCmpPeople(cmpChecks[i], key);
+    return;
+  }
+  const tovDel = e.target.closest("[data-check-tov-del]");
+  if (tovDel) {
+    const i = Number(tovDel.getAttribute("data-check-tov-del"));
+    if (Number.isInteger(i) && i >= 0 && cmpChecks[i]) runCmpRemoveFromTov(i);
     return;
   }
   const del = e.target.closest("[data-check-del]");

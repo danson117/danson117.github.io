@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Manual：** 已刪 Course completion 加過嘅兩科 Manual outstanding（LM00087、T.A084）。Check log 加 **Remove from TOV**。Course completion **v2.4**、`hx-rules` **v10.55**、hub page-version **v19.3**。Supabase `hx_private.team_board_actions`。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · Check log 撳人數：** outstanding 數字可撳，彈出 Staff #／Name／Session／Team／Section。頁 **v2.3**、`hx-rules` **v10.54**、hub page-version **v19.2**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員名單入交接。
 
 ## 2026-10-04 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

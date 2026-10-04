@@ -241,6 +241,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · Remove from TOV：</b>Check log 每行銅棕 <b>Remove from TOV</b> 刪嗰科全部 Training One View Manual outstanding（唔刪 Check log 行；灰色 <b>Remove</b> 先刪 log）。成功 → TOV Creation 寫 <b>Removed from TOV</b>。要 hub edit／Manual 寫權。頁 <b>v2.4</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Check log 撳人數睇人：</b>Check log 嘅 PAX／CG Mech／CS outstanding 數字（&gt;0）可撳。彈出表：Staff #、Name、Session（Crew List shift，例如 1E／FLS）、Team、Section（Name List）。名單跟該次檢查存低。對話有 Export XLSX。CG 可能冇 session／team。舊行未存名單 → 再拖一次該檔。頁 <b>v2.3</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 預設 Outstanding／Mechanic ＋ Check log：</b>開檔之後預設 Status <b>Outstanding</b>、Role <b>Mechanic</b>（Group 仍 All）。表下面 <b>Check log</b>：每分析一科一行（同一 course code 再分析就更新人數／Expiry／Checked／File，Remark 同 TOV Creation 保留直至加 TOV）。欄：Course code、Course title、PAX Mech O/S、CG Mech O/S（Cargo＝CG）、PAX CS O/S、CG CS O/S、Expiry、Checked（HKT）、File、TOV Creation、Remark（自己打）、Remove。未加 TOV＝<b>Not created</b>；Add to TOV 成功 → 例如 <b>PAX (Mech) outstanding added</b>（跟當時 Group／Role；可連 + near expiry）。Export check log 出 xlsx。本機 <code>hx:course-completion:checks</code>；HX unlock 用 shared doc <code>course-completion-checks</code> 跨機。唔寫職員名單。頁 <b>v2.2</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 全部 tab：</b>xlsx／CSV 有幾個工作表就分析幾個（2 個就兩個、3 個就三個）。唔好再只揀第一張或名叫 export 嗰張。Tab 名係 <b>PAX</b>／<b>CG</b>（或 LM CXG transit／LM OCG）＝嗰組，即使冇 Department 欄。空表／圖表 sheet 跳過。狀態行寫 Sheets 同 tab 名。其餘規則不變（Name List、課程碼最多嗰個、PAX section、Expiry、Add to TOV）。頁 <b>v2.1</b>。</li>
@@ -369,6 +370,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.54">v10.54</div>
+  <div class="page-version" data-version="10.55">v10.55</div>
 </body>
 </html>
