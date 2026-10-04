@@ -241,6 +241,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · Check log 撳人數睇人：</b>Check log 嘅 PAX／CG Mech／CS outstanding 數字（&gt;0）可撳。彈出表：Staff #、Name、Session（Crew List shift，例如 1E／FLS）、Team、Section（Name List）。名單跟該次檢查存低。對話有 Export XLSX。CG 可能冇 session／team。舊行未存名單 → 再拖一次該檔。頁 <b>v2.3</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 預設 Outstanding／Mechanic ＋ Check log：</b>開檔之後預設 Status <b>Outstanding</b>、Role <b>Mechanic</b>（Group 仍 All）。表下面 <b>Check log</b>：每分析一科一行（同一 course code 再分析就更新人數／Expiry／Checked／File，Remark 同 TOV Creation 保留直至加 TOV）。欄：Course code、Course title、PAX Mech O/S、CG Mech O/S（Cargo＝CG）、PAX CS O/S、CG CS O/S、Expiry、Checked（HKT）、File、TOV Creation、Remark（自己打）、Remove。未加 TOV＝<b>Not created</b>；Add to TOV 成功 → 例如 <b>PAX (Mech) outstanding added</b>（跟當時 Group／Role；可連 + near expiry）。Export check log 出 xlsx。本機 <code>hx:course-completion:checks</code>；HX unlock 用 shared doc <code>course-completion-checks</code> 跨機。唔寫職員名單。頁 <b>v2.2</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 全部 tab：</b>xlsx／CSV 有幾個工作表就分析幾個（2 個就兩個、3 個就三個）。唔好再只揀第一張或名叫 export 嗰張。Tab 名係 <b>PAX</b>／<b>CG</b>（或 LM CXG transit／LM OCG）＝嗰組，即使冇 Department 欄。空表／圖表 sheet 跳過。狀態行寫 Sheets 同 tab 名。其餘規則不變（Name List、課程碼最多嗰個、PAX section、Expiry、Add to TOV）。頁 <b>v2.1</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Add to TOV Manual：</b>工具列 <b>Expiry:</b> 右邊有 <b>Include near expiry</b>（年數 ≥1 先顯示）同銅棕掣 <b>Add to TOV (N)</b>。跟而家 Group／Role 嘅 Outstanding 人（唔跟 Status 掣）寫入 Training One View <b>Manual</b> outstanding（同一 course code／course title）。冇 completed date → Due＝今日減 7 日（已過期）。有完成日 → Due＝完成日＋Expiry 年數。勾 <b>Include near expiry</b> 時，把而家 Group／Role 嘅紅（≤30 日）／黃（≤90 日）Completed 一併加（仍然用完成日＋年數做 Due），方便早啲做。同一 staff＋course 已有 Manual → skip。要 hub 已 Log in 而且有 Manual 寫權（Owner／Admin／team-board-manual）。寫入 locked Edge／Supabase；本機 <code>hx:team-board:manual-courses</code> 一併 merge。確認用頁內 dialog。Export／表頭讀法／人數掣不變。頁 <b>v2.0</b>。</li>
@@ -368,6 +369,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.53">v10.53</div>
+  <div class="page-version" data-version="10.54">v10.54</div>
 </body>
 </html>
