@@ -10,6 +10,12 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 公司電腦
 
+- **TOV Manual · 2024 完成加兩年：** 未完成 **3**（PAX 3）。T.EE0131 **2**、T.EA04 **1**。Due＝`2026-09-30`（完成日 2024-09-30 加 2 年）。Remark **Mandatory**。其他 Manual 不變（1716 → 1719）。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+- **自動解鎖係成個 HX：** 本機 `hx-unlock.local.json` 係 hub 登入，用喺所有要解鎖先寫到嘅 HX 頁，唔止 Training One View。倉規則已寫明。密碼仍然唔入 Git。屋企電腦唔用呢個檔。
+
+## 2026-10-05 公司電腦
+
 - **HX 自動解鎖（只限公司電腦）：** 解鎖留本機 `C:\Cursor_Work\hx-unlock.local.json`，唔入 Git。呢部機之後寫 HX 用呢個檔，唔使再問解鎖。瀏覽器已存登入，開頁會再驗證。屋企電腦唔用、唔好複製呢個檔。倉規則 `.cursor/rules/hx-company-unlock.mdc`；`.gitignore` 擋 `hx-unlock.local.json`。唔寫入公開 `hx-rules.html`。冇改 Supabase。冇改 HTML。唔開 Chrome。
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

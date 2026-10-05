@@ -9,7 +9,7 @@ Read `C:\Cursor_Work\MACHINE.md` for this machine's role. Do not write that role
 
 When the role is **公司電腦**:
 
-- HX writes (Training One View, gate, board) use `C:\Cursor_Work\hx-unlock.local.json` (`staff` and `password`).
+- The file is the full HX hub login. Every HX page that needs unlock (Course List, Briefing and R&S, Training One View, Authorization, License, Name List, and the rest) uses `C:\Cursor_Work\hx-unlock.local.json` (`staff` and `password`).
 - Do not ask the user to unlock again when that file is accepted by the server.
 - If the file is missing or the server rejects it, ask once.
 - Never commit the file, copy it to the other computer, put the password in `HANDOVER.md`, `hx-rules.html`, or the chat.
