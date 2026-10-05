@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **TOV Manual · CAD-PLIS 完成：** 貼出嘅提交名單 200 個不重複編號。已有 CAD-PLIS Manual 嘅 **17** 人標 Completed，完成日 **2026-10-05**。其餘 **183** 冇呢科 Manual（Name List 有但未開過呢科 **6**；唔喺 Name List **177**）唔新開行。CAD-PLIS 仍然未完成 **94**。Manual 行數維持 1719，CAD-PLIS 仍然 111。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
 ## 2026-10-05 公司電腦
 
 - **TOV Table Copy layout：** Table 嘅 Copy layout 同 Download 影成張 outstanding 表，course code 一行寫完（唔換行、唔剪走），表下面靠左嘅 course code → title 圖例一併入圖。畫面欄闊唔改。Details Copy layout 仍然個人頭加五欄；Details Download 仍然成張人表。唔改訓練資料。TOV **v15.40**、hub **v21.6**、`hx-rules` **v10.78**。GitHub 後備 → Vercel。唔開 Chrome。
