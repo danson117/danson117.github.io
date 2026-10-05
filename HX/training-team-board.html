@@ -1077,6 +1077,54 @@
     pointer-events: none;
     background: #fff;
   }
+  /* Table Copy layout / Download only. The on-screen column stays 186px. */
+  .person-copy-host.table-copy-host {
+    overflow: visible;
+    max-width: none;
+  }
+  .table-copy-host .table-copy-bundle {
+    width: max-content;
+    max-width: none;
+  }
+  .table-copy-host table.detail-board-table {
+    table-layout: auto;
+    width: max-content;
+    min-width: 0;
+    max-width: none;
+  }
+  .table-copy-host col.col-staff,
+  .table-copy-host col.col-name,
+  .table-copy-host col.col-course,
+  .table-copy-host col.col-soon,
+  .table-copy-host col.col-completed {
+    width: auto;
+  }
+  .table-copy-host th.col-staff,
+  .table-copy-host td.col-staff,
+  .table-copy-host th.col-name,
+  .table-copy-host td.col-name,
+  .table-copy-host .staff-no,
+  .table-copy-host th.col-course,
+  .table-copy-host td.col-course,
+  .table-copy-host th.col-soon,
+  .table-copy-host td.col-soon,
+  .table-copy-host th.col-completed,
+  .table-copy-host td.col-completed {
+    white-space: nowrap;
+    overflow: visible;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+  .table-copy-host .course-code-legend {
+    margin: 10px 0 0;
+    max-width: none;
+  }
+  .table-copy-host .course-code-legend-row {
+    grid-template-columns: max-content minmax(0, 36rem);
+  }
+  .table-copy-host .course-code-legend-row b {
+    white-space: nowrap;
+  }
   .person-course-table {
     width: 100%;
     table-layout: fixed;
@@ -1793,7 +1841,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.39" aria-label="Page version 15.39">v15.39</div>
+  <div class="page-version" data-version="15.40" aria-label="Page version 15.40">v15.40</div>
 <script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -9156,7 +9204,7 @@ function drawNodeToCanvas(root, widthCap) {
       ctx.textAlign = "left";
       const lineH = Math.max(14, parseFloat(cs.fontSize) || 12) * 1.25;
       if (textNodes.length === 1 && el.childElementCount === 0) {
-        const keepFull = el.classList.contains("staff-no") || el.classList.contains("col-staff") || el.classList.contains("col-name");
+        const keepFull = el.classList.contains("staff-no") || el.classList.contains("col-staff") || el.classList.contains("col-name") || el.classList.contains("col-course") || el.classList.contains("col-soon") || el.classList.contains("col-completed") || (el.tagName === "B" && el.parentElement && el.parentElement.classList.contains("course-code-legend-row"));
         if (!keepFull) {
           ctx.beginPath();
           ctx.rect(x + 1, y + 1, Math.max(0, b.width - 2), Math.max(0, b.height - 2));
@@ -9514,6 +9562,55 @@ async function writeClipboardBlob(blob) {
     }
   }
 }
+function isTableLayoutCopy(shot) {
+  return !!(shot && shot.id === "detail-shot" && listView !== "cards" && shot.querySelector(":scope > table"));
+}
+function buildTableCopyClone(shot) {
+  const clone = shot.cloneNode(true);
+  clone.removeAttribute("id");
+  const bundle = document.createElement("div");
+  bundle.className = "table-copy-bundle";
+  bundle.appendChild(clone);
+  const legend = shot.parentElement && shot.parentElement.querySelector(":scope > .course-code-legend");
+  if (legend) bundle.appendChild(legend.cloneNode(true));
+  return bundle;
+}
+function widenTableCopyCodes(root) {
+  const table = root.querySelector("table");
+  const measure = document.createElement("canvas").getContext("2d");
+  if (table) {
+    table.style.tableLayout = "auto";
+    table.style.width = "max-content";
+    table.style.minWidth = "0";
+    table.style.maxWidth = "none";
+    ["col-course", "col-soon", "col-completed"].forEach((cls) => {
+      let maxW = 0;
+      table.querySelectorAll("th." + cls + ", td." + cls).forEach((cell) => {
+        cell.style.whiteSpace = "nowrap";
+        cell.style.wordBreak = "normal";
+        cell.style.overflowWrap = "normal";
+        cell.style.overflow = "visible";
+        const cs = getComputedStyle(cell);
+        if (measure) measure.font = canvasSafeFont(cs);
+        const text = (cell.innerText || "").replace(/\s+/g, " ").trim();
+        const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0) + 24;
+        const textW = text && measure ? measure.measureText(text).width : 0;
+        maxW = Math.max(maxW, Math.ceil(textW + pad), Math.ceil(cell.scrollWidth || 0));
+      });
+      if (!maxW) return;
+      table.querySelectorAll("col." + cls).forEach((col) => { col.style.width = maxW + "px"; });
+      table.querySelectorAll("th." + cls + ", td." + cls).forEach((cell) => { cell.style.minWidth = maxW + "px"; });
+    });
+  }
+  root.querySelectorAll(".course-code-legend-row > b").forEach((b) => {
+    b.style.whiteSpace = "nowrap";
+    const cs = getComputedStyle(b);
+    if (measure) measure.font = canvasSafeFont(cs);
+    const text = (b.textContent || "").replace(/\s+/g, " ").trim();
+    const w = text && measure ? Math.ceil(measure.measureText(text).width + 8) : 0;
+    if (w) b.style.minWidth = w + "px";
+  });
+}
 function isPersonCourseCopy(shot) {
   if (!shot || !shot.querySelector || !shot.querySelector(".person-course-table")) return false;
   if (shot.id === "detail-shot" && listView !== "cards") return false;
@@ -9549,6 +9646,15 @@ async function captureNodeAsImage(shot, frame, btn, mode, filename) {
     captureRoot = buildPersonCopyClone(shot);
     copyHost.appendChild(captureRoot);
     document.body.appendChild(copyHost);
+  } else if (isTableLayoutCopy(shot)) {
+    copyHost = document.createElement("div");
+    copyHost.className = "detail detail-table person-copy-host table-copy-host";
+    copyHost.style.width = "20000px";
+    copyHost.style.maxWidth = "none";
+    captureRoot = buildTableCopyClone(shot);
+    copyHost.appendChild(captureRoot);
+    document.body.appendChild(copyHost);
+    widenTableCopyCodes(captureRoot);
   }
   const saveName = filename || "training-one-view.png";
   const prevScroll = frame ? frame.scrollTop : 0;
@@ -9581,6 +9687,17 @@ async function captureNodeAsImage(shot, frame, btn, mode, filename) {
   let size;
   try {
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    if (copyHost && copyHost.classList.contains("table-copy-host")) {
+      const table = captureRoot.querySelector("table");
+      const legend = captureRoot.querySelector(".course-code-legend");
+      const fit = Math.max(
+        1,
+        Math.ceil((table && (table.getBoundingClientRect().width || table.scrollWidth)) || 0),
+        Math.ceil((legend && (legend.getBoundingClientRect().width || legend.scrollWidth)) || 0)
+      );
+      copyHost.style.width = fit + "px";
+      widthCap = fit;
+    }
     if (detailTable) {
       const fullW = Math.max(
         1,

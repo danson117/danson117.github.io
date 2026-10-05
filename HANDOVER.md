@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 公司電腦
 
+- **TOV Table Copy layout：** Table 嘅 Copy layout 同 Download 影成張 outstanding 表，course code 一行寫完（唔換行、唔剪走），表下面靠左嘅 course code → title 圖例一併入圖。畫面欄闊唔改。Details Copy layout 仍然個人頭加五欄；Details Download 仍然成張人表。唔改訓練資料。TOV **v15.40**、hub **v21.6**、`hx-rules` **v10.78**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-10-05 公司電腦
+
 - **TOV Details Copy layout：** Details 卡片同人 popup 撳 Copy layout 只影個人頭（section · staff # · name）加 Course｜Name｜Due day｜Remaining｜Source。畫面欄序唔變。Download 仍然成張表。Table Copy layout 仍然係成張 outstanding 表。唔改訓練資料。TOV **v15.39**、hub **v21.5**、`hx-rules` **v10.77**。GitHub 後備 → Vercel。唔開 Chrome。
 
 ## 2026-10-05 公司電腦
