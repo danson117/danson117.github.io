@@ -318,7 +318,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List in this browser. Optional: add Manual outstanding rows to Training One View.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Staff 290990 stays PAX and staff 288531 stays CG, so Planning, LTGC, or a section outside the PAX list does not drop those two rows. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. <b>T.F162</b> recurrent uses initial <b>T.F241 or T.F319</b> (either counts). <b>T.C775CT</b> recurrent uses initial <b>T.C774 or T.C775</b>. <b>T.C104CT</b> recurrent uses initial <b>T.C104P</b> only. <b>T.C104T</b> is not part of this family. Old <b>T.C104</b> is not a required file; a date after <b>2020-09-12</b> is not a current initial. Required files are <b>T.C104P</b> and <b>T.C104CT</b>. The 2-year clock starts from the latest initial. Recurrent outstanding only if that initial is already past Expiry years with no in-window CT, or the CT date itself is past Expiry years. Never did initial and never did CT → not recurrent outstanding (initial outstanding only). In-window initial or CT → Completed on the recurrent course. Analyse every file in that family before outstanding is final. Only a completion still inside Expiry years counts as family <b>Completed</b> cover (this initial, sibling initial, or recurrent/CT). An expired date is not cover; it starts the recurrent clock. Covering uses the in-window date. They are not Outstanding. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. Each analysed course is stored in the check log below.</p>
+      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Staff 290990 stays PAX and staff 288531 stays CG, so Planning, LTGC, or a section outside the PAX list does not drop those two rows. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. <b>T.F162</b> recurrent uses initial <b>T.F241 or T.F319</b> (either counts). <b>T.C775CT</b> recurrent uses initial <b>T.C774 or T.C775</b>. <b>T.C104CT</b> recurrent uses initial <b>T.C104P</b> only. <b>T.C104T</b> is not part of this family. Old <b>T.C104</b> is not a required file; a date after <b>2020-09-12</b> is not a current initial. Required files are <b>T.C104P</b> and <b>T.C104CT</b>. The 2-year clock starts from the latest initial. Recurrent outstanding only if that initial is already past Expiry years with no in-window CT, or the CT date itself is past Expiry years. Never did initial and never did CT → not recurrent outstanding (initial outstanding only). In-window initial or CT → Completed on the recurrent course. Analyse every file in that family before outstanding is final. Only a completion still inside Expiry years counts as family <b>Completed</b> cover (this initial, sibling initial, or recurrent/CT). An expired date is not cover; it starts the recurrent clock. Covering uses the in-window date. They are not Outstanding. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. Each analysed course is stored in the check log below. EASA (LX) courses <b>T.EE0544</b>, <b>T.EE0686</b>, and <b>T.X432</b> have no expiry: Expiry stays 0, and a completion of any date stays Completed.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -464,7 +464,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.19" aria-label="Page version 2.19">v2.19</div>
+  <div class="page-version" data-version="2.20" aria-label="Page version 2.20">v2.20</div>
 <script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -780,6 +780,18 @@ const CMP_FAMILIES = [
 function cmpNormCourseCode(code) {
   return String(code || "").trim().toUpperCase().replace(/\s+/g, "");
 }
+// EASA (LX): once completed, the date never expires. Titles are SWISS / remark "EASA (LX) AUDIT".
+const CMP_NO_EXPIRY = { "T.EE0544": 1, "T.EE0686": 1, "T.X432": 1 };
+function cmpNoExpiryCode(code) {
+  return !!CMP_NO_EXPIRY[cmpNormCourseCode(code)];
+}
+function cmpLockNoExpiryYears() {
+  if (!(cmpModel && cmpNoExpiryCode(cmpModel.keptCode))) return false;
+  cmpExpiryYears = 0;
+  const el = document.getElementById("cmp-years");
+  if (el) el.value = "0";
+  return true;
+}
 function cmpCodesFromText(text) {
   const out = [];
   const seen = new Set();
@@ -1052,7 +1064,8 @@ function cmpViewExpiry(row) {
     note: String(row.note || "")
   };
   if (view.doneFlag && view.done) {
-    const due = cmpDueFromDone(view.done, cmpExpiryYears);
+    const years = cmpNoExpiryCode(view.code) ? 0 : cmpExpiryYears;
+    const due = cmpDueFromDone(view.done, years);
     const dueAt = dueStamp(due);
     if (dueAt) {
       const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate());
@@ -1466,6 +1479,36 @@ function cmpNormCheck(row) {
         return rec;
       }).filter((p) => /^\d{5,7}$/.test(p.staff))
     : []);
+  return cmpSettleNoExpiry(o);
+}
+function cmpSettleNoExpiry(o) {
+  if (!o || !cmpNoExpiryCode(o.code)) return o;
+  o.expiry = 0;
+  const seen = new Set((o.donePeople || []).map((p) => padStaff(p && p.staff)));
+  const moved = new Set();
+  const stillOpen = [];
+  (o.openPeople || []).forEach((p) => {
+    const done = String((p && p.done) || "").slice(0, 10);
+    const id = padStaff(p && p.staff);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(done) && id) {
+      if (!seen.has(id)) {
+        seen.add(id);
+        o.donePeople.push({ staff: id, done: done, code: o.code });
+      }
+      moved.add(id);
+      return;
+    }
+    if (p) p.expired = false;
+    stillOpen.push(p);
+  });
+  o.openPeople = stillOpen;
+  ["paxMechPeople", "cgMechPeople", "paxCsPeople", "cgCsPeople"].forEach((key) => {
+    o[key] = (o[key] || []).filter((p) => !moved.has(padStaff(p && p.staff)));
+  });
+  o.paxMech = o.paxMechPeople.length;
+  o.cgMech = o.cgMechPeople.length;
+  o.paxCs = o.paxCsPeople.length;
+  o.cgCs = o.cgCsPeople.length;
   return o;
 }
 function cmpNormPerson(p) {
@@ -1758,7 +1801,7 @@ function cmpRecordCheck(opts) {
     row.openPeople.push(rec);
   });
   cmpRefreshCheckFamily(row);
-  row.expiry = cmpExpiryYears;
+  row.expiry = cmpNoExpiryCode(code) ? 0 : cmpExpiryYears;
   if (!opts.keepChecked) row.checked = cmpNowHkt();
   if (cmpModel.fileName) row.file = String(cmpModel.fileName);
   if (cmpModel.sheetNames && cmpModel.sheetNames.length) row.sheets = cmpModel.sheetNames.join(", ");
@@ -2979,6 +3022,7 @@ function parseCmpCsv(text) {
 }
 function cmpApplyModel(model) {
   cmpModel = model;
+  cmpLockNoExpiryYears();
   cmpFilter = "outstanding";
   cmpRole = "mech";
   cmpOrg = "all";
@@ -3099,6 +3143,10 @@ function takeCmpFile(file) {
   });
 }
 document.getElementById("cmp-years").addEventListener("input", (e) => {
+  if (cmpLockNoExpiryYears()) {
+    paintCmp();
+    return;
+  }
   const raw = String(e.target.value || "").trim();
   if (!/^\d+$/.test(raw)) return;
   const n = Number(raw);
@@ -3107,6 +3155,12 @@ document.getElementById("cmp-years").addEventListener("input", (e) => {
   paintCmp();
 });
 document.getElementById("cmp-years").addEventListener("blur", (e) => {
+  if (cmpLockNoExpiryYears()) {
+    e.target.value = "0";
+    paintCmp();
+    cmpRecordCheck();
+    return;
+  }
   const raw = String(e.target.value || "").trim();
   if (/^\d+$/.test(raw)) {
     const n = Number(raw);
