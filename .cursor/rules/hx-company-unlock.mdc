@@ -1,0 +1,19 @@
+---
+description: Company computer uses a local HX unlock file; never commit it
+alwaysApply: true
+---
+
+# HX unlock on the company computer
+
+Read `C:\Cursor_Work\MACHINE.md` for this machine's role. Do not write that role into a synced user rule.
+
+When the role is **公司電腦**:
+
+- HX writes (Training One View, gate, board) use `C:\Cursor_Work\hx-unlock.local.json` (`staff` and `password`).
+- Do not ask the user to unlock again when that file is accepted by the server.
+- If the file is missing or the server rejects it, ask once.
+- Never commit the file, copy it to the other computer, put the password in `HANDOVER.md`, `hx-rules.html`, or the chat.
+
+When the role is **屋企電腦**, do not read or create that file.
+
+Browser login on this PC already stays in Chrome. Opening HX rechecks the saved login. Do not clear `hx:hub:gate-pw` unless the user logs out.

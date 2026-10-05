@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-05 公司電腦
+
+- **HX 自動解鎖（只限公司電腦）：** 解鎖留本機 `C:\Cursor_Work\hx-unlock.local.json`，唔入 Git。呢部機之後寫 HX 用呢個檔，唔使再問解鎖。瀏覽器已存登入，開頁會再驗證。屋企電腦唔用、唔好複製呢個檔。倉規則 `.cursor/rules/hx-company-unlock.mdc`；`.gitignore` 擋 `hx-unlock.local.json`。唔寫入公開 `hx-rules.html`。冇改 Supabase。冇改 HTML。唔開 Chrome。
+
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **Course completion · EASA (LX) 無期限：** **T.EE0544**、**T.EE0686**、**T.X432** Expiry＝0。有完成日就維持 Completed，唔當過期。Check log 而家冇呢三科，所以冇改 `course-completion-checks`。TOV Manual 已完成而且有完成日嘅行刪咗（T.X432 **70**、T.EE0544 **1**）。未完成留低（T.EE0686 **24**、T.X432 **268**）。Completed status 留低。其他 course code 唔郁。Course completion **v2.20**、hub **v21.3**、`hx-rules` **v10.75**。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。GitHub 後備 → Vercel。要閂舊 Course completion 分頁，等 v2.20 載入先再開。唔開 Chrome。唔寫職員明細。

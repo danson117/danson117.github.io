@@ -7,3 +7,4 @@ __pycache__/
 # Local leftovers / one-off scripts (keep untracked unless deliberately added)
 _lmx_sb_chunks/
 _meta_out.txt
+hx-unlock.local.json
