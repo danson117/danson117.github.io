@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **TOV Manual · CAD-PLIS 跟 HKCAD 牌：** License Records 出街 `Lic_HKCAD/--/--/--` 係 **117** 人（Name List）。同之前提交名單重疊 **23**，全部 Completed，完成日 **2026-10-05**。新開 **6** 行（之前冇 Manual）。其餘 **94** 維持 outstanding，due **2026-10-15**。冇刪行。Manual 1719 → 1725，CAD-PLIS 111 → 117。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Manual · CAD-PLIS 完成：** 貼出嘅提交名單 200 個不重複編號。已有 CAD-PLIS Manual 嘅 **17** 人標 Completed，完成日 **2026-10-05**。其餘 **183** 冇呢科 Manual（Name List 有但未開過呢科 **6**；唔喺 Name List **177**）唔新開行。CAD-PLIS 仍然未完成 **94**。Manual 行數維持 1719，CAD-PLIS 仍然 111。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-05 公司電腦
