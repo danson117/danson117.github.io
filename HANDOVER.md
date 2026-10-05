@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 公司電腦
 
+- **TOV Details Copy layout：** Details 卡片同人 popup 撳 Copy layout 只影個人頭（section · staff # · name）加 Course｜Name｜Due day｜Remaining｜Source。畫面欄序唔變。Download 仍然成張表。Table Copy layout 仍然係成張 outstanding 表。唔改訓練資料。TOV **v15.39**、hub **v21.5**、`hx-rules` **v10.77**。GitHub 後備 → Vercel。唔開 Chrome。
+
+## 2026-10-05 公司電腦
+
 - **TOV Table 課程圖例：** Layout＝Table 時，表下面靠左列出可見 course code 同 title。Details 唔加。收起嘅 course 唔入。唔改訓練資料。TOV **v15.38**、hub **v21.4**、`hx-rules` **v10.76**（側欄 `hx-rules.html?v=10.76`）。GitHub 後備 → Vercel。唔開 Chrome。
 
 - **TOV 人課程表 BRS REF. NO. 最右：** Details 卡片同 popup 欄序係 Course｜Name｜Due day｜Remaining｜Source｜Status｜Reference｜Remark｜Action｜BRS REF. NO.。Details Export XLSX 把 BRS REF. NO. 放最後。Copy／Download 跟畫面。唔改格值。同一版 TOV **v15.38**。

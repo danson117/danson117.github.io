@@ -1067,6 +1067,16 @@
     white-space: nowrap;
     text-align: right;
   }
+  .person-copy-host {
+    position: fixed;
+    left: -12000px;
+    top: 0;
+    margin: 0;
+    padding: 0;
+    width: auto;
+    pointer-events: none;
+    background: #fff;
+  }
   .person-course-table {
     width: 100%;
     table-layout: fixed;
@@ -1783,7 +1793,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.38" aria-label="Page version 15.38">v15.38</div>
+  <div class="page-version" data-version="15.39" aria-label="Page version 15.39">v15.39</div>
 <script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -9504,9 +9514,42 @@ async function writeClipboardBlob(blob) {
     }
   }
 }
+function isPersonCourseCopy(shot) {
+  if (!shot || !shot.querySelector || !shot.querySelector(".person-course-table")) return false;
+  if (shot.id === "detail-shot" && listView !== "cards") return false;
+  return true;
+}
+function buildPersonCopyClone(shot) {
+  const clone = shot.cloneNode(true);
+  clone.removeAttribute("id");
+  const widths = ["18%", "34%", "16%", "14%", "18%"];
+  clone.querySelectorAll(".person-course-table").forEach((table) => {
+    const cols = table.querySelectorAll("colgroup > col");
+    for (let i = cols.length - 1; i >= 5; i--) cols[i].remove();
+    table.querySelectorAll("colgroup > col").forEach((col, i) => {
+      if (widths[i]) col.style.width = widths[i];
+    });
+    table.querySelectorAll("tr").forEach((tr) => {
+      const cells = tr.children;
+      for (let i = cells.length - 1; i >= 5; i--) cells[i].remove();
+    });
+  });
+  return clone;
+}
 async function captureNodeAsImage(shot, frame, btn, mode, filename) {
   if (!shot) return;
   const wantDownload = mode === "download";
+  let captureRoot = shot;
+  let copyHost = null;
+  if (!wantDownload && isPersonCourseCopy(shot)) {
+    copyHost = document.createElement("div");
+    copyHost.className = "detail pop-card person-copy-host";
+    const liveW = Math.max(1, Math.ceil(shot.getBoundingClientRect().width || shot.clientWidth || 0));
+    copyHost.style.width = liveW + "px";
+    captureRoot = buildPersonCopyClone(shot);
+    copyHost.appendChild(captureRoot);
+    document.body.appendChild(copyHost);
+  }
   const saveName = filename || "training-one-view.png";
   const prevScroll = frame ? frame.scrollTop : 0;
   const prevStyle = {
@@ -9514,10 +9557,10 @@ async function captureNodeAsImage(shot, frame, btn, mode, filename) {
     maxWidth: shot.style.maxWidth,
     boxSizing: shot.style.boxSizing
   };
-  const wideTable = shot.id === "detail-shot" ? shot.querySelector(":scope > table") : null;
+  const wideTable = !copyHost && shot.id === "detail-shot" ? shot.querySelector(":scope > table") : null;
   const detailTable = wideTable;
   let widthCap;
-  if (frame) {
+  if (frame && !copyHost) {
     frame.classList.add("capturing");
     frame.scrollTop = 0;
   }
@@ -9525,13 +9568,15 @@ async function captureNodeAsImage(shot, frame, btn, mode, filename) {
     shot.style.width = "max-content";
     shot.style.maxWidth = "none";
     shot.style.boxSizing = "border-box";
-  } else {
+  } else if (!copyHost) {
     const shotW = visibleCaptureWidth(shot);
     const frameW = frame ? visibleCaptureWidth(frame) : shotW;
     widthCap = Math.max(1, Math.min(shotW, frameW));
     shot.style.width = widthCap + "px";
     shot.style.maxWidth = widthCap + "px";
     shot.style.boxSizing = "border-box";
+  } else {
+    widthCap = Math.max(1, Math.ceil(captureRoot.getBoundingClientRect().width || captureRoot.clientWidth || 0));
   }
   let size;
   try {
@@ -9548,8 +9593,8 @@ async function captureNodeAsImage(shot, frame, btn, mode, filename) {
       widthCap = fullW;
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     }
-    size = nodeCaptureSize(shot, widthCap);
-    const canvas = drawNodeToCanvas(shot, widthCap);
+    size = nodeCaptureSize(captureRoot, widthCap);
+    const canvas = drawNodeToCanvas(captureRoot, widthCap);
     const blob = await new Promise((res, rej) => canvas.toBlob((b) => b ? res(b) : rej(new Error("blob")), "image/png"));
     if (wantDownload) {
       downloadPngBlob(blob, saveName);
@@ -9576,7 +9621,8 @@ async function captureNodeAsImage(shot, frame, btn, mode, filename) {
     shot.style.width = prevStyle.width;
     shot.style.maxWidth = prevStyle.maxWidth;
     shot.style.boxSizing = prevStyle.boxSizing;
-    if (frame) {
+    if (copyHost && copyHost.parentNode) copyHost.parentNode.removeChild(copyHost);
+    if (frame && !copyHost) {
       frame.classList.remove("capturing");
       frame.scrollTop = prevScroll;
     }
