@@ -10,6 +10,12 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-05 公司電腦
 
+- **TOV Table 課程圖例：** Layout＝Table 時，表下面靠左列出可見 course code 同 title。Details 唔加。收起嘅 course 唔入。唔改訓練資料。TOV **v15.38**、hub **v21.4**、`hx-rules` **v10.76**（側欄 `hx-rules.html?v=10.76`）。GitHub 後備 → Vercel。唔開 Chrome。
+
+- **TOV 人課程表 BRS REF. NO. 最右：** Details 卡片同 popup 欄序係 Course｜Name｜Due day｜Remaining｜Source｜Status｜Reference｜Remark｜Action｜BRS REF. NO.。Details Export XLSX 把 BRS REF. NO. 放最後。Copy／Download 跟畫面。唔改格值。同一版 TOV **v15.38**。
+
+## 2026-10-05 公司電腦
+
 - **TOV Manual · 2024 完成加兩年：** 未完成 **3**（PAX 3）。T.EE0131 **2**、T.EA04 **1**。Due＝`2026-09-30`（完成日 2024-09-30 加 2 年）。Remark **Mandatory**。其他 Manual 不變（1716 → 1719）。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 - **自動解鎖係成個 HX：** 本機 `hx-unlock.local.json` 係 hub 登入，用喺所有要解鎖先寫到嘅 HX 頁，唔止 Training One View。倉規則已寫明。密碼仍然唔入 Git。屋企電腦唔用呢個檔。

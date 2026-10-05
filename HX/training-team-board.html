@@ -650,6 +650,20 @@
     color: var(--muted);
   }
   .row-legend span { white-space: nowrap; }
+  .course-code-legend {
+    margin: 10px 0 0;
+    max-width: 42rem;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--navy);
+  }
+  .course-code-legend-row {
+    display: grid;
+    grid-template-columns: 7.5em minmax(0, 1fr);
+    gap: 4px 12px;
+    align-items: baseline;
+  }
+  .course-code-legend-row b { font-weight: 700; }
   .detail-table tbody tr.completed td { background: var(--ok-row); color: var(--navy); }
   .detail-table td.ok { background: var(--ok-row); color: var(--navy); }
   .board-tools {
@@ -1769,7 +1783,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.37" aria-label="Page version 15.37">v15.37</div>
+  <div class="page-version" data-version="15.38" aria-label="Page version 15.38">v15.38</div>
 <script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -5727,6 +5741,29 @@ function peopleBundle(pairs) {
   return [...map.values()].map((x) => Object.assign(x, { status: statusOf(x) }))
     .filter((x) => personCourseRows(x).length);
 }
+function tableCourseLegendHtml(people) {
+  const seen = new Map();
+  function add(code) {
+    const raw = String(code || "").trim();
+    const k = normCode(raw);
+    if (!k || seen.has(k)) return;
+    seen.set(k, raw);
+  }
+  const showUal = srcHas("ual");
+  (people || []).forEach((x) => {
+    (x.overdueCourses || []).forEach(add);
+    if (showUal) (x.soonCourses || []).forEach(add);
+    if (showRecentCompleted) (x.completedCourses || []).forEach(add);
+  });
+  const codes = [...seen.values()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+  if (!codes.length) return "";
+  return "<div class=\"course-code-legend\" aria-label=\"Course codes\">" +
+    codes.map((code) => {
+      const title = exportCourseTitle(code, people);
+      return "<div class=\"course-code-legend-row\"><b>" + esc(code) + "</b><span>" + esc(title || "—") + "</span></div>";
+    }).join("") +
+    "</div>";
+}
 function paintDetail() {
   const box = document.getElementById("detail");
   const roster = rosterByTeam();
@@ -5895,7 +5932,8 @@ function paintDetail() {
     "<button type=\"button\" id=\"detail-export-xlsx\">Export XLSX</button>" +
     layoutActionBtns("detail-copy", "detail-download") + "</div>" +
     colorLegend + "</div>" +
-    (list.length ? (listView === "cards" ? cardsShot : tableShot) : emptyNote);
+    (list.length ? (listView === "cards" ? cardsShot : tableShot) : emptyNote) +
+    (listView === "table" && list.length ? tableCourseLegendHtml(list) : "");
   applyWriteAccess();
 }
 
@@ -8796,8 +8834,8 @@ function personCourseTableHtml(who) {
   const sorted = rows.slice().sort((a, b) => (Number(a.remain) || 0) - (Number(b.remain) || 0) || String(a.code).localeCompare(String(b.code)));
   if (!sorted.length) return "<p class=\"note\">No courses.</p>";
   return "<table class=\"person-course-table\"><colgroup>" +
-    "<col class=\"col-brs\"><col class=\"col-course\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-ref\"><col class=\"col-remark\"><col class=\"col-action\">" +
-    "</colgroup><thead><tr><th class=\"col-brs\">BRS REF. NO.</th><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th class=\"col-ref\">Reference</th><th>Remark</th><th>Action</th></tr></thead><tbody>" +
+    "<col class=\"col-course\"><col class=\"col-cname\"><col class=\"col-due\"><col class=\"col-remain\"><col class=\"col-src\"><col class=\"col-status\"><col class=\"col-ref\"><col class=\"col-remark\"><col class=\"col-action\"><col class=\"col-brs\">" +
+    "</colgroup><thead><tr><th>Course</th><th>Name</th><th>Due day</th><th>Remaining</th><th>Source</th><th>Status</th><th class=\"col-ref\">Reference</th><th>Remark</th><th>Action</th><th class=\"col-brs\">BRS REF. NO.</th></tr></thead><tbody>" +
     sorted.map((r) => {
       const n = remainNum(r.remain);
       const brs = isBrsCourseRow(r);
@@ -8832,10 +8870,10 @@ function personCourseTableHtml(who) {
         "</td>";
       const codeEmpty = !String(r.code || "").trim();
       return "<tr class=\"" + cls + "\">" +
-        td(r.brsRef || "", "col-brs") +
         "<td" + (codeEmpty ? " class=\"blank\"" : "") + ">" + esc(r.code || "") + flagChip(flagReasons) + "</td>" +
         td(displayCourseName(r.code, r.name)) + td(fmtDueDate(r.due)) + td(remainText(r.remain, n > 0), "remain") +
-        srcTd + courseStatusCellHtml(who, r) + refTd + courseRemarkCellHtml(who, r) + actionTd + "</tr>";
+        srcTd + courseStatusCellHtml(who, r) + refTd + courseRemarkCellHtml(who, r) + actionTd +
+        td(r.brsRef || "", "col-brs") + "</tr>";
     }).join("") + "</tbody></table>";
 }
 function closeCoursePop() {
@@ -9369,7 +9407,7 @@ function exportCourseRemarkText(who, row) {
   return readCourseStatus(who.staff, row).remark || "";
 }
 function exportDetailsRows(people) {
-  const headers = ["Staff #", "Name", "Team (Crew)", "Section", "BRS REF. NO.", "Course", "Course name", "Due day", "Remaining", "Source", "Status", "Completed date", "Remark"];
+  const headers = ["Staff #", "Name", "Team (Crew)", "Section", "Course", "Course name", "Due day", "Remaining", "Source", "Status", "Completed date", "Remark", "BRS REF. NO."];
   const rows = [headers];
   (people || []).forEach((x) => {
     const courses = personCourseRows(x).slice().sort((a, b) =>
@@ -9382,7 +9420,6 @@ function exportDetailsRows(people) {
         x.name || "",
         teamColumnLabel(x),
         sectionOnlyText(x),
-        r.brsRef || "",
         r.code || "",
         displayCourseName(r.code, r.name) || "",
         fmtDueDate(r.due),
@@ -9390,7 +9427,8 @@ function exportDetailsRows(people) {
         srcLabel(r),
         exportCourseStatusText(x, r),
         exportCourseDoneText(x, r),
-        exportCourseRemarkText(x, r)
+        exportCourseRemarkText(x, r),
+        r.brsRef || ""
       ]);
     });
   });
