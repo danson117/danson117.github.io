@@ -1592,8 +1592,8 @@
             </span>
           </div>
           <div id="manual-auth-filters" class="manual-auth-filters" hidden>
-            <label for="manual-auth-ac">Aircraft
-              <select id="manual-auth-ac" title="Filter by Aircraft"></select>
+            <label for="manual-auth-ac">A/C Type
+              <select id="manual-auth-ac" title="Filter by A/C Type"></select>
             </label>
             <label for="manual-auth-eng">Engine
               <select id="manual-auth-eng" title="Filter by Engine"></select>
@@ -1841,7 +1841,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.43" aria-label="Page version 15.43">v15.43</div>
+  <div class="page-version" data-version="15.44" aria-label="Page version 15.44">v15.44</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -7639,7 +7639,7 @@ function setManualHint(msg) {
 }
 function authFieldLabel(field) {
   if (field === "op") return "Operator";
-  if (field === "ac") return "Aircraft";
+  if (field === "ac") return "A/C Type";
   if (field === "cat") return "Category";
   if (field === "eng") return "Engine";
   if (field === "mod") return "Module ref";
@@ -8044,7 +8044,7 @@ function paintManualAuthPick() {
 
   list.innerHTML = "<table class=\"manual-auth-table\"><thead><tr>" +
     ath("Staff #", "staff") + ath("Name", "name") + ath("Category", "cat") +
-    ath("Operator", "op") + ath("Aircraft", "ac") + ath("Engine", "eng") +
+    ath("Operator", "op") + ath("A/C Type", "ac") + ath("Engine", "eng") +
     ath("Module", "module") +
     "<th>+/−</th>" +
     "</tr></thead><tbody>" + body + "</tbody></table>";
@@ -8658,7 +8658,7 @@ function addManualCourse() {
   if (manualAuthPick && manualAuthPick.people.length) {
     const selected = authPeopleSelectedForAdd();
     if (!selected.length) {
-      setManualHint("Select at least one CS (+/−) before Add — hidden by Aircraft/Engine filter do not add.");
+      setManualHint("Select at least one CS (+/−) before Add — hidden by A/C Type/Engine filter do not add.");
       return;
     }
     const addedRows = [];

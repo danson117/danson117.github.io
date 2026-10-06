@@ -84,7 +84,7 @@
       <div class="stat" data-stat="people"><b id="n-people">0</b><span>People</span></div>
     </div>
     <div class="toolbar">
-      <input id="q" type="search" placeholder="Search staff # / name / section / operator / aircraft / module / email">
+      <input id="q" type="search" placeholder="Search staff # / name / section / operator / A/C type / module / email">
       <label class="op-lookup">Airline
         <span class="op-lookup-wrap">
           <input id="op-lookup" type="text" placeholder="Code" autocomplete="off" spellcheck="false" maxlength="12" aria-autocomplete="list" aria-controls="op-lookup-suggest">
@@ -113,7 +113,7 @@
       <label>Section <select id="f-dept"><option value="">All</option></select></label>
       <label>Operator <select id="f-op"><option value="">All</option></select></label>
       <label>Category <select id="f-cat"><option value="">All</option></select></label>
-      <label>Aircraft <select id="f-ac"><option value="">All</option></select></label>
+      <label>A/C Type <select id="f-ac"><option value="">All</option></select></label>
       <label>Due <span class="due-btns" id="f-due" role="group" aria-label="Due">
         <button type="button" data-due="" class="on">All</button>
         <button type="button" data-due="red">Red</button>
@@ -135,11 +135,11 @@
       </table>
     </div>
     <div class="notes">
-      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Due Red / Yellow / Red + Yellow only show module <code>--/--/AUTH/HAECO</code> rows in those windows; All stays unrestricted by module. <b>One per Staff #</b> keeps the first row of each staff number in the current sort; other aircraft and modules for that person stay hidden until the button is off or filters are cleared. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows. <b>Airline</b>: type one or more characters to see matching operator codes / airline names (contains); pick a row to fill the code and full name (from that code's auth module title, including stage-only codes). This lookup does not filter the table.</p>
+      <p>Source: <code>QA_Auth_Full_Detailed_List.csv</code> (same schema as <code>Auth_Records_Dept.csv</code>), packed for the page. <b>Name List only</b> in the table — Section/Team from the Name List; CSV Department is reference only (kept in packed <code>stage</code> for non–Name List people). Use <b>Update CSV</b> to replace the list (same compact pack). Email overlay fills real addresses for Name List staff not in that CSV (no invented auth modules). Only visible rows are drawn. Red = expiry in 30 days or overdue. Yellow = 31–90 days. Due Red / Yellow / Red + Yellow only show module <code>--/--/AUTH/HAECO</code> rows in those windows; All stays unrestricted by module. <b>One per Staff #</b> keeps the first row of each staff number in the current sort; other A/C types and modules for that person stay hidden until the button is off or filters are cleared. <b>Copy Table</b> and <b>To XLSX</b> export the filtered set (same N as the status line), not the full pack and not only the on-screen virtualized rows. <b>Airline</b>: type one or more characters to see matching operator codes / airline names (contains); pick a row to fill the code and full name (from that code's auth module title, including stage-only codes). This lookup does not filter the table.</p>
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.19">v2.19</div>
+  <div class="page-version" data-version="2.20">v2.20</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -148,7 +148,7 @@
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["team","Team"],["staff","Staff #"],["name","Name"],
-  ["cat","Category"],["op","Operator"],["ac","Aircraft"],["eng","Engine"],
+  ["cat","Category"],["op","Operator"],["ac","A/C Type"],["eng","Engine"],
   ["module","Module"],["issue","Issue"],["expiry","Expiry"],["lim","Limitations"],
   ["ref","Operator ref"],["email","Email"]
 ];

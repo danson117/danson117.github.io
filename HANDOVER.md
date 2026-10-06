@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · Category 同 A/C Type：** Auth 後面加 Category、A/C Type，跟 Authorization List，只列出而家篩選之下有嘅值。Outstanding 要同一條授權同時夾到。Check log 把呢兩個選項一併入行。授權飛機型號畫面名由 Aircraft 改做 **A/C Type**（Auth、Lic、TOV Manual、BRS）。Course completion **v2.26**、Auth **v2.20**、Lic **v2.9**、TOV **v15.44**、BRS **v5.7**、hub **v21.16**、`hx-rules` **v10.88**。GitHub 後備 → Vercel。要閂舊分頁，等新版本載入先再開。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Unselect all 再撳一次：** Detail course chips 全部收起之後，掣變 **Select all**，再撳顯示返全部。未收齊仍然係 Unselect all。只係今次畫面，唔寫 Supabase。TOV **v15.43**、hub **v21.15**、`hx-rules` **v10.87**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

@@ -65,7 +65,7 @@
       <div class="stat" data-stat="people"><b id="n-people">0</b><span>People</span></div>
     </div>
     <div class="toolbar">
-      <input id="q" type="search" placeholder="Search staff # / name / section / authority / aircraft / module / license #">
+      <input id="q" type="search" placeholder="Search staff # / name / section / authority / A/C type / module / license #">
       <button type="button" id="copy-table">Copy Table</button>
       <button type="button" id="to-xlsx">To XLSX</button>
       <button type="button" id="update-csv-btn">Update CSV</button>
@@ -76,7 +76,7 @@
       <label>Section <select id="f-dept"><option value="">All</option></select></label>
       <label>Authority <select id="f-auth"><option value="">All</option></select></label>
       <label>Category <select id="f-cat"><option value="">All</option></select></label>
-      <label>Aircraft <select id="f-ac"><option value="">All</option></select></label>
+      <label>A/C Type <select id="f-ac"><option value="">All</option></select></label>
       <label>Due <span class="due-btns" id="f-due" role="group" aria-label="Due">
         <button type="button" data-due="" class="on">All</button>
         <button type="button" data-due="red">Red</button>
@@ -102,7 +102,7 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.8">v2.8</div>
+  <div class="page-version" data-version="2.9">v2.9</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -111,7 +111,7 @@
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["team","Team"],["staff","Staff #"],["name","Name"],
-  ["cat","Category"],["auth","Authority"],["ac","Aircraft"],["eng","Engine"],
+  ["cat","Category"],["auth","Authority"],["ac","A/C Type"],["eng","Engine"],
   ["module","Module"],["issue","Issue"],["expiry","Expiry"],["lim","Limitations"],
   ["licNo","License #"]
 ];
