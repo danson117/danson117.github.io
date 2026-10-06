@@ -801,11 +801,11 @@
       <div class="bar">
         <button type="button" class="primary" id="btn-record-reload">Reload record</button>
         <button type="button" id="btn-record-blank">KE sample</button>
-        <a class="btn" id="record-solo" href="ke-read-sign-record.html?v=1.6" target="_blank" rel="noopener">Open record alone</a>
+        <a class="btn" id="record-solo" href="ke-read-sign-record.html?v=1.7" target="_blank" rel="noopener">Open record alone</a>
         <span class="status" id="record-status">KE sample (no item selected)</span>
       </div>
       <div class="record-frame-wrap">
-        <iframe id="record-frame" title="Briefing and R&amp;S printable record" src="ke-read-sign-record.html?v=1.6"></iframe>
+        <iframe id="record-frame" title="Briefing and R&amp;S printable record" src="ke-read-sign-record.html?v=1.7"></iframe>
       </div>
     </section>
   </div>
@@ -868,7 +868,7 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="5.5">v5.5</div>
+  <div class="page-version" data-version="5.6">v5.6</div>
   <script src="ocg-pax-data.js?v=16"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
   <script src="hx-shared-sync.js?v=1.4"></script>
@@ -1237,7 +1237,7 @@
     rebuildIssuedFromItems();
     return {
       v: 1,
-      updated: new Date().toISOString(),
+      updated: doc.updated || new Date().toISOString(),
       app: SHARED,
       keys: { record: 1 },
       issued: ensureIssuedMap(),
@@ -1245,6 +1245,7 @@
     };
   }
   function writeLocal() {
+    doc.updated = new Date().toISOString();
     try { localStorage.setItem(STORE, JSON.stringify(pack())); } catch (e) {
       showMsgPop({ mode: "alert", title: "Not saved", lines: ["File too large", "Use a link"] });
     }
@@ -1289,6 +1290,7 @@
       if (!o || !Array.isArray(o.items)) return false;
       doc.items = o.items;
       doc.issued = (o.issued && typeof o.issued === "object") ? o.issued : {};
+      doc.updated = String(o.updated || "");
       normalizeAllItemCodes();
       if (clearCollidingDraftCodes()) writeLocal();
       rebuildIssuedFromItems();
@@ -1300,6 +1302,7 @@
     suppress = true;
     doc.items = remote.items;
     doc.issued = {};
+    doc.updated = String(remote.updated || "");
     normalizeAllItemCodes();
     var cleared = clearCollidingDraftCodes();
     rebuildIssuedFromItems();
@@ -2426,7 +2429,7 @@
       "</tr>" + detail;
   }
 
-  var RECORD_FILE = "ke-read-sign-record.html?v=1.6";
+  var RECORD_FILE = "ke-read-sign-record.html?v=1.7";
   var recordItemId = "";
   function recordSrc(itemId) {
     var base = RECORD_FILE;
@@ -2916,7 +2919,13 @@
     }, 80);
   }
   window.HxSharedSync && window.HxSharedSync.syncDoc(SHARED, {
-    getLocal: function () { return pack(); },
+    getLocal: function () {
+      try {
+        var o = JSON.parse(localStorage.getItem(STORE) || "");
+        if (o && Array.isArray(o.items)) return o;
+      } catch (e) {}
+      return { v: 1, updated: "", app: SHARED, keys: { record: 1 }, issued: {}, items: [] };
+    },
     localEmpty: function (d) { return !(d && Array.isArray(d.items) && d.items.length); },
     applyRemote: applyRemote,
     onStatus: function (s) {

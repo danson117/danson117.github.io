@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **BRS 資料清走，功能留低：** Training One View 同 Briefing and R&S dashboard 嘅項目同簽收已清（2 個 Read & Sign、136 個簽收位、printable record 74 行）。History 4 版同 PIN hash 1 行一併清。Manual／UAL／CT／Mandatory／Course completion 唔郁。Create、Sign、Seen、PIN、Load sample 仍然喺。開頁改為用存檔時間，避免本機舊名單蓋過空伺服器。KE sample 只喺撳 Load sample 先入。BRS **v5.6**、record **v1.7**、hub **v21.14**、`hx-rules` **v10.86**。Supabase `hx_private.team_board_actions`（`__hx_shared__/briefing-read-sign`、`ke-read-sign`）、`board_revisions` source `brs`、`brs_staff_pin`。GitHub 後備 → Vercel。要刷新已開嘅 hub。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · Check log 跟選項：** 一行係 course ＋ Auth ＋ Expiry ＋ Include near expiry。Outstanding 人數跟呢組選項（Auth 揀咗可以係 0）。同一科、選項唔同就多一行；選項一樣就更新嗰行 Outstanding／File／Checked。Remark 同 TOV Creation 保留。Group／Role／Status 唔多開行。Course completion **v2.25**、hub **v21.13**、`hx-rules` **v10.85**。GitHub 後備 → Vercel。要閂舊 Course completion 分頁，等 v2.25 載入先再開。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
