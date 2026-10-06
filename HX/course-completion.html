@@ -143,11 +143,19 @@
     background: #fff;
     color: var(--ink);
   }
+  .cmp-tools input.cmp-years:disabled {
+    background: #e4e4e4;
+    color: var(--muted);
+    cursor: not-allowed;
+  }
   .cmp-auth-wrap { position: relative; display: inline-block; }
   .cmp-tools select.cmp-facet {
     font: inherit;
     font-size: 13px;
-    max-width: 9rem;
+    width: 8rem;
+    min-width: 0;
+    max-width: 8rem;
+    flex: 0 0 auto;
     padding: 5px 6px;
     border: 1px solid var(--line);
     background: #fff;
@@ -518,7 +526,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.26" aria-label="Page version 2.26">v2.26</div>
+  <div class="page-version" data-version="2.27" aria-label="Page version 2.27">v2.27</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -847,9 +855,16 @@ function cmpNoExpiryCode(code) {
   return !!CMP_NO_EXPIRY[cmpNormCourseCode(code)];
 }
 function cmpLockNoExpiryYears() {
-  if (!(cmpModel && cmpNoExpiryCode(cmpModel.keptCode))) return false;
-  cmpExpiryYears = 0;
   const el = document.getElementById("cmp-years");
+  const locked = !!(cmpModel && cmpNoExpiryCode(cmpModel.keptCode));
+  if (el) {
+    el.disabled = locked;
+    el.title = locked
+      ? String(cmpModel.keptCode || "This course") + " has no expiry. Any completion date stays Completed."
+      : "Years after the completed date. Default 2. 0 means no expiry date.";
+  }
+  if (!locked) return false;
+  cmpExpiryYears = 0;
   if (el) el.value = "0";
   return true;
 }
@@ -3176,6 +3191,7 @@ function cmpPrepare(grid, fileName, forced) {
 }
 function paintCmp() {
   cmpSyncFacets();
+  cmpLockNoExpiryYears();
   const statusEl = document.getElementById("cmp-status");
   const tools = document.getElementById("cmp-tools");
   const wrap = document.getElementById("cmp-wrap");

@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · Expiry 格：** A/C Type 下拉收窄，唔再蓋住 Expiry。T.EE0544、T.EE0686、T.X432 個格停用，維持 0，游標寫 no expiry。其他科可以改年數。Course completion **v2.27**、hub **v21.17**、`hx-rules` **v10.89**。GitHub 後備 → Vercel。要閂舊 Course completion 分頁。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · Category 同 A/C Type：** Auth 後面加 Category、A/C Type，跟 Authorization List，只列出而家篩選之下有嘅值。Outstanding 要同一條授權同時夾到。Check log 把呢兩個選項一併入行。授權飛機型號畫面名由 Aircraft 改做 **A/C Type**（Auth、Lic、TOV Manual、BRS）。Course completion **v2.26**、Auth **v2.20**、Lic **v2.9**、TOV **v15.44**、BRS **v5.7**、hub **v21.16**、`hx-rules` **v10.88**。GitHub 後備 → Vercel。要閂舊分頁，等新版本載入先再開。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

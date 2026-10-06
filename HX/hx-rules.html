@@ -251,6 +251,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · Expiry 格：</b>Category／A/C Type 下拉固定闊度，唔再蓋住 Expiry 數字格。T.EE0544、T.EE0686、T.X432 仍然 Expiry＝0，個格變灰同停用，游標提示 no expiry。其他科可以改年數。頁 <b>v2.27</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Category 同 A/C Type：</b>Auth 後面加 <b>Category</b> 同 <b>A/C Type</b>，跟 Authorization List。下拉只列出而家 Auth（同另一個已揀值）之下、Name List 人真係有嘅值。<b>All</b> 保留。揀咗嘅值消失就返 All。Outstanding、人數、Add to TOV 只計同一條授權同時有呢個 Category 同 A/C Type 嘅人。Completed 維持 Completed。Check log 一行再加呢兩個選項：唔同就多一行，一樣就更新 Outstanding。頁 <b>v2.26</b>。</li>
         <li style="color:#b00020"><b>新 · A/C Type：</b>授權飛機型號嘅畫面名由 <b>Aircraft</b> 改做 <b>A/C Type</b>。Authorization List 篩選同欄、License Records 篩選同欄、Training One View Manual 授權篩選、Briefing and R&amp;S 授權欄都係呢個名。頁 Auth <b>v2.20</b>、Lic <b>v2.9</b>、TOV <b>v15.44</b>、BRS <b>v5.7</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Check log 跟選項：</b>Check log 一行係 <b>course ＋ Auth ＋ Expiry ＋ Include near expiry</b>。上面 Outstanding 係 0（例如 Auth 揀 <b>LX</b>），呢一行四個 Outstanding 人數都跟呢個結果，可以係 <b>0</b>。同一科下次冇揀 LX，或者 Auth／Expiry／Include near expiry 有唔同，就多一行，唔覆蓋舊行。全部呢啲選項一樣，只係 xlsx 內容唔同，就更新嗰一行嘅 Outstanding 人數、File、Checked；Remark 同 TOV Creation 保留。舊嘅、未記選項嘅一行，下一次分析會當成呢次選項更新。Group／Role／Status 仍然只改上面個表，唔會因為撳咗就多開一行。頁 <b>v2.25</b>。</li>
@@ -404,6 +405,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.88">v10.88</div>
+  <div class="page-version" data-version="10.89">v10.89</div>
 </body>
 </html>
