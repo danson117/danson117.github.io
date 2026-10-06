@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 公司電腦
 
+- **Course completion · Auth 搜尋：** 工具列 Auth 由下拉改做搜尋格，預設空＝All。打字先出對應選項，唔一開就列全部。可打 Authorization List Module title，或者航空公司代號／名（AC → AC · AIR CANADA；名同 Authorization List operator 對法，同一份 `AUTH_PACK`）。Module 同 operator 同一格、同一時間只得一個。Outstanding 畫面、Group／Role／Status 嘅 Outstanding 人數、同 Add to TOV（包括 Include near expiry）只計有該 Module、或者有該 operator 授權嘅 Name List 人。清空返 All。半截字唔篩，離開格還原。方向鍵、Enter、Escape 可用。Completed 維持 Completed。唔寫 Supabase，唔改 Check log。Course completion **v2.23**、hub **v21.10**、`hx-rules` **v10.82**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 公司電腦
+
 - **Course completion · Auth 篩選：** 工具列 Status 同 Expiry 之間加 **Auth** 下拉，預設 **All**。選項係 Authorization List 嘅 Module title（`AUTH_PACK`；Name List 先計；每個 Module 對一個授權）。揀咗之後，Outstanding 畫面、Group／Role／Status 嘅 Outstanding 人數、同 Add to TOV（包括 Include near expiry）只計有呢個 Module 嘅人。Completed 維持 Completed。冇呢個授權、原本會 outstanding 嘅人唔當 outstanding、唔入人數。改 Auth 即時重篩，唔寫 Supabase，亦唔改 Check log／`course-completion-checks` 存低嘅 outstanding 名單。Course completion **v2.22**、hub **v21.9**、`hx-rules` **v10.81**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 公司電腦

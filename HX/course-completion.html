@@ -143,15 +143,41 @@
     background: #fff;
     color: var(--ink);
   }
-  .cmp-tools select.cmp-auth {
+  .cmp-auth-wrap { position: relative; display: inline-block; }
+  .cmp-tools input.cmp-auth {
     font: inherit;
     font-size: 13px;
-    max-width: 16rem;
-    padding: 5px 6px;
+    width: 18rem;
+    padding: 5px 8px;
     border: 1px solid var(--line);
     background: #fff;
     color: var(--ink);
   }
+  .cmp-auth-suggest {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 40;
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+    min-width: 100%;
+    width: max-content;
+    max-width: min(36rem, calc(100vw - 24px));
+    max-height: 220px;
+    overflow: auto;
+    border: 1px solid var(--line);
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(20, 30, 45, 0.12);
+  }
+  .cmp-auth-suggest[hidden] { display: none; }
+  .cmp-auth-suggest li {
+    padding: 6px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .cmp-auth-suggest li.on,
+  .cmp-auth-suggest li:hover { background: var(--navy-soft); }
   .pop-icon {
     width: 34px;
     height: 34px;
@@ -327,7 +353,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List. The current file is shared. Optional: add Manual outstanding rows to Training One View.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Staff 290990 stays PAX and staff 288531 stays CG, so Planning, LTGC, or a section outside the PAX list does not drop those two rows. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX and LTW1 to LTW4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. <b>T.F162</b> recurrent uses initial <b>T.F241 or T.F319</b> (either counts). <b>T.C775CT</b> recurrent uses initial <b>T.C774 or T.C775</b>. <b>T.C104CT</b> recurrent uses initial <b>T.C104P</b> only. <b>T.C104T</b> is not part of this family. Old <b>T.C104</b> is not a required file; a date after <b>2020-09-12</b> is not a current initial. Required files are <b>T.C104P</b> and <b>T.C104CT</b>. The 2-year clock starts from the latest initial. Recurrent outstanding only if that initial is already past Expiry years with no in-window CT, or the CT date itself is past Expiry years. Never did initial and never did CT → not recurrent outstanding (initial outstanding only). In-window initial or CT → Completed on the recurrent course. Analyse every file in that family before outstanding is final. Only a completion still inside Expiry years counts as family <b>Completed</b> cover (this initial, sibling initial, or recurrent/CT). An expired date is not cover; it starts the recurrent clock. Covering uses the in-window date. They are not Outstanding. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. <b>Auth</b> defaults to All. Choose an Authorization List module to count Outstanding only for Name List people who hold that module. Completed rows stay Completed. People without it are left out of Outstanding, its counts, and Add to TOV. Changing Auth only filters this screen. It does not rewrite the check log. Each analysed course is stored in the check log below. EASA (LX) courses <b>T.EE0544</b>, <b>T.EE0686</b>, and <b>T.X432</b> have no expiry: Expiry stays 0, and a completion of any date stays Completed.</p>
+      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Staff 290990 stays PAX and staff 288531 stays CG, so Planning, LTGC, or a section outside the PAX list does not drop those two rows. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX, LTW1 to LTW4, and LTN1 to LTN4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. <b>T.F162</b> recurrent uses initial <b>T.F241 or T.F319</b> (either counts). <b>T.C775CT</b> recurrent uses initial <b>T.C774 or T.C775</b>. <b>T.C104CT</b> recurrent uses initial <b>T.C104P</b> only. <b>T.C104T</b> is not part of this family. Old <b>T.C104</b> is not a required file; a date after <b>2020-09-12</b> is not a current initial. Required files are <b>T.C104P</b> and <b>T.C104CT</b>. The 2-year clock starts from the latest initial. Recurrent outstanding only if that initial is already past Expiry years with no in-window CT, or the CT date itself is past Expiry years. Never did initial and never did CT → not recurrent outstanding (initial outstanding only). In-window initial or CT → Completed on the recurrent course. Analyse every file in that family before outstanding is final. Only a completion still inside Expiry years counts as family <b>Completed</b> cover (this initial, sibling initial, or recurrent/CT). An expired date is not cover; it starts the recurrent clock. Covering uses the in-window date. They are not Outstanding. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. <b>Auth</b> is a search box and defaults to All. Type a module title or an operator code (for example AC shows AC · AIR CANADA) and pick one match. One choice at a time. Outstanding then counts only Name List people who hold that module, or who hold an authorization for that operator. Empty means All. Completed rows stay Completed. People without it are left out of Outstanding, its counts, and Add to TOV. Changing Auth only filters this screen. It does not rewrite the check log. Each analysed course is stored in the check log below. EASA (LX) courses <b>T.EE0544</b>, <b>T.EE0686</b>, and <b>T.X432</b> have no expiry: Expiry stays 0, and a completion of any date stays Completed.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -346,9 +372,10 @@
         <button type="button" class="cmp-split" data-cmp="completed"><span>Completed</span><span class="cmp-n" data-cmp-n="status-completed">0</span></button>
         <button type="button" class="on cmp-split" data-cmp="outstanding"><span>Outstanding</span><span class="cmp-n" data-cmp-n="status-outstanding">0</span></button>
         <span class="filter-label">Auth:</span>
-        <select id="cmp-auth" class="cmp-auth" aria-label="Auth" title="Outstanding only includes Name List people who hold this authorization. All keeps every person. Completed rows stay completed. This does not change the check log.">
-          <option value="">All</option>
-        </select>
+        <span class="cmp-auth-wrap">
+          <input id="cmp-auth" class="cmp-auth" type="search" placeholder="All" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="cmp-auth-suggest" aria-expanded="false" aria-label="Auth" title="Type an Authorization List module or an operator code. Matching modules and airlines appear as you type. Example: AC shows AC · AIR CANADA. Empty means All. One choice at a time. Outstanding only includes Name List people who hold the chosen module, or an authorization for the chosen operator. Completed rows stay completed. This does not change the check log.">
+          <ul id="cmp-auth-suggest" class="cmp-auth-suggest" role="listbox" hidden aria-label="Matching authorization modules"></ul>
+        </span>
         <span class="filter-label">Expiry:</span>
         <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" aria-label="Expiry years" title="Years after the completed date. Default 2. 0 means no expiry date.">
         <label class="cmp-near" id="cmp-near-wrap" for="cmp-include-near" title="Also add Completed rows that are red (≤30 days) or yellow (≤90 days) so they can train early.">
@@ -477,8 +504,8 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.22" aria-label="Page version 2.22">v2.22</div>
-<script src="ocg-pax-data.js?v=15"></script>
+  <div class="page-version" data-version="2.24" aria-label="Page version 2.24">v2.24</div>
+<script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
 <script src="hx-xlsx.js?v=4"></script>
@@ -929,58 +956,282 @@ function cmpFamilyInitialLabel(fam) {
 function cmpIsOsView(row) {
   return !!(row && !row.doneFlag && !row.waitFlag && !row.skipOsFlag);
 }
+let cmpAuthKind = "";
 let cmpAuth = "";
 const cmpAuthHolders = new Map();
+const cmpOpHolders = new Map();
+const cmpOpNames = new Map();
+function cmpCleanAirlineName(mod, op) {
+  const parts = String(mod || "").split("/").map((s) => s.trim()).filter(Boolean);
+  let name = parts.length ? parts[parts.length - 1] : String(mod || "").trim();
+  name = name.replace(/\s*\(LM\)\s*/ig, " ").replace(/\s+/g, " ").trim();
+  if (/air premia/i.test(name)) return "Air Premia";
+  const code = String(op || "").trim();
+  if (code) {
+    const escCode = code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const stripped = name
+      .replace(new RegExp("^" + escCode + "\\s+", "i"), "")
+      .replace(new RegExp("\\s+" + escCode + "\\s*$", "i"), "")
+      .replace(new RegExp("\\s*\\(" + escCode + "\\)\\s*$", "i"), "")
+      .replace(/\s*-\s*$/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (stripped && stripped.length >= 3 && /[A-Za-z]{3}/.test(stripped)) name = stripped;
+  }
+  return name.replace(/\s*-\s*$/, "").trim();
+}
 function cmpIndexAuth() {
   cmpAuthHolders.clear();
+  cmpOpHolders.clear();
+  cmpOpNames.clear();
   const pack = window.AUTH_PACK;
   if (!pack || !pack.d || !Array.isArray(pack.r) || !Array.isArray(pack.p)) return;
   const mods = pack.d.mod || [];
+  const ops = pack.d.op || [];
   const people = pack.p;
+  const nameTallies = {};
+  function tallyName(op, mod) {
+    const code = String(op || "").trim().toUpperCase();
+    const name = cmpCleanAirlineName(mod, code);
+    if (!code || !name) return;
+    if (!nameTallies[code]) nameTallies[code] = {};
+    nameTallies[code][name] = (nameTallies[code][name] || 0) + 1;
+  }
+  function eatNames(rows) {
+    (rows || []).forEach((r) => {
+      if (!Array.isArray(r)) return;
+      tallyName(ops[r[2]], mods[r[5]]);
+    });
+  }
+  eatNames(pack.r);
+  if (pack.stage) eatNames(pack.stage.r);
+  Object.keys(nameTallies).forEach((code) => {
+    let best = "";
+    let n = 0;
+    Object.keys(nameTallies[code]).forEach((name) => {
+      if (nameTallies[code][name] > n) {
+        n = nameTallies[code][name];
+        best = name;
+      }
+    });
+    if (best) cmpOpNames.set(code, best);
+  });
   pack.r.forEach((r) => {
     if (!Array.isArray(r)) return;
     const person = people[r[0]];
     const staff = padStaff(person && person[0]);
     if (!staff || !rosterHas(staff)) return;
     const title = String(mods[r[5]] || "").trim();
-    if (!title) return;
-    let held = cmpAuthHolders.get(title);
-    if (!held) {
-      held = new Set();
-      cmpAuthHolders.set(title, held);
+    if (title) {
+      let held = cmpAuthHolders.get(title);
+      if (!held) {
+        held = new Set();
+        cmpAuthHolders.set(title, held);
+      }
+      held.add(staff);
     }
-    held.add(staff);
+    const code = String(ops[r[2]] || "").trim().toUpperCase();
+    if (!code) return;
+    let heldOp = cmpOpHolders.get(code);
+    if (!heldOp) {
+      heldOp = new Set();
+      cmpOpHolders.set(code, heldOp);
+      if (!cmpOpNames.has(code)) cmpOpNames.set(code, "");
+    }
+    heldOp.add(staff);
+  });
+  Array.from(cmpOpNames.keys()).forEach((code) => {
+    if (!cmpOpHolders.has(code)) cmpOpNames.delete(code);
   });
 }
-function cmpFillAuthSelect() {
-  const sel = document.getElementById("cmp-auth");
-  if (!sel) return;
-  const current = cmpAuth;
-  const titles = Array.from(cmpAuthHolders.keys()).sort((a, b) =>
+let cmpAuthSuggestIndex = -1;
+function cmpAuthTitles() {
+  return Array.from(cmpAuthHolders.keys()).sort((a, b) =>
     a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
   );
-  sel.replaceChildren();
-  const all = document.createElement("option");
-  all.value = "";
-  all.textContent = "All";
-  sel.appendChild(all);
-  titles.forEach((title) => {
-    const opt = document.createElement("option");
-    opt.value = title;
-    opt.textContent = title;
-    sel.appendChild(opt);
+}
+function cmpAuthLabel() {
+  if (!cmpAuth) return "";
+  if (cmpAuthKind === "op") {
+    const name = cmpOpNames.get(cmpAuth) || "";
+    return name ? cmpAuth + " · " + name : cmpAuth;
+  }
+  return cmpAuth;
+}
+function cmpAuthSuggestions(query) {
+  const q = String(query || "").trim().toLowerCase();
+  if (!q) return [];
+  const ops = [];
+  cmpOpNames.forEach((name, code) => {
+    const label = name ? code + " · " + name : code;
+    const codeL = code.toLowerCase();
+    const nameL = String(name || "").toLowerCase();
+    if (codeL.indexOf(q) === -1 && nameL.indexOf(q) === -1) return;
+    let rank = 3;
+    if (codeL === q) rank = 0;
+    else if (codeL.indexOf(q) === 0) rank = 1;
+    else if (nameL.indexOf(q) === 0) rank = 2;
+    ops.push({ kind: "op", value: code, label: label, rank: rank });
   });
-  if (current && cmpAuthHolders.has(current)) {
-    sel.value = current;
-    cmpAuth = current;
-  } else {
-    sel.value = "";
+  ops.sort((a, b) => a.rank - b.rank || a.value.localeCompare(b.value, undefined, { numeric: true, sensitivity: "base" }));
+  const mods = cmpAuthTitles()
+    .filter((title) => title.toLowerCase().indexOf(q) !== -1)
+    .map((title) => ({ kind: "module", value: title, label: title, rank: 4 }));
+  return ops.concat(mods);
+}
+function cmpResolveAuthQuery(raw) {
+  const q = String(raw || "").trim();
+  if (!q) return { kind: "", value: "" };
+  const ql = q.toLowerCase();
+  let byCode = "";
+  let byLabel = "";
+  cmpOpHolders.forEach((held, code) => {
+    const name = cmpOpNames.get(code) || "";
+    const label = name ? code + " · " + name : code;
+    if (code.toLowerCase() === ql) byCode = code;
+    else if (!byLabel && label.toLowerCase() === ql) byLabel = code;
+  });
+  const opCode = byCode || byLabel;
+  const mod = cmpAuthTitles().find((title) => title.toLowerCase() === ql) || "";
+  if (byCode && mod) return null;
+  if (opCode) return { kind: "op", value: opCode };
+  if (mod) return { kind: "module", value: mod };
+  return null;
+}
+function cmpHideAuthSuggest() {
+  const list = document.getElementById("cmp-auth-suggest");
+  const input = document.getElementById("cmp-auth");
+  if (list) {
+    list.hidden = true;
+    list.replaceChildren();
+  }
+  cmpAuthSuggestIndex = -1;
+  if (input) input.setAttribute("aria-expanded", "false");
+}
+function cmpAuthChoiceValid(choice) {
+  if (!choice || !choice.kind || !choice.value) return false;
+  if (choice.kind === "module") return cmpAuthHolders.has(choice.value);
+  if (choice.kind === "op") return cmpOpHolders.has(choice.value);
+  return false;
+}
+function cmpSyncAuthField() {
+  const input = document.getElementById("cmp-auth");
+  if (!input) return;
+  if (!cmpAuthChoiceValid({ kind: cmpAuthKind, value: cmpAuth })) {
+    cmpAuthKind = "";
     cmpAuth = "";
+  }
+  if (document.activeElement !== input) input.value = cmpAuthLabel();
+}
+function cmpSetAuth(choice) {
+  const next = cmpAuthChoiceValid(choice) ? choice : { kind: "", value: "" };
+  const input = document.getElementById("cmp-auth");
+  const changed = cmpAuthKind !== next.kind || cmpAuth !== next.value;
+  cmpAuthKind = next.kind;
+  cmpAuth = next.value;
+  if (input) input.value = cmpAuthLabel();
+  cmpHideAuthSuggest();
+  if (changed) paintCmp();
+}
+function cmpPaintAuthSuggest() {
+  const input = document.getElementById("cmp-auth");
+  const list = document.getElementById("cmp-auth-suggest");
+  if (!input || !list) return;
+  const matches = cmpAuthSuggestions(input.value);
+  list.replaceChildren();
+  cmpAuthSuggestIndex = -1;
+  if (!matches.length) {
+    list.hidden = true;
+    input.setAttribute("aria-expanded", "false");
+    return;
+  }
+  matches.forEach((item) => {
+    const li = document.createElement("li");
+    li.setAttribute("role", "option");
+    li.dataset.kind = item.kind;
+    li.dataset.value = item.value;
+    li.textContent = item.label;
+    li.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      cmpSetAuth({ kind: item.kind, value: item.value });
+    });
+    list.appendChild(li);
+  });
+  list.hidden = false;
+  input.setAttribute("aria-expanded", "true");
+}
+function cmpMarkAuthSuggest() {
+  const list = document.getElementById("cmp-auth-suggest");
+  if (!list) return;
+  const items = list.querySelectorAll("li");
+  items.forEach((li, i) => li.classList.toggle("on", i === cmpAuthSuggestIndex));
+  if (items[cmpAuthSuggestIndex]) items[cmpAuthSuggestIndex].scrollIntoView({ block: "nearest" });
+}
+function cmpCommitAuthInput() {
+  const input = document.getElementById("cmp-auth");
+  if (!input) return;
+  const raw = input.value.trim();
+  if (!raw) {
+    cmpSetAuth(null);
+    return;
+  }
+  const exact = cmpResolveAuthQuery(raw);
+  if (exact) {
+    cmpSetAuth(exact);
+    return;
+  }
+  input.value = cmpAuthLabel();
+  cmpHideAuthSuggest();
+}
+function cmpOnAuthInput() {
+  const input = document.getElementById("cmp-auth");
+  if (!input) return;
+  if (!input.value.trim()) {
+    cmpHideAuthSuggest();
+    if (cmpAuth) {
+      cmpAuthKind = "";
+      cmpAuth = "";
+      paintCmp();
+    }
+    return;
+  }
+  cmpPaintAuthSuggest();
+}
+function cmpOnAuthKeydown(e) {
+  const list = document.getElementById("cmp-auth-suggest");
+  const input = document.getElementById("cmp-auth");
+  if (!list || !input) return;
+  if (e.key === "ArrowDown" && list.hidden && input.value.trim()) cmpPaintAuthSuggest();
+  const items = Array.prototype.slice.call(list.querySelectorAll("li"));
+  if (e.key === "ArrowDown" && items.length) {
+    e.preventDefault();
+    cmpAuthSuggestIndex = Math.min(items.length - 1, cmpAuthSuggestIndex + 1);
+    cmpMarkAuthSuggest();
+  } else if (e.key === "ArrowUp" && items.length && !list.hidden) {
+    e.preventDefault();
+    cmpAuthSuggestIndex = Math.max(0, cmpAuthSuggestIndex <= 0 ? 0 : cmpAuthSuggestIndex - 1);
+    cmpMarkAuthSuggest();
+  } else if (e.key === "Enter") {
+    const pick = !list.hidden && cmpAuthSuggestIndex >= 0
+      ? items[cmpAuthSuggestIndex]
+      : (!list.hidden && items.length === 1 ? items[0] : null);
+    if (pick) {
+      e.preventDefault();
+      cmpSetAuth({ kind: pick.dataset.kind || "", value: pick.dataset.value || "" });
+    } else {
+      e.preventDefault();
+      cmpCommitAuthInput();
+    }
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    input.value = cmpAuthLabel();
+    cmpHideAuthSuggest();
   }
 }
 function cmpHoldAuth(staff) {
   if (!cmpAuth) return true;
-  const held = cmpAuthHolders.get(cmpAuth);
+  const map = cmpAuthKind === "op" ? cmpOpHolders : cmpAuthHolders;
+  const held = map.get(cmpAuth);
   return !!(held && held.has(padStaff(staff)));
 }
 function cmpAuthOk(row) {
@@ -1361,7 +1612,7 @@ function cmpForcedBucket(staff) {
   return "";
 }
 function cmpPaxSection(sec) {
-  return /^(LTC[12346]|LTCX|LTW[1-4])$/i.test(String(sec || "").trim());
+  return /^(LTC[12346]|LTCX|LTW[1-4]|LTN[1-4])$/i.test(String(sec || "").trim());
 }
 function cmpPersonBucket(person) {
   const g = String((person && person.group) || "").trim().toUpperCase();
@@ -1922,7 +2173,7 @@ function cmpTovCreationLabel() {
   const org = cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All");
   const role = cmpRole === "cs" ? "CS" : (cmpRole === "mech" ? "Mech" : "All");
   return org + " (" + role + ") outstanding added" + (cmpIncludeNear ? " + near expiry" : "") +
-    (cmpAuth ? " · Auth " + cmpAuth : "");
+    (cmpAuth ? " · Auth " + cmpAuthLabel() : "");
 }
 function cmpMergeTovText(prev, add) {
   const cur = String(prev || "").trim() || "Not created";
@@ -2462,7 +2713,7 @@ async function runCmpAddToTov() {
   let lead = "Add " + people.length + " Manual outstanding row(s) to Training One View for course " + (code || "(unknown)") + ".";
   lead += " Outstanding " + outN + ".";
   if (cmpIncludeNear) lead += " Near expiry " + nearN + ".";
-  if (cmpAuth) lead += " Auth: " + cmpAuth + ".";
+  if (cmpAuth) lead += " Auth: " + cmpAuthLabel() + ".";
   lead += " Blank completed date → due one week ago. Existing Manual for the same staff and course is skipped.";
   openCmpTovPop({
     mode: "confirm",
@@ -2841,7 +3092,7 @@ function paintCmp() {
       " · Not required yet " + scoped.filter((row) => row.skipOsFlag).length +
       " · Near red " + nearRed +
       " · Near yellow " + nearYellow +
-      (cmpAuth ? " · Auth " + cmpAuth : "") +
+      (cmpAuth ? " · Auth " + cmpAuthLabel() : "") +
       " · Skipped " + cmpModel.skipped + " (not on Name List)." +
       (cmpModel.usual || !(cmpModel.columns && cmpModel.columns.length) ? "" : " Columns " + cmpModel.columns.join(", ") + ".");
   }
@@ -2875,7 +3126,7 @@ function exportCmpXlsx() {
     ["Group", cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All")],
     ["Role", roleLabel],
     ["Status", statusLabel],
-    ["Auth", cmpAuth || "All"],
+    ["Auth", cmpAuthLabel() || "All"],
     ["Validity years", String(cmpExpiryYears)],
     ["Never in file", String((cmpModel && cmpModel.neverInFile) || 0)],
     ["Sort", cmpSortKey ? (sortLabels[cmpSortKey] || cmpSortKey) + (cmpSortDir >= 0 ? " A to Z" : " Z to A") : ""],
@@ -3319,13 +3570,11 @@ function takeCmpFile(file) {
   });
 }
 cmpIndexAuth();
-cmpFillAuthSelect();
-document.getElementById("cmp-auth").addEventListener("change", (e) => {
-  const next = String(e.target.value || "");
-  cmpAuth = cmpAuthHolders.has(next) ? next : "";
-  if (!cmpAuth) e.target.value = "";
-  paintCmp();
-});
+cmpSyncAuthField();
+document.getElementById("cmp-auth").addEventListener("input", cmpOnAuthInput);
+document.getElementById("cmp-auth").addEventListener("search", cmpOnAuthInput);
+document.getElementById("cmp-auth").addEventListener("keydown", cmpOnAuthKeydown);
+document.getElementById("cmp-auth").addEventListener("blur", cmpCommitAuthInput);
 document.getElementById("cmp-years").addEventListener("input", (e) => {
   if (cmpLockNoExpiryYears()) {
     paintCmp();

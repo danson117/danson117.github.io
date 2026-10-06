@@ -248,6 +248,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · Auth 搜尋：</b>工具列 <b>Auth</b> 唔再係下拉。係搜尋格，預設空＝<b>All</b>。打字先出對應選項，唔好一開就列出全部。可以打 Authorization List <b>Module</b> title，或者航空公司代號／名（例 <b>AC</b> → <b>AC · AIR CANADA</b>；名同 Authorization List 嘅 operator 對法一樣，同一份 <code>AUTH_PACK</code>；只計 Name List 人）。Module 同 operator 係同一個格嘅兩個揀法，同一時間只得一個。揀咗之後，Outstanding 畫面、Group／Role／Status 嘅 Outstanding 人數、同 <b>Add to TOV</b>（包括 Include near expiry）只包括有呢個 Module、或者有呢個 operator 授權嘅人。清空格即返 All。打到完整 Module 名或完整 operator 代號先算揀中；打咗但未揀、又唔係完整名或代號，離開格就還原，唔會用半截字篩。方向鍵、Enter、Escape 可用。Completed 維持 Completed。冇呢個授權嘅人唔當 outstanding、唔入 outstanding 人數。改 Auth 即時重篩，唔寫 Supabase，亦唔改 Check log。頁 <b>v2.23</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Auth 篩選：</b>工具列 Status 同 Expiry 之間有 <b>Auth</b> 下拉，預設 <b>All</b>。選項係 Authorization List 嘅 <b>Module</b> title（同一份 <code>AUTH_PACK</code>；只計 Name List 人）。揀一個之後，Outstanding 畫面、Group／Role／Status 嘅 Outstanding 人數、同 <b>Add to TOV</b>（包括 Include near expiry）只包括 Authorization List 有呢個 Module 嘅人。有行就算有授權，唔另加過期規則。Completed 維持 Completed。冇呢個授權嘅人唔當 outstanding、唔入 outstanding 人數。改 Auth 即時重篩，唔寫 Supabase，亦唔改 Check log／<code>course-completion-checks</code> 存低嘅名單。頁 <b>v2.22</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · EASA (LX) 無期限：</b><b>T.EE0544</b>（SWISS B777 ETOPS Training）、<b>T.EE0686</b>（SWISS INTERNATIONAL AIRLINES Docs &amp; Proc Training）、<b>T.X432</b>（SWISS LHG Ramp Safety Training；Course List 名 T.X432 SWISS Ramp Safety Training）。證據係 Training One View status remark <b>EASA (LX) AUDIT</b>（T.EE0544 同一輪 LX audit 寫過，未完成行之後已刪）。Course List 標題寫 SWISS，冇字面 LX。呢三科 Expiry＝<b>0</b>，冇到期日。任何年份嘅完成日都維持 <b>Completed</b>，唔好當過期／Outstanding。冇完成日、或者檔入面冇出現（Never in file）仍然 Outstanding。唔包括 T.F270（EASA MOE，唔係 LX）同 T.A084（Ramp Safety，標題冇 EASA）。頁 <b>v2.20</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Check log 較新遠端贏：</b>本機 <code>hx:course-completion:checks</code> 要記住 shared doc 嘅 <code>updated</code>。開頁同步用呢個時間，唔好每次打包都改成而家。舊陣列冇時間 → 當較舊，遠端較新嘅完成狀態會蓋過本機 outstanding。只有分析檔、改 Remark、加／移除 TOV 先把時間改成而家再上傳。已經開住嘅舊頁仍然會用舊程式把本機名單蓋返伺服器，要閂咗佢，等呢版載入之後先再開。頁 <b>v2.19</b>。</li>
@@ -396,6 +397,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.81">v10.81</div>
+  <div class="page-version" data-version="10.82">v10.82</div>
 </body>
 </html>
