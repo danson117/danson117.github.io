@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 公司電腦
 
+- **OCG Name List · LTN1–LTN4：** 加 **34**（更新 **0**）。Section **LTN1–LTN4**，全部 **Mechanic**，跟名冊計入 Training One View、Course completion、Authorization List、License Records、Briefing and R&S、Name List。Course completion PAX 白名單加 LTN1–LTN4。冇新開訓練行。Name List **v3.23**、`ocg-pax-data.js?v=16`、Course completion **v2.24**、Auth **v2.19**、Lic **v2.8**、TOV **v15.41**、BRS **v5.5**、hub **v21.11**、`hx-rules` **v10.83**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 公司電腦
+
 - **Course completion · Auth 搜尋：** 工具列 Auth 由下拉改做搜尋格，預設空＝All。打字先出對應選項，唔一開就列全部。可打 Authorization List Module title，或者航空公司代號／名（AC → AC · AIR CANADA；名同 Authorization List operator 對法，同一份 `AUTH_PACK`）。Module 同 operator 同一格、同一時間只得一個。Outstanding 畫面、Group／Role／Status 嘅 Outstanding 人數、同 Add to TOV（包括 Include near expiry）只計有該 Module、或者有該 operator 授權嘅 Name List 人。清空返 All。半截字唔篩，離開格還原。方向鍵、Enter、Escape 可用。Completed 維持 Completed。唔寫 Supabase，唔改 Check log。Course completion **v2.23**、hub **v21.10**、`hx-rules` **v10.82**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 公司電腦

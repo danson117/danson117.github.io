@@ -115,12 +115,13 @@
       <p><b>UA</b> shows the V number (30 Sep 2026). A cell that still says UA has authorization and no V number.</p>
       <p><b>Full List</b> shows every staff record. <b>Name List</b> columns come first (CG/PAX, Staff No, Staff Name, Chinese Name, Home Section, Current Section, Team, Staff Position, Position Title, Class, Status, Date join, Date Term, Revenue Code), then <b>Crew List</b> columns that are not duplicates (Shift, Ω, UA, MM Refueller, JL, JJP). <b>Remark</b> sits after the name. A Remark <b>01OCT will transfer to CXG</b> or <b>No longer OCG</b> is a record only: they used to be OCG. They stay on Full List (yellow row) and are not in the OCG / CG / PAX / role counts, not on Crew List or Name List, and not in training.</p>
       <p><b>Home / Current</b> for the 2 Oct 2026 update uses the numbered sections <b>LTC1, LTC2, LTC3, LTC4, LTC6, LTCX</b> and <b>LTW1–LTW4</b>. The old LTA / LGEX / LTDX codes for those people are no longer their section. <b>Future sections</b> is the only LT family list (no team digit). Team digits 1–9 and duplicate rows stay off that table (LTY1–9 → LTY). Letter suffixes stay (LTCX, LTDC, LTFA, LTXM). The hub hash <b>#sections</b> opens this tab.</p>
+      <p><b>LTN1–LTN4</b> are the CX PAX A320 team. Those 34 people are PAX Mechanics and are included in the Name List counts. Revenue YES is the revenue code.</p>
       <p>When <b>Home</b> and <b>Current</b> are the same code and the last character is <b>1, 2, 3, or 4</b>, <b>Team</b> follows that digit unless a crew code is already stored. A last character of <b>5</b> or <b>X</b> stays <b>TBD</b>. Crew codes such as <b>1P</b>, <b>E1</b>, <b>D1</b>, and <b>00</b> are the Team value. If Home and Current disagree with a new crew file, Team stays as it is until you choose. A Team value does not change CG / PAX.</p>
       <p><b>OCG</b> = CG + PAX (the total). A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = already marked PAX on the roster, or on the Crew List (including FLS and RF). <b>CG</b> stays CG. A <b>Team</b> number is only a team number and does not make someone PAX, so CG can have a Team number. <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC). <b>Office</b> = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
     </div>
   </div>
-  <div class="page-version" data-version="3.22">v3.22</div>
-<script src="ocg-pax-data.js?v=15"></script>
+  <div class="page-version" data-version="3.23">v3.23</div>
+<script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script>
 hxUnpackRoster();
@@ -318,6 +319,7 @@ function rowsAll(){
   return STAFF;
 }
 const TEAM_BY_STAFF = new Map(FULL.map(r => [padStaff(r.staff), String(r.team || "").trim()]));
+const GROUP_BY_STAFF = new Map(FULL.map(r => [padStaff(r.staff), String(r.group || "").trim()]));
 function teamOf(r){
   if (r && Object.prototype.hasOwnProperty.call(r, "team")) return String(r.team || "").trim();
   return TEAM_BY_STAFF.get(padStaff(r && r.staff)) || "";
@@ -335,8 +337,10 @@ function groupOk(r, g){
   return r.group === g;
 }
 function orgOf(r){
-  if (r.group === "PAX") return "PAX";
-  const raw = String(r.staff || "").trim();
+  const marked = String((r && r.group) || GROUP_BY_STAFF.get(padStaff(r && r.staff)) || "").trim();
+  if (marked === "PAX") return "PAX";
+  if (marked === "CG" || marked === "OC") return "CG";
+  const raw = String((r && r.staff) || "").trim();
   if (CREW_IDS.has(raw) || (raw && CREW_IDS.has(raw.padStart(6, "0")))) return "PAX";
   return "CG";
 }
