@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 公司電腦
 
+- **Course completion · Auth 篩選：** 工具列 Status 同 Expiry 之間加 **Auth** 下拉，預設 **All**。選項係 Authorization List 嘅 Module title（`AUTH_PACK`；Name List 先計；每個 Module 對一個授權）。揀咗之後，Outstanding 畫面、Group／Role／Status 嘅 Outstanding 人數、同 Add to TOV（包括 Include near expiry）只計有呢個 Module 嘅人。Completed 維持 Completed。冇呢個授權、原本會 outstanding 嘅人唔當 outstanding、唔入人數。改 Auth 即時重篩，唔寫 Supabase，亦唔改 Check log／`course-completion-checks` 存低嘅 outstanding 名單。Course completion **v2.22**、hub **v21.9**、`hx-rules` **v10.81**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 公司電腦
+
 - **TOV Manual · T.A084 跟 Course completion 無 2 年：** Manual outstanding **249 → 7**（檔內冇完成日嘅 CG Mech）。**242** 有完成日，標 Completed，完成日跟 course-completion check（Expiry **0**，唔再留完成日加 2 年嘅 due，所以唔會再入 90 日 outstanding 窗口）。冇刪行。其他課程唔郁。Check log Expiry 維持 0（人數 0／7／1／1）。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 公司電腦
