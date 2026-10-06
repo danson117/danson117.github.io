@@ -35,7 +35,7 @@ alwaysApply: true
 - **Course completion · Check log 跟選項：** 一行係 course ＋ Auth ＋ Expiry ＋ Include near expiry。上面 Outstanding 係 0，呢一行四個人數都跟，可以係 0。同一科、選項唔同就多一行。選項一樣、只係 xlsx 唔同，就更新嗰行 Outstanding／File／Checked；Remark 同 TOV Creation 保留。Group／Role／Status 唔會因為撳咗就多開一行。頁 v2.25。詳見 `HX/hx-rules.html` 紅字。
 - **Course completion · Check log 表頭排序：** 每欄表頭可撳。文字 A→Z；人數同 Expiry 由大到細；Checked 由新到舊。再撳反向。空白最後。Remove 欄唔排序。只改畫面同 Export 次序，唔改存檔。頁 v2.17。
 - **Course completion · 290990 / 288531：** 讀檔一開始，290990 強制當 PAX、288531 強制當 CG，Planning、LTGC、唔係平常 department，同 PAX section 白名單都唔剔走呢兩行。
-- **Outstanding course chips · Unselect all：** Detail course chips 旁 **Unselect all** 一次收起全部 course。之後逐粒 chip 加或收。只係今次畫面，refresh 恢復。唔寫 Supabase。TOV v15.25。
+- **Outstanding course chips · Unselect all：** Detail course chips 旁 **Unselect all** 一次收起全部 course。全部收起之後個掣變 **Select all**，再撳一次顯示返全部。未收齊時仍然係 Unselect all。之後逐粒 chip 加或收。只係今次畫面，refresh 恢復。唔寫 Supabase。TOV v15.43。
 - **產生 XLSX 基本要求：** 之後任何產生嘅 `.xlsx`（唔限 Training One View）都要表頭 **AutoFilter**（只包數據表，第一行全空行之後嘅註解唔入範圍）同埋欄闊跟表頭／內容（約 12–48 字寬，留少少空）。共用寫入 `HX/hx-xlsx.js`；頁面自己寫都要同一樣。詳見 `HX/hx-rules.html` 紅字。
 - 零碎筆記：畫面唔顯示「記下」／時間／caption。時間只留 `#scratch-ledger`。
 - Training One View ingest：**no silent skip**。認唔到或做唔到必要步驟 → 彈窗、整份檔 REJECT、唔寫入。UAL：Planning / **145 & OCG Planning** 唔當 OCG。真正 OCG 人唔喺 Name List 先彈窗；橙色 Override 可以確認後繼續（只入 Name List）。**LTA* 唔喺 Name List＝CXG A/B/C/D，自動 filter**。CGO AF 當 AF，Name List 有就唔彈。UAL 回覆串最上封最新，要 `From:` 下一行 `Sent:` 先切開。人名彈窗 2–6 可 Override；新 UAL Training Code（字母碼，後面係到期日同剩餘日）直接加入並繼續；空碼或唔似課程碼仍然 7 硬 reject。Typo 要名一樣或調轉 + # 差少少；名唔同就當兩個人。板面中 Name List 先顯示。詳見 `HX/hx-rules.html` 紅字 **Ingest reject** / **UAL email trail** / **Ingest person popups**。

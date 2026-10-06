@@ -1841,7 +1841,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.42" aria-label="Page version 15.42">v15.42</div>
+  <div class="page-version" data-version="15.43" aria-label="Page version 15.43">v15.43</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -4838,8 +4838,13 @@ function personOmitHiddenCourses(who) {
 }
 function courseHideBarHtml(codes) {
   if (!codes || !codes.length) return "";
+  const allHidden = codes.every(([key]) => hiddenCourseCodes.has(key));
+  const bulkLabel = allHidden ? "Select all" : "Unselect all";
+  const bulkTitle = allHidden
+    ? "Show every course chip."
+    : "Clear every course chip. Click again to show them all.";
   return "<div class=\"course-hide-bar\" role=\"group\" aria-label=\"Outstanding courses\">" +
-    "<button type=\"button\" class=\"course-unselect\" data-unselect-courses title=\"Clear every course chip. Then click the courses you want.\">Unselect all</button>" +
+    "<button type=\"button\" class=\"course-unselect\" data-unselect-courses title=\"" + bulkTitle + "\" aria-pressed=\"" + (allHidden ? "true" : "false") + "\">" + bulkLabel + "</button>" +
     codes.map(([key, label]) => {
       const shown = !hiddenCourseCodes.has(key);
       return "<button type=\"button\" data-hide-course=\"" + esc(key) + "\"" +
@@ -10076,7 +10081,10 @@ document.getElementById("detail").addEventListener("click", (e) => {
   }
   const unselectCourses = e.target.closest("[data-unselect-courses]");
   if (unselectCourses) {
-    (detailCourseChoices || []).forEach((pair) => hiddenCourseCodes.add(pair[0]));
+    const choices = detailCourseChoices || [];
+    const allHidden = choices.length && choices.every((pair) => hiddenCourseCodes.has(pair[0]));
+    if (allHidden) choices.forEach((pair) => hiddenCourseCodes.delete(pair[0]));
+    else choices.forEach((pair) => hiddenCourseCodes.add(pair[0]));
     paint();
     return;
   }
