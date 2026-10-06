@@ -544,7 +544,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.28" aria-label="Page version 2.28">v2.28</div>
+  <div class="page-version" data-version="2.29" aria-label="Page version 2.29">v2.29</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -1171,6 +1171,7 @@ function cmpSetAuth(choice) {
   const changed = cmpAuthKind !== next.kind || cmpAuth !== next.value;
   cmpAuthKind = next.kind;
   cmpAuth = next.value;
+  if (changed && next.value) cmpRole = "cs";
   if (input) input.value = cmpAuthLabel();
   cmpHideAuthSuggest();
   if (changed) {
@@ -3739,7 +3740,7 @@ function cmpApplyRememberedYears() {
 function cmpApplyModel(model) {
   cmpModel = model;
   cmpFilter = "outstanding";
-  cmpRole = "mech";
+  cmpRole = cmpAuth ? "cs" : "mech";
   cmpOrg = "all";
   cmpSortKey = "done";
   cmpSortDir = -1;

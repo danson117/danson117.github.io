@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · Auth 揀咗 Role 跳 CS：** Auth 有揀，Role 自動 CS，之後仍可再揀 Role。清空 Auth 唔改 Role。Course completion **v2.29**、hub **v21.19**、`hx-rules` **v10.91**。GitHub 後備 → Vercel。要閂舊 Course completion 分頁。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · Create check log：** 未放檔唔出人數，Expiry 留空。放檔後先用該科上次 Check log 年期，冇就 2，個格可改，選項一轉即時重計。Check log 只喺撳 **Create check log** 先寫；選項一樣就更新，唔同就多一行。更新時，新檔已完成而且 TOV 有對應行，就把完成日寫入 TOV。Add to TOV 右邊 **TOV remark** 寫入新 Manual 行。Course completion **v2.28**、hub **v21.18**、`hx-rules` **v10.90**。GitHub 後備 → Vercel。要閂舊 Course completion 分頁。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
