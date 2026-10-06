@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · 存檔同 Name List 重計：** 舊 Check log 人數係分析當刻，原 xlsx 冇留低。開頁會用當時已入名冊嘅完成日，跟而家 Name List 重計 Outstanding。之後每次放檔都儲完成名單；同名檔取代舊名單並更新用緊呢個檔名嘅 Check log。當時喺檔入面但未入名冊嘅人，要再放一次個檔先有完成日。Course completion **v2.30**、hub **v21.20**、`hx-rules` **v10.92**。GitHub 後備 → Vercel。要閂舊 Course completion 分頁。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Course completion · Auth 揀咗 Role 跳 CS：** Auth 有揀，Role 自動 CS，之後仍可再揀 Role。清空 Auth 唔改 Role。Course completion **v2.29**、hub **v21.19**、`hx-rules` **v10.91**。GitHub 後備 → Vercel。要閂舊 Course completion 分頁。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

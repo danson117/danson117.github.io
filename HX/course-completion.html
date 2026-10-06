@@ -461,7 +461,7 @@
         </div>
       </div>
       <h2 class="check-h">Check log</h2>
-      <p class="note">Nothing is written here until you click <b>Create check log</b>. Same course and same Auth, Category, A/C Type, Expiry, and Include near expiry update that row. Different options add a row. Click a column header to sort; click it again to reverse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. People still covered by a valid initial, sibling initial, or takeover sit in Completed, not in a separate Not due count. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
+      <p class="note">Nothing is written here until you click <b>Create check log</b>. Each dropped file is saved. The same file name replaces that saved file and updates Check log rows that use it. A Name List change recalculates outstanding from the saved completions. Same course and same Auth, Category, A/C Type, Expiry, and Include near expiry update that row. Different options add a row. Click a column header to sort; click it again to reverse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. People still covered by a valid initial, sibling initial, or takeover sit in Completed, not in a separate Not due count. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
       <div class="cmp-tools" id="cmp-log-tools">
         <button type="button" id="cmp-create-log" disabled title="Drop a file first. Then this saves the current options as a Check log row.">Create check log</button>
         <button type="button" id="cmp-log-export">Export check log</button>
@@ -544,7 +544,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.29" aria-label="Page version 2.29">v2.29</div>
+  <div class="page-version" data-version="2.30" aria-label="Page version 2.30">v2.30</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -804,6 +804,8 @@ let cmpViewCloudReady = false;
 let cmpViewSuppress = false;
 let cmpViewSyncing = false;
 let cmpChecksUpdated = "";
+let cmpFileSources = [];
+let cmpRosterSaved = "";
 let cmpCheckCloudReady = false;
 let cmpCheckSuppressPush = false;
 function cmpRoleOf(rec) {
@@ -1944,30 +1946,73 @@ function cmpFitOsCount(stored, rawList, keptList) {
   if (keptList.length < rawN) return keptList.length;
   return stored;
 }
+function cmpFileKey(name) {
+  return String(name || "").trim().toLowerCase();
+}
+function cmpNormFileSource(raw) {
+  const hits = [];
+  const at = new Map();
+  (Array.isArray(raw && raw.hits) ? raw.hits : []).forEach((h) => {
+    const id = padStaff(h && h.staff);
+    const done = String((h && h.done) || "").slice(0, 10);
+    if (!/^\d{6}$/.test(id) || !/^\d{4}-\d{2}-\d{2}$/.test(done)) return;
+    const prev = at.get(id);
+    if (prev == null) {
+      at.set(id, hits.length);
+      hits.push({ staff: id, done: done });
+      return;
+    }
+    if (done > hits[prev].done) hits[prev].done = done;
+  });
+  return {
+    file: String((raw && raw.file) || "").trim(),
+    code: String((raw && raw.code) || "").trim(),
+    title: String((raw && raw.title) || "").trim(),
+    hits: hits
+  };
+}
+function cmpCheckBundle() {
+  return {
+    updated: cmpChecksUpdated || "",
+    roster: cmpRosterSaved || "",
+    rows: cmpChecks.map(cmpNormCheck),
+    files: cmpFileSources.map(cmpNormFileSource).filter((s) => s.file)
+  };
+}
+function cmpReadCheckBundle(parsed) {
+  cmpFileSources = [];
+  cmpRosterSaved = "";
+  if (Array.isArray(parsed)) {
+    cmpChecks = parsed.map(cmpNormCheck).filter((r) => r.code);
+    cmpChecksUpdated = "";
+    return;
+  }
+  if (!parsed || typeof parsed !== "object") {
+    cmpChecks = [];
+    cmpChecksUpdated = "";
+    return;
+  }
+  const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
+  cmpChecks = rows.map(cmpNormCheck).filter((r) => r.code);
+  cmpChecksUpdated = String(parsed.updated || "");
+  cmpRosterSaved = String(parsed.roster || "");
+  cmpFileSources = (Array.isArray(parsed.files) ? parsed.files : []).map(cmpNormFileSource).filter((s) => s.file);
+}
 function cmpLoadChecks() {
   cmpChecks = [];
   cmpChecksUpdated = "";
   try {
-    const parsed = JSON.parse(cmpLsGet(CMP_CHECK_STORE) || "[]");
-    if (Array.isArray(parsed)) {
-      cmpChecks = parsed.map(cmpNormCheck).filter((r) => r.code);
-      cmpChecksUpdated = "";
-    } else if (parsed && typeof parsed === "object") {
-      const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
-      cmpChecks = rows.map(cmpNormCheck).filter((r) => r.code);
-      cmpChecksUpdated = String(parsed.updated || "");
-    }
+    cmpReadCheckBundle(JSON.parse(cmpLsGet(CMP_CHECK_STORE) || "[]"));
   } catch (e) {
     cmpChecks = [];
     cmpChecksUpdated = "";
+    cmpFileSources = [];
+    cmpRosterSaved = "";
   }
 }
 function cmpWriteChecksLocal() {
   try {
-    cmpLsSet(CMP_CHECK_STORE, JSON.stringify({
-      updated: cmpChecksUpdated || "",
-      rows: cmpChecks.map(cmpNormCheck)
-    }));
+    cmpLsSet(CMP_CHECK_STORE, JSON.stringify(cmpCheckBundle()));
   } catch (e) {}
 }
 function cmpPersistChecks() {
@@ -1976,20 +2021,235 @@ function cmpPersistChecks() {
   scheduleCmpCheckPush();
 }
 function cmpPackCheckDoc() {
-  return {
-    v: 1,
-    updated: cmpChecksUpdated || "",
-    app: "course-completion-checks",
-    rows: cmpChecks.map(cmpNormCheck)
-  };
+  return Object.assign({ v: 1, app: "course-completion-checks" }, cmpCheckBundle());
 }
 function cmpApplyCheckDoc(doc) {
   if (!doc || !Array.isArray(doc.rows)) return;
   cmpCheckSuppressPush = true;
-  cmpChecksUpdated = String((doc && doc.updated) || "");
-  cmpChecks = doc.rows.map(cmpNormCheck).filter((r) => r.code);
+  cmpReadCheckBundle(doc);
   cmpWriteChecksLocal();
   window.setTimeout(() => { cmpCheckSuppressPush = false; }, 50);
+}
+function cmpRosterStamp() {
+  let n = 0;
+  let h = 2166136261;
+  Array.from(byStaff.keys()).sort().forEach((id) => {
+    n += 1;
+    const s = String(id);
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+  });
+  return n + ":" + (h >>> 0).toString(16);
+}
+function cmpSourceForFile(name) {
+  const key = cmpFileKey(name);
+  if (!key) return null;
+  return cmpFileSources.find((s) => cmpFileKey(s.file) === key) || null;
+}
+function cmpSourceForRow(row) {
+  if (row && row.file && cmpSourceForFile(row.file)) return cmpSourceForFile(row.file);
+  const key = "course:" + cmpNormCourseCode(row && row.code);
+  return cmpFileSources.find((s) => s.file === key) || null;
+}
+function cmpMergeHits(into, extra) {
+  const at = new Map();
+  into.forEach((h, i) => at.set(h.staff, i));
+  (extra || []).forEach((h) => {
+    const id = padStaff(h && h.staff);
+    const done = String((h && h.done) || "").slice(0, 10);
+    if (!/^\d{6}$/.test(id) || !/^\d{4}-\d{2}-\d{2}$/.test(done)) return;
+    const i = at.get(id);
+    if (i == null) {
+      at.set(id, into.length);
+      into.push({ staff: id, done: done });
+    } else if (done > into[i].done) into[i].done = done;
+  });
+}
+function cmpHitsFromDonePeople(row) {
+  const hits = [];
+  cmpMergeHits(hits, row && row.donePeople);
+  return hits;
+}
+function cmpEnsureLegacySources() {
+  cmpChecks.forEach((row) => {
+    const hits = cmpHitsFromDonePeople(row);
+    if (!hits.length && !(row.openPeople && row.openPeople.length)) return;
+    const named = String(row.file || "").trim();
+    const key = named || ("course:" + cmpNormCourseCode(row.code));
+    let src = named ? cmpSourceForFile(named) : cmpFileSources.find((s) => s.file === key);
+    if (!src) {
+      src = { file: key, code: row.code || "", title: row.title || "", hits: [] };
+      cmpFileSources.push(src);
+    }
+    if (!src.code) src.code = row.code || "";
+    if (!src.title && row.title) src.title = row.title;
+    cmpMergeHits(src.hits, hits);
+  });
+}
+function cmpRowsFromHits(hits, code, title) {
+  const roles = cmpRoleMap();
+  const rows = [];
+  const covered = new Set();
+  (hits || []).forEach((h) => {
+    const id = padStaff(h.staff);
+    const done = String(h.done || "").slice(0, 10);
+    if (!rosterHas(id) || !/^\d{4}-\d{2}-\d{2}$/.test(done) || covered.has(id)) return;
+    const person = byStaff.get(id) || {};
+    const bucket = cmpPersonBucket(person);
+    if (!bucket) return;
+    const section = String(person.home || "").trim();
+    if (bucket === "PAX" && !cmpPaxSection(section)) return;
+    covered.add(id);
+    rows.push({
+      staff: id,
+      name: String(person.name || "").trim(),
+      section: section,
+      code: code,
+      title: title || "",
+      status: "Completed",
+      done: done,
+      doneFlag: true,
+      role: roles.get(id) || "",
+      bucket: bucket,
+      fromFile: true
+    });
+  });
+  byStaff.forEach((person, id) => {
+    if (covered.has(id)) return;
+    const bucket = cmpPersonBucket(person);
+    if (!bucket) return;
+    const section = String(person.home || "").trim();
+    if (bucket === "PAX" && !cmpPaxSection(section)) return;
+    rows.push({
+      staff: id,
+      name: String(person.name || "").trim(),
+      section: section,
+      code: code,
+      title: title || "",
+      status: "Outstanding",
+      done: "",
+      doneFlag: false,
+      role: roles.get(id) || "",
+      bucket: bucket,
+      fromFile: false
+    });
+  });
+  return rows;
+}
+function cmpWithRowOptions(row, fn) {
+  const prev = {
+    years: cmpExpiryYears,
+    auth: cmpAuth,
+    kind: cmpAuthKind,
+    cat: cmpCat,
+    ac: cmpAc,
+    model: cmpModel
+  };
+  cmpExpiryYears = Math.max(0, parseInt(row && row.expiry, 10) || 0);
+  cmpAuthKind = String((row && row.authKind) || "");
+  cmpAuth = String((row && row.auth) || "");
+  cmpCat = String((row && row.cat) || "");
+  cmpAc = String((row && row.ac) || "");
+  try {
+    return fn();
+  } finally {
+    cmpExpiryYears = prev.years;
+    cmpAuth = prev.auth;
+    cmpAuthKind = prev.kind;
+    cmpCat = prev.cat;
+    cmpAc = prev.ac;
+    cmpModel = prev.model;
+  }
+}
+function cmpFillCheckPeople(row, rows) {
+  const seenDone = new Set();
+  row.donePeople = [];
+  row.openPeople = [];
+  (rows || []).forEach((r) => {
+    if (!r.fromFile || !r.done) return;
+    const id = padStaff(r.staff);
+    if (!id || seenDone.has(id) || !rosterHas(id)) return;
+    seenDone.add(id);
+    row.donePeople.push({ staff: id, done: r.done, code: r.code || row.code });
+  });
+  (rows || []).forEach((r) => {
+    const view = cmpViewExpiry(r);
+    if (view.doneFlag) return;
+    if (!cmpAuthOk(view)) return;
+    if (!rosterHas(view.staff)) return;
+    const rec = cmpRosterPerson(view.staff);
+    rec.role = view.role;
+    rec.bucket = view.bucket;
+    rec.done = view.done || "";
+    rec.fromFile = !!view.fromFile;
+    rec.expired = !!view.expired;
+    rec.section = rec.section || view.section;
+    rec.name = rec.name || view.name;
+    row.openPeople.push(rec);
+  });
+  cmpRefreshCheckFamily(row);
+}
+function cmpRebuildCheck(row, src, opts) {
+  opts = opts || {};
+  if (!row || !src) return;
+  const code = String(src.code || row.code || "").trim();
+  const title = String(src.title || row.title || "").trim();
+  cmpWithRowOptions(row, () => {
+    const rows = cmpRowsFromHits(src.hits, code, title);
+    cmpModel = { rows: rows, keptCode: code, fileName: row.file || src.file || "", error: "" };
+    row.code = code;
+    if (title) row.title = title;
+    cmpFillCheckPeople(row, rows);
+  });
+  if (opts.touchChecked) row.checked = cmpNowHkt();
+}
+function cmpSaveFileSource(model) {
+  if (!model || model.error || !model.fileName || !model.keptCode) return false;
+  const title = String((model.rows || []).map((r) => r.title).find(Boolean) || "").trim();
+  const rec = cmpNormFileSource({
+    file: model.fileName,
+    code: model.keptCode,
+    title: title,
+    hits: model.fileHits || []
+  });
+  if (!rec.file) return false;
+  const i = cmpFileSources.findIndex((s) => cmpFileKey(s.file) === cmpFileKey(rec.file));
+  if (i >= 0) cmpFileSources[i] = rec;
+  else cmpFileSources.push(rec);
+  return true;
+}
+function cmpRefreshChecksForFile(fileName, opts) {
+  const src = cmpSourceForFile(fileName);
+  if (!src) return 0;
+  let n = 0;
+  cmpChecks.forEach((row) => {
+    if (cmpFileKey(row.file) !== cmpFileKey(fileName)) return;
+    cmpRebuildCheck(row, src, opts);
+    n += 1;
+  });
+  return n;
+}
+function cmpSyncChecksToRoster() {
+  if (!byStaff.size) return 0;
+  const stamp = cmpRosterStamp();
+  cmpEnsureLegacySources();
+  if (stamp === cmpRosterSaved) return 0;
+  let n = 0;
+  cmpChecks.forEach((row) => {
+    const src = cmpSourceForRow(row);
+    if (!src) return;
+    cmpRebuildCheck(row, src);
+    n += 1;
+  });
+  cmpRosterSaved = stamp;
+  if (n) cmpPersistChecks();
+  else {
+    cmpChecksUpdated = cmpChecksUpdated || "";
+    cmpWriteChecksLocal();
+  }
+  return n;
 }
 const scheduleCmpCheckPush = (window.HxSharedSync && window.HxSharedSync.schedule)
   ? window.HxSharedSync.schedule(async () => {
@@ -3097,8 +3357,28 @@ function cmpBuildFromKept(kept, fileName, header, map, extra) {
     fileName: fileName, fileRows: fileRows, skipped: skipped, rows: rows, columns: columns, usual: usual,
     headAt: headAt, header: header, map: map, keptCode: keptCode, otherDept: otherDept, otherCodes: otherCodes,
     notCompleted: notCompleted, paxSection: paxSection, neverInFile: neverInFile,
-    sheetNames: extra.sheetNames || []
+    sheetNames: extra.sheetNames || [], fileHits: cmpFileHitsFromKept(kept, keptCode)
   };
+}
+function cmpFileHitsFromKept(kept, keptCode) {
+  const hits = [];
+  const at = new Map();
+  (kept || []).forEach((item) => {
+    if (!item || item.codeKey !== keptCode) return;
+    const status = cmpCanonStatus(item.status || "Completed");
+    if (item.hasStatus && !cmpIsCompletedStatus(status)) return;
+    const done = String(item.done || "").slice(0, 10);
+    const id = padStaff(item.staff);
+    if (!/^\d{6}$/.test(id) || !/^\d{4}-\d{2}-\d{2}$/.test(done)) return;
+    const prev = at.get(id);
+    if (prev == null) {
+      at.set(id, hits.length);
+      hits.push({ staff: id, done: done });
+      return;
+    }
+    if (done > hits[prev].done) hits[prev].done = done;
+  });
+  return hits;
 }
 function cmpBuild(grid, fileName, headAt, header, map, sheetBucket) {
   if (!byStaff.size) return { error: "Name List did not load." };
@@ -3745,6 +4025,11 @@ function cmpApplyModel(model) {
   cmpSortKey = "done";
   cmpSortDir = -1;
   cmpApplyRememberedYears();
+  if (cmpSaveFileSource(model)) {
+    cmpRefreshChecksForFile(model.fileName, { touchChecked: true });
+    cmpRosterSaved = cmpRosterStamp();
+    cmpPersistChecks();
+  }
   paintCmp();
   cmpMarkViewEdit();
 }
@@ -4095,9 +4380,12 @@ document.getElementById("cmp-people-export").addEventListener("click", () => exp
   });
 })();
 cmpLoadChecks();
+cmpSyncChecksToRoster();
 paintCmpCheckLog();
 cmpLoadViewLocal();
-void cmpSyncChecksFromCloud();
+void cmpSyncChecksFromCloud().then(() => {
+  if (cmpSyncChecksToRoster()) paintCmpCheckLog();
+});
 void cmpSyncViewFromCloud(false);
 window.setInterval(() => { void cmpSyncViewFromCloud(true); }, 20000);
 </script>
