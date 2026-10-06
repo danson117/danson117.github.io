@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Course completion · Check log 跟選項：** 一行係 course ＋ Auth ＋ Expiry ＋ Include near expiry。Outstanding 人數跟呢組選項（Auth 揀咗可以係 0）。同一科、選項唔同就多一行；選項一樣就更新嗰行 Outstanding／File／Checked。Remark 同 TOV Creation 保留。Group／Role／Status 唔多開行。Course completion **v2.25**、hub **v21.13**、`hx-rules` **v10.85**。GitHub 後備 → Vercel。要閂舊 Course completion 分頁，等 v2.25 載入先再開。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **UAL 新 Training Code 直接加：** 未見過、但似課程碼（字母，可有尾數），而且後面係到期日同剩餘日，直接加入，電郵繼續寫入。空碼或唔似課程碼、檔壞、未知 OCG 人、日期或剩餘日唔啱，仍然整份拒。Course List 用空名加呢個 code（只認獨立一行碼＋到期日＋剩餘日）。TOV **v15.42**、Course List **v2.3**、hub **v21.12**、`hx-rules` **v10.84**。GitHub 後備 → Vercel。冇改 Supabase。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

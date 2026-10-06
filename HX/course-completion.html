@@ -433,6 +433,7 @@
             <tr>
               <th data-log-sort="code" aria-sort="none">Course code</th>
               <th data-log-sort="title" aria-sort="none">Course title</th>
+              <th data-log-sort="authLabel" aria-sort="none">Auth</th>
               <th data-log-sort="paxMech" aria-sort="none">PAX Mech O/S</th>
               <th data-log-sort="cgMech" aria-sort="none">CG Mech O/S</th>
               <th data-log-sort="paxCs" aria-sort="none">PAX CS O/S</th>
@@ -504,7 +505,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.24" aria-label="Page version 2.24">v2.24</div>
+  <div class="page-version" data-version="2.25" aria-label="Page version 2.25">v2.25</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -1131,7 +1132,10 @@ function cmpSetAuth(choice) {
   cmpAuth = next.value;
   if (input) input.value = cmpAuthLabel();
   cmpHideAuthSuggest();
-  if (changed) paintCmp();
+  if (changed) {
+    paintCmp();
+    if (cmpModel && !cmpModel.error && cmpModel.keptCode) cmpRecordCheck();
+  }
 }
 function cmpPaintAuthSuggest() {
   const input = document.getElementById("cmp-auth");
@@ -1744,6 +1748,11 @@ function cmpBlankCheck(code) {
     paxCs: 0,
     cgCs: 0,
     expiry: 2,
+    authKind: "",
+    auth: "",
+    authLabel: "",
+    near: 0,
+    optSet: false,
     checked: "",
     file: "",
     sheets: "",
@@ -1767,6 +1776,11 @@ function cmpNormCheck(row) {
   o.paxCs = Math.max(0, parseInt(row && row.paxCs, 10) || 0);
   o.cgCs = Math.max(0, parseInt(row && row.cgCs, 10) || 0);
   o.expiry = Math.max(0, parseInt(row && row.expiry, 10) || 0);
+  o.authKind = row && row.authKind != null ? String(row.authKind) : "";
+  o.auth = row && row.auth != null ? String(row.auth) : "";
+  o.authLabel = row && row.authLabel != null ? String(row.authLabel) : "";
+  o.near = row && row.near ? 1 : 0;
+  o.optSet = !!(row && row.optSet);
   o.checked = row && row.checked != null ? String(row.checked) : "";
   o.file = row && row.file != null ? String(row.file) : "";
   o.sheets = row && row.sheets != null ? String(row.sheets) : "";
@@ -2165,9 +2179,36 @@ function cmpRefreshCheckFamily(row) {
   row.sysNote = notes.join(" ");
   return row;
 }
-function cmpFindCheck(code) {
+function cmpCheckExpiryFor(code) {
+  return cmpNoExpiryCode(code) ? 0 : Math.max(0, parseInt(cmpExpiryYears, 10) || 0);
+}
+function cmpCheckOpt(code) {
+  const auth = String(cmpAuth || "");
+  return {
+    authKind: auth ? String(cmpAuthKind || "") : "",
+    auth: auth,
+    authLabel: auth ? (cmpAuthLabel() || auth) : "All",
+    expiry: cmpCheckExpiryFor(code),
+    near: cmpIncludeNear ? 1 : 0
+  };
+}
+function cmpCheckOptKey(row) {
+  return String((row && row.authKind) || "") + "\n" + String((row && row.auth) || "") + "\n" + String(row && row.expiry) + "\n" + (row && row.near ? "1" : "0");
+}
+function cmpCheckOptText(row) {
+  const auth = row && row.optSet ? (row.authLabel || "All") : "All";
+  return (row && row.near) ? auth + " · near" : auth;
+}
+function cmpFindCheck(code, opt) {
   const want = String(code || "").trim().toUpperCase();
-  return cmpChecks.find((r) => String(r.code || "").trim().toUpperCase() === want);
+  const key = cmpCheckOptKey(opt || cmpCheckOpt(code));
+  return cmpChecks.find((r) => String(r.code || "").trim().toUpperCase() === want && r.optSet && cmpCheckOptKey(r) === key);
+}
+function cmpAdoptLegacyCheck(code) {
+  const want = String(code || "").trim().toUpperCase();
+  const same = cmpChecks.filter((r) => String(r.code || "").trim().toUpperCase() === want);
+  if (same.length !== 1 || same[0].optSet) return null;
+  return same[0];
 }
 function cmpTovCreationLabel() {
   const org = cmpOrg === "pax" ? "PAX" : (cmpOrg === "cg" ? "CG" : "All");
@@ -2188,11 +2229,18 @@ function cmpRecordCheck(opts) {
   if (!cmpModel || cmpModel.error || !cmpModel.keptCode) return;
   const code = String(cmpModel.keptCode || "").trim();
   if (!code) return;
-  let row = cmpFindCheck(code);
+  const opt = cmpCheckOpt(code);
+  let row = cmpFindCheck(code, opt);
+  if (!row) row = cmpAdoptLegacyCheck(code);
   if (!row) {
     row = cmpBlankCheck(code);
     cmpChecks.push(row);
   }
+  row.optSet = true;
+  row.authKind = opt.authKind;
+  row.auth = opt.auth;
+  row.authLabel = opt.authLabel;
+  row.near = opt.near ? 1 : 0;
   let title = String((cmpModel.rows || []).map((r) => r.title).find(Boolean) || row.title || "").trim();
   row.code = code;
   if (title) row.title = title;
@@ -2209,6 +2257,7 @@ function cmpRecordCheck(opts) {
   (cmpModel.rows || []).forEach((r) => {
     const view = cmpViewExpiry(r);
     if (view.doneFlag) return;
+    if (!cmpAuthOk(view)) return;
     if (!rosterHas(view.staff)) return;
     const rec = cmpRosterPerson(view.staff);
     rec.role = view.role;
@@ -2221,7 +2270,7 @@ function cmpRecordCheck(opts) {
     row.openPeople.push(rec);
   });
   cmpRefreshCheckFamily(row);
-  row.expiry = cmpNoExpiryCode(code) ? 0 : cmpExpiryYears;
+  row.expiry = opt.expiry;
   if (!opts.keepChecked) row.checked = cmpNowHkt();
   if (cmpModel.fileName) row.file = String(cmpModel.fileName);
   if (cmpModel.sheetNames && cmpModel.sheetNames.length) row.sheets = cmpModel.sheetNames.join(", ");
@@ -2274,7 +2323,7 @@ function paintCmpCheckLog() {
   if (!body) return;
   paintCmpLogSortHeaders();
   if (!cmpChecks.length) {
-    body.innerHTML = "<tr><td colspan=\"12\">No checks yet. Analyse a file to add a row.</td></tr>";
+    body.innerHTML = "<tr><td colspan=\"13\">No checks yet. Analyse a file to add a row.</td></tr>";
     return;
   }
   cmpChecks.forEach(cmpRefreshCheckFamily);
@@ -2293,6 +2342,7 @@ function paintCmpCheckLog() {
     return "<tr data-check-i=\"" + i + "\">" +
       "<td>" + esc(row.code) + "</td>" +
       "<td>" + esc(row.title) + "</td>" +
+      "<td>" + esc(cmpCheckOptText(row)) + "</td>" +
       num("paxMech") +
       num("cgMech") +
       num("paxCs") +
@@ -2368,12 +2418,12 @@ function exportCmpPeople() {
 function exportCmpCheckLog() {
   if (!window.HxXlsx || typeof HxXlsx.buildSync !== "function") return;
   const rows = [[
-    "Course code", "Course title", "PAX Mech O/S", "CG Mech O/S", "PAX CS O/S", "CG CS O/S",
+    "Course code", "Course title", "Auth", "PAX Mech O/S", "CG Mech O/S", "PAX CS O/S", "CG CS O/S",
     "Expiry", "Checked", "File", "TOV Creation", "Remark"
   ]];
   cmpSortedChecks().forEach(({ row }) => {
     rows.push([
-      row.code, row.title, row.paxMech, row.cgMech, row.paxCs, row.cgCs,
+      row.code, row.title, cmpCheckOptText(row), row.paxMech, row.cgMech, row.paxCs, row.cgCs,
       row.expiry, row.checked, row.file, row.tov, [row.sysNote, row.remark].filter(Boolean).join(" ")
     ]);
   });
@@ -3607,6 +3657,7 @@ document.getElementById("cmp-years").addEventListener("blur", (e) => {
 document.getElementById("cmp-include-near").addEventListener("change", (e) => {
   cmpIncludeNear = !!e.target.checked && cmpExpiryYears >= 1;
   paintCmpTovControls();
+  if (cmpModel && !cmpModel.error && cmpModel.keptCode) cmpRecordCheck();
 });
 window.addEventListener("message", (e) => {
   const msg = e.data || {};
