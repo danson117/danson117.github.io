@@ -744,7 +744,7 @@
       </div>
     </div>
 
-    <div class="page-version" data-version="21.7">v21.7</div>
+    <div class="page-version" data-version="21.8">v21.8</div>
     <script src="ocg-pax-data.js?v=15"></script>
     <script src="ocg-pax-data-unpack.js?v=1"></script>
     <script>
@@ -842,7 +842,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=10.79",
+          file: "hx-rules.html?v=10.80",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -900,7 +900,7 @@
       const GATE_PAGES_KEY = "hx:hub:gate-pages";
 
       const DEFAULT_GATE = {
-        publicPages: ALL_TOPIC_IDS.slice(),
+        publicPages: ["vhhh-lmx-auth"],
         pageOrder: ALL_TOPIC_IDS.slice(),
         editActions: EDIT_ACTION_DEFS.map((a) => a.id),
         auth: { hasAdmin: false, hasEdit: false },
@@ -980,9 +980,9 @@
       ];
       function defaultRolePages() {
         return {
-          admin: ALL_TOPIC_IDS.slice(),
-          dm: ["team-board", "brs", "ocg-pax", "auth-list", "lic-records"],
-          public: ["team-board", "brs"],
+          admin: ["vhhh-lmx-auth"],
+          dm: ["vhhh-lmx-auth"],
+          public: ["vhhh-lmx-auth"],
         };
       }
       function normalizeRolePages(raw) {

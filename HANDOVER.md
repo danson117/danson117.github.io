@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 公司電腦
 
+- **除 Owner 外暫時只見 VHHH Line MX Weekly Auth：** Supabase gate `publicPages` 同 Admin／DM/DIC／Public role pages 只剩 `vhhh-lmx-auth`。Owner 帳戶密碼、role、全頁唔郁。線上除 Owner 外冇其他 hub 帳戶，所以今次冇第二個密碼可重設。新帳戶仍然係首次密碼＝Staff #、登入要改一次 6 位並 Save；之後唔再逼改。Setting **Reset password to staff #** 同 BRS PIN Reset 保留。Hub **v21.8**、`hx-rules` **v10.80**。GitHub 後備 → Vercel。唔開 Chrome。唔寫密碼、唔寫職員編號。
+
+## 2026-10-06 公司電腦
+
 - **HX 其餘紀錄共同見到：** Line MX Weekly Auth 週／history（`vhhh-line-mx-weekly`）、Authorization List（`authorization-list`）、License Records（`lic-records`）、Course completion 而家拖入嘅表同 Expiry 年數（`course-completion-view`）經 `hx-shared-sync.js` **v1.5** 寫入 locked Supabase `__hx_shared__/…`。讀公開；寫要 hub 已登入；較新 `updated` 贏。頁 Line MX **v2.5**、Auth **v2.18**、Lic **v2.7**、Course completion **v2.21**、hub **v21.7**、`hx-rules` **v10.79**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
 - **Edge lite 瘦身未部署：** `HX/supabase-edge/team-board/index.ts` 的 lite poll 只保留 Briefing and R&S 嘅 shared 內文。呢部機冇 Supabase CLI／access token，未跑 `supabase functions deploy team-board --project-ref kcoszufshvvpxikpzlue --no-verify-jwt`。部署前 Training One View lite 會一併下載呢啲新 shared 內文。
 
