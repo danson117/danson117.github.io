@@ -152,7 +152,7 @@
     <option value="annual"></option>
     <option value="one-time"></option>
   </datalist>
-  <div class="page-version" data-version="2.2" aria-label="Page version 2.2">v2.2</div>
+  <div class="page-version" data-version="2.3" aria-label="Page version 2.3">v2.3</div>
 <script src="hx-shared-sync.js?v=1.0"></script>
 <script>
 const COURSE_STORE = "hx:course-catalog:rows";
@@ -379,6 +379,13 @@ function seedFromBoard() {
     } catch (e) {}
   }
   String(ualText).replace(UAL_CODE_RE, (m) => { remember(seen, m.toUpperCase(), {}); return m; });
+  String(ualText).split(/\r?\n/).forEach((line, i, arr) => {
+    const t = String(line || "").trim();
+    if (!/^[A-Za-z]{3,12}\d{0,3}$/.test(t) || /^L[A-Z]{2}\d$/i.test(t)) return;
+    const due = String(arr[i + 1] || "").trim();
+    const rem = String(arr[i + 2] || "").trim();
+    if (/^\d{1,2}-[A-Za-z]{3,9}-\d{2,4}$/.test(due) && /^\d+$/.test(rem)) remember(seen, t.toUpperCase(), {});
+  });
   const ct = firstJson(CT_FILE_KEYS);
   ((ct.value) || []).forEach((f) => {
     const list = (f && f.rows) ? f.rows : (f && f.code ? [f] : []);

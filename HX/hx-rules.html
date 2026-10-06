@@ -210,6 +210,7 @@
     <div class="card">
       <h3>頁面</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · UAL 新 Training Code 直接加：</b>UAL 電郵入面，課程碼位置係未見過嘅字母碼（可有尾數，例如 SBGMMNR），而且下一行係到期日、再下一行係剩餘日 → 當新課程碼加入，電郵繼續寫入，唔再因為呢個碼整份拒收。Course List 用空名加呢個 code。空碼、或者唔似課程碼，仍然硬拒。檔壞、未知 OCG 人、日期或剩餘日唔啱，仍然硬拒。TOV <b>v15.42</b>、Course List <b>v2.3</b>。</li>
         <li>檔：<code>training-team-board.html</code>；hash <code>#team-board</code>。顯示名 <b>Training One View</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · Table Copy layout 完整 course code ＋ 圖例：</b>Layout＝<b>Table</b> 嘅 <b>Copy layout</b> 同 <b>Download</b> 影成張 outstanding 表。Course code（Coming due、Completed 欄入面嘅 code 一樣）一行寫完，唔換行、唔剪走。表下面靠左嘅 course code → title 圖例一併入圖。畫面欄闊唔改。Details Copy layout 仍然只係個人頭加 Course｜Name｜Due day｜Remaining｜Source；Details Download 仍然成張人表。唔改訓練資料。TOV <b>v15.40</b>。</li>
         <li style="color:#b00020"><b>新 · Training One View · Details Copy layout 只五欄：</b>Layout＝<b>Details</b> 撳 <b>Copy layout</b>（人卡片同人 popup）只影左上個人資料（section · staff # · name，同而家個頭）加 <b>Course｜Name｜Due day｜Remaining｜Source</b>。唔影 Status、Reference、Remark、Action、BRS REF. NO.。畫面欄序唔變（BRS REF. NO. 仍然最右）。<b>Download</b> 仍然影晒而家成張表。Table Copy layout 由 v15.40 起要完整 course code 同圖例。唔改訓練資料。TOV <b>v15.39</b>。</li>
@@ -335,7 +336,7 @@
       <ul>
         <li>認唔到／缺必要欄 → 整份檔 reject，唔靜默跳過。</li>
         <li>UAL 只取最上封；Functional Area 表。OCG area：LM OCG AV／PAX AF／AF／Management。Planning 唔算。</li>
-        <li>人名／area 問題（2–6）可 Override；檔壞／唔識 code（7）硬 reject。Override 後仍要橙色 OV 標記。</li>
+        <li>人名／area 問題（2–6）可 Override；檔壞／空碼或唔似課程碼（7）硬 reject。未見過但似課程碼（字母，可有尾數，後面係到期日同剩餘日）直接加入，唔拒。Override 後仍要橙色 OV 標記。</li>
         <li>LTA1–4 嘅 A/B/C/D＝CXG；OCG＝E/F/G（加 FLS／RF）。唔喺 Name List 嘅 LTA* 自動 filter。</li>
       </ul>
     </div>
@@ -398,6 +399,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.83">v10.83</div>
+  <div class="page-version" data-version="10.84">v10.84</div>
 </body>
 </html>

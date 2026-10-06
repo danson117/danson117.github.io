@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **UAL 新 Training Code 直接加：** 未見過、但似課程碼（字母，可有尾數），而且後面係到期日同剩餘日，直接加入，電郵繼續寫入。空碼或唔似課程碼、檔壞、未知 OCG 人、日期或剩餘日唔啱，仍然整份拒。Course List 用空名加呢個 code（只認獨立一行碼＋到期日＋剩餘日）。TOV **v15.42**、Course List **v2.3**、hub **v21.12**、`hx-rules` **v10.84**。GitHub 後備 → Vercel。冇改 Supabase。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV 刪四科紀錄：** LM00157 Manual **24**、T.EA03 Manual **39**、T.EE0686 Manual **24**，連同對應 Status 一併刪。T.EE0544 冇 Manual，刪 Completed Status **1**。Manual 1590 → 1503。Course completion Check log 同而家拖入嘅表本來冇呢四科，冇改 `course-completion-checks`／`course-completion-view`。Course List 仍然留呢四個 course code。舊 Manual／Status 快照都剔走呢四科。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）同 `board_revisions`。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-06 公司電腦

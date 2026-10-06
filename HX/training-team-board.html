@@ -1841,7 +1841,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.41" aria-label="Page version 15.41">v15.41</div>
+  <div class="page-version" data-version="15.42" aria-label="Page version 15.42">v15.42</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -2876,6 +2876,9 @@ function isCodeToken(s) {
   const t = String(s || "").trim();
   return /^[A-Za-z]{3,12}\d{0,3}$/.test(t) && !isSectionToken(t) && !EMP_RE.test(t) && !STAFF_RE.test(t);
 }
+function ualTrainingCode(s) {
+  return CODE_RE.test(s) || isCodeToken(s);
+}
 function ualLineIsGroupish(s) {
   const t = String(s || "").trim();
   if (!t) return false;
@@ -3859,32 +3862,32 @@ function parseChunk(heading, chunk) {
   const lines = linesOf(chunk);
   let i = 0;
   let fa = heading;
-  if (lines[0] && !STAFF_RE.test(lines[0]) && !DATE_RE.test(lines[0]) && !EMP_RE.test(lines[0]) && !CODE_RE.test(lines[0])) {
+  if (lines[0] && !STAFF_RE.test(lines[0]) && !DATE_RE.test(lines[0]) && !EMP_RE.test(lines[0]) && !ualTrainingCode(lines[0])) {
     fa = lines[0];
     i = 1;
   }
   const rows = [];
   let cur = null;
   while (i < lines.length) {
-    if (CODE_RE.test(lines[i]) && DATE_RE.test(lines[i + 1] || "") && REMAIN_RE.test(lines[i + 2] || "")) {
+    if (ualTrainingCode(lines[i]) && DATE_RE.test(lines[i + 1] || "") && REMAIN_RE.test(lines[i + 2] || "")) {
       if (cur) rows.push({ ...cur, code: lines[i].toUpperCase(), due: lines[i + 1], remain: Number(lines[i + 2]), area: fa });
       i += 3;
       continue;
     }
-    if (i + 7 < lines.length && STAFF_RE.test(lines[i + 2]) && EMP_RE.test(lines[i + 4]) && CODE_RE.test(lines[i + 5]) && DATE_RE.test(lines[i + 6]) && REMAIN_RE.test(lines[i + 7])) {
+    if (i + 7 < lines.length && STAFF_RE.test(lines[i + 2]) && EMP_RE.test(lines[i + 4]) && ualTrainingCode(lines[i + 5]) && DATE_RE.test(lines[i + 6]) && REMAIN_RE.test(lines[i + 7])) {
       cur = { home: lines[i], section: lines[i + 1], staff: lines[i + 2], name: lines[i + 3], emp: lines[i + 4] };
       rows.push({ ...cur, code: lines[i + 5].toUpperCase(), due: lines[i + 6], remain: Number(lines[i + 7]), area: fa });
       i += 8;
       continue;
     }
-    if (i + 8 < lines.length && STAFF_RE.test(lines[i + 3]) && EMP_RE.test(lines[i + 5]) && CODE_RE.test(lines[i + 6]) && DATE_RE.test(lines[i + 7]) && REMAIN_RE.test(lines[i + 8])) {
+    if (i + 8 < lines.length && STAFF_RE.test(lines[i + 3]) && EMP_RE.test(lines[i + 5]) && ualTrainingCode(lines[i + 6]) && DATE_RE.test(lines[i + 7]) && REMAIN_RE.test(lines[i + 8])) {
       fa = lines[i];
       cur = { home: lines[i + 1], section: lines[i + 2], staff: lines[i + 3], name: lines[i + 4], emp: lines[i + 5] };
       rows.push({ ...cur, code: lines[i + 6].toUpperCase(), due: lines[i + 7], remain: Number(lines[i + 8]), area: fa });
       i += 9;
       continue;
     }
-    if (cur && i + 5 < lines.length && STAFF_RE.test(lines[i]) && EMP_RE.test(lines[i + 2]) && CODE_RE.test(lines[i + 3]) && DATE_RE.test(lines[i + 4]) && REMAIN_RE.test(lines[i + 5])) {
+    if (cur && i + 5 < lines.length && STAFF_RE.test(lines[i]) && EMP_RE.test(lines[i + 2]) && ualTrainingCode(lines[i + 3]) && DATE_RE.test(lines[i + 4]) && REMAIN_RE.test(lines[i + 5])) {
       cur = { home: cur.home, section: cur.section, staff: lines[i], name: lines[i + 1], emp: lines[i + 2] };
       rows.push({ ...cur, code: lines[i + 3].toUpperCase(), due: lines[i + 4], remain: Number(lines[i + 5]), area: fa });
       i += 6;
@@ -3949,10 +3952,13 @@ function parseChunkStrict(heading, chunk, bag) {
     const d = String(due || "").trim();
     const rem = String(remain ?? "").trim();
     const check = isOurOc(area);
-    if (check && !CODE_RE.test(c)) bag.unknownCodes.push(c.toUpperCase() || "(empty)");
+    const known = CODE_RE.test(c);
+    const fresh = !known && isCodeToken(c);
+    if (check && !known && !fresh) bag.unknownCodes.push(c.toUpperCase() || "(empty)");
+    if (check && fresh) bag.newCodes.push(c.toUpperCase());
     if (check && !DATE_RE.test(d)) bag.broken.push("date failed" + (p && p.staff ? " · staff " + p.staff : "") + " · " + (d || "(empty)"));
     if (check && !REMAIN_RE.test(rem)) bag.broken.push("remaining failed" + (p && p.staff ? " · staff " + p.staff : "") + " · " + (rem || "(empty)"));
-    if (p && CODE_RE.test(c) && DATE_RE.test(d) && REMAIN_RE.test(rem)) {
+    if (p && (known || fresh) && DATE_RE.test(d) && REMAIN_RE.test(rem)) {
       rows.push({ ...p, code: c.toUpperCase(), due: d, remain: Number(rem), area: area });
     }
   };
@@ -3998,6 +4004,7 @@ function parseChunkStrict(heading, chunk, bag) {
   return rows;
 }
 function parseUalStrict(text) {
+  parseUalStrict.newCodes = [];
   const blocks = parseBlocks(text);
   if (!blocks.length) {
     throw ingestReject("ual", [{
@@ -4005,7 +4012,7 @@ function parseUalStrict(text) {
       detail: "The pasted email has no Functional Area / Home Section / Current Section … Remaining Due table. Whole UAL paste rejected."
     }]);
   }
-  const bag = { unknownCodes: [], unknownStaff: [], badStaff: [], badEmp: [], missing: [], broken: [], nameClash: [], otherOc: [], typos: [], seen: [] };
+  const bag = { unknownCodes: [], newCodes: [], unknownStaff: [], badStaff: [], badEmp: [], missing: [], broken: [], nameClash: [], otherOc: [], typos: [], seen: [] };
   const all = [];
   blocks.forEach((b) => {
     all.push(...parseChunkStrict(b.heading, b.chunk, bag));
@@ -4112,6 +4119,7 @@ function parseUalStrict(text) {
     });
   }
   const flags = buildUalFlags(bag, two, kept, all);
+  parseUalStrict.newCodes = uniqTexts(bag.newCodes || []);
   if (hard.length) throw ingestReject("ual", hard.concat(soft));
   if (soft.length) throw ingestReject("ual", soft, { overrideRows: kept, overrideFlags: flags });
   return kept;
@@ -9853,6 +9861,10 @@ function applyUal(text, label, doPersist) {
   }
   return true;
 }
+function ualNewCodeNote() {
+  const codes = uniqTexts(parseUalStrict.newCodes || []);
+  return codes.length ? " · added " + codes.join(", ") : "";
+}
 function setUal(text, label) {
   if (!requirePerm("ingest")) return;
   text = String(text || "");
@@ -9868,13 +9880,18 @@ function setUal(text, label) {
     clearIngestFlags("ual");
     ualUploadedAt = nowIso();
     paintUalStatus(text, label);
+    const added = ualNewCodeNote();
+    if (added) {
+      const st = document.getElementById("ual-status");
+      st.textContent = st.textContent.replace(" LMOCG course rows", " LMOCG course rows" + added);
+    }
     persistUal(text, ualUploadedAt);
     const afterSnap = { text: text, uploadedAt: ualUploadedAt };
     const undoable = canSnapAction(beforeSnap, afterSnap);
     pushActionLog({
       kind: "ual",
       perm: "ingest",
-      what: "Uploaded UAL email · " + ualRows.length + " LMOCG course rows",
+      what: "Uploaded UAL email · " + ualRows.length + " LMOCG course rows" + ualNewCodeNote(),
       before: undoable ? beforeSnap : null,
       after: undoable ? afterSnap : null,
       undoable: undoable,
@@ -9892,13 +9909,18 @@ function setUal(text, label) {
         ualRows = e.overrideRows;
         ualUploadedAt = nowIso();
         paintUalStatus(text, (label || "UAL") + " · override");
+        const addedOv = ualNewCodeNote();
+        if (addedOv) {
+          const stOv = document.getElementById("ual-status");
+          stOv.textContent = stOv.textContent.replace(" LMOCG course rows", " LMOCG course rows" + addedOv);
+        }
         persistUal(text, ualUploadedAt);
         const afterSnap = { text: text, uploadedAt: ualUploadedAt };
         const undoable = canSnapAction(beforeSnap, afterSnap);
         pushActionLog({
           kind: "ual",
           perm: "ingest",
-          what: "Uploaded UAL email (override) · " + ualRows.length + " LMOCG course rows",
+          what: "Uploaded UAL email (override) · " + ualRows.length + " LMOCG course rows" + ualNewCodeNote(),
           before: undoable ? beforeSnap : null,
           after: undoable ? afterSnap : null,
           undoable: undoable,
