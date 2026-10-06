@@ -145,6 +145,7 @@
     <div class="card">
       <p><span class="key">已實作</span>：同一個網站、任何裝置（電腦／iPad／另一部機）見到<strong>同一效果</strong>。設置、文字、學習進度、課程表等共用紀錄寫入 locked Supabase（經 Edge <code>team-board</code> 保留位 <code>__hx_shared__/…</code>），由 Vercel 頁讀寫。唔會清 Training One View 嘅 Status／Manual／UAL／CT／Mandatory。</p>
       <ul>
+        <li style="color:#b00020"><b>新 · 其餘 HX 紀錄共同見到：</b>VHHH Line MX Weekly Auth 嘅週同 difference history（<code>vhhh-line-mx-weekly</code>）、Authorization List（<code>authorization-list</code>）、License Records（<code>lic-records</code>）、Course completion 而家拖入嘅表同 Expiry 年數（<code>course-completion-view</code>）寫入 locked Supabase <code>__hx_shared__/…</code>。讀公開 GET。寫要 hub 已登入。較新 <code>updated</code> 贏。空裝置唔洗伺服器。Line MX 的 UNDO 一併上。側欄次序、filter、Name List 欄次序留本機。Training One View lite poll 只保留 Briefing and R&amp;S 嗰份 shared 內文，其他 shared doc 唔跟住每 5 秒下載。Line MX <b>v2.5</b>、Auth <b>v2.18</b>、Lic <b>v2.7</b>、Course completion <b>v2.21</b>、hub <b>v21.7</b>、<code>hx-shared-sync.js</code> <b>v1.5</b>。</li>
         <li><strong>Course List</strong>（<code>course-catalog</code>）：課程列同步。</li>
         <li><strong>Alpha_Learn／Karson_Learn</strong>（<code>alpha-learn</code>／<code>karson-learn</code>）：詞庫、學生檔、練習進度同步（錄音等大檔可留本機）。</li>
         <li><strong>Briefing and R&amp;S</strong>（<code>briefing-read-sign</code>）／record（<code>ke-read-sign</code>）：項目同簽收同步。</li>
@@ -157,7 +158,7 @@
         <li><strong>物品清單</strong>：顯示用、無頁內編輯器；清單寫死喺 HTML，靠 GitHub／Vercel 部署令各裝置見到同一份（未入 Supabase；有編輯器先再上雲）。</li>
         <li>開頁先拉雲端；本機有貨而伺服器空 → 上傳一次；之後以伺服器為準。空裝置唔會洗伺服器。</li>
         <li><strong>HX 以外</strong>（Alpha／Karson、行李、成長、乘數表、中作4、小五六作文、特快公屋）：有網址就可以睇同改，<strong>唔使</strong> HX Unlock。寫入走公開 <code>PUT /shared</code>（只准改呢批 doc id）。</li>
-        <li><strong>HX 以內</strong>（Course List、Briefing and R&amp;S、Training One View）：寫入仍要 HX Unlock（本機 <code>hx:hub:gate-pw</code>）。讀公開 GET，唔使密碼。</li>
+        <li><strong>HX 以內</strong>（Course List、Briefing and R&amp;S、Training One View、Line MX Weekly Auth、Authorization List、License Records、Course completion 而家嘅表）：寫入仍要 HX Unlock（本機 <code>hx:hub:gate-pw</code>）。讀公開 GET，唔使密碼。</li>
         <li>純 UI（字體、暗色、上次開邊頁）可留本機。</li>
         <li><strong>例外：HX／Training One View</strong>——有權限閘。訪客 view-only；解鎖先有 edit／admin。板面資料仍經 locked Edge 同步。</li>
         <li>唔寫 <code>hx_test</code>。唔把 service role／密碼寫入 HTML。</li>
@@ -393,6 +394,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.78">v10.78</div>
+  <div class="page-version" data-version="10.79">v10.79</div>
 </body>
 </html>

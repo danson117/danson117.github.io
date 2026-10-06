@@ -8,6 +8,11 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-06 公司電腦
+
+- **HX 其餘紀錄共同見到：** Line MX Weekly Auth 週／history（`vhhh-line-mx-weekly`）、Authorization List（`authorization-list`）、License Records（`lic-records`）、Course completion 而家拖入嘅表同 Expiry 年數（`course-completion-view`）經 `hx-shared-sync.js` **v1.5** 寫入 locked Supabase `__hx_shared__/…`。讀公開；寫要 hub 已登入；較新 `updated` 贏。頁 Line MX **v2.5**、Auth **v2.18**、Lic **v2.7**、Course completion **v2.21**、hub **v21.7**、`hx-rules` **v10.79**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
+- **Edge lite 瘦身未部署：** `HX/supabase-edge/team-board/index.ts` 的 lite poll 只保留 Briefing and R&S 嘅 shared 內文。呢部機冇 Supabase CLI／access token，未跑 `supabase functions deploy team-board --project-ref kcoszufshvvpxikpzlue --no-verify-jwt`。部署前 Training One View lite 會一併下載呢啲新 shared 內文。
+
 ## 2026-10-05 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **TOV Manual · CAD-PLIS 跟 HKCAD 牌：** License Records 出街 `Lic_HKCAD/--/--/--` 係 **117** 人（Name List）。同之前提交名單重疊 **23**，全部 Completed，完成日 **2026-10-05**。新開 **6** 行（之前冇 Manual）。其餘 **94** 維持 outstanding，due **2026-10-15**。冇刪行。Manual 1719 → 1725，CAD-PLIS 111 → 117。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。

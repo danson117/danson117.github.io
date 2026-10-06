@@ -139,11 +139,12 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.17">v2.17</div>
+  <div class="page-version" data-version="2.18">v2.18</div>
 <script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
 <script src="authorization-list-data.js?v=7"></script>
+<script src="hx-shared-sync.js?v=1.5"></script>
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["team","Team"],["staff","Staff #"],["name","Name"],
@@ -572,7 +573,7 @@ function paintBody(){
 function rebuildView(resetScroll){
   syncFacets();
   view = displayRows();
-  document.getElementById("status").textContent = view.length + " of " + AUTH_ROWS.length + " rows" + (onePerStaff ? " · one per staff" : "");
+  document.getElementById("status").textContent = view.length + " of " + AUTH_ROWS.length + " rows" + (onePerStaff ? " · one per staff" : "") + authSyncNote;
   if (resetScroll) document.getElementById("wrap").scrollTop = 0;
   paintBody();
 }
@@ -706,6 +707,74 @@ const GH_BRANCH = "main";
 const DATA_PATH = "HX/authorization-list-data.js";
 const CSV_PATH = "HX/QA_Auth_Full_Detailed_List.csv";
 let csvBusy = false;
+const AUTH_SHARED_KEY = "hx:auth-list:shared";
+const AUTH_DOC = "authorization-list";
+let authSyncing = false;
+let authSyncNote = "";
+
+function readAuthShared() {
+  try {
+    const doc = JSON.parse(localStorage.getItem(AUTH_SHARED_KEY) || "null");
+    if (doc && doc.pack && Array.isArray(doc.pack.r) && doc.pack.r.length) return doc;
+  } catch (e) { /* ignore */ }
+  return null;
+}
+function writeAuthShared(doc) {
+  try { localStorage.setItem(AUTH_SHARED_KEY, JSON.stringify(doc)); } catch (e) { /* ignore */ }
+}
+async function syncAuthFromCloud(quiet) {
+  if (!window.HxSharedSync || authSyncing) return;
+  authSyncing = true;
+  try {
+    const result = await window.HxSharedSync.syncDoc(AUTH_DOC, {
+      getLocal: () => readAuthShared() || { updated: "", pack: null },
+      localEmpty: (doc) => !(doc && doc.pack && Array.isArray(doc.pack.r) && doc.pack.r.length),
+      applyRemote: (doc) => {
+        writeAuthShared({ updated: doc.updated || "", pack: doc.pack });
+        authSyncNote = " · shared";
+        applyPack(doc.pack);
+      },
+      onStatus: (s) => {
+        if (quiet) return;
+        if (s === "uploaded") authSyncNote = " · shared";
+        else if (s === "offline") authSyncNote = " · this browser";
+      }
+    });
+    if (result && result.reason === "equal" && !quiet) {
+      authSyncNote = " · shared";
+      rebuildView(false);
+    } else if (result && (result.reason === "pulled" || result.reason === "uploaded")) {
+      authSyncNote = " · shared";
+      if (result.reason === "uploaded") rebuildView(false);
+    }
+  } catch (e) { /* ignore */ }
+  finally { authSyncing = false; }
+}
+async function shareAuthPack(pack) {
+  const doc = { v: 1, updated: new Date().toISOString(), app: AUTH_DOC, pack: pack };
+  writeAuthShared(doc);
+  if (!window.HxSharedSync || !window.HxSharedSync.getPassword()) {
+    authSyncNote = " · this browser only";
+    rebuildView(false);
+    return;
+  }
+  authSyncing = true;
+  try {
+    await window.HxSharedSync.pushDoc(AUTH_DOC, doc);
+    authSyncNote = " · shared";
+  } catch (e) {
+    if (e && e.code === "stale-local" && e.remote && e.remote.doc && e.remote.doc.pack) {
+      writeAuthShared({ updated: e.remote.doc.updated || "", pack: e.remote.doc.pack });
+      authSyncNote = " · shared";
+      applyPack(e.remote.doc.pack);
+      return;
+    }
+    authSyncNote = " · this browser only";
+  } finally {
+    authSyncing = false;
+    rebuildView(false);
+  }
+}
 
 function cleanCsv(v){
   let s = String(v == null ? "" : v).trim();
@@ -951,10 +1020,7 @@ async function putGitHubFile(path, text, message, token){
 }
 async function saveAuthToGitHub(pack, csvText){
   const token = getGhToken();
-  if (!token) {
-    alert("Updated on screen only. Not saved to GitHub (no token in this browser).");
-    return;
-  }
+  if (!token) return;
   try {
     await putGitHubFile(DATA_PATH, packFileText(pack), "Authorization List: update packed AUTH_PACK from CSV", token);
     await putGitHubFile(CSV_PATH, csvText, "Authorization List: update QA_Auth_Full_Detailed_List.csv", token);
@@ -1000,6 +1066,7 @@ async function handleCsvFile(file){
     }
     if (!applyPack(pack)) return;
     await saveAuthToGitHub(pack, text.replace(/^\uFEFF/, ""));
+    await shareAuthPack(pack);
   } catch (e) {
     rejectCsv("CSV rejected: file is unreadable.");
   } finally {
@@ -1087,6 +1154,8 @@ if (!unpack()) {
 } else {
   bindUi();
   document.documentElement.classList.add("hx-ready");
+  void syncAuthFromCloud(false);
+  window.setInterval(() => { void syncAuthFromCloud(true); }, 20000);
 }
 </script>
 </body>

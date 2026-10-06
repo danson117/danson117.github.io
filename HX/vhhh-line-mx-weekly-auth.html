@@ -281,9 +281,10 @@
   </div>
   <p class="hist-empty" id="hist-empty">No differences saved yet.</p>
 
-      <p class="page-version">page-version 2.4</p>
+      <p class="page-version">page-version 2.5</p>
 </div>
 
+<script src="hx-shared-sync.js?v=1.5"></script>
 <script>
 (function () {
   "use strict";
@@ -293,6 +294,8 @@
   const LS_WEEKS = "hx:vhhh-lmx-auth:weeks:v1";
   const LS_UNDO = "hx:vhhh-lmx-auth:undo:v1";
   const LS_SEED_VER = "hx:vhhh-lmx-auth:seed-ver";
+  const LS_CLOUD_AT = "hx:vhhh-lmx-auth:cloud-at";
+  const LMX_DOC = "vhhh-line-mx-weekly";
   const SEED_VER = 3;
   const UNDO_MAX = 30;
   const SEED_URL = "vhhh-line-mx-history-seed.json?v=1.9";
@@ -667,6 +670,121 @@
 
   function saveWeeks() {
     localStorage.setItem(LS_WEEKS, JSON.stringify(weeksByDate));
+  }
+
+  let lmxSyncing = false;
+
+  function lmxDataAt() {
+    let max = 0;
+    try {
+      const t = Date.parse(localStorage.getItem(LS_CLOUD_AT) || "");
+      if (Number.isFinite(t)) max = t;
+    } catch (e) { /* ignore */ }
+    Object.keys(weeksByDate).forEach((k) => {
+      const t = Date.parse((weeksByDate[k] && weeksByDate[k].savedAt) || "");
+      if (Number.isFinite(t) && t > max) max = t;
+    });
+    history.forEach((h) => {
+      const t = Date.parse((h && h.comparedAt) || "");
+      if (Number.isFinite(t) && t > max) max = t;
+    });
+    return max ? new Date(max).toISOString() : "";
+  }
+
+  function packLmxDoc() {
+    return {
+      v: 1,
+      updated: lmxDataAt(),
+      app: LMX_DOC,
+      weeks: weeksByDate,
+      history: history,
+      reference: reference
+    };
+  }
+
+  function lmxDocEmpty(doc) {
+    const weeks = doc && doc.weeks;
+    const hist = doc && doc.history;
+    const hasW = weeks && typeof weeks === "object" && Object.keys(weeks).length;
+    const hasH = Array.isArray(hist) && hist.length;
+    return !hasW && !hasH;
+  }
+
+  function applyLmxDoc(doc) {
+    if (!doc) return;
+    if (doc.weeks && typeof doc.weeks === "object") {
+      const out = {};
+      Object.keys(doc.weeks).forEach((k) => {
+        const w = doc.weeks[k];
+        if (!w || !w.pdfDate || !Array.isArray(w.rows) || !w.rows.length) return;
+        out[w.pdfDate] = {
+          pdfDate: w.pdfDate,
+          rows: w.rows,
+          savedAt: w.savedAt || ""
+        };
+      });
+      weeksByDate = out;
+    }
+    if (Array.isArray(doc.history)) history = migrateHistoryKinds(doc.history);
+    if (doc.reference && Array.isArray(doc.reference.rows)) {
+      reference = doc.reference;
+      try { localStorage.setItem(LS_REF, JSON.stringify(reference)); } catch (e) { /* ignore */ }
+    }
+    saveWeeks();
+    saveHistory();
+    try { localStorage.setItem(LS_CLOUD_AT, doc.updated || lmxDataAt()); } catch (e) { /* ignore */ }
+    refreshViewFromLatest();
+    updateRefNote();
+  }
+
+  async function syncLmxFromCloud(quiet) {
+    if (!window.HxSharedSync || lmxSyncing) return null;
+    lmxSyncing = true;
+    try {
+      const result = await window.HxSharedSync.syncDoc(LMX_DOC, {
+        getLocal: () => packLmxDoc(),
+        localEmpty: lmxDocEmpty,
+        applyRemote: (doc) => {
+          applyLmxDoc(doc);
+          renderTable();
+        },
+        onStatus: (s) => {
+          if (quiet) return;
+          if (s === "uploaded") showMsg("Shared this browser's weekly reports.", true);
+          else if (s === "need-password") showMsg("Weekly reports are on this browser. Log in to share them.", false);
+          else if (s === "offline" && !quiet) showMsg("Cloud unreachable. Showing this browser's weekly reports.", false);
+          else if (s === "too-large") showMsg("Weekly reports are too large to share.", false);
+        }
+      });
+      if (result && result.reason === "pulled") showMsg("Loaded newer shared weekly reports.", true);
+      return result;
+    } finally {
+      lmxSyncing = false;
+    }
+  }
+
+  async function pushLmxNow(baseMsg) {
+    try { localStorage.setItem(LS_CLOUD_AT, new Date().toISOString()); } catch (e) { /* ignore */ }
+    if (!window.HxSharedSync || !window.HxSharedSync.getPassword()) {
+      showMsg(baseMsg + " Saved in this browser. Log in to share.", true);
+      return;
+    }
+    lmxSyncing = true;
+    try {
+      await window.HxSharedSync.pushDoc(LMX_DOC, packLmxDoc());
+      showMsg(baseMsg + " Shared with other browsers.", true);
+    } catch (e) {
+      if (e && e.code === "stale-local" && e.remote && e.remote.doc) {
+        applyLmxDoc(e.remote.doc);
+        renderTable();
+        showMsg("A newer shared copy was loaded.", true);
+        return;
+      }
+      const why = e && e.code === "too-large" ? " Too large to share." : " Cloud share failed.";
+      showMsg(baseMsg + " Saved in this browser." + why, false);
+    } finally {
+      lmxSyncing = false;
+    }
   }
 
   /** Same report date: later upload replaces that slot (stable tie-break). */
@@ -1189,7 +1307,7 @@
     renderTable();
   }
 
-  function onUndoAction() {
+  async function onUndoAction() {
     hideMsg();
     const log = loadUndoLog();
     if (!log.length) {
@@ -1206,6 +1324,7 @@
     saveUndoLog(log);
     applyCompareSnapshot(top);
     showMsg("Undid today's latest COMPARE.", true);
+    await pushLmxNow("Undid today's latest COMPARE.");
   }
 
   function onPasteInput() {
@@ -1215,7 +1334,7 @@
     else if (auto) $("doc-date").value = auto;
   }
 
-  function onCompare() {
+  async function onCompare() {
     hideMsg();
     const text = $("paste").value.trim();
     if (!text) {
@@ -1273,6 +1392,7 @@
       " (not upload order).";
     showMsg(msg, true);
     renderTable();
+    await pushLmxNow(msg);
   }
 
   function onSetRef() {
@@ -1488,6 +1608,8 @@
       renderHistory);
     updateSortHeaders("current-table", sortCurrent);
     updateSortHeaders("hist-table", sortHist);
+    void syncLmxFromCloud(false);
+    window.setInterval(() => { void syncLmxFromCloud(true); }, 20000);
   }
 
   init();

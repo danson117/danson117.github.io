@@ -122,6 +122,18 @@ function stripAuth(cfg: Record<string, unknown> | null) {
   return out;
 }
 
+/** Lite poll is every few seconds. Keep staff status and Briefing and R&S. Omit other shared-doc bodies. */
+function slimLiteStatus(status: unknown) {
+  const src = status && typeof status === "object" ? status as Record<string, unknown> : {};
+  const keep = "__hx_shared__/briefing-read-sign";
+  const out: Record<string, unknown> = {};
+  Object.keys(src).forEach((k) => {
+    if (k.indexOf("__hx_shared__/") === 0 && k !== keep) return;
+    out[k] = src[k];
+  });
+  return out;
+}
+
 async function loadGate(admin: ReturnType<typeof adminClient>) {
   const { data, error } = await admin.rpc("hx_site_gate_get");
   if (error) throw new Error(error.message);
@@ -496,7 +508,7 @@ Deno.serve(async (req: Request) => {
       }
       return json(200, {
         _lite: true, v: full.v, updated: full.updated || "",
-        status: full.status && typeof full.status === "object" ? full.status : {},
+        status: slimLiteStatus(full.status),
         manual: Array.isArray(full.manual) ? full.manual : [],
         ual: ual ? { uploadedAt: String(ual.uploadedAt || ""), textLen: String(ual.text || "").length } : null,
         ctFiles: ct.map((f: any) => ({

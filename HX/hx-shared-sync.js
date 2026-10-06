@@ -181,6 +181,11 @@
     var existing = board.status && board.status[metaKey(docId)];
     var baseV = existing ? Math.max(0, parseInt(existing.v, 10) || 0) : 0;
     var remark = JSON.stringify(payloadDoc);
+    if (remark.length > 1400000) {
+      var eBig = new Error("too-large");
+      eBig.code = "too-large";
+      throw eBig;
+    }
     var body = {
       v: 1,
       status: {},
@@ -227,6 +232,12 @@
     if (Array.isArray(doc.rows) && doc.rows.length) return true;
     if (doc.flashcardDb && Array.isArray(doc.flashcardDb.records) && doc.flashcardDb.records.length)
       return true;
+    if (doc.weeks && typeof doc.weeks === "object" && Object.keys(doc.weeks).length)
+      return true;
+    if (Array.isArray(doc.history) && doc.history.length) return true;
+    if (doc.pack && typeof doc.pack === "object" && Array.isArray(doc.pack.r) && doc.pack.r.length)
+      return true;
+    if (doc.view && Array.isArray(doc.view.rows) && doc.view.rows.length) return true;
     if (doc.payload != null) return true;
     return false;
   }

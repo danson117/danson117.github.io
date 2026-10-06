@@ -102,11 +102,12 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.6">v2.6</div>
+  <div class="page-version" data-version="2.7">v2.7</div>
 <script src="ocg-pax-data.js?v=15"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
 <script src="lic-records-data.js?v=3"></script>
+<script src="hx-shared-sync.js?v=1.5"></script>
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["team","Team"],["staff","Staff #"],["name","Name"],
@@ -328,7 +329,7 @@ function paintBody(){
 function rebuildView(resetScroll){
   syncFacets();
   view = sorted(filtered());
-  document.getElementById("status").textContent = view.length + " of " + LIC_ROWS.length + " rows";
+  document.getElementById("status").textContent = view.length + " of " + LIC_ROWS.length + " rows" + licSyncNote;
   if (resetScroll) document.getElementById("wrap").scrollTop = 0;
   paintBody();
 }
@@ -460,6 +461,74 @@ const GH_BRANCH = "main";
 const DATA_PATH = "HX/lic-records-data.js";
 const CSV_PATH = "HX/Lic_Records_Dept.csv";
 let csvBusy = false;
+const LIC_SHARED_KEY = "hx:lic-records:shared";
+const LIC_DOC = "lic-records";
+let licSyncing = false;
+let licSyncNote = "";
+
+function readLicShared() {
+  try {
+    const doc = JSON.parse(localStorage.getItem(LIC_SHARED_KEY) || "null");
+    if (doc && doc.pack && Array.isArray(doc.pack.r) && doc.pack.r.length) return doc;
+  } catch (e) { /* ignore */ }
+  return null;
+}
+function writeLicShared(doc) {
+  try { localStorage.setItem(LIC_SHARED_KEY, JSON.stringify(doc)); } catch (e) { /* ignore */ }
+}
+async function syncLicFromCloud(quiet) {
+  if (!window.HxSharedSync || licSyncing) return;
+  licSyncing = true;
+  try {
+    const result = await window.HxSharedSync.syncDoc(LIC_DOC, {
+      getLocal: () => readLicShared() || { updated: "", pack: null },
+      localEmpty: (doc) => !(doc && doc.pack && Array.isArray(doc.pack.r) && doc.pack.r.length),
+      applyRemote: (doc) => {
+        writeLicShared({ updated: doc.updated || "", pack: doc.pack });
+        licSyncNote = " · shared";
+        applyPack(doc.pack);
+      },
+      onStatus: (s) => {
+        if (quiet) return;
+        if (s === "uploaded") licSyncNote = " · shared";
+        else if (s === "offline") licSyncNote = " · this browser";
+      }
+    });
+    if (result && result.reason === "equal" && !quiet) {
+      licSyncNote = " · shared";
+      rebuildView(false);
+    } else if (result && (result.reason === "pulled" || result.reason === "uploaded")) {
+      licSyncNote = " · shared";
+      if (result.reason === "uploaded") rebuildView(false);
+    }
+  } catch (e) { /* ignore */ }
+  finally { licSyncing = false; }
+}
+async function shareLicPack(pack) {
+  const doc = { v: 1, updated: new Date().toISOString(), app: LIC_DOC, pack: pack };
+  writeLicShared(doc);
+  if (!window.HxSharedSync || !window.HxSharedSync.getPassword()) {
+    licSyncNote = " · this browser only";
+    rebuildView(false);
+    return;
+  }
+  licSyncing = true;
+  try {
+    await window.HxSharedSync.pushDoc(LIC_DOC, doc);
+    licSyncNote = " · shared";
+  } catch (e) {
+    if (e && e.code === "stale-local" && e.remote && e.remote.doc && e.remote.doc.pack) {
+      writeLicShared({ updated: e.remote.doc.updated || "", pack: e.remote.doc.pack });
+      licSyncNote = " · shared";
+      applyPack(e.remote.doc.pack);
+      return;
+    }
+    licSyncNote = " · this browser only";
+  } finally {
+    licSyncing = false;
+    rebuildView(false);
+  }
+}
 
 function cleanCsv(v){
   let s = String(v == null ? "" : v).trim();
@@ -684,10 +753,7 @@ async function putGitHubFile(path, text, message, token){
 }
 async function saveLicToGitHub(pack, csvText){
   const token = getGhToken();
-  if (!token) {
-    alert("Updated on screen only. Not saved to GitHub (no token in this browser).");
-    return;
-  }
+  if (!token) return;
   try {
     await putGitHubFile(DATA_PATH, packFileText(pack), "License Records: update packed LIC_PACK from CSV", token);
     await putGitHubFile(CSV_PATH, csvText, "License Records: update Lic_Records_Dept.csv", token);
@@ -732,6 +798,7 @@ async function handleCsvFile(file){
     }
     if (!applyPack(pack)) return;
     await saveLicToGitHub(pack, text.replace(/^\uFEFF/, ""));
+    await shareLicPack(pack);
   } catch (e) {
     rejectCsv("CSV rejected: file is unreadable.");
   } finally {
@@ -801,6 +868,8 @@ if (!unpack()) {
   bindUi();
   paintChrome();
   rebuildView(true);
+  void syncLicFromCloud(false);
+  window.setInterval(() => { void syncLicFromCloud(true); }, 20000);
 }
 document.documentElement.classList.add("hx-ready");
 </script>
