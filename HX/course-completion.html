@@ -251,6 +251,29 @@
   .cmp-table tr.cmp-warn td { background: var(--warn-bg); color: var(--warn); }
   .cmp-table tr.cmp-done.cmp-hot td.col-status { color: var(--hot); }
   .cmp-table tr.cmp-done.cmp-warn td.col-status { color: var(--warn); }
+  .cmp-table th.col-pin {
+    background: #f5c542;
+    color: #1c2430;
+  }
+  .cmp-table td.col-pin {
+    background: #fff6d0;
+    color: #1c2430;
+    font-weight: 650;
+  }
+  .cmp-table tr.cmp-hot td.col-pin {
+    background: #ffe08a;
+    color: #1c2430;
+  }
+  .cmp-table tr.cmp-warn td.col-pin {
+    background: #fff1b8;
+    color: #1c2430;
+  }
+  .cmp-table tr.cmp-wait td.col-pin {
+    background: #efe4c0;
+    color: #3a3a3a;
+  }
+  .staff-no { user-select: all; cursor: copy; }
+  .staff-no.copied { outline: 2px solid #0b6b2f; outline-offset: 1px; }
   #cmp-wrap.capturing { overflow: visible; max-height: none; }
   #cmp-wrap.capturing #cmp-shot {
     width: max-content;
@@ -446,9 +469,9 @@
             </colgroup>
             <thead>
               <tr>
-                <th class="col-staff" data-cmp-sort="staff" aria-sort="none">Staff #</th>
-                <th class="col-name" data-cmp-sort="name" aria-sort="none">Name</th>
-                <th data-cmp-sort="section" aria-sort="none">Section</th>
+                <th class="col-staff col-pin" data-cmp-sort="staff" aria-sort="none">Staff #</th>
+                <th class="col-name col-pin" data-cmp-sort="name" aria-sort="none">Name</th>
+                <th class="col-pin" data-cmp-sort="section" aria-sort="none">Section</th>
                 <th data-cmp-sort="code" aria-sort="none">Course code</th>
                 <th data-cmp-sort="title" aria-sort="none">Course title</th>
                 <th data-cmp-sort="status" aria-sort="none">Status</th>
@@ -544,7 +567,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.30" aria-label="Page version 2.30">v2.30</div>
+  <div class="page-version" data-version="2.31" aria-label="Page version 2.31">v2.31</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -563,7 +586,32 @@ function padStaff(v) {
 }
 function staffNoHtml(staff) {
   const id = padStaff(staff);
-  return id ? "<span class=\"staff-no\">" + esc(id) + "</span>" : "";
+  return id ? "<span class=\"staff-no\" title=\"Double-click to copy\">" + esc(id) + "</span>" : "";
+}
+function cmpStaffCopyText(raw) {
+  return String(raw || "").replace(/^\s+|\s+$/g, "").replace(/\u00a0/g, "");
+}
+function cmpCopyStaffEl(el) {
+  const text = cmpStaffCopyText(el && el.textContent);
+  if (!text) return;
+  const sel = window.getSelection();
+  if (sel) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  const flash = () => {
+    el.classList.add("copied");
+    window.setTimeout(() => el.classList.remove("copied"), 600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(() => {
+      try { document.execCommand("copy"); flash(); } catch (err) {}
+    });
+  } else {
+    try { document.execCommand("copy"); flash(); } catch (err) {}
+  }
 }
 function rosterHas(staff) {
   return byStaff.has(padStaff(staff));
@@ -3495,9 +3543,9 @@ function paintCmp() {
       ((row.waitFlag || row.skipOsFlag) ? "" : (row.band === "hot" ? " cmp-hot" : "")) +
       ((row.waitFlag || row.skipOsFlag) ? "" : (row.band === "warn" ? " cmp-warn" : ""));
     return "<tr class=\"" + cls + "\">" +
-      "<td class=\"col-staff\">" + staffNoHtml(row.staff) + "</td>" +
-      "<td class=\"col-name\">" + esc(row.name) + "</td>" +
-      "<td>" + esc(row.section) + "</td>" +
+      "<td class=\"col-staff col-pin\">" + staffNoHtml(row.staff) + "</td>" +
+      "<td class=\"col-name col-pin\">" + esc(row.name) + "</td>" +
+      "<td class=\"col-pin\">" + esc(row.section) + "</td>" +
       "<td>" + esc(row.code) + "</td>" +
       "<td>" + esc(row.title) + "</td>" +
       "<td class=\"col-status\">" + esc(row.status) + "</td>" +
@@ -4359,6 +4407,25 @@ document.getElementById("copy-fail-ok").addEventListener("click", () => {
   const pop = document.getElementById("copy-fail-pop");
   pop.hidden = true;
   pop.classList.add("hidden");
+});
+document.addEventListener("dblclick", (e) => {
+  const el = e.target && e.target.closest ? e.target.closest(".staff-no") : null;
+  if (!el) return;
+  e.preventDefault();
+  cmpCopyStaffEl(el);
+});
+document.addEventListener("copy", (e) => {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  const node = sel.anchorNode || sel.focusNode;
+  const from = node && (node.nodeType === 1 ? node : node.parentElement);
+  const span = from && from.closest ? from.closest(".staff-no") : null;
+  if (!span) return;
+  const exact = cmpStaffCopyText(span.textContent);
+  const raw = sel.toString();
+  if (!exact || cmpStaffCopyText(raw) !== exact || raw === exact) return;
+  e.preventDefault();
+  if (e.clipboardData) e.clipboardData.setData("text/plain", exact);
 });
 document.getElementById("cmp-people-close").addEventListener("click", () => closeCmpPeople());
 document.getElementById("cmp-people-export").addEventListener("click", () => exportCmpPeople());
