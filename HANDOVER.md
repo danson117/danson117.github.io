@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-06 公司電腦
 
+- **TOV Manual · T.A084 跟 Course completion 無 2 年：** Manual outstanding **249 → 7**（檔內冇完成日嘅 CG Mech）。**242** 有完成日，標 Completed，完成日跟 course-completion check（Expiry **0**，唔再留完成日加 2 年嘅 due，所以唔會再入 90 日 outstanding 窗口）。冇刪行。其他課程唔郁。Check log Expiry 維持 0（人數 0／7／1／1）。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-06 公司電腦
+
 - **除 Owner 外暫時只見 VHHH Line MX Weekly Auth：** Supabase gate `publicPages` 同 Admin／DM/DIC／Public role pages 只剩 `vhhh-lmx-auth`。Owner 帳戶密碼、role、全頁唔郁。線上除 Owner 外冇其他 hub 帳戶，所以今次冇第二個密碼可重設。新帳戶仍然係首次密碼＝Staff #、登入要改一次 6 位並 Save；之後唔再逼改。Setting **Reset password to staff #** 同 BRS PIN Reset 保留。Hub **v21.8**、`hx-rules` **v10.80**。GitHub 後備 → Vercel。唔開 Chrome。唔寫密碼、唔寫職員編號。
 
 ## 2026-10-06 公司電腦
