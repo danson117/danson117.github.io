@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-06 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **TOV 刪四科紀錄：** LM00157 Manual **24**、T.EA03 Manual **39**、T.EE0686 Manual **24**，連同對應 Status 一併刪。T.EE0544 冇 Manual，刪 Completed Status **1**。Manual 1590 → 1503。Course completion Check log 同而家拖入嘅表本來冇呢四科，冇改 `course-completion-checks`／`course-completion-view`。Course List 仍然留呢四個 course code。舊 Manual／Status 快照都剔走呢四科。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）同 `board_revisions`。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
 ## 2026-10-06 公司電腦
 
 - **OCG Name List · LTN1–LTN4：** 加 **34**（更新 **0**）。Section **LTN1–LTN4**，全部 **Mechanic**，跟名冊計入 Training One View、Course completion、Authorization List、License Records、Briefing and R&S、Name List。Course completion PAX 白名單加 LTN1–LTN4。冇新開訓練行。Name List **v3.23**、`ocg-pax-data.js?v=16`、Course completion **v2.24**、Auth **v2.19**、Lic **v2.8**、TOV **v15.41**、BRS **v5.5**、hub **v21.11**、`hx-rules` **v10.83**。GitHub 後備 → Vercel。唔開 Chrome。唔寫職員明細。
