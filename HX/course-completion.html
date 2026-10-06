@@ -101,11 +101,19 @@
     font-weight: 650;
   }
   #cmp-add-tov:hover { background: #efe4d6; }
-  #cmp-add-tov:disabled {
+  #cmp-add-tov:disabled,
+  #cmp-create-log:disabled {
     opacity: 0.45;
     cursor: not-allowed;
     background: #f6efe6;
   }
+  #cmp-create-log {
+    background: #f6efe6;
+    border-color: #c4a484;
+    color: #6b3e26;
+    font-weight: 650;
+  }
+  #cmp-create-log:hover { background: #efe4d6; }
   .check-log button.check-tov-del {
     font-size: 12px;
     padding: 3px 7px;
@@ -143,10 +151,17 @@
     background: #fff;
     color: var(--ink);
   }
-  .cmp-tools input.cmp-years:disabled {
-    background: #e4e4e4;
-    color: var(--muted);
-    cursor: not-allowed;
+  .cmp-tools input.cmp-tov-remark {
+    width: 14rem;
+    min-width: 8rem;
+    max-width: 22rem;
+    flex: 1 1 10rem;
+    font: inherit;
+    font-size: 13px;
+    padding: 5px 6px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
   }
   .cmp-auth-wrap { position: relative; display: inline-block; }
   .cmp-tools select.cmp-facet {
@@ -370,7 +385,7 @@
     <p class="subtitle">Match a completion xlsx or CSV to the Name List. The current file is shared. Optional: add Manual outstanding rows to Training One View.</p>
     <div class="box" id="cmp-box">
       <label for="cmp-file">Course completion file</label>
-      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Staff 290990 stays PAX and staff 288531 stays CG, so Planning, LTGC, or a section outside the PAX list does not drop those two rows. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX, LTW1 to LTW4, and LTN1 to LTN4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. <b>T.F162</b> recurrent uses initial <b>T.F241 or T.F319</b> (either counts). <b>T.C775CT</b> recurrent uses initial <b>T.C774 or T.C775</b>. <b>T.C104CT</b> recurrent uses initial <b>T.C104P</b> only. <b>T.C104T</b> is not part of this family. Old <b>T.C104</b> is not a required file; a date after <b>2020-09-12</b> is not a current initial. Required files are <b>T.C104P</b> and <b>T.C104CT</b>. The 2-year clock starts from the latest initial. Recurrent outstanding only if that initial is already past Expiry years with no in-window CT, or the CT date itself is past Expiry years. Never did initial and never did CT → not recurrent outstanding (initial outstanding only). In-window initial or CT → Completed on the recurrent course. Analyse every file in that family before outstanding is final. Only a completion still inside Expiry years counts as family <b>Completed</b> cover (this initial, sibling initial, or recurrent/CT). An expired date is not cover; it starts the recurrent clock. Covering uses the in-window date. They are not Outstanding. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. <b>Auth</b> is a search box and defaults to All. Type a module title or an operator code (for example AC shows AC · AIR CANADA) and pick one match. One choice at a time. Outstanding then counts only Name List people who hold that module, or who hold an authorization for that operator. Empty means All. Completed rows stay Completed. People without it are left out of Outstanding, its counts, and Add to TOV. <b>Category</b> and <b>A/C Type</b> work the same way as Authorization List: each list only shows values that exist under the current Auth and the other choice, All stays, and a chosen value that disappears returns to All. Outstanding then also requires an authorization row with that category and A/C type. Completed rows stay Completed. The check log stores one row per course plus Auth, Category, A/C Type, Expiry, and Include near expiry. Each analysed course is stored in the check log below. EASA (LX) courses <b>T.EE0544</b>, <b>T.EE0686</b>, and <b>T.X432</b> have no expiry: Expiry stays 0, and a completion of any date stays Completed.</p>
+      <p class="note">Drop an xlsx or CSV. Default view is Outstanding and Mechanic. Every workbook tab is read (two tabs → both, three → all). A tab named PAX or CG is that group even when Department is missing. People must be on the Name List. Section is the Name List section. In this file, PAX means department LM CXG transit, and CG means department LM OCG (Cargo). In HX, OCG means PAX + CG. Other departments are removed. Staff 290990 stays PAX and staff 288531 stays CG, so Planning, LTGC, or a section outside the PAX list does not drop those two rows. Only the course code with the most rows is kept. PAX also keeps sections LTC1, LTC2, LTC3, LTC4, LTC6, LTCX, LTW1 to LTW4, and LTN1 to LTN4. Completed rows inside the year count stay Completed. Outstanding is expired completions plus Name List people whose staff number is not in the file for this course. <b>T.F162</b> recurrent uses initial <b>T.F241 or T.F319</b> (either counts). <b>T.C775CT</b> recurrent uses initial <b>T.C774 or T.C775</b>. <b>T.C104CT</b> recurrent uses initial <b>T.C104P</b> only. <b>T.C104T</b> is not part of this family. Old <b>T.C104</b> is not a required file; a date after <b>2020-09-12</b> is not a current initial. Required files are <b>T.C104P</b> and <b>T.C104CT</b>. The 2-year clock starts from the latest initial. Recurrent outstanding only if that initial is already past Expiry years with no in-window CT, or the CT date itself is past Expiry years. Never did initial and never did CT → not recurrent outstanding (initial outstanding only). In-window initial or CT → Completed on the recurrent course. Analyse every file in that family before outstanding is final. Only a completion still inside Expiry years counts as family <b>Completed</b> cover (this initial, sibling initial, or recurrent/CT). An expired date is not cover; it starts the recurrent clock. Covering uses the in-window date. They are not Outstanding. Newest completed date first. Blank dates last. Header names are matched in this browser. Expiry: is the year count (default 2). 0 means no expiry date. <b>Add to TOV</b> writes Manual outstanding for the current Group／Role Outstanding set (hub edit unlock required). Blank completed date → due one week ago. Optional <b>Include near expiry</b> also adds red／yellow Completed rows so they train early. <b>Auth</b> is a search box and defaults to All. Type a module title or an operator code (for example AC shows AC · AIR CANADA) and pick one match. One choice at a time. Outstanding then counts only Name List people who hold that module, or who hold an authorization for that operator. Empty means All. Completed rows stay Completed. People without it are left out of Outstanding, its counts, and Add to TOV. <b>Category</b> and <b>A/C Type</b> work the same way as Authorization List: each list only shows values that exist under the current Auth and the other choice, All stays, and a chosen value that disappears returns to All. Outstanding then also requires an authorization row with that category and A/C type. Completed rows stay Completed. Counts stay blank until a file is loaded. After that, Group, Role, Status, Auth, Category, A/C Type, and Expiry recalculate immediately. Expiry starts as the last Check log year for this course, or 2 if this course has no Check log yet, and stays editable. <b>Create check log</b> writes one row for the current course plus Auth, Category, A/C Type, Expiry, and Include near expiry. The same options update that row. Different options add a row. People who were outstanding and are completed in the new file get that completion date on the matching Training One View record. <b>TOV remark</b> is written onto each new Manual row.</p>
       <div class="drop" id="cmp-drop">
         <input id="cmp-file" type="file" lang="en" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" title="Choose an xlsx or CSV file" aria-label="Choose a course completion xlsx or CSV">
         <p>Drop xlsx or CSV here, or choose a file.</p>
@@ -398,12 +413,14 @@
         <span class="filter-label">A/C Type:</span>
         <select id="cmp-ac" class="cmp-facet" aria-label="A/C Type" title="Authorization List A/C type. All, or a value that exists for the current Auth and Category. Outstanding only includes people who hold that A/C type."><option value="">All</option></select>
         <span class="filter-label">Expiry:</span>
-        <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="2" inputmode="numeric" aria-label="Expiry years" title="Years after the completed date. Default 2. 0 means no expiry date.">
+        <input id="cmp-years" class="cmp-years" type="number" min="0" step="1" value="" inputmode="numeric" aria-label="Expiry years" title="Years after the completed date. Empty until a file is loaded. Then the last Check log year for this course, or 2. 0 means no expiry date. You can change it at any time.">
         <label class="cmp-near" id="cmp-near-wrap" for="cmp-include-near" title="Also add Completed rows that are red (≤30 days) or yellow (≤90 days) so they can train early.">
           <input id="cmp-include-near" type="checkbox">
           Include near expiry
         </label>
         <button type="button" id="cmp-add-tov" disabled title="Add Manual outstanding rows to Training One View for this course.">Add to TOV</button>
+        <label class="filter-label" for="cmp-tov-remark">TOV remark:</label>
+        <input id="cmp-tov-remark" class="cmp-tov-remark" type="text" maxlength="240" placeholder="Remark on Training One View" aria-label="TOV remark" title="Written as the remark on each Manual row added to Training One View.">
         <button type="button" id="cmp-export-xlsx">Export XLSX</button>
         <button type="button" id="cmp-remap" title="Choose columns when the file uses different header names.">Match columns</button>
         <button type="button" id="cmp-copy" class="pop-icon" data-copy-shot title="Copy layout" aria-label="Copy layout">
@@ -444,8 +461,9 @@
         </div>
       </div>
       <h2 class="check-h">Check log</h2>
-      <p class="note">One row per course from each file you analyse. Click a column header to sort; click it again to reverse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. People still covered by a valid initial, sibling initial, or takeover sit in Completed, not in a separate Not due count. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
+      <p class="note">Nothing is written here until you click <b>Create check log</b>. Same course and same Auth, Category, A/C Type, Expiry, and Include near expiry update that row. Different options add a row. Click a column header to sort; click it again to reverse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. People still covered by a valid initial, sibling initial, or takeover sit in Completed, not in a separate Not due count. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
       <div class="cmp-tools" id="cmp-log-tools">
+        <button type="button" id="cmp-create-log" disabled title="Drop a file first. Then this saves the current options as a Check log row.">Create check log</button>
         <button type="button" id="cmp-log-export">Export check log</button>
       </div>
       <div class="check-log-wrap" id="cmp-log-wrap">
@@ -526,7 +544,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.27" aria-label="Page version 2.27">v2.27</div>
+  <div class="page-version" data-version="2.28" aria-label="Page version 2.28">v2.28</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -849,25 +867,6 @@ const CMP_FAMILIES = [
 function cmpNormCourseCode(code) {
   return String(code || "").trim().toUpperCase().replace(/\s+/g, "");
 }
-// EASA (LX): once completed, the date never expires. Titles are SWISS / remark "EASA (LX) AUDIT".
-const CMP_NO_EXPIRY = { "T.EE0544": 1, "T.EE0686": 1, "T.X432": 1 };
-function cmpNoExpiryCode(code) {
-  return !!CMP_NO_EXPIRY[cmpNormCourseCode(code)];
-}
-function cmpLockNoExpiryYears() {
-  const el = document.getElementById("cmp-years");
-  const locked = !!(cmpModel && cmpNoExpiryCode(cmpModel.keptCode));
-  if (el) {
-    el.disabled = locked;
-    el.title = locked
-      ? String(cmpModel.keptCode || "This course") + " has no expiry. Any completion date stays Completed."
-      : "Years after the completed date. Default 2. 0 means no expiry date.";
-  }
-  if (!locked) return false;
-  cmpExpiryYears = 0;
-  if (el) el.value = "0";
-  return true;
-}
 function cmpCodesFromText(text) {
   const out = [];
   const seen = new Set();
@@ -1176,7 +1175,6 @@ function cmpSetAuth(choice) {
   cmpHideAuthSuggest();
   if (changed) {
     paintCmp();
-    if (cmpModel && !cmpModel.error && cmpModel.keptCode) cmpRecordCheck();
   }
 }
 function cmpPaintAuthSuggest() {
@@ -1490,7 +1488,7 @@ function cmpViewExpiry(row) {
     note: String(row.note || "")
   };
   if (view.doneFlag && view.done) {
-    const years = cmpNoExpiryCode(view.code) ? 0 : cmpExpiryYears;
+    const years = cmpExpiryYears;
     const due = cmpDueFromDone(view.done, years);
     const dueAt = dueStamp(due);
     if (dueAt) {
@@ -1920,36 +1918,6 @@ function cmpNormCheck(row) {
         return rec;
       }).filter((p) => /^\d{5,7}$/.test(p.staff))
     : []);
-  return cmpSettleNoExpiry(o);
-}
-function cmpSettleNoExpiry(o) {
-  if (!o || !cmpNoExpiryCode(o.code)) return o;
-  o.expiry = 0;
-  const seen = new Set((o.donePeople || []).map((p) => padStaff(p && p.staff)));
-  const moved = new Set();
-  const stillOpen = [];
-  (o.openPeople || []).forEach((p) => {
-    const done = String((p && p.done) || "").slice(0, 10);
-    const id = padStaff(p && p.staff);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(done) && id) {
-      if (!seen.has(id)) {
-        seen.add(id);
-        o.donePeople.push({ staff: id, done: done, code: o.code });
-      }
-      moved.add(id);
-      return;
-    }
-    if (p) p.expired = false;
-    stillOpen.push(p);
-  });
-  o.openPeople = stillOpen;
-  ["paxMechPeople", "cgMechPeople", "paxCsPeople", "cgCsPeople"].forEach((key) => {
-    o[key] = (o[key] || []).filter((p) => !moved.has(padStaff(p && p.staff)));
-  });
-  o.paxMech = o.paxMechPeople.length;
-  o.cgMech = o.cgMechPeople.length;
-  o.paxCs = o.paxCsPeople.length;
-  o.cgCs = o.cgCsPeople.length;
   return o;
 }
 function cmpNormPerson(p) {
@@ -2079,8 +2047,7 @@ function cmpApplySharedView(doc, resetFilters) {
     cmpExpiryYears = Math.max(0, parseInt(doc.expiryYears, 10) || 0);
   }
   const yearsEl = document.getElementById("cmp-years");
-  if (yearsEl) yearsEl.value = String(cmpExpiryYears);
-  cmpLockNoExpiryYears();
+  if (yearsEl && document.activeElement !== yearsEl && cmpModel && !cmpModel.error) yearsEl.value = String(cmpExpiryYears);
   if (resetFilters) {
     cmpFilter = "outstanding";
     cmpRole = "mech";
@@ -2092,12 +2059,7 @@ function cmpApplySharedView(doc, resetFilters) {
   paintCmp();
   window.setTimeout(() => { cmpViewSuppress = false; }, 50);
 }
-function cmpLoadViewLocal() {
-  try {
-    const doc = JSON.parse(localStorage.getItem(CMP_VIEW_STORE) || "null");
-    if (doc && doc.view && Array.isArray(doc.view.rows) && doc.view.rows.length) cmpApplySharedView(doc, true);
-  } catch (e) {}
-}
+function cmpLoadViewLocal() {}
 function cmpMarkViewEdit() {
   if (cmpViewSuppress) return;
   if (!(cmpModel && Array.isArray(cmpModel.rows) && cmpModel.rows.length)) return;
@@ -2121,7 +2083,7 @@ async function cmpSyncViewFromCloud(quiet) {
     const result = await window.HxSharedSync.syncDoc(CMP_VIEW_DOC, {
       getLocal: () => cmpPackViewDoc(),
       localEmpty: (doc) => !(doc && doc.view && Array.isArray(doc.view.rows) && doc.view.rows.length),
-      applyRemote: (doc) => { cmpApplySharedView(doc, !quiet); },
+      applyRemote: () => {},
       onStatus: () => {}
     });
     if (!quiet && result && result.reason === "pulled") {
@@ -2275,8 +2237,8 @@ function cmpRefreshCheckFamily(row) {
   row.sysNote = notes.join(" ");
   return row;
 }
-function cmpCheckExpiryFor(code) {
-  return cmpNoExpiryCode(code) ? 0 : Math.max(0, parseInt(cmpExpiryYears, 10) || 0);
+function cmpCheckExpiryFor() {
+  return Math.max(0, parseInt(cmpExpiryYears, 10) || 0);
 }
 function cmpCheckOpt(code) {
   const auth = String(cmpAuth || "");
@@ -2284,7 +2246,7 @@ function cmpCheckOpt(code) {
     authKind: auth ? String(cmpAuthKind || "") : "",
     auth: auth,
     authLabel: auth ? (cmpAuthLabel() || auth) : "All",
-    expiry: cmpCheckExpiryFor(code),
+    expiry: cmpCheckExpiryFor(),
     near: cmpIncludeNear ? 1 : 0,
     cat: String(cmpCat || ""),
     ac: String(cmpAc || "")
@@ -2331,12 +2293,23 @@ function cmpMergeTovText(prev, add) {
 }
 function cmpRecordCheck(opts) {
   opts = opts || {};
-  if (!cmpModel || cmpModel.error || !cmpModel.keptCode) return;
+  if (!cmpModel || cmpModel.error || !cmpModel.keptCode) return null;
   const code = String(cmpModel.keptCode || "").trim();
-  if (!code) return;
+  if (!code) return null;
   const opt = cmpCheckOpt(code);
+  if (opts.tovAdd && !opts.create) {
+    const hit = cmpFindCheck(code, opt) || cmpAdoptLegacyCheck(code);
+    if (!hit) return null;
+    hit.tov = cmpMergeTovText(hit.tov, cmpTovCreationLabel());
+    cmpPersistChecks();
+    paintCmpCheckLog();
+    return { created: false };
+  }
+  if (!opts.create) return null;
   let row = cmpFindCheck(code, opt);
   if (!row) row = cmpAdoptLegacyCheck(code);
+  const created = !row;
+  const prevOpen = (!created && Array.isArray(row.openPeople)) ? row.openPeople.slice() : [];
   if (!row) {
     row = cmpBlankCheck(code);
     cmpChecks.push(row);
@@ -2386,6 +2359,7 @@ function cmpRecordCheck(opts) {
   cmpChecks.forEach(cmpRefreshCheckFamily);
   cmpPersistChecks();
   paintCmpCheckLog();
+  return { created: created, prevOpen: prevOpen };
 }
 function cmpLogSortValue(row, key) {
   if (key === "remark") return [row.sysNote, row.remark].filter(Boolean).join(" ");
@@ -2622,6 +2596,9 @@ function paintCmpTovControls() {
     nearBox.checked = !!cmpIncludeNear;
   }
   const n = cmpTovCandidates().length;
+  const createBtn = document.getElementById("cmp-create-log");
+  const fileReady = !!(cmpModel && !cmpModel.error && cmpModel.keptCode);
+  if (createBtn) createBtn.disabled = !fileReady || cmpTovBusy;
   if (btn) {
     btn.disabled = !cmpModel || !!cmpModel.error || n < 1 || cmpTovBusy;
     btn.textContent = n > 0 ? ("Add to TOV (" + n + ")") : "Add to TOV";
@@ -2706,11 +2683,11 @@ async function cmpFetchLiteBoard() {
   const data = await res.json();
   return data && typeof data === "object" ? data : null;
 }
-async function cmpPushManualRows(rows, deleted) {
+async function cmpPushManualRows(rows, deleted, statusPatch) {
   const payload = {
     v: 1,
     updated: new Date().toISOString(),
-    status: {},
+    status: (statusPatch && typeof statusPatch === "object") ? statusPatch : {},
     manual: (rows || []).map((r) => Object.assign({}, r, { baseV: 0 })),
     _statusDeleted: [],
     _manualDeleted: Array.isArray(deleted) ? deleted : []
@@ -2866,25 +2843,29 @@ async function runCmpAddToTov() {
   }
   const code = String((cmpModel && cmpModel.keptCode) || (people[0] && people[0].code) || "").trim();
   const courseTitle = String((people.find((r) => r.title) || {}).title || "").trim();
+  const remarkEl = document.getElementById("cmp-tov-remark");
+  const remark = remarkEl ? String(remarkEl.value || "").trim() : "";
   const nearN = people.filter((r) => r.doneFlag).length;
   const outN = people.length - nearN;
   let lead = "Add " + people.length + " Manual outstanding row(s) to Training One View for course " + (code || "(unknown)") + ".";
   lead += " Outstanding " + outN + ".";
   if (cmpIncludeNear) lead += " Near expiry " + nearN + ".";
   if (cmpAuth) lead += " Auth: " + cmpAuthLabel() + ".";
+  if (remark) lead += " Remark: " + remark + ".";
   lead += " Blank completed date → due one week ago. Existing Manual for the same staff and course is skipped.";
   openCmpTovPop({
     mode: "confirm",
     title: "Add to Training One View",
     lead: lead,
     okLabel: "Add",
-    onOk: () => { void cmpDoAddToTov(people, code, courseTitle); }
+    onOk: () => { void cmpDoAddToTov(people, code, courseTitle, remark); }
   });
 }
-async function cmpDoAddToTov(people, code, courseTitle) {
+async function cmpDoAddToTov(people, code, courseTitle, remark) {
   if (cmpTovBusy) return;
   cmpTovBusy = true;
   paintCmpTovControls();
+  const remarkText = String(remark || "").trim();
   try {
     const board = await cmpFetchLiteBoard();
     const remoteManual = Array.isArray(board && board.manual) ? board.manual : [];
@@ -2897,7 +2878,9 @@ async function cmpDoAddToTov(people, code, courseTitle) {
     const courseCode = code || String((people[0] && people[0].code) || "").trim();
     const courseName = courseTitle || String((people.find((r) => r.title) || {}).title || "").trim() || courseCode;
     const toAdd = [];
+    const statusPatch = {};
     let skipped = 0;
+    const nowIso = new Date().toISOString();
     people.forEach((row) => {
       const staff = padStaff(row.staff);
       if (!staff || !courseCode) return;
@@ -2916,6 +2899,22 @@ async function cmpDoAddToTov(people, code, courseTitle) {
         exp: cmpManualDueFor(row),
         v: 0
       });
+      if (remarkText) {
+        const statusKey = staff + "|" + courseCode.toUpperCase() + "|manual";
+        const cur = (board && board.status && board.status[statusKey]) || null;
+        const baseV = cur ? Math.max(0, parseInt(cur.v, 10) || 0) : 0;
+        const rec = {
+          status: cur && cur.status ? String(cur.status) : "Not Started",
+          done: cur && cur.done ? String(cur.done) : "",
+          remark: remarkText,
+          updated: nowIso,
+          v: baseV,
+          baseV: baseV
+        };
+        if (cur && cur.completedBy) rec.completedBy = cur.completedBy;
+        if (cur && cur.completedByName) rec.completedByName = cur.completedByName;
+        statusPatch[statusKey] = rec;
+      }
     });
     if (!toAdd.length) {
       if (skipped) cmpRecordCheck({ tovAdd: true });
@@ -2928,7 +2927,7 @@ async function cmpDoAddToTov(people, code, courseTitle) {
       });
       return;
     }
-    await cmpPushManualRows(toAdd);
+    await cmpPushManualRows(toAdd, [], statusPatch);
     cmpMergeLocalManual(toAdd);
     cmpRecordCheck({ tovAdd: true });
     openCmpTovPop({
@@ -2936,6 +2935,7 @@ async function cmpDoAddToTov(people, code, courseTitle) {
       title: "Add to Training One View",
       lead: "Added " + toAdd.length + " Manual outstanding row(s) for " + courseCode + "." +
         (skipped ? (" Skipped " + skipped + " already on Manual.") : "") +
+        (remarkText ? " Remark saved." : "") +
         " Refresh Training One View if it is already open."
     });
   } catch (e) {
@@ -3191,7 +3191,6 @@ function cmpPrepare(grid, fileName, forced) {
 }
 function paintCmp() {
   cmpSyncFacets();
-  cmpLockNoExpiryYears();
   const statusEl = document.getElementById("cmp-status");
   const tools = document.getElementById("cmp-tools");
   const wrap = document.getElementById("cmp-wrap");
@@ -3608,16 +3607,144 @@ function parseCmpCsv(text) {
   if (field.length || row.length) { row.push(field); rows.push(row); }
   return rows.filter((r) => r.some((c) => String(c).trim() !== ""));
 }
+function cmpStatusPatchCompleted(cur, done, nowIso) {
+  const baseV = cur ? Math.max(0, parseInt(cur.v, 10) || 0) : 0;
+  const rec = {
+    status: "Completed",
+    done: done,
+    updated: nowIso,
+    v: baseV,
+    baseV: baseV
+  };
+  if (cur && cur.remark) rec.remark = String(cur.remark);
+  const already = cur && String(cur.status || "") === "Completed";
+  if (already) {
+    if (cur.completedBy) rec.completedBy = cur.completedBy;
+    if (cur.completedByName) rec.completedByName = cur.completedByName;
+  } else {
+    const actor = cmpGateStaff();
+    if (actor) {
+      rec.completedBy = actor;
+      const who = byStaff.get(actor);
+      if (who && who.name) rec.completedByName = String(who.name);
+    }
+  }
+  return rec;
+}
+async function cmpSyncCompletedToTov(prevOpen, code) {
+  const prev = new Set((prevOpen || []).map((p) => padStaff(p && p.staff)).filter(Boolean));
+  if (!prev.size || !code) return { updated: 0 };
+  const doneByStaff = new Map();
+  (cmpModel && cmpModel.rows || []).forEach((row) => {
+    const id = padStaff(row && row.staff);
+    if (!prev.has(id)) return;
+    const view = cmpView(row);
+    if (!view.doneFlag || !view.done) return;
+    const iso = String(view.done).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;
+    const had = doneByStaff.get(id);
+    if (!had || iso > had) doneByStaff.set(id, iso);
+  });
+  if (!doneByStaff.size) return { updated: 0 };
+  if (!cmpGatePassword() && !String(cmpLsGet(CMP_SYNC_KEY) || "").trim()) {
+    return { updated: 0, needLogin: true, pending: doneByStaff.size };
+  }
+  const board = await cmpFetchLiteBoard();
+  const status = (board && board.status) || {};
+  const manual = Array.isArray(board && board.manual) ? board.manual : [];
+  const course = String(code || "").trim().toUpperCase();
+  const patch = {};
+  const nowIso = new Date().toISOString();
+  const sources = { manual: 1, ct: 1, ual: 1, omt: 1 };
+  doneByStaff.forEach((done, staff) => {
+    const keys = new Set();
+    manual.forEach((m) => {
+      const id = padStaff(m && (m.staff || m.uid));
+      if (id === staff && cmpCourseEq(m && m.code, course)) keys.add(staff + "|" + course + "|manual");
+    });
+    Object.keys(status).forEach((k) => {
+      if (String(k).indexOf("__hx_shared__/") === 0) return;
+      const parts = String(k).split("|");
+      if (parts.length < 3) return;
+      if (padStaff(parts[0]) !== staff) return;
+      if (String(parts[1] || "").trim().toUpperCase() !== course) return;
+      const src = parts.slice(2).join("|");
+      if (!sources[src]) return;
+      keys.add(k);
+    });
+    keys.forEach((k) => {
+      const cur = status[k] || null;
+      const curDone = String((cur && cur.done) || "").slice(0, 10);
+      if (cur && String(cur.status || "") === "Completed" && curDone && curDone >= done) return;
+      patch[k] = cmpStatusPatchCompleted(cur, done, nowIso);
+    });
+  });
+  const n = Object.keys(patch).length;
+  if (!n) return { updated: 0 };
+  await cmpPushManualRows([], [], patch);
+  return { updated: n };
+}
+async function cmpCreateCheckLog() {
+  if (!cmpModel || cmpModel.error || !cmpModel.keptCode || cmpTovBusy) return;
+  const code = String(cmpModel.keptCode || "").trim();
+  cmpTovBusy = true;
+  paintCmpTovControls();
+  try {
+    const saved = cmpRecordCheck({ create: true });
+    if (!saved) return;
+    let extra = saved.created ? " · Check log added" : " · Check log updated";
+    if (!saved.created && saved.prevOpen && saved.prevOpen.length) {
+      try {
+        const tov = await cmpSyncCompletedToTov(saved.prevOpen, code);
+        if (tov && tov.updated) extra += " · Training One View completion dates " + tov.updated;
+        else if (tov && tov.needLogin) extra += " · Training One View dates not written. Log in on the HX hub first.";
+      } catch (e) {
+        extra += " · Training One View dates were not written.";
+      }
+    }
+    const statusEl = document.getElementById("cmp-status");
+    if (statusEl) {
+      statusEl.textContent = statusEl.textContent.replace(/ · Check log[\s\S]*$/, "") + extra;
+    }
+  } finally {
+    cmpTovBusy = false;
+    paintCmpTovControls();
+  }
+}
+function cmpRememberedExpiry(code) {
+  const want = cmpNormCourseCode(code);
+  let best = null;
+  let bestAt = "";
+  (cmpChecks || []).forEach((row) => {
+    if (!row || cmpNormCourseCode(row.code) !== want) return;
+    if (row.expiry == null || row.expiry === "") return;
+    const at = String(row.checked || "");
+    if (!best || at >= bestAt) {
+      best = row;
+      bestAt = at;
+    }
+  });
+  if (!best) return 2;
+  return Math.max(0, parseInt(best.expiry, 10) || 0);
+}
+function cmpApplyRememberedYears() {
+  const years = cmpRememberedExpiry(cmpModel && cmpModel.keptCode);
+  cmpExpiryYears = years;
+  const el = document.getElementById("cmp-years");
+  if (!el) return;
+  el.disabled = false;
+  el.value = String(years);
+  el.title = "Years after the completed date. 0 means no expiry date. This started from the last Check log for this course, or 2. You can change it at any time.";
+}
 function cmpApplyModel(model) {
   cmpModel = model;
-  cmpLockNoExpiryYears();
   cmpFilter = "outstanding";
   cmpRole = "mech";
   cmpOrg = "all";
   cmpSortKey = "done";
   cmpSortDir = -1;
+  cmpApplyRememberedYears();
   paintCmp();
-  cmpRecordCheck();
   cmpMarkViewEdit();
 }
 function cmpMapChoices() {
@@ -3740,18 +3867,12 @@ document.getElementById("cmp-auth").addEventListener("blur", cmpCommitAuthInput)
 document.getElementById("cmp-cat").addEventListener("change", (e) => {
   cmpCat = String(e.target.value || "");
   paintCmp();
-  if (cmpModel && !cmpModel.error && cmpModel.keptCode) cmpRecordCheck();
 });
 document.getElementById("cmp-ac").addEventListener("change", (e) => {
   cmpAc = String(e.target.value || "");
   paintCmp();
-  if (cmpModel && !cmpModel.error && cmpModel.keptCode) cmpRecordCheck();
 });
 document.getElementById("cmp-years").addEventListener("input", (e) => {
-  if (cmpLockNoExpiryYears()) {
-    paintCmp();
-    return;
-  }
   const raw = String(e.target.value || "").trim();
   if (!/^\d+$/.test(raw)) return;
   const n = Number(raw);
@@ -3760,26 +3881,21 @@ document.getElementById("cmp-years").addEventListener("input", (e) => {
   paintCmp();
 });
 document.getElementById("cmp-years").addEventListener("blur", (e) => {
-  if (cmpLockNoExpiryYears()) {
-    e.target.value = "0";
-    paintCmp();
-    cmpRecordCheck();
-    return;
-  }
   const raw = String(e.target.value || "").trim();
   if (/^\d+$/.test(raw)) {
     const n = Number(raw);
     if (n >= 0) cmpExpiryYears = n;
   }
-  e.target.value = String(cmpExpiryYears);
+  if (cmpModel && !cmpModel.error) e.target.value = String(cmpExpiryYears);
   paintCmp();
-  cmpRecordCheck();
   cmpMarkViewEdit();
 });
 document.getElementById("cmp-include-near").addEventListener("change", (e) => {
   cmpIncludeNear = !!e.target.checked && cmpExpiryYears >= 1;
-  paintCmpTovControls();
-  if (cmpModel && !cmpModel.error && cmpModel.keptCode) cmpRecordCheck();
+  paintCmp();
+});
+document.getElementById("cmp-create-log").addEventListener("click", () => {
+  void cmpCreateCheckLog();
 });
 window.addEventListener("message", (e) => {
   const msg = e.data || {};
