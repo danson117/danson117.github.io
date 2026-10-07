@@ -484,7 +484,7 @@
         </div>
       </div>
       <h2 class="check-h">Check log</h2>
-      <p class="note">Nothing is written here until you click <b>Create check log</b>. Each dropped file is saved. The same file name replaces that saved file and updates Check log rows that use it. A Name List change recalculates outstanding from the saved completions. Same course and same Auth, Category, A/C Type, Expiry, and Include near expiry update that row. Different options add a row. Click a column header to sort; click it again to reverse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. People still covered by a valid initial, sibling initial, or takeover sit in Completed, not in a separate Not due count. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. Hub unlock syncs this log across devices.</p>
+      <p class="note">Nothing is written here until you click <b>Create check log</b>. Each dropped file is saved. The same file name replaces that saved file and updates Check log rows that use it. A Name List change recalculates outstanding from the saved completions. Same course and same Auth, Category, A/C Type, Expiry, and Include near expiry update that row. Different options add a row. Click a column header to sort; click it again to reverse. Click an outstanding count to see Staff #, name, session, and team. Cargo = CG. Remark is yours. People still covered by a valid initial, sibling initial, or takeover sit in Completed, not in a separate Not due count. TOV Creation records whether you added outstanding to Training One View. Remove from TOV deletes that course’s Manual outstanding. The newest Check log is kept, the same way CT Reminder keeps the newest upload. A change on one computer is saved to Supabase so the others can see it. Opening this page does not count as a newer copy.</p>
       <div class="cmp-tools" id="cmp-log-tools">
         <button type="button" id="cmp-create-log" disabled title="Drop a file first. Then this saves the current options as a Check log row.">Create check log</button>
         <button type="button" id="cmp-log-export">Export check log</button>
@@ -567,7 +567,7 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.31" aria-label="Page version 2.31">v2.31</div>
+  <div class="page-version" data-version="2.32" aria-label="Page version 2.32">v2.32</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -856,6 +856,10 @@ let cmpFileSources = [];
 let cmpRosterSaved = "";
 let cmpCheckCloudReady = false;
 let cmpCheckSuppressPush = false;
+let cmpCheckGone = [];
+let cmpCheckDidRoster = false;
+let cmpCheckStaleRetry = 0;
+let cmpCheckSyncChain = Promise.resolve();
 function cmpRoleOf(rec) {
   const title = String((rec && rec.title) || "");
   const pos = String((rec && rec.pos) || "");
@@ -1897,6 +1901,7 @@ function cmpBlankCheck(code) {
     ac: "",
     optSet: false,
     checked: "",
+    rev: "",
     file: "",
     sheets: "",
     tov: "Not created",
@@ -1927,6 +1932,7 @@ function cmpNormCheck(row) {
   o.ac = row && row.ac != null ? String(row.ac) : "";
   o.optSet = !!(row && row.optSet);
   o.checked = row && row.checked != null ? String(row.checked) : "";
+  o.rev = row && row.rev != null ? String(row.rev) : "";
   o.file = row && row.file != null ? String(row.file) : "";
   o.sheets = row && row.sheets != null ? String(row.sheets) : "";
   o.tov = row && row.tov != null && String(row.tov).trim() ? String(row.tov) : "Not created";
@@ -2024,7 +2030,8 @@ function cmpCheckBundle() {
     updated: cmpChecksUpdated || "",
     roster: cmpRosterSaved || "",
     rows: cmpChecks.map(cmpNormCheck),
-    files: cmpFileSources.map(cmpNormFileSource).filter((s) => s.file)
+    files: cmpFileSources.map(cmpNormFileSource).filter((s) => s.file),
+    gone: cmpCheckGone.slice(-200)
   };
 }
 function cmpReadCheckBundle(parsed) {
@@ -2033,11 +2040,13 @@ function cmpReadCheckBundle(parsed) {
   if (Array.isArray(parsed)) {
     cmpChecks = parsed.map(cmpNormCheck).filter((r) => r.code);
     cmpChecksUpdated = "";
+    cmpCheckGone = [];
     return;
   }
   if (!parsed || typeof parsed !== "object") {
     cmpChecks = [];
     cmpChecksUpdated = "";
+    cmpCheckGone = [];
     return;
   }
   const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
@@ -2045,6 +2054,10 @@ function cmpReadCheckBundle(parsed) {
   cmpChecksUpdated = String(parsed.updated || "");
   cmpRosterSaved = String(parsed.roster || "");
   cmpFileSources = (Array.isArray(parsed.files) ? parsed.files : []).map(cmpNormFileSource).filter((s) => s.file);
+  cmpCheckGone = (Array.isArray(parsed.gone) ? parsed.gone : []).map((g) => ({
+    key: String(g && g.key || ""),
+    rev: String(g && g.rev || "")
+  })).filter((g) => g.key && g.rev).slice(-200);
 }
 function cmpLoadChecks() {
   cmpChecks = [];
@@ -2056,6 +2069,7 @@ function cmpLoadChecks() {
     cmpChecksUpdated = "";
     cmpFileSources = [];
     cmpRosterSaved = "";
+    cmpCheckGone = [];
   }
 }
 function cmpWriteChecksLocal() {
@@ -2251,7 +2265,10 @@ function cmpRebuildCheck(row, src, opts) {
     if (title) row.title = title;
     cmpFillCheckPeople(row, rows);
   });
-  if (opts.touchChecked) row.checked = cmpNowHkt();
+  if (opts.touchChecked) {
+    row.checked = cmpNowHkt();
+    row.rev = new Date().toISOString();
+  }
 }
 function cmpSaveFileSource(model) {
   if (!model || model.error || !model.fileName || !model.keptCode) return false;
@@ -2288,7 +2305,10 @@ function cmpSyncChecksToRoster() {
   cmpChecks.forEach((row) => {
     const src = cmpSourceForRow(row);
     if (!src) return;
+    const before = cmpCheckSig({ rows: [row], files: [], gone: [] });
     cmpRebuildCheck(row, src);
+    if (cmpCheckSig({ rows: [row], files: [], gone: [] }) === before) return;
+    row.rev = new Date().toISOString();
     n += 1;
   });
   cmpRosterSaved = stamp;
@@ -2299,29 +2319,148 @@ function cmpSyncChecksToRoster() {
   }
   return n;
 }
+function cmpCheckRowKey(row) {
+  const code = String(row && row.code || "").trim().toUpperCase();
+  if (!row || !row.optSet) return code + "\nlegacy";
+  return code + "\n" + cmpCheckOptKey(row);
+}
+function cmpCheckRowMs(row) {
+  const rev = Date.parse(String(row && row.rev || "").trim());
+  if (Number.isFinite(rev) && rev > 0) return rev;
+  const checked = String(row && row.checked || "").trim();
+  if (!checked) return 0;
+  const t = Date.parse(checked.replace(" ", "T"));
+  return Number.isFinite(t) ? t : 0;
+}
+function cmpCheckGoneMap(docs) {
+  const map = new Map();
+  (docs || []).forEach((doc) => {
+    (doc && doc.gone || []).forEach((g) => {
+      const key = String(g && g.key || "");
+      const t = Date.parse(String(g && g.rev || "")) || 0;
+      if (!key || !t) return;
+      const prev = map.get(key) || 0;
+      if (t >= prev) map.set(key, t);
+    });
+  });
+  return map;
+}
+function cmpCheckSig(doc) {
+  const rows = ((doc && doc.rows) || []).map((r) => [
+    cmpCheckRowKey(r),
+    String(r.rev || ""),
+    String(r.checked || ""),
+    String(r.paxMech),
+    String(r.cgMech),
+    String(r.paxCs),
+    String(r.cgCs),
+    String(r.remark || ""),
+    String(r.tov || ""),
+    String(r.expiry),
+    String(r.file || "")
+  ].join("\t")).sort();
+  const files = ((doc && doc.files) || []).map((f) => cmpFileKey(f.file) + ":" + ((f.hits && f.hits.length) || 0)).sort();
+  const gone = ((doc && doc.gone) || []).map((g) => String(g.key) + "@" + String(g.rev)).sort();
+  return rows.join("\n") + "\n--" + files.join("\n") + "\n--" + gone.join("\n");
+}
+/** Per-row data time only. Never use page-open time. Newer row wins; a row on only one side is kept. */
+function cmpMergeCheckDocs(localDoc, remoteDoc) {
+  const gone = cmpCheckGoneMap([localDoc, remoteDoc]);
+  const lAt = Date.parse(String(localDoc && localDoc.updated || "")) || 0;
+  const rAt = Date.parse(String(remoteDoc && remoteDoc.updated || "")) || 0;
+  const by = new Map();
+  function take(row, sideAt, files) {
+    if (!row || !row.code) return;
+    const key = cmpCheckRowKey(row);
+    const at = cmpCheckRowMs(row);
+    if (at <= (gone.get(key) || 0)) return;
+    const prev = by.get(key);
+    if (!prev || at > prev.at || (at === prev.at && sideAt >= prev.sideAt)) {
+      by.set(key, { row: row, at: at, files: files });
+    }
+  }
+  ((localDoc && localDoc.rows) || []).forEach((r) => take(r, lAt, (localDoc && localDoc.files) || []));
+  ((remoteDoc && remoteDoc.rows) || []).forEach((r) => take(r, rAt, (remoteDoc && remoteDoc.files) || []));
+  const fileFrom = new Map();
+  by.forEach((item) => {
+    const name = String(item.row.file || "").trim();
+    if (!name) return;
+    const key = cmpFileKey(name);
+    const src = (item.files || []).find((f) => f && cmpFileKey(f.file) === key);
+    if (!src) return;
+    const prev = fileFrom.get(key);
+    if (!prev || item.at >= prev.at) fileFrom.set(key, { file: src, at: item.at });
+  });
+  const files = new Map();
+  ((remoteDoc && remoteDoc.files) || []).forEach((f) => {
+    if (f && f.file) files.set(cmpFileKey(f.file), f);
+  });
+  ((localDoc && localDoc.files) || []).forEach((f) => {
+    if (f && f.file && !files.has(cmpFileKey(f.file))) files.set(cmpFileKey(f.file), f);
+  });
+  fileFrom.forEach((item, key) => files.set(key, item.file));
+  const goneArr = [];
+  gone.forEach((t, key) => {
+    if (t) goneArr.push({ key: key, rev: new Date(t).toISOString() });
+  });
+  return {
+    v: 1,
+    app: "course-completion-checks",
+    updated: new Date(Math.max(lAt, rAt) || 0).toISOString(),
+    roster: lAt >= rAt ? String((localDoc && localDoc.roster) || "") : String((remoteDoc && remoteDoc.roster) || ""),
+    rows: Array.from(by.values()).map((item) => item.row),
+    files: Array.from(files.values()),
+    gone: goneArr.slice(-200)
+  };
+}
 const scheduleCmpCheckPush = (window.HxSharedSync && window.HxSharedSync.schedule)
   ? window.HxSharedSync.schedule(async () => {
       if (!cmpCheckCloudReady || cmpCheckSuppressPush) return;
       if (!(window.HxSharedSync && window.HxSharedSync.getPassword())) return;
-      try {
-        await window.HxSharedSync.pushDoc(CMP_CHECK_DOC, cmpPackCheckDoc());
-      } catch (e) {}
+      await cmpSyncChecksFromCloud();
     }, 1200)
   : function () {};
-async function cmpSyncChecksFromCloud() {
+async function cmpSyncChecksBody() {
   if (!window.HxSharedSync) return;
+  let remoteWrap = null;
   try {
-    await window.HxSharedSync.syncDoc(CMP_CHECK_DOC, {
-      getLocal: () => cmpPackCheckDoc(),
-      localEmpty: (doc) => !(doc && Array.isArray(doc.rows) && doc.rows.length),
-      applyRemote: (doc) => {
-        cmpApplyCheckDoc(doc);
-        paintCmpCheckLog();
-      },
-      onStatus: () => {}
-    });
-  } catch (e) {}
+    remoteWrap = await window.HxSharedSync.pullDoc(CMP_CHECK_DOC);
+  } catch (e) {
+    return;
+  }
+  const remote = (remoteWrap && remoteWrap.doc) || { rows: [], files: [], gone: [], updated: "" };
+  const local = cmpPackCheckDoc();
+  const merged = cmpMergeCheckDocs(local, remote);
+  const changedLocal = cmpCheckSig(merged) !== cmpCheckSig(local);
+  const changedRemote = cmpCheckSig(merged) !== cmpCheckSig(remote);
+  if (changedLocal) {
+    cmpApplyCheckDoc(merged);
+    cmpCheckSuppressPush = false;
+    paintCmpCheckLog();
+  }
   cmpCheckCloudReady = true;
+  if (changedRemote && window.HxSharedSync.getPassword()) {
+    cmpChecksUpdated = new Date().toISOString();
+    cmpWriteChecksLocal();
+    try {
+      await window.HxSharedSync.pushDoc(CMP_CHECK_DOC, cmpPackCheckDoc());
+      cmpCheckStaleRetry = 0;
+    } catch (e) {
+      if (e && e.code === "stale-local" && cmpCheckStaleRetry < 1) {
+        cmpCheckStaleRetry += 1;
+        scheduleCmpCheckPush();
+      }
+    }
+  }
+  if (!cmpCheckDidRoster || changedLocal) {
+    cmpCheckDidRoster = true;
+    if (cmpSyncChecksToRoster()) paintCmpCheckLog();
+  }
+}
+function cmpSyncChecksFromCloud() {
+  const job = cmpCheckSyncChain.then(() => cmpSyncChecksBody(), () => cmpSyncChecksBody());
+  cmpCheckSyncChain = job.then(() => {}, () => {});
+  return job;
 }
 function cmpPackViewDoc() {
   const view = (cmpModel && Array.isArray(cmpModel.rows) && cmpModel.rows.length) ? {
@@ -2610,6 +2749,7 @@ function cmpRecordCheck(opts) {
     const hit = cmpFindCheck(code, opt) || cmpAdoptLegacyCheck(code);
     if (!hit) return null;
     hit.tov = cmpMergeTovText(hit.tov, cmpTovCreationLabel());
+    hit.rev = new Date().toISOString();
     cmpPersistChecks();
     paintCmpCheckLog();
     return { created: false };
@@ -2661,6 +2801,7 @@ function cmpRecordCheck(opts) {
   cmpRefreshCheckFamily(row);
   row.expiry = opt.expiry;
   if (!opts.keepChecked) row.checked = cmpNowHkt();
+  row.rev = new Date().toISOString();
   if (cmpModel.fileName) row.file = String(cmpModel.fileName);
   if (cmpModel.sheetNames && cmpModel.sheetNames.length) row.sheets = cmpModel.sheetNames.join(", ");
   if (opts.tovAdd) row.tov = cmpMergeTovText(row.tov, cmpTovCreationLabel());
@@ -4019,9 +4160,13 @@ async function cmpCreateCheckLog() {
   cmpTovBusy = true;
   paintCmpTovControls();
   try {
+    await cmpSyncChecksFromCloud();
     const saved = cmpRecordCheck({ create: true });
     if (!saved) return;
     let extra = saved.created ? " · Check log added" : " · Check log updated";
+    if (!(window.HxSharedSync && window.HxSharedSync.getPassword())) {
+      extra += " · Log in on the HX hub so other computers can see this Check log.";
+    }
     if (!saved.created && saved.prevOpen && saved.prevOpen.length) {
       try {
         const tov = await cmpSyncCompletedToTov(saved.prevOpen, code);
@@ -4321,9 +4466,19 @@ document.getElementById("cmp-box").addEventListener("click", (e) => {
   if (del) {
     const i = Number(del.getAttribute("data-check-del"));
     if (Number.isInteger(i) && i >= 0 && i < cmpChecks.length) {
-      cmpChecks.splice(i, 1);
-      cmpPersistChecks();
-      paintCmpCheckLog();
+      const key = cmpCheckRowKey(cmpChecks[i]);
+      void (async () => {
+        await cmpSyncChecksFromCloud();
+        const j = cmpChecks.findIndex((r) => cmpCheckRowKey(r) === key);
+        if (j < 0) {
+          paintCmpCheckLog();
+          return;
+        }
+        cmpCheckGone.push({ key: key, rev: new Date().toISOString() });
+        cmpChecks.splice(j, 1);
+        cmpPersistChecks();
+        paintCmpCheckLog();
+      })();
     }
     return;
   }
@@ -4341,6 +4496,7 @@ document.getElementById("cmp-box").addEventListener("input", (e) => {
   const i = Number(ta.getAttribute("data-check-remark"));
   if (!Number.isInteger(i) || i < 0 || i >= cmpChecks.length) return;
   cmpChecks[i].remark = ta.value;
+  cmpChecks[i].rev = new Date().toISOString();
   cmpPersistChecks();
 });
 document.getElementById("cmp-map-ok").addEventListener("click", () => {
@@ -4447,14 +4603,14 @@ document.getElementById("cmp-people-export").addEventListener("click", () => exp
   });
 })();
 cmpLoadChecks();
-cmpSyncChecksToRoster();
 paintCmpCheckLog();
 cmpLoadViewLocal();
-void cmpSyncChecksFromCloud().then(() => {
-  if (cmpSyncChecksToRoster()) paintCmpCheckLog();
-});
+void cmpSyncChecksFromCloud();
 void cmpSyncViewFromCloud(false);
-window.setInterval(() => { void cmpSyncViewFromCloud(true); }, 20000);
+window.setInterval(() => {
+  void cmpSyncChecksFromCloud();
+  void cmpSyncViewFromCloud(true);
+}, 20000);
 </script>
 </body>
 </html>

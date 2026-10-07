@@ -251,6 +251,7 @@
       </ul>
       <h3>上載同顯示</h3>
       <ul>
+        <li style="color:#b00020"><b>新 · Course completion · Check log 先比較最新：</b>邊一部機 Create、改 Remark、刪行、或者放檔，都會寫入 Supabase，其他機先睇到。開頁同之後約每 20 秒，先比較每一行嘅資料時間（唔用開頁時間），較新嗰行留低；只得一邊有嘅行都保留。未 Log in 仍然睇到最新；寫入要 hub Log in。頁 <b>v2.32</b>、hub <b>v21.22</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 左三欄 highlight、Staff # 複製冇尾空格：</b>結果表左面 <b>Staff #</b>、<b>Name</b>、<b>Section</b> 表頭同格用黃底 highlight，其餘欄唔跟。雙擊 Staff # 複製剛好 6 位數字，唔好多一個尾空格；之後 Ctrl+C 如果選區只係呢個號碼加空格，亦剪走個空格。頁 <b>v2.31</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · 存檔同 Name List 重計：</b>每次放 xlsx／CSV 都儲起完成名單（包括當時未喺 Name List 嘅人）。同名檔取代舊名單，跟新檔，並更新用緊呢個檔名嘅 Check log 行。Name List 人數一變，開頁就用儲低嘅完成名單重計 Outstanding。舊 Check log 冇留低原檔，只可以跟當時已入名冊嘅完成日重計；當時喺檔入面但未入名冊嘅人，要再放一次個檔先有完成日。頁 <b>v2.30</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Auth 揀咗 Role 跳 CS：</b>Auth 揀咗 Module 或 operator，Role 自動去 <b>CS</b>。之後可以再撳 All、CS 或 Mechanic。清空 Auth 唔改返 Role。新檔若 Auth 仍然揀住，Role 仍然係 CS；Auth 係 All 先返 Mechanic。頁 <b>v2.29</b>。</li>
@@ -408,6 +409,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.93">v10.93</div>
+  <div class="page-version" data-version="10.94">v10.94</div>
 </body>
 </html>
