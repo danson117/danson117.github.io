@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-08 公司電腦
+
+- **Training One View · Mandatory 全部完成就離開 Sources：** Name List 上每一行 Mandatory 都 Completed 之後，Sources 唔再顯示 Mandatory，主表唔再列呢啲已完成項目。再有未完成先返。上載卡仍在。TOV **v15.45**、hub **v21.23**、`hx-rules` **v10.95**。GitHub 後備 → Vercel。要閂舊 Training One View 分頁。唔開 Chrome。唔寫職員明細。
+
 ## 2026-10-07 公司電腦
 
 - **Course completion · Check log 先比較最新再同步：** 開頁唔再當成本機較新。Create、改 Remark、刪行、放檔會寫入 Supabase；其他機開住頁約 20 秒會見到。同一行留資料時間較新嗰份，只得一邊有嘅行都保留。未登入仍可睇；寫入要 hub Log in。Course completion **v2.32**、hub **v21.22**、`hx-rules` **v10.94**。GitHub 後備 → Vercel。要閂舊 Course completion 分頁。唔開 Chrome。唔寫職員明細。

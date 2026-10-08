@@ -60,6 +60,7 @@
   }
   .filter-label { font-weight: 650; color: var(--navy); white-space: nowrap; }
   .filter-bar .tabs, .filter-bar .toolbar { margin: 0; }
+  .filter-bar button[hidden] { display: none !important; }
   .filter-right {
     display: flex;
     flex-wrap: wrap;
@@ -1841,7 +1842,7 @@
       </div>
     </div>
   </div>
-  <div class="page-version" data-version="15.44" aria-label="Page version 15.44">v15.44</div>
+  <div class="page-version" data-version="15.45" aria-label="Page version 15.45">v15.45</div>
 <script src="ocg-pax-data.js?v=16"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-shared-sync.js?v=1.4"></script>
@@ -3071,6 +3072,7 @@ function updateFilterNarrowHints() {
   const qEl = document.getElementById("q");
   if (qEl) qEl.classList.toggle("filter-narrowed", cur.q !== def.q);
   const srcDiff = cur.src !== def.src;
+  syncSourceButtons();
   document.querySelectorAll("[data-src]").forEach((b) => {
     const k = b.dataset.src;
     const on = k === "all" ? srcIsAll() : srcHas(k);
@@ -4637,7 +4639,7 @@ function omtItems() {
       hot: remainBand(remain) === "hot"
     });
   });
-  return [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
+  return [...map.values()].filter((it) => it.people.some((p) => personCourseStillOut(p, it))).sort((a, b) => a.key.localeCompare(b.key));
 }
 function manualItems() {
   const map = new Map();
@@ -5661,6 +5663,28 @@ function paintHead() {
       esc(TEAM_LABEL[t]) + "<br><small data-team-details=\"" + t + "\">Details</small></th>"
     ).join("");
 }
+function mandatoryStillOpen() {
+  let seen = 0;
+  let open = 0;
+  omtRows.forEach((r) => {
+    const who = personOf(r.uid || r.staff, r.name);
+    if (!who.group) return;
+    seen += 1;
+    const row = { code: r.code || "Mandatory", name: r.cname || "", src: "omt", kind: "omt" };
+    if (!courseIsCompleted(who.staff, row)) open += 1;
+  });
+  if (!seen) return true;
+  return open > 0;
+}
+function syncSourceButtons() {
+  const showOmt = mandatoryStillOpen();
+  if (!showOmt && srcOn.length === 1 && srcOn[0] === "omt") srcOn = SRC_ALL.filter((k) => k !== "omt");
+  document.querySelectorAll("[data-src]").forEach((b) => {
+    if (b.dataset.src === "omt") b.hidden = !showOmt;
+    const on = b.dataset.src === "all" ? srcIsAll() : srcHas(b.dataset.src);
+    b.classList.toggle("on", on);
+  });
+}
 
 function paintBoard() {
   const roster = rosterByTeam();
@@ -5680,10 +5704,7 @@ function paintBoard() {
   document.getElementById("n-out").textContent = String(outPeople.size);
   document.getElementById("n-hot").textContent = String(hotPeople.size);
   document.querySelectorAll("[data-org]").forEach((b) => b.classList.toggle("on", b.dataset.org === org));
-  document.querySelectorAll("[data-src]").forEach((b) => {
-    const on = b.dataset.src === "all" ? srcIsAll() : srcHas(b.dataset.src);
-    b.classList.toggle("on", on);
-  });
+  syncSourceButtons();
   paintHead();
 
   document.getElementById("board-body").innerHTML = items.map((it) => {
@@ -9813,6 +9834,7 @@ function openCoursePop(staff) {
   applyWriteAccess();
 }
 function paint() {
+  if (!mandatoryStillOpen() && srcOn.length === 1 && srcOn[0] === "omt") srcOn = SRC_ALL.filter((k) => k !== "omt");
   lsSet(UI.org, org);
   lsSet(UI.src, srcSave());
   lsSet(UI.role, role);
