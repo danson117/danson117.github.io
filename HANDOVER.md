@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-08 公司電腦
 
+- **TOV Manual · CAD-PLIS outstanding 收成 75：** 貼出名單 **75** 人維持未完成，due 仍然 **2026-10-15**。其餘未完成 **19** 標 Completed，完成日 **2026-10-08**。之前已 Completed **23** 同今次 **19** 的 due 改 Expiry **0**，所以唔再入 90 日 outstanding 窗口。板上 outstanding **75**。冇刪行。CAD-PLIS 仍然 **117**。Manual 仍然 **1503**。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
+## 2026-10-08 公司電腦
+
 - **Training One View · Mandatory 全部完成就離開 Sources：** Name List 上每一行 Mandatory 都 Completed 之後，Sources 唔再顯示 Mandatory，主表唔再列呢啲已完成項目。再有未完成先返。上載卡仍在。TOV **v15.45**、hub **v21.23**、`hx-rules` **v10.95**。GitHub 後備 → Vercel。要閂舊 Training One View 分頁。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-07 公司電腦
