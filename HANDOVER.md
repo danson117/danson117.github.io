@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **TOV Manual · CAD-PLIS outstanding 收成 60：** 貼出名單 **60** 人維持未完成，due 仍然 **2026-10-15**。其餘未完成 **15** 標 Completed，完成日 **2026-10-10**，due 改 Expiry **0**。板上 outstanding **60**。冇刪行。CAD-PLIS 仍然 **117**。Manual 仍然 **1503**。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
+
 ## 2026-10-08 公司電腦
 
 - **TOV Manual · CAD-PLIS outstanding 收成 75：** 貼出名單 **75** 人維持未完成，due 仍然 **2026-10-15**。其餘未完成 **19** 標 Completed，完成日 **2026-10-08**。之前已 Completed **23** 同今次 **19** 的 due 改 Expiry **0**，所以唔再入 90 日 outstanding 窗口。板上 outstanding **75**。冇刪行。CAD-PLIS 仍然 **117**。Manual 仍然 **1503**。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
