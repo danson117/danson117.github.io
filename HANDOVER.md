@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · 讀音測試 1–10：** 左邊選單加「讀音測試」。十粒掣喺外層頁（第 8 號先係 iframe），每粒讀「朝陽」，6 同 7 係提示音。第 2 號抄同步前閃卡：唔 cancel、zh-HK、語速 0.8。閃卡本身冇改。Alpha_Learn **v4.0**。GitHub 後備 → Vercel。刷新已開嘅分頁，開讀音測試，回覆邊幾個號碼有聲。唔開 Chrome。未喺真 iPad 試到。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · iPad 倒數後冇聲、錄音回放冇聲：** 詞語表已經可以再揀。倒數「試下自己讀」完咗仍然冇聲；自己錄咗嘅詞回放都冇聲。電腦正常。iPad 倒數完先呼叫朗讀，Safari 唔當係點擊，所以唔出聲。錄音同解鎖共用同一個播放器，解鎖完會 pause，而且 iOS 播唔到 webm。而家點擊當下就預備好朗讀或錄音，倒數完先播出；新錄音用 mp4。立即朗讀仍然即刻讀。電腦倒數同「讀緊唔俾再揀」維持。Alpha_Learn **v3.9**。GitHub 後備 → Vercel。刷新已開嘅分頁。舊錄音要再錄一次。唔開 Chrome。未喺真 iPad 試到。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

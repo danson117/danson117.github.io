@@ -1,10 +1,10 @@
-<!-- Ver.3.9 -->
+<!-- Ver.4.0 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="3.9">
+  <meta name="app-version" content="4.0">
   <title>Alpha_Learn</title>
   <style>
     :root {
@@ -57,6 +57,46 @@
     .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 99999; background: transparent; }
     .menu-backdrop.open { display: block; }
     #import-file { display: none; }
+    .speak-test {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      overflow: auto;
+      background: #f4f7fb;
+      color: #1a2744;
+      padding: 72px 18px 32px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .speak-test.open { display: block; }
+    .speak-test h1 { margin: 0 0 8px; font-size: 1.45rem; }
+    .speak-test p { margin: 0 0 12px; line-height: 1.45; }
+    .speak-test-grid { display: grid; gap: 10px; max-width: 720px; }
+    .speak-test button {
+      text-align: left;
+      border: 2px solid #c5d4e8;
+      background: #fff;
+      color: #1a2744;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      cursor: pointer;
+      line-height: 1.35;
+    }
+    .speak-test button small { display: block; font-weight: 650; color: #3d5a80; margin-top: 2px; }
+    .speak-test button:active { background: #e7f2ff; }
+    #speak-test-status {
+      margin-top: 14px;
+      max-width: 720px;
+      min-height: 3.2em;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #1a2744;
+      color: #e8f4ff;
+      font-weight: 700;
+      line-height: 1.4;
+    }
     .version-badge {
       position: fixed; right: 12px; bottom: 12px; z-index: 100001;
       background: rgba(26, 39, 68, 0.92); color: #7dd3fc;
@@ -69,6 +109,8 @@
       .menu-root { top: 10px; left: 10px; }
       .menu-toggle { width: 44px; height: 44px; border-radius: 12px; }
       .version-badge { right: 10px; bottom: 10px; font-size: 11px; padding: 5px 10px; }
+      .speak-test { padding: 64px 16px 28px; }
+      .speak-test button { min-height: 52px; font-size: 1rem; }
     }
   </style>
 </head>
@@ -77,7 +119,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.3.9</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.4.0</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -88,6 +130,10 @@
         <button class="menu-item" type="button" data-page="zh-flash" data-label="中文閃卡">
           <span class="menu-icon">🀄</span>
           <span class="menu-text">中文 · 生字閃卡認讀</span>
+        </button>
+        <button class="menu-item" type="button" data-page="speak-test" data-label="讀音測試">
+          <span class="menu-icon">🔊</span>
+          <span class="menu-text">讀音測試</span>
         </button>
         <button class="menu-item" type="button" data-page="juanduan" data-label="句段辨析">
           <span class="menu-icon">📝</span>
@@ -128,7 +174,24 @@
     </div>
   </div>
   <iframe id="app-frame" title="學習內容"></iframe>
-  <div class="version-badge" id="version-badge">Ver.3.9</div>
+  <section class="speak-test" id="speak-test" hidden>
+    <h1>讀音測試 1–10</h1>
+    <p>每粒掣都讀「朝陽」，除咗 6 同 7 係提示音，用來試部 iPad 播唔播到聲。撳完睇下面狀態。回覆邊幾個號碼有聲就得。</p>
+    <div class="speak-test-grid">
+      <button type="button" data-speak="1">1 即刻讀<small>外層頁 · 先 cancel · zh-HK</small></button>
+      <button type="button" data-speak="2">2 舊閃卡<small>同步前：唔 cancel · zh-HK · 語速 0.8 · 可揀 Google 聲</small></button>
+      <button type="button" data-speak="3">3 keepalive<small>外層頁 · 先讀「啊」，每 200ms resume，再讀「朝陽」</small></button>
+      <button type="button" data-speak="4">4 倒數完先讀<small>外層頁 · 3 秒後先 speak</small></button>
+      <button type="button" data-speak="5">5 撥一下就開始，倒數完再播<small>外層頁 · 即刻 speak 然後 pause，3 秒後 resume</small></button>
+      <button type="button" data-speak="6">6 即刻播提示音<small>外層頁 · new Audio 播 wav，唔係人聲</small></button>
+      <button type="button" data-speak="7">7 遲 1 秒播提示音<small>外層頁 · 1 秒後先 audio.play()</small></button>
+      <button type="button" data-speak="8">8 iframe 裡面讀<small>父頁點擊當下，叫 iframe 自己的 speechSynthesis</small></button>
+      <button type="button" data-speak="9">9 揀中文聲<small>外層頁 · zh-HK，否則 zh-TW / zh-CN / 任何中文</small></button>
+      <button type="button" data-speak="10">10 yue-HK<small>外層頁 · 失敗再讀 zh-CN</small></button>
+    </div>
+    <div id="speak-test-status">未撳。有聲就記低號碼。</div>
+  </section>
+  <div class="version-badge" id="version-badge">Ver.4.0</div>
   <script>
   const APP_VERSION = "3.2";
   const PAGES = {
@@ -801,9 +864,10 @@
       "etI = 0;\n    var sessionStart = true;\n\n    function runCustomScript() {\n      if (id === \"doorway\") return runDoorwayScript(prog, readout, phaseEl, signal);\n      if (id === \"foam\") return runFoamScript(prog, readout, phaseEl, signal);\n      if (id === \"chin\") return runChinScript(prog, readout, phaseEl, signal);\n      if (id === \"thoracic\") return runThoracicScript(prog, readout, phaseEl, signal);\n      return null;\n    }\n\n    function runNextSet() {\n      if (signal.aborted) {\n        return Promise.reject(Object.assign(new Error(\"stop\"), { name: \"AbortError\" }));\n      }\n      if (setI >= sets.length) return Promise.resolve();\n      var setObj = sets[setI];\n      var setNum = setI + 1;\n      var repI = 1;\n\n      function runNextRep() {\n        if (signal.aborted) {\n          return Promise.reject(Object.assign(new Error(\"stop\"), { name: \"AbortError\" }));\n        }\n        if (repI > setObj.reps) return Promise.resolve();\n        if (prog.frequentRep) {\n          sessionStart = false;\n          var startP = Promise.resolve();\n          if (repI === 1) {\n            var setSay = (prog.setStarts && prog.setStarts[setNum - 1])\n              || zhSetStartWithReps(setNum, setObj.reps);\n            phaseEl.textContent = setSay;\n            startP = speak(setSay, { cancel: true, wait: true });\n          }\n          return startP.then(function () {\n            return runFrequentRepCycle(prog, setObj, readout, phaseEl, signal);\n          }).then(function () {\n            repI += 1;\n            return runNextRep();\n          });\n        }\n        var isFirst = sessionStart;\n        sessionStart = false;\n        var say = announceRep(prog, setNum, setObj, repI, isFirst);\n        phaseEl.textContent = say;\n        return speak(say, { cancel: true, wait: true }).then(function () {" +
       "\n          return runHold(setObj.hold, readout, signal);\n        }).then(function () {\n          if (repI < setObj.reps) {\n            return speakOverCountdown(zhRepDone(repI), INTER_REP_SILENT, readout, phaseEl, signal);\n          }\n          if (setObj.reps > 1) {\n            return speakOverCountdown(\"最後一次\", INTER_REP_SILENT, readout, phaseEl, signal);\n          }\n        }).then(function () {\n          repI += 1;\n          return runNextRep();\n        });\n      }\n\n      return runNextRep().then(function () {\n        if (setI >= sets.length - 1) return;\n        var restSec = prog.interSet === \"silent3\" ? INTER_REP_SILENT : INTER_SET_REST;\n        var phrases = prog.frequentRep || setObj.reps > 1\n          ? zhSetDone(setNum, false)\n          : [\"最後一次\", zhSetDone(setNum, false)];\n        return speakOverCountdown(phrases, restSec, readout, phaseEl, signal);\n      }).then(function () {\n        setI += 1;\n        return runNextSet();\n      });\n    }\n\n    var customRun = runCustomScript();\n    (customRun || runNextSet()).then(function () {\n      if (signal.aborted) return;\n      phaseEl.textContent = donePhrase;\n      readout.textContent = \"✓\";\n      if (prog.custom) return;\n      return speak(donePhrase, { cancel: true, wait: true });\n    }).catch(function (err) {\n      if (!err || err.name !== \"AbortError\") {\n        phaseEl.textContent = \"計時已停止\";\n      }\n    }).then(function () {\n      if (active && active.btn === btn && !active.controller.signal.aborted) {\n        setIdle(btn, readout, phaseEl);\n        phaseEl.textContent = donePhrase;\n        active = null;\n      }\n    });\n  }\n\n  document.querySelectorAll(\".timer-btn\").forEach(function (btn) {\n    btn.addEventListener(\"click\", function () {\n      var row = btn.closest(\".exercise\") || btn.parentElement;\n      var r" +
       "eadout = row.querySelector(\".timer-readout\");\n      var phaseEl = row.querySelector(\".timer-phase\");\n      runProgram(btn.getAttribute(\"data-timer\"), btn, readout, phaseEl);\n    });\n  });\n})();\n<\/script>\n\n</body>\n</html>"
-    )
+    ),
+    "speak-test": "top-document"
   };
-  const META = [{"id": "spelling", "label": "英文 · Spelling Assistant", "short": "Spelling", "icon": "🔤"}, {"id": "zh-flash", "label": "中文 · 生字閃卡認讀", "short": "中文閃卡", "icon": "🀄"}, {"id": "juanduan", "label": "中文 · 句段辨析（小五）", "short": "句段辨析", "icon": "📝"}, {"id": "cuoyao", "label": "中文 · 段落撮要（小五）", "short": "段落撮要", "icon": "✂️"}, {"id": "fendian", "label": "中文 · 分點舉例說明（小五）", "short": "分點說明", "icon": "🧩"}, {"id": "comp-56", "label": "中文 · 小五六作文範例", "short": "五六作文", "icon": "✍️"}, {"id": "comp-4", "label": "中文 · 中作小四", "short": "小四作文", "icon": "📘"}, {"id": "math-four", "label": "數學 · 混合四式測驗", "short": "混合四式", "icon": "🧮"}, {"id": "posture", "label": "健康 · 體態訓練", "short": "體態訓練", "icon": "🧍"}];
+  const META = [{"id": "spelling", "label": "英文 · Spelling Assistant", "short": "Spelling", "icon": "🔤"}, {"id": "zh-flash", "label": "中文 · 生字閃卡認讀", "short": "中文閃卡", "icon": "🀄"}, {"id": "speak-test", "label": "讀音測試", "short": "讀音測試", "icon": "🔊"}, {"id": "juanduan", "label": "中文 · 句段辨析（小五）", "short": "句段辨析", "icon": "📝"}, {"id": "cuoyao", "label": "中文 · 段落撮要（小五）", "short": "段落撮要", "icon": "✂️"}, {"id": "fendian", "label": "中文 · 分點舉例說明（小五）", "short": "分點說明", "icon": "🧩"}, {"id": "comp-56", "label": "中文 · 小五六作文範例", "short": "五六作文", "icon": "✍️"}, {"id": "comp-4", "label": "中文 · 中作小四", "short": "小四作文", "icon": "📘"}, {"id": "math-four", "label": "數學 · 混合四式測驗", "short": "混合四式", "icon": "🧮"}, {"id": "posture", "label": "健康 · 體態訓練", "short": "體態訓練", "icon": "🧍"}];
   const STORAGE_KEY = 'alpha-hub-last-page';
   const PROGRESS_KEYS = ["alpha-hub-last-page", "alpha-juanduan-progress-v1", "alpha-cuoyao-progress-v1", "alpha-fendian-progress-v1", "alpha-spelling-progress-v1", "flashcard_profiles", "flashcard_current_profile", "p56_essay_read_count_v1", "p56_essay_user_highlights_v1", "p56_essay_custom_notes_v1", "p56_vocab_removed_v1", "essay-font", "essay-dark", "essay_highlights_v2", "essay_custom_notes_v1", "essay_topic_order_v1", "alphaMathMistakesFourOps", "alpha-zh-flash-vocab-batch"];
 
@@ -874,11 +938,271 @@
     });
   }
 
+  const SPEAK_PHRASE = "朝陽";
+  let speakTestTimer = null;
+  let speakTestKick = null;
+  const SPEAK_TEST_WAV = (function () {
+    const sampleRate = 8000;
+    const n = Math.floor(sampleRate * 0.35);
+    const data = n * 2;
+    const bytes = new Uint8Array(44 + data);
+    const view = new DataView(bytes.buffer);
+    const write = (offset, text) => {
+      for (let i = 0; i < text.length; i++) bytes[offset + i] = text.charCodeAt(i);
+    };
+    write(0, "RIFF");
+    view.setUint32(4, 36 + data, true);
+    write(8, "WAVE");
+    write(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    write(36, "data");
+    view.setUint32(40, data, true);
+    for (let i = 0; i < n; i++) {
+      view.setInt16(44 + i * 2, Math.round(Math.sin((2 * Math.PI * 880 * i) / sampleRate) * 0.55 * 32767), true);
+    }
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return "data:audio/wav;base64," + btoa(binary);
+  })();
+
+  function clearSpeakTestTimers() {
+    if (speakTestTimer) clearTimeout(speakTestTimer);
+    if (speakTestKick) clearInterval(speakTestKick);
+    speakTestTimer = null;
+    speakTestKick = null;
+  }
+
+  function showSpeakTest(on) {
+    const panel = document.getElementById("speak-test");
+    if (!panel) return;
+    panel.hidden = !on;
+    panel.classList.toggle("open", on);
+    frame.style.visibility = on ? "hidden" : "visible";
+  }
+
+  function speakTestStatus(n, text) {
+    const el = document.getElementById("speak-test-status");
+    if (el) el.textContent = "第 " + n + " 號：" + text;
+  }
+
+  function speakTestIframeWindow() {
+    let box = document.getElementById("speak-test-iframe");
+    if (!box) {
+      box = document.createElement("iframe");
+      box.id = "speak-test-iframe";
+      box.title = "讀音測試 iframe";
+      box.style.cssText = "position:fixed;left:0;bottom:0;width:2px;height:2px;border:0;opacity:0.02;";
+      document.body.appendChild(box);
+    }
+    return box.contentWindow;
+  }
+
+  function runSpeakTest(n) {
+    clearSpeakTestTimers();
+    const synth = window.speechSynthesis;
+    if (!synth && n !== 6 && n !== 7) {
+      speakTestStatus(n, "呢個瀏覽器冇 speechSynthesis");
+      return;
+    }
+    if (n === 1) {
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
+      u.lang = "zh-HK";
+      u.onend = () => speakTestStatus(1, "speak 已返回，onend 有叫");
+      u.onerror = (ev) => speakTestStatus(1, "speak 已返回，onerror " + (ev && ev.error ? ev.error : ""));
+      synth.speak(u);
+      speakTestStatus(1, "speak() 已呼叫，冇 throw");
+      return;
+    }
+    if (n === 2) {
+      const voices = synth.getVoices() || [];
+      const cantoneseVoice =
+        voices.find((v) => v.lang === "zh-HK" && v.name.includes("Google")) ||
+        voices.find((v) => v.lang === "zh-HK");
+      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
+      u.lang = "zh-HK";
+      if (cantoneseVoice) u.voice = cantoneseVoice;
+      u.rate = 0.8;
+      let finished = false;
+      u.onend = u.onerror = (ev) => {
+        if (finished) return;
+        finished = true;
+        speakTestStatus(2, (ev && ev.type === "error" ? "onerror " + (ev.error || "") : "onend") + " · 聲：" + (cantoneseVoice ? cantoneseVoice.name : "冇揀"));
+      };
+      window.speechSynthesis.speak(u);
+      speakTestStatus(2, "舊閃卡 speak() 已呼叫（冇 cancel），聲：" + (cantoneseVoice ? cantoneseVoice.name : "冇揀，只用 zh-HK"));
+      return;
+    }
+    if (n === 3) {
+      synth.cancel();
+      const kick = new SpeechSynthesisUtterance("啊");
+      kick.lang = "zh-HK";
+      synth.speak(kick);
+      speakTestKick = setInterval(() => {
+        try {
+          if (!synth.speaking && !synth.pending) {
+            clearInterval(speakTestKick);
+            speakTestKick = null;
+            return;
+          }
+          synth.resume();
+        } catch (e) {}
+      }, 200);
+      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
+      u.lang = "zh-HK";
+      u.onend = () => speakTestStatus(3, "keepalive 之後 onend");
+      u.onerror = (ev) => speakTestStatus(3, "keepalive 之後 onerror " + (ev && ev.error ? ev.error : ""));
+      synth.speak(u);
+      speakTestStatus(3, "已讀「啊」，已開始 200ms resume，並已 speak「朝陽」");
+      return;
+    }
+    if (n === 4) {
+      synth.cancel();
+      speakTestStatus(4, "倒數 3 秒，未 speak");
+      speakTestTimer = setTimeout(() => {
+        try {
+          const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
+          u.lang = "zh-HK";
+          u.onend = () => speakTestStatus(4, "3 秒後 speak 已返回，onend");
+          u.onerror = (ev) => speakTestStatus(4, "3 秒後 speak 已返回，onerror " + (ev && ev.error ? ev.error : ""));
+          synth.speak(u);
+          speakTestStatus(4, "3 秒到，speak() 已呼叫，冇 throw");
+        } catch (e) {
+          speakTestStatus(4, "3 秒到，throw " + (e && e.message ? e.message : e));
+        }
+      }, 3000);
+      return;
+    }
+    if (n === 5) {
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
+      u.lang = "zh-HK";
+      u.onstart = () => speakTestStatus(5, "onstart 之後已 pause，等 3 秒 resume");
+      u.onend = () => speakTestStatus(5, "resume 後 onend");
+      u.onerror = (ev) => speakTestStatus(5, "onerror " + (ev && ev.error ? ev.error : ""));
+      synth.speak(u);
+      synth.pause();
+      speakTestStatus(5, "speak() 同 pause() 已呼叫，3 秒後 resume");
+      speakTestTimer = setTimeout(() => {
+        try {
+          synth.resume();
+          speakTestStatus(5, "3 秒到，resume() 已呼叫，冇 throw");
+        } catch (e) {
+          speakTestStatus(5, "resume throw " + (e && e.message ? e.message : e));
+        }
+      }, 3000);
+      return;
+    }
+    if (n === 6 || n === 7) {
+      const audio = new Audio(SPEAK_TEST_WAV);
+      audio.playsInline = true;
+      audio.setAttribute("playsinline", "");
+      const reportPlay = (label) => {
+        try {
+          const pending = audio.play();
+          speakTestStatus(n, label + " play() 已呼叫");
+          if (pending && pending.then) {
+            pending.then(() => speakTestStatus(n, label + " play() 成功")).catch((err) => {
+              speakTestStatus(n, label + " play() 被拒 " + (err && err.name ? err.name : err));
+            });
+          }
+        } catch (e) {
+          speakTestStatus(n, label + " throw " + (e && e.message ? e.message : e));
+        }
+      };
+      if (n === 6) {
+        reportPlay("即刻");
+        return;
+      }
+      speakTestStatus(7, "1 秒後先 play，而家未播");
+      speakTestTimer = setTimeout(() => reportPlay("1 秒後"), 1000);
+      return;
+    }
+    if (n === 8) {
+      try {
+        const inner = speakTestIframeWindow();
+        if (!inner || !inner.speechSynthesis) {
+          speakTestStatus(8, "iframe 未有 speechSynthesis");
+          return;
+        }
+        inner.speechSynthesis.cancel();
+        const u = new inner.SpeechSynthesisUtterance(SPEAK_PHRASE);
+        u.lang = "zh-HK";
+        u.onend = () => speakTestStatus(8, "iframe speak 已返回，onend");
+        u.onerror = (ev) => speakTestStatus(8, "iframe onerror " + (ev && ev.error ? ev.error : ""));
+        inner.speechSynthesis.speak(u);
+        speakTestStatus(8, "已喺 iframe 呼叫 speak()，冇 throw");
+      } catch (e) {
+        speakTestStatus(8, "throw " + (e && e.message ? e.message : e));
+      }
+      return;
+    }
+    if (n === 9) {
+      synth.cancel();
+      const voices = synth.getVoices() || [];
+      const norm = (v) => (v.lang || "").toLowerCase().replace(/_/g, "-");
+      const voice =
+        voices.find((v) => norm(v) === "zh-hk") ||
+        voices.find((v) => norm(v) === "zh-tw") ||
+        voices.find((v) => norm(v) === "zh-cn") ||
+        voices.find((v) => norm(v).startsWith("zh")) ||
+        null;
+      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
+      u.lang = voice ? voice.lang : "zh-HK";
+      if (voice) u.voice = voice;
+      u.onend = () => speakTestStatus(9, "onend · " + (voice ? voice.name + " " + voice.lang : "冇 voice"));
+      u.onerror = (ev) => speakTestStatus(9, "onerror " + (ev && ev.error ? ev.error : ""));
+      synth.speak(u);
+      speakTestStatus(9, "speak() 已呼叫 · " + (voice ? voice.name + " " + voice.lang : "冇揀到中文聲，用 zh-HK"));
+      return;
+    }
+    if (n === 10) {
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
+      u.lang = "yue-HK";
+      u.onerror = (ev) => {
+        speakTestStatus(10, "yue-HK onerror " + (ev && ev.error ? ev.error : "") + "，改讀 zh-CN");
+        try {
+          const next = new SpeechSynthesisUtterance(SPEAK_PHRASE);
+          next.lang = "zh-CN";
+          next.onend = () => speakTestStatus(10, "zh-CN onend");
+          next.onerror = (err) => speakTestStatus(10, "zh-CN onerror " + (err && err.error ? err.error : ""));
+          synth.speak(next);
+        } catch (e) {
+          speakTestStatus(10, "zh-CN throw " + (e && e.message ? e.message : e));
+        }
+      };
+      u.onend = () => speakTestStatus(10, "yue-HK onend");
+      synth.speak(u);
+      speakTestStatus(10, "yue-HK speak() 已呼叫，冇 throw");
+    }
+  }
+
   async function loadPage(pageId, opts) {
     const requestId = ++pageLoadId;
     if (!(opts && opts.skipFlush)) await flushFlashcard();
     if (requestId !== pageLoadId) return;
+    clearSpeakTestTimers();
     if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (pageId === "speak-test") {
+      showSpeakTest(true);
+      try { localStorage.setItem(STORAGE_KEY, pageId); } catch (e) {}
+      const meta = META.find(m => m.id === pageId);
+      currentLabel.textContent = '而家：' + (meta ? meta.label : pageId);
+      setActiveButton(pageId);
+      closeMenu();
+      document.title = (meta ? meta.short : '學習') + ' · Alpha_Learn';
+      currentPageId = pageId;
+      refreshStatus();
+      return;
+    }
+    showSpeakTest(false);
     const external = EXTERNAL_PAGES[pageId];
     if (external) {
       frame.removeAttribute('srcdoc');
@@ -1133,6 +1457,16 @@
 
   document.querySelectorAll('.menu-item[data-page]').forEach(btn => {
     btn.addEventListener('click', () => loadPage(btn.dataset.page));
+  });
+  document.querySelectorAll('#speak-test [data-speak]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const n = Number(btn.getAttribute('data-speak'));
+      try {
+        runSpeakTest(n);
+      } catch (e) {
+        speakTestStatus(n, 'throw ' + (e && e.message ? e.message : e));
+      }
+    });
   });
 
 
