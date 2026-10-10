@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · 中文閃卡跟第 3 板讀：** iPad 七塊板：1 倒數後冇聲；2、4、5、6 讀一次就鎖住；3 iframe 裡面讀可以再揀下一個詞；7 睇唔到詞。而家中文閃卡喺 iPad 用第 3 板同一個 iframe 朗讀，讀完或出錯就解鎖。電腦仍然用原本嘅讀法。七塊板同讀音測試留低。Alpha_Learn **v4.3**。GitHub 後備 → Vercel。刷新已開嘅分頁。請再試：點一個詞聽到，再點第二個詞都聽到。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · 七塊詞語板：** 左邊選單 1–7。每塊用而家中文閃卡嘅詞語表（冇就用而家預設 23 個）。點詞有紅框同鎖，讀完先可以再揀。1 係而家 iPad 閃卡（立即朗讀關）嘅讀法，放喺 iframe。2–6 喺外層頁，分別係測試 1、8、9、10，同倒數完先用測試 1。7 係 iframe 詞語格叫外層頁讀。真正中文閃卡冇改讀法。讀音測試留低。Alpha_Learn **v4.2**。GitHub 後備 → Vercel。刷新已開嘅分頁，話邊一個號碼讀到自己嘅詞。唔開 Chrome。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
