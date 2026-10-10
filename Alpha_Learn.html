@@ -1,10 +1,10 @@
-<!-- Ver.4.6 -->
+<!-- Ver.4.7 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="4.6">
+  <meta name="app-version" content="4.7">
   <title>Alpha_Learn</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&family=Noto+Serif+HK:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -100,6 +100,8 @@
     }
     #dictate-split { background: #fff; color: #0277bd; border: 3px solid #81d4fa; }
     #dictate-start, #dictate-again { background: #42a5f5; color: #fff; }
+    #dictate-pause { background: #ffca28; color: #37474f; }
+    #dictate-pause:disabled { opacity: 0.45; cursor: default; }
     #dictate-prev { background: #fff; color: #37474f; border: 3px solid #b2ebf2; }
     #dictate-next { background: #ff7043; color: #fff; }
     #dictate-hide { background: #fff3e0; color: #e65100; border: 3px solid #ffcc80; }
@@ -129,6 +131,8 @@
       color: #37474f;
     }
     .dictate-card.is-hidden .dictate-chunk { color: #ff7043; font-family: inherit; font-size: 1.8rem; }
+    .dictate.is-passage-hidden .dictate-label,
+    .dictate.is-passage-hidden #dictate-source { display: none; }
     .dictate-rep { margin-top: 10px; font-weight: 800; color: #ef6c00; min-height: 1.4em; }
     .dictate-hint { margin: 12px 0 0; font-weight: 800; color: #00695c; }
     .version-badge {
@@ -153,7 +157,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.4.6</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.4.7</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -211,7 +215,7 @@
   <section class="dictate" id="dictate" hidden>
     <div class="dictate-wrap">
       <h1>讀默</h1>
-      <p class="dictate-lead">好似老師讀默：每次大約十個字，標點一併讀出。預設連續讀三次。聽完先寫，再撳下一句。</p>
+      <p class="dictate-lead">好似老師讀默：每次大約十個字，標點會讀出。每讀一次隔兩秒。可以暫停。聽完先寫，再撳下一句。</p>
       <label class="dictate-label" for="dictate-source">課文（可以貼過另一篇）</label>
       <textarea id="dictate-source" spellcheck="false">清晨，天剛矇矇亮。海邊擠滿等看日出的人，我好不容易擠上前，探着腦袋，目不轉睛盯住將要升起之處。
 海面平靜極了，偶爾有海鳥飛入視線。我望着很長的地平線，想着尚未升起的太陽，心裏迫不及待。
@@ -231,6 +235,7 @@
       <div class="dictate-nav">
         <button type="button" id="dictate-prev">上一句</button>
         <button type="button" id="dictate-again">重讀</button>
+        <button type="button" id="dictate-pause" disabled>暫停</button>
         <button type="button" id="dictate-next">下一句</button>
       </div>
       <div class="dictate-row">
@@ -240,7 +245,7 @@
       <p class="dictate-hint" id="dictate-hint">聽完先寫低。寫好，先去下一句。可以隱藏文字，淨係聽。</p>
     </div>
   </section>
-    <div class="version-badge" id="version-badge">Ver.4.6</div>
+    <div class="version-badge" id="version-badge">Ver.4.7</div>
   <script>
   const APP_VERSION = "3.2";
   const PAGES = {
@@ -994,6 +999,40 @@
   let dictateIndex = 0;
   let dictateToken = 0;
   let dictateHidden = false;
+  let dictateGapTimer = null;
+  let dictatePaused = false;
+  let dictateReading = false;
+  let dictateRepeatAt = 0;
+  let dictateSpeakNext = function () {};
+  const DICTATE_PUNCT = {
+    "，": "逗號",
+    ",": "逗號",
+    "。": "句號",
+    "？": "問號",
+    "?": "問號",
+    "、": "頓號",
+    "！": "感嘆號",
+    "!": "感嘆號",
+    "；": "分號",
+    ";": "分號",
+    "：": "冒號",
+    ":": "冒號",
+    "「": "開引號",
+    "」": "關引號",
+    "『": "開單引號",
+    "』": "關單引號",
+    "“": "開引號",
+    "”": "關引號",
+    "（": "開括號",
+    "）": "關括號",
+    "(": "開括號",
+    ")": "關括號",
+    "《": "書名號",
+    "》": "書名號",
+    "…": "省略號",
+    "—": "破折號",
+    "～": "波浪號"
+  };
 
   function dictateEls() {
     return {
@@ -1094,8 +1133,46 @@
     );
   }
 
+  function dictateSpoken(item) {
+    let out = "";
+    const text = String(item || "");
+    for (let i = 0; i < text.length; i++) {
+      const ch = text.charAt(i);
+      out += ch;
+      if (DICTATE_PUNCT[ch]) out += DICTATE_PUNCT[ch];
+    }
+    return out;
+  }
+
+  function dictateClearGap() {
+    if (dictateGapTimer) {
+      clearTimeout(dictateGapTimer);
+      dictateGapTimer = null;
+    }
+  }
+
+  function dictateSetPauseButton(mode) {
+    const btn = document.getElementById("dictate-pause");
+    if (!btn) return;
+    if (mode === "resume") {
+      btn.disabled = false;
+      btn.textContent = "繼續";
+    } else if (mode === "pause") {
+      btn.disabled = false;
+      btn.textContent = "暫停";
+    } else {
+      btn.disabled = true;
+      btn.textContent = "暫停";
+    }
+  }
+
   function dictateStop() {
     dictateToken += 1;
+    dictatePaused = false;
+    dictateReading = false;
+    dictateSpeakNext = function () {};
+    dictateClearGap();
+    dictateSetPauseButton("idle");
     if (window.speechSynthesis) {
       try { window.speechSynthesis.cancel(); } catch (e) {}
     }
@@ -1105,6 +1182,8 @@
     const el = dictateEls();
     const total = dictateChunks.length;
     const item = dictateChunks[dictateIndex] || "";
+    const panel = document.getElementById("dictate");
+    if (panel) panel.classList.toggle("is-passage-hidden", !!dictateHidden);
     if (el.progress) {
       el.progress.textContent = total ? ("第 " + (dictateIndex + 1) + " / " + total + " 句") : "未有句子";
     }
@@ -1132,30 +1211,66 @@
     const item = dictateChunks[dictateIndex];
     if (!item || !window.speechSynthesis) {
       if (el.rep) el.rep.textContent = item ? "" : "未有句子";
+      dictateSetPauseButton("idle");
       return;
     }
     const times = dictateTimes();
     const token = ++dictateToken;
+    dictatePaused = false;
+    dictateReading = true;
+    dictateRepeatAt = 0;
+    dictateClearGap();
     try { window.speechSynthesis.cancel(); } catch (e) {}
+    dictateSetPauseButton("pause");
     const voice = dictateVoice();
-    for (let i = 0; i < times; i++) {
-      const u = new SpeechSynthesisUtterance(item);
+    const spoken = dictateSpoken(item);
+    const finish = () => {
+      if (token !== dictateToken) return;
+      dictateReading = false;
+      dictateSpeakNext = function () {};
+      dictateSetPauseButton("idle");
+      if (el.rep) el.rep.textContent = "聽完啦";
+      if (el.hint) el.hint.textContent = "寫低這句，再撳下一句。";
+    };
+    const speakOne = () => {
+      if (token !== dictateToken || dictatePaused) return;
+      if (dictateRepeatAt >= times) {
+        finish();
+        return;
+      }
+      const n = dictateRepeatAt;
+      const u = new SpeechSynthesisUtterance(spoken);
       u.lang = voice ? voice.lang : "zh-HK";
       if (voice) u.voice = voice;
       u.rate = 0.82;
+      let settled = false;
+      const after = () => {
+        if (settled) return;
+        settled = true;
+        if (token !== dictateToken || dictatePaused) return;
+        dictateRepeatAt = n + 1;
+        if (dictateRepeatAt >= times) {
+          finish();
+          return;
+        }
+        dictateClearGap();
+        dictateGapTimer = setTimeout(() => {
+          dictateGapTimer = null;
+          if (token !== dictateToken || dictatePaused) return;
+          try { window.speechSynthesis.resume(); } catch (e) {}
+          speakOne();
+        }, 2000);
+      };
       u.onstart = () => {
         if (token !== dictateToken) return;
-        if (el.rep) el.rep.textContent = "第 " + (i + 1) + " / " + times + " 次";
+        if (el.rep) el.rep.textContent = "第 " + (n + 1) + " / " + times + " 次";
       };
-      if (i === times - 1) {
-        u.onend = () => {
-          if (token !== dictateToken) return;
-          if (el.rep) el.rep.textContent = "聽完啦";
-          if (el.hint) el.hint.textContent = "寫低這句，再撳下一句。";
-        };
-      }
+      u.onend = after;
+      u.onerror = after;
       window.speechSynthesis.speak(u);
-    }
+    };
+    dictateSpeakNext = speakOne;
+    speakOne();
     dictateShow();
   }
 
@@ -1477,6 +1592,21 @@
   document.getElementById("dictate-again").addEventListener("click", () => {
     if (!dictateChunks.length) dictateRebuild(true);
     dictateRead();
+  });
+  document.getElementById("dictate-pause").addEventListener("click", () => {
+    if (!dictateReading) return;
+    const el = dictateEls();
+    if (!dictatePaused) {
+      dictatePaused = true;
+      dictateClearGap();
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+      dictateSetPauseButton("resume");
+      if (el.rep) el.rep.textContent = "已暫停";
+      return;
+    }
+    dictatePaused = false;
+    dictateSetPauseButton("pause");
+    dictateSpeakNext();
   });
   document.getElementById("dictate-hide").addEventListener("click", () => {
     dictateHidden = !dictateHidden;

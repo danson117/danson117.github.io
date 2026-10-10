@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · 讀默課文：** 讀緊可以撳 **暫停**，再撳變 **繼續**。**隱藏文字**會一併收起上面篇課文。同一句連續讀，每次之間隔兩秒。標點留喺讀出嘅字串，並且讀出逗號、句號、問號、頓號等名稱。Alpha_Learn **v4.7**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · 詞語表改為手動上傳：** 中文閃卡有掣 **上傳呢版**。撳咗先把而家畫面嘅詞語表、還要練、已學識、設定、學生同目錄上傳去 Supabase `alpha-learn`。畫面顯示「上傳中」「上傳完成」，失敗就「上傳失敗」。另一部機唔再定時拉取，亦唔會開住頁喺背底下載；要再開一次網址先會下載較新嘅詞表。開頁唔會用舊本機詞表蓋過伺服器。讀默唔郁。Alpha_Learn **v4.6**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
