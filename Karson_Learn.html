@@ -1,10 +1,10 @@
-<!-- Ver.2.1 -->
+<!-- Ver.2.2 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="2.0">
+  <meta name="app-version" content="2.2">
   <title>Karson_Learn</title>
   <style>
     :root {
@@ -77,7 +77,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">KARSON_LEARN · Ver.2.1</p>
+      <p class="menu-title" id="menu-title">KARSON_LEARN · Ver.2.2</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>低小詞語已學標記會保留；大更新前請先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -108,7 +108,7 @@
     </div>
   </div>
   <iframe id="app-frame" title="學習內容"></iframe>
-  <div class="version-badge" id="version-badge">Ver.2.1</div>
+  <div class="version-badge" id="version-badge">Ver.2.2</div>
   <script>
   const APP_VERSION = "1.8";
   const PAGES = {
@@ -181,7 +181,7 @@
       "q.result.blob : null);\n          req.onerror = () => resolve(null);\n        });\n      }\n\n      function deleteRecording(text) {\n        const key = normalizeRecordKey(text);\n        if (!audioDb || !key) return Promise.resolve(false);\n        return new Promise((resolve) => {\n          const tx = audioDb.transaction(AUDIO_STORE, \"readwrite\");\n          tx.objectStore(AUDIO_STORE).delete(key);\n          tx.oncomplete = () => resolve(true);\n          tx.onerror = () => resolve(false);\n        });\n      }\n\n      function clearAllRecordings() {\n        if (!audioDb) return Promise.resolve(false);\n        return new Promise((resolve) => {\n          const tx = audioDb.transaction(AUDIO_STORE, \"readwrite\");\n          tx.objectStore(AUDIO_STORE).clear();\n          tx.oncomplete = () => resolve(true);\n          tx.onerror = () => resolve(false);\n        });\n      }\n\n      function characterStillExists(text) {\n        const key = normalizeRecordKey(text);\n        if (!key) return false;\n        return [words, reviewWords, masteredWords].some((list) =>\n          (list || []).some((w) => normalizeRecordKey(w.text) === key),\n        );\n      }\n\n      function deleteRecordingIfOrphan(text) {\n        if (!characterStillExists(text)) return deleteRecording(text);\n        return Promise.resolve(false);\n      }\n\n      function attachRecordingToMatchingWords(text, blob) {\n        const key = normalizeRecordKey(text);\n        if (!key || !blob) return;\n        [words, reviewWords, masteredWords].forEach((list) => {\n          (list || []).forEach((w) => {\n            if (normalizeRecordKey(w.text) === key) w.audioBlob = blob;\n          });\n        });\n      }\n\n      async function hydrateRecordings(lists) {\n        if (!audioDb) return;\n        for (const list of lists || []) {\n          fo" +
       "r (const w of list || []) {\n            if (w.audioBlob) {\n              await putRecording(w.text, w.audioBlob);\n              continue;\n            }\n            const blob = await getRecording(w.text);\n            if (blob) w.audioBlob = blob;\n          }\n        }\n      }\n\n      async function persistRecordingForText(text, blob) {\n        attachRecordingToMatchingWords(text, blob);\n        await putRecording(text, blob);\n      }\n\n      async function loadDataFromDB() {\n        if (!db) return false;\n        return new Promise((resolve) => {\n          const transaction = db.transaction([\"data\"], \"readonly\");\n          const store = transaction.objectStore(\"data\");\n          let keyPrefix =\n            currentProfileId === \"default\" ? \"\" : currentProfileId + \"_\";\n\n          const getWords = store.get(getDBKey(\"words\"));\n          const getReview = store.get(getDBKey(\"review\"));\n          const getMastered = store.get(getDBKey(\"mastered\"));\n          const getSettings = store.get(getDBKey(\"settings\"));\n\n          const getOldWords = store.get(\"words\");\n          const getOldReview = store.get(\"review\");\n          const getOldMastered = store.get(\"mastered\");\n          const getOldSettings = store.get(\"settings\");\n\n          transaction.oncomplete = () => {\n            if (getWords.result) words = getWords.result.value;\n            else if (currentProfileId === \"default\" && getOldWords.result)\n              words = getOldWords.result.value;\n            else\n              words =\n                currentProfileId === \"default\"\n                  ? [...initialWords].map((w) => ({\n                      text: w,\n                      views: 0,\n                      hits: 0,\n                      audioBlob: null,\n                      roundId: 0,\n                    }))\n      " +
       "            : [];\n\n            if (getReview.result) reviewWords = getReview.result.value;\n            else if (currentProfileId === \"default\" && getOldReview.result)\n              reviewWords = getOldReview.result.value;\n            else\n              reviewWords =\n                currentProfileId === \"default\"\n                  ? [...initialReview].map((w) => ({\n                      text: w,\n                      views: 0,\n                      hits: 0,\n                      audioBlob: null,\n                      roundId: 0,\n                    }))\n                  : [];\n\n            if (getMastered.result) masteredWords = getMastered.result.value;\n            else if (currentProfileId === \"default\" && getOldMastered.result)\n              masteredWords = getOldMastered.result.value;\n            else\n              masteredWords =\n                currentProfileId === \"default\"\n                  ? [...initialMastered].map((w) => ({\n                      text: w,\n                      views: 0,\n                      hits: 0,\n                      audioBlob: null,\n                      roundId: 0,\n                    }))\n                  : [];\n\n            if (getSettings.result)\n              settings = { ...settings, ...getSettings.result.value };\n            else if (currentProfileId === \"default\" && getOldSettings.result)\n              settings = { ...settings, ...getOldSettings.result.value };\n\n            words.forEach((w) => {\n              if (typeof w.roundId !== \"number\") w.roundId = 0;\n            });\n            resolve(true);\n          };\n          transaction.onerror = () => resolve(false);\n        });\n      }\n\n      function writeDataToDB() {\n        return new Promise((resolve) => {\n          if (!db || !isDirty) {\n            resolve(true);\n            " +
-      "return;\n          }\n          try {\n            const transaction = db.transaction([\"data\"], \"readwrite\");\n            const store = transaction.objectStore(\"data\");\n            store.put({ id: getDBKey(\"words\"), value: words });\n            store.put({ id: getDBKey(\"review\"), value: reviewWords });\n            store.put({ id: getDBKey(\"mastered\"), value: masteredWords });\n            store.put({ id: getDBKey(\"settings\"), value: settings });\n            if (currentProfileId === \"default\") {\n              store.put({ id: \"words\", value: words });\n              store.put({ id: \"review\", value: reviewWords });\n              store.put({ id: \"mastered\", value: masteredWords });\n              store.put({ id: \"settings\", value: settings });\n            }\n            transaction.oncomplete = () => {\n              updateSaveStatus(\"saved\");\n              isDirty = false;\n              resolve(true);\n            };\n            transaction.onerror = () => {\n              updateSaveStatus(\"error\");\n              resolve(false);\n            };\n          } catch (e) {\n            updateSaveStatus(\"error\");\n            resolve(false);\n          }\n        });\n      }\n\n      function saveDataToDB() {\n        if (!db || !isDirty) return;\n        if (saveTimeout) clearTimeout(saveTimeout);\n        updateSaveStatus(\"saving\");\n        saveTimeout = setTimeout(() => {\n          saveTimeout = null;\n          writeDataToDB();\n        }, 1000);\n      }\n\n      async function flushSave() {\n        if (!db || !isDirty) return true;\n        if (saveTimeout) {\n          clearTimeout(saveTimeout);\n          saveTimeout = null;\n        }\n        updateSaveStatus(\"saving\");\n        return writeDataToDB();\n      }\n\n      function updateSaveStatus(status) {\n        const el = document.getElementById(\"sav" +
+      "return;\n          }\n          try {\n            const transaction = db.transaction([\"data\"], \"readwrite\");\n            const store = transaction.objectStore(\"data\");\n            store.put({ id: getDBKey(\"words\"), value: words });\n            store.put({ id: getDBKey(\"review\"), value: reviewWords });\n            store.put({ id: getDBKey(\"mastered\"), value: masteredWords });\n            store.put({ id: getDBKey(\"settings\"), value: settings });\n            if (currentProfileId === \"default\") {\n              store.put({ id: \"words\", value: words });\n              store.put({ id: \"review\", value: reviewWords });\n              store.put({ id: \"mastered\", value: masteredWords });\n              store.put({ id: \"settings\", value: settings });\n            }\n            transaction.oncomplete = () => {\n              updateSaveStatus(\"saved\");\n              isDirty = false;\n              try { parent.postMessage({ type: \"learn-data-changed\" }, \"*\"); } catch (e) {}\n              resolve(true);\n            };\n            transaction.onerror = () => {\n              updateSaveStatus(\"error\");\n              resolve(false);\n            };\n          } catch (e) {\n            updateSaveStatus(\"error\");\n            resolve(false);\n          }\n        });\n      }\n\n      function saveDataToDB() {\n        if (!db || !isDirty) return;\n        if (saveTimeout) clearTimeout(saveTimeout);\n        updateSaveStatus(\"saving\");\n        saveTimeout = setTimeout(() => {\n          saveTimeout = null;\n          writeDataToDB();\n        }, 1000);\n      }\n\n      async function flushSave() {\n        if (!db || !isDirty) return true;\n        if (saveTimeout) {\n          clearTimeout(saveTimeout);\n          saveTimeout = null;\n        }\n        updateSaveStatus(\"saving\");\n        return writeDataToDB();\n      }\n\n      function updateSaveStatus(status) {\n        const el = document.getElementById(\"sav" +
       "eStatus\");\n        el.style.opacity = 1;\n        if (status === \"saving\") {\n          el.textContent = \"💾 儲存中...\";\n          el.style.color = \"#ffa000\";\n        } else if (status === \"saved\") {\n          el.textContent = \"☁️ 已儲存\";\n          el.style.color = \"#4caf50\";\n          setTimeout(() => {\n            if (!isDirty) el.style.opacity = 0;\n          }, 2000);\n        } else if (status === \"error\") {\n          el.textContent = \"⚠️ 無法儲存\";\n          el.style.color = \"#f44336\";\n        }\n      }\n\n      function markDirty() {\n        isDirty = true;\n        updateSaveStatus(\"saving\");\n        saveDataToDB();\n      }\n\n      async function init() {\n        initGestureUnlock();\n        updateProfileSelectUI();\n        try {\n          await initDB();\n          await initAudioDb();\n          await loadDataFromDB();\n          await hydrateRecordings([words, reviewWords, masteredWords]);\n          updateSaveStatus(\"saved\");\n        } catch (e) {\n          console.warn(\"DB Init failed\", e);\n          try {\n            if (!audioDb) await initAudioDb();\n          } catch (e2) {}\n          words = initialWords.map((w) => ({\n            text: w,\n            views: 0,\n            hits: 0,\n            audioBlob: null,\n            roundId: 0,\n          }));\n          await hydrateRecordings([words, reviewWords, masteredWords]);\n          updateSaveStatus(\"error\");\n        }\n        renderLists();\n        updateCard();\n        if (\"speechSynthesis\" in window) {\n          window.speechSynthesis.onvoiceschanged = loadVoices;\n          loadVoices();\n        }\n\n        const readImmToggle = document.getElementById(\"readImmediatelyToggle\");\n        readImmToggle.checked = settings.readImmediately;\n        readImmToggle.addEventListener(\"change\", (e) => {\n          settings.readImmediately =" +
       " e.target.checked;\n          autoSaveSettings();\n        });\n\n        document\n          .getElementById(\"autoPlayNext\")\n          .addEventListener(\"change\", async (e) => {\n            stopEverything();\n            if (!e.target.checked) return;\n            await unlockAudioAndSpeech();\n            if (words.length > 0) {\n              if (document.getElementById(\"randomOrder\").checked) {\n                currentIndex = pickNextIndexRandom(true);\n                updateCard();\n              }\n              startSequence();\n            }\n          });\n        document\n          .getElementById(\"randomOrder\")\n          .addEventListener(\"change\", () => {\n            currentRoundId++;\n            words.forEach((w) => (w.roundId = 0));\n            if (\n              document.getElementById(\"randomOrder\").checked &&\n              words.length > 0\n            )\n              currentIndex = pickNextIndexRandom(true);\n            updateCard();\n          });\n        document\n          .getElementById(\"hideTextMode\")\n          .addEventListener(\"change\", (e) => {\n            if (e.target.checked) document.body.classList.add(\"hide-text-mode\");\n            else document.body.classList.remove(\"hide-text-mode\");\n          });\n        const recBtn = document.getElementById(\"recordBtn\");\n        const handleRecStart = (e) => {\n          e.preventDefault();\n          startRecording();\n        };\n        const handleRecStop = (e) => {\n          e.preventDefault();\n          stopRecording();\n        };\n        recBtn.addEventListener(\"mousedown\", handleRecStart);\n        recBtn.addEventListener(\"mouseup\", handleRecStop);\n        recBtn.addEventListener(\"mouseleave\", handleRecStop);\n        recBtn.addEventListener(\"touchstart\", handleRecStart);\n        recBtn.addEventListener(\"touchend\", ha" +
       "ndleRecStop);\n        recBtn.addEventListener(\"touchcancel\", handleRecStop);\n        window.addEventListener(\"message\", async (event) => {\n          if (event.data?.type !== \"karson-flash-flush\") return;\n          const ok = await flushSave();\n          event.source?.postMessage(\n            {\n              type: \"karson-flash-flush-complete\",\n              requestId: event.data.requestId,\n              ok,\n            },\n            \"*\",\n          );\n        });\n        window.onbeforeunload = function () {\n          if (isDirty) return \"您有未儲存的變更\";\n        };\n      }\n\n      function loadVoices() {\n        availableVoices = window.speechSynthesis.getVoices();\n        if (availableVoices.length === 0) return;\n        cantoneseVoice =\n          availableVoices.find(\n            (v) => v.lang === \"zh-HK\" && v.name.includes(\"Google\"),\n          ) || availableVoices.find((v) => v.lang === \"zh-HK\");\n        englishVoice =\n          availableVoices.find((v) => v.name.includes(\"Moira\")) ||\n          availableVoices.find((v) => v.lang.startsWith(\"en\"));\n      }\n\n      function isEnglish(text) {\n        return /^[A-Za-z0-9\\s\\.,\\?!'\"]+$/.test(text);\n      }\n      function getLength(text) {\n        return isEnglish(text) ? \"en\" : text.length;\n      }\n\n      function pickNextIndexRandom(allowSameAsCurrent = false) {\n        if (words.length === 0) return 0;\n        let candidates = [];\n        for (let i = 0; i < words.length; i++) {\n          if (words[i].roundId !== currentRoundId) candidates.push(i);\n        }\n        if (candidates.length === 0) {\n          currentRoundId++;\n          candidates = words.map((_, i) => i);\n        }\n        if (!allowSameAsCurrent && words.length > 1) {\n          candidates = candidates.filter((i) => i !== currentIndex);\n          if (candidates.l" +
@@ -357,9 +357,9 @@
     });
   }
 
-  async function loadPage(pageId) {
+  async function loadPage(pageId, opts) {
     const requestId = ++pageLoadId;
-    await flushFlashcard();
+    if (!(opts && opts.skipFlush)) await flushFlashcard();
     if (requestId !== pageLoadId) return;
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     const external = EXTERNAL_PAGES[pageId];
@@ -682,15 +682,19 @@
   });
 
 
-  const SHARED_DOC = 'karson-learn';
-  const CLOUD_SKIP_KEYS = new Set(['karson-hub-last-page', 'en-vocab-last-theme', 'zh-lexlist-view-v1']);
+  const SHARED_DOC = "karson-learn";
+  const CLOUD_REV_KEY = "karson-learn-cloud-rev";
+  const CLOUD_FP_KEY = "karson-learn-cloud-fp";
+  const CLOUD_DATA_FP_KEY = "karson-learn-cloud-data-fp";
+  const CLOUD_APP = "Karson_Learn";
   let cloudReady = false;
   let suppressCloudPush = false;
+  let cloudPushing = false;
+  let cloudWatchersOn = false;
 
   function cloudKeysFromLocal() {
     const data = {};
     PROGRESS_KEYS.forEach((k) => {
-      if (CLOUD_SKIP_KEYS.has(k)) return;
       const v = localStorage.getItem(k);
       if (v !== null) data[k] = v;
     });
@@ -700,13 +704,13 @@
   function stripFlashcardAudio(dbExport) {
     if (!dbExport) return { name: FLASH_DB_NAME, records: [] };
     function scrub(value) {
-      if (value && typeof value === 'object' && value.__alphaBackupType === 'Blob') return null;
-      if (value && typeof value === 'object' && value.__karsonBackupType === 'Blob') return null;
+      if (value && typeof value === "object" && value.__alphaBackupType === "Blob") return null;
+      if (value && typeof value === "object" && value.__karsonBackupType === "Blob") return null;
       if (Array.isArray(value)) return value.map(scrub).filter((x) => x !== null);
-      if (value && typeof value === 'object') {
+      if (value && typeof value === "object") {
         const out = {};
         Object.keys(value).forEach((k) => {
-          if (k === 'audioBlob' || k === 'audioUrl') return;
+          if (k === "audioBlob" || k === "audioUrl") return;
           const v = scrub(value[k]);
           if (v !== null) out[k] = v;
         });
@@ -721,94 +725,284 @@
     };
   }
 
-  async function packCloudDoc() {
-    await flushFlashcard();
+  function stableValue(value) {
+    if (Array.isArray(value)) return value.map(stableValue);
+    if (value && typeof value === "object") {
+      const out = {};
+      Object.keys(value).sort().forEach((k) => {
+        out[k] = stableValue(value[k]);
+      });
+      return out;
+    }
+    return value;
+  }
+
+  function canonicalCloud(keys, flash) {
+    const picked = {};
+    PROGRESS_KEYS.forEach((k) => {
+      if (keys && typeof keys[k] === "string") picked[k] = keys[k];
+    });
+    const records = (flash && Array.isArray(flash.records) ? flash.records : [])
+      .slice()
+      .sort((a, b) => String((a && a.id) || "").localeCompare(String((b && b.id) || "")));
+    return stableValue({ keys: picked, records: records });
+  }
+
+  function canonicalData(keys, flash) {
+    const copy = Object.assign({}, keys || {});
+    delete copy[STORAGE_KEY];
+    return canonicalCloud(copy, flash);
+  }
+
+  async function hashJson(value) {
+    const text = JSON.stringify(value);
+    try {
+      if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+        const buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+        return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+      }
+    } catch (e) {}
+    let h = 5381;
+    for (let i = 0; i < text.length; i++) h = ((h * 33) ^ text.charCodeAt(i)) >>> 0;
+    return "h" + h.toString(16) + ":" + text.length;
+  }
+
+  function readRev() {
+    try { return localStorage.getItem(CLOUD_REV_KEY) || ""; } catch (e) { return ""; }
+  }
+
+  async function readLocalSnapshot(opts) {
+    if (!(opts && opts.skipFlush)) await flushFlashcard();
     const flash = stripFlashcardAudio(await exportFlashcardDb());
+    const keys = cloudKeysFromLocal();
     return {
       v: 1,
-      updated: new Date().toISOString(),
-      app: 'Karson_Learn',
-      keys: cloudKeysFromLocal(),
-      flashcardDb: flash
+      updated: readRev() || "1970-01-01T00:00:00.000Z",
+      app: CLOUD_APP,
+      keys: keys,
+      flashcardDb: flash,
+      _fp: await hashJson(canonicalCloud(keys, flash)),
+      _dataFp: await hashJson(canonicalData(keys, flash))
+    };
+  }
+
+  function publicDoc(snap) {
+    return {
+      v: 1,
+      updated: snap.updated,
+      app: CLOUD_APP,
+      keys: snap.keys,
+      flashcardDb: snap.flashcardDb
     };
   }
 
   function localCloudEmpty(doc) {
     if (!doc) return true;
     const keys = doc.keys || {};
-    const hasKeys = Object.keys(keys).some((k) => String(keys[k] || '').length > 0);
+    const hasKeys = Object.keys(keys).some((k) => String(keys[k] || "").length > 0);
     const hasDb = doc.flashcardDb && Array.isArray(doc.flashcardDb.records) && doc.flashcardDb.records.length > 0;
     return !(hasKeys || hasDb);
   }
 
-  async function applyCloudDoc(doc) {
-    if (!doc || typeof doc !== 'object') return;
-    suppressCloudPush = true;
+  function remoteTime(remoteWrap) {
+    const remote = remoteWrap && remoteWrap.doc;
+    return Math.max(
+      Date.parse((remote && remote.updated) || "") || 0,
+      Date.parse((remoteWrap && remoteWrap.updated) || "") || 0
+    );
+  }
+
+  function rememberSnap(snap) {
     try {
+      localStorage.setItem(CLOUD_REV_KEY, snap.updated);
+      localStorage.setItem(CLOUD_FP_KEY, snap._fp);
+      localStorage.setItem(CLOUD_DATA_FP_KEY, snap._dataFp);
+    } catch (e) {}
+  }
+
+  async function applyCloudDoc(doc, opts) {
+    if (!doc || typeof doc !== "object") return;
+    opts = opts || {};
+    suppressCloudPush = true;
+    let prevData = "";
+    try { prevData = localStorage.getItem(CLOUD_DATA_FP_KEY) || ""; } catch (e) {}
+    try {
+      if (CLOUD_APP === "Alpha_Learn") window.__alphaCloudWins = true;
       const keys = doc.keys || {};
       Object.keys(keys).forEach((k) => {
-        if (!PROGRESS_KEYS.includes(k) || CLOUD_SKIP_KEYS.has(k)) return;
-        if (typeof keys[k] === 'string') localStorage.setItem(k, keys[k]);
+        if (!PROGRESS_KEYS.includes(k)) return;
+        if (typeof keys[k] === "string") localStorage.setItem(k, keys[k]);
       });
       if (doc.flashcardDb) await restoreFlashcardDb(doc.flashcardDb);
+      let snap = await readLocalSnapshot({ skipFlush: true });
+      const dataChanged = !!(opts.reload && currentPageId && prevData && snap._dataFp !== prevData);
+      if (dataChanged) await loadPage(currentPageId, { skipFlush: true });
+      if (dataChanged && currentPageId === "zh-flash" && doc.flashcardDb) {
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        await restoreFlashcardDb(doc.flashcardDb);
+        snap = await readLocalSnapshot({ skipFlush: true });
+        if (currentPageId === "zh-flash") await loadPage("zh-flash", { skipFlush: true });
+      }
+      const localKeysFp = await hashJson(canonicalCloud(snap.keys, { records: [] }));
+      const remoteKeysFp = await hashJson(canonicalCloud(keys, { records: [] }));
+      const localRecFp = await hashJson(canonicalCloud({}, snap.flashcardDb));
+      const remoteRecFp = await hashJson(canonicalCloud({}, doc.flashcardDb));
+      if (localRecFp === remoteRecFp && localKeysFp !== remoteKeysFp) {
+        snap.updated = new Date().toISOString();
+        try {
+          await window.HxSharedSync.pushDoc(SHARED_DOC, publicDoc(snap));
+        } catch (e) {
+          snap.updated = doc.updated || snap.updated;
+        }
+      } else {
+        snap.updated = doc.updated || new Date().toISOString();
+      }
+      rememberSnap(snap);
     } finally {
-      setTimeout(() => { suppressCloudPush = false; }, 100);
+      setTimeout(() => { suppressCloudPush = false; }, 1800);
     }
   }
 
-  const scheduleCloudPush = (window.HxSharedSync && window.HxSharedSync.schedule)
-    ? window.HxSharedSync.schedule(async () => {
-        if (!cloudReady || suppressCloudPush || !window.HxSharedSync) return;
-        try {
-          await window.HxSharedSync.pushDoc(SHARED_DOC, await packCloudDoc());
-          if (statusEl) statusEl.textContent = '已同步到 Supabase（各裝置同一進度）。';
-        } catch (e) {
-          if (statusEl) statusEl.textContent = '本機已存；雲端稍後再同步。';
+  async function pullIfNewer() {
+    let remoteWrap = null;
+    try {
+      remoteWrap = await window.HxSharedSync.pullDoc(SHARED_DOC);
+    } catch (e) {
+      return;
+    }
+    const remote = remoteWrap && remoteWrap.doc;
+    if (!window.HxSharedSync.docHasContent(remote)) return;
+    const localAt = Date.parse(readRev()) || 0;
+    if (remoteTime(remoteWrap) > localAt) {
+      await applyCloudDoc(remote, { reload: true });
+      if (statusEl) statusEl.textContent = "已從 Supabase 同步最新進度。";
+    }
+  }
+
+  async function pushIfChanged() {
+    if (!cloudReady || suppressCloudPush || cloudPushing || !window.HxSharedSync) return;
+    cloudPushing = true;
+    try {
+      const snap = await readLocalSnapshot();
+      let prev = "";
+      try { prev = localStorage.getItem(CLOUD_FP_KEY) || ""; } catch (e) {}
+      if (!prev) {
+        await reconcile(snap);
+        return;
+      }
+      if (snap._fp === prev) {
+        await pullIfNewer();
+        return;
+      }
+      snap.updated = new Date().toISOString();
+      try {
+        await window.HxSharedSync.pushDoc(SHARED_DOC, publicDoc(snap));
+        rememberSnap(snap);
+        if (statusEl) statusEl.textContent = "已同步到 Supabase（各裝置同一進度）。";
+      } catch (e) {
+        if (e && e.code === "stale-local" && e.remote && e.remote.doc) {
+          await applyCloudDoc(e.remote.doc, { reload: true });
+          if (statusEl) statusEl.textContent = "已從 Supabase 同步最新進度。";
+        } else if (statusEl) {
+          statusEl.textContent = "本機已存；雲端稍後再同步。";
         }
-      }, 1500)
+      }
+    } finally {
+      cloudPushing = false;
+    }
+  }
+
+  async function reconcile(existingSnap) {
+    const snap = existingSnap || await readLocalSnapshot();
+    let remoteWrap = null;
+    try {
+      remoteWrap = await window.HxSharedSync.pullDoc(SHARED_DOC);
+    } catch (e) {
+      if (statusEl) statusEl.textContent = "雲端暫未能連線；使用本機進度。";
+      return;
+    }
+    const remote = remoteWrap && remoteWrap.doc;
+    const localHas = !localCloudEmpty(snap);
+    const remoteHas = window.HxSharedSync.docHasContent(remote);
+    const localAt = Date.parse(readRev()) || 0;
+    const remoteAt = remoteTime(remoteWrap);
+    if (remoteHas && (remoteAt > localAt || (remoteAt === localAt && !readRev()))) {
+      await applyCloudDoc(remote, { reload: !!currentPageId });
+      if (statusEl) statusEl.textContent = "已從 Supabase 同步最新進度。";
+      return;
+    }
+    if (localHas && (!remoteHas || localAt > remoteAt)) {
+      const uploading = Object.assign({}, snap);
+      if (!readRev() || !remoteHas) uploading.updated = new Date().toISOString();
+      try {
+        await window.HxSharedSync.pushDoc(SHARED_DOC, publicDoc(uploading));
+        rememberSnap(uploading);
+        if (statusEl) statusEl.textContent = "已把本機進度上傳到 Supabase。";
+      } catch (e) {
+        if (e && e.code === "stale-local" && e.remote && e.remote.doc) {
+          await applyCloudDoc(e.remote.doc, { reload: !!currentPageId });
+          if (statusEl) statusEl.textContent = "已從 Supabase 同步最新進度。";
+        } else if (statusEl) {
+          statusEl.textContent = "本機已存；雲端稍後再同步。";
+        }
+      }
+      return;
+    }
+    if (remoteHas) {
+      rememberSnap(Object.assign({}, snap, { updated: (remote && remote.updated) || snap.updated }));
+      if (statusEl) statusEl.textContent = "已從 Supabase 同步最新進度。";
+      return;
+    }
+    if (statusEl) statusEl.textContent = "尚未有共用進度。";
+  }
+
+  const scheduleCloudPush = (window.HxSharedSync && window.HxSharedSync.schedule)
+    ? window.HxSharedSync.schedule(() => { pushIfChanged(); }, 800)
     : function () {};
 
-  async function syncCloudOnBoot() {
-    if (!window.HxSharedSync) return;
-    const result = await window.HxSharedSync.syncDoc(SHARED_DOC, {
-      getLocal: () => packCloudDoc(),
-      localEmpty: localCloudEmpty,
-      applyRemote: async (doc) => {
-        await applyCloudDoc(doc);
-        refreshStatus();
-      },
-      onStatus: (s) => {
-        if (!statusEl) return;
-        if (s === 'uploaded') statusEl.textContent = '已把本機進度上傳到 Supabase。';
-        else if (s === 'synced') statusEl.textContent = '已從 Supabase 同步最新進度。';
-        else if (s === 'offline') statusEl.textContent = '雲端暫未能連線；使用本機進度。';
-        else if (s === 'empty') statusEl.textContent = '尚未有共用進度。';
-      }
-    });
-    cloudReady = true;
-    // Watch localStorage writes for progress keys
+  function installCloudWatchers() {
+    if (cloudWatchersOn) return;
+    cloudWatchersOn = true;
     try {
       const rawSet = localStorage.setItem.bind(localStorage);
       localStorage.setItem = function (k, v) {
         rawSet(k, v);
-        if (PROGRESS_KEYS.includes(k) && !CLOUD_SKIP_KEYS.has(k)) scheduleCloudPush();
+        if (PROGRESS_KEYS.includes(k)) scheduleCloudPush();
       };
     } catch (e) {}
-    setInterval(() => { if (cloudReady) scheduleCloudPush(); }, 20000);
-    return result;
+    window.addEventListener("message", (event) => {
+      if (!frame.contentWindow || event.source !== frame.contentWindow) return;
+      if (event.data && event.data.type === "learn-data-changed") scheduleCloudPush();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") pushIfChanged();
+    });
+    setInterval(() => { if (cloudReady) pushIfChanged(); }, 12000);
   }
 
-  let startId = META[0].id;
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved && (PAGES[saved] || EXTERNAL_PAGES[saved])) startId = saved;
-    if (saved === 'en-paul') startId = 'en-vocab';
-    if (saved === 'math-test') startId = 'math-table';
-  } catch (e) {}
+  async function syncCloudOnBoot() {
+    if (!window.HxSharedSync) return;
+    await reconcile();
+    cloudReady = true;
+    installCloudWatchers();
+  }
+
+  function pickStartId() {
+    let startId = META[0].id;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved && (PAGES[saved] || EXTERNAL_PAGES[saved])) startId = saved;
+      if (saved === "en-paul") startId = "en-vocab";
+      if (saved === "math-test") startId = "math-table";
+    } catch (e) {}
+    return startId;
+  }
+
   (async function bootSharedSync() {
     try { await syncCloudOnBoot(); } catch (e) {}
-    loadPage(startId);
+    loadPage(pickStartId());
   })();
+
   </script>
 </body>
 </html>

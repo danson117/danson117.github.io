@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn／Karson_Learn 跨裝置同步：** 成頁已儲存嘅進度同設定（唔止閃卡）跟 Supabase 共用文件 `alpha-learn`、`karson-learn`。開頁如果雲端較新就用雲端；只有內容真係變咗先上傳。開住嘅頁約 12 秒會再對一次。字體、暗色、上次開邊頁、各科進度都包括。閃卡錄音仍然留喺該部機。Alpha 一次過換詞唔會再改寫較新嘅雲端詞庫。Alpha_Learn **v3.7**、Karson_Learn **v2.2**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · 中文閃卡：** 詞語表換走舊 7 個（都是／Apple／這個／Banana／合成／Orange／共有），已學識換走舊 3 個（和／高／Cat）。新詞語表 23 個：八個成語，加上《海上觀日出》認讀 7 個（含單字「摻」）同運用 8 個（含單字「撒」「卧」）。已開過嘅瀏覽器會一次過換，之後唔會自動加返刪走嘅新詞。Alpha_Learn **v3.6**（閃卡 v4.7）。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
