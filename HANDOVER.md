@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn／Karson_Learn 左邊選單：** 內嵌頁有一行未跳脫嘅 `</script>`，瀏覽器喺選單程式之前截斷，撳 ☰ 冇反應，畫面空白。已跳脫，選單同第一頁會再載入。Alpha_Learn **v3.5**、Karson_Learn **v2.1**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **TOV Manual · CAD-PLIS outstanding 收成 60：** 貼出名單 **60** 人維持未完成，due 仍然 **2026-10-15**。其餘未完成 **15** 標 Completed，完成日 **2026-10-10**，due 改 Expiry **0**。板上 outstanding **60**。冇刪行。CAD-PLIS 仍然 **117**。Manual 仍然 **1503**。Supabase `hx_private.team_board_actions`（`hx_team_board_put`）。唔改 HTML。唔開 Chrome。唔寫職員明細。
 
 ## 2026-10-08 公司電腦
