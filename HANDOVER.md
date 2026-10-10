@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · 讀默課文句子：** 而家嗰篇課文唔改字。課文下面列出每一句（而家例子 29 句），標 **第1句** 起。讀緊、上一句、下一句、重讀、撳某一句，都會高亮而家嗰句；撳句即刻由嗰句開始讀，隱藏文字時句行仍然撳得。隱藏文字唔收起課文格、唔縮高度：課文字透明，句號同位置留低。**總字數** 計課文每一個字，包括標點，唔計換行。暫停、兩秒、讀出標點名維持。Alpha_Learn **v4.8**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · 讀默課文：** 讀緊可以撳 **暫停**，再撳變 **繼續**。**隱藏文字**會一併收起上面篇課文。同一句連續讀，每次之間隔兩秒。標點留喺讀出嘅字串，並且讀出逗號、句號、問號、頓號等名稱。Alpha_Learn **v4.7**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
