@@ -1,10 +1,10 @@
-<!-- Ver.4.9 -->
+<!-- Ver.5.0 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="4.9">
+  <meta name="app-version" content="5.0">
   <title>Alpha_Learn</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&family=Noto+Serif+HK:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -179,7 +179,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.4.9</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.5.0</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -241,12 +241,10 @@
       <div class="dictate-box" id="dictate-box">
         <div class="dictate-article" id="dictate-article" tabindex="0" contenteditable="true" spellcheck="false"></div>
       </div>
-      <textarea id="dictate-source" class="dictate-source-store" spellcheck="false">清晨，天剛矇矇亮。海邊擠滿等看日出的人，我好不容易擠上前，探着腦袋，目不轉睛盯住將要升起之處。
-海面平靜極了，偶爾有海鳥飛入視線。我望着很長的地平線，想着尚未升起的太陽，心裏迫不及待。
-「出來了，快看！」只見它從水平面鑽出一點頭。天空由上而下分成藍、紫、紅、黃，美極了。
-朝陽漸漸露出一半，金黃耀眼，光芒圍着半圓，照亮周圍景物。陽光反射在波光粼粼的海上，像被誰撒了一層碎金。海面與水中各有半個，像在托着，仔細看才知是倒影，真會捉弄人。岸邊議論這美、這奇，它好像聽見，害羞得臉都紅了。
-
-人們已經聚集到那方，數也，所瞧那條，和那樣還正談些話，哈，可怪道，去到兩隻，四種顏色分別組圈兒形燦。</textarea>
+      <textarea id="dictate-source" class="dictate-source-store" spellcheck="false">清晨，天剛矇矇亮，聚集在海邊等着看日出的人已經數也數不清了。我好不容易擠上前去，和所有人一樣，探着腦袋，目不轉睛地盯着太陽將要升起的地方。
+海面上平靜極了，偶爾一兩隻海鳥飛入我的視線。我望着那條好長好長的地平線，想着還未升起的太陽，心裏真有些迫不及待。
+「出來了！太陽出來了！快看！」只見太陽從水平面上「鑽」了出來，露出了一點頭兒，天空由上而下分別由藍、紫、紅、黃四種顏色組成，真是美極了。
+太陽漸漸地露出了一半，金黃金黃的，一圈耀眼的光芒圍着半圓形的朝陽，照亮了它周圍所有的景物。陽光反射在波光粼粼的海面上，金燦燦的，像是被誰撒了一層碎金。奇怪的是，海面上有半個太陽，水中也有半個太陽，像是在托着海上的那半個。仔細一看，才知道那是太陽的倒影，哈，太陽可真會捉弄人。人們正在岸邊議論日出的美、日出的奇，太陽好像聽到了人們的談話，瞧，它害羞得臉都紅了。</textarea>
       <div class="dictate-tools">
         <button type="button" id="dictate-split">按課文分句</button>
         <button type="button" id="dictate-start">開始讀</button>
@@ -269,7 +267,7 @@
       <p class="dictate-hint" id="dictate-hint">聽完先寫低。寫好，先去下一句。可以撳課文某一句即刻讀。可以隱藏文字，淨係聽。</p>
     </div>
   </section>
-    <div class="version-badge" id="version-badge">Ver.4.9</div>
+    <div class="version-badge" id="version-badge">Ver.5.0</div>
   <script>
   const APP_VERSION = "3.2";
   const PAGES = {
@@ -1462,12 +1460,20 @@
     if (!el.source) return;
     let saved = "";
     try { saved = localStorage.getItem(DICTATE_TEXT_KEY) || ""; } catch (e) {}
-    if (!saved.trim()) el.source.value = DICTATE_SAMPLE || el.source.value;
-    else el.source.value = saved;
+    const builtinShort = saved.includes("海邊擠滿等看日出的人") || saved.includes("人們已經聚集到那方");
+    if (!saved.trim() || (builtinShort && !saved.includes("數也數不清"))) {
+      el.source.value = DICTATE_SAMPLE || el.source.value;
+      try {
+        localStorage.removeItem(DICTATE_H_KEY);
+        localStorage.removeItem(DICTATE_H_SIG);
+        localStorage.removeItem(DICTATE_H_MODE);
+      } catch (e) {}
+    } else el.source.value = saved;
     try { dictateHidden = localStorage.getItem(DICTATE_HIDE_KEY) === "1"; } catch (e) {}
     if (el.hide) el.hide.setAttribute("aria-pressed", dictateHidden ? "true" : "false");
     dictateRebuild(true);
     dictateApplyBoxHeight();
+    if (!saved.trim() || (builtinShort && !saved.includes("數也數不清"))) dictateFitBox();
     dictateWatchBox();
   }
 

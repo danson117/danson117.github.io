@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · 讀默換返《海上觀日出》原文：** 課文唔再係收短版，亦唔再加下面四十二字練習句。已開過、而家仲係收短版嘅瀏覽器會一次過換原文，自己貼過另一篇嘅唔郁。貼完會自動高到睇晒。Alpha_Learn **v5.0**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · 讀默只留一篇課文：** 刪走課文上面嗰兩句說明，同埋課文下面第1句到第29句嗰截。高亮同撳句讀都喺原本嗰個課文格裡面，分句仍然係而家嗰 29 句。隱藏文字只把課文字變透明，格唔收起、版面唔跳。貼新課文時個格會自動高到睇晒全文，之後自己拉高矮會記住；再貼另一篇就忘掉舊高度，再自動貼合。總字數仍然連標點、唔計換行。暫停、兩秒、讀出標點名維持。高度只記喺本機。Alpha_Learn **v4.9**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
