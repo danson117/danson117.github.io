@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · iPad 詞語表朗讀：** 電腦揀一個詞會讀出聲，之後可以再揀。iPad 讀唔出，而且詞語表像卡住，揀唔到第二個。原因係 iOS Safari 的 speechSynthesis：朗讀前先等錄音資料庫，手勢過咗就唔出聲；無聲解鎖會卡住隊列；讀完事件唔來，狀態停喺朗讀中，詞語表只喺閒置先接受下一點。iPad 而家喺點擊當下用外層頁朗讀，失敗或無聲都會放開列表。立即朗讀在 iPad 會即刻讀而家個詞。電腦路徑維持。雲端同步重載唔係呢個卡住原因。Alpha_Learn **v3.8**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。未喺真 iPad 試到。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn／Karson_Learn 跨裝置同步：** 成頁已儲存嘅進度同設定（唔止閃卡）跟 Supabase 共用文件 `alpha-learn`、`karson-learn`。開頁如果雲端較新就用雲端；只有內容真係變咗先上傳。開住嘅頁約 12 秒會再對一次。字體、暗色、上次開邊頁、各科進度都包括。閃卡錄音仍然留喺該部機。Alpha 一次過換詞唔會再改寫較新嘅雲端詞庫。Alpha_Learn **v3.7**、Karson_Learn **v2.2**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
