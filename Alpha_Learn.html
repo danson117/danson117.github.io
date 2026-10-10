@@ -1,11 +1,12 @@
-<!-- Ver.4.4 -->
+<!-- Ver.4.5 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="4.4">
+  <meta name="app-version" content="4.5">
   <title>Alpha_Learn</title>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&family=Noto+Serif+HK:wght@700;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --menu-bg: #1a2744;
@@ -57,51 +58,79 @@
     .menu-backdrop { display: none; position: fixed; inset: 0; z-index: 99999; background: transparent; }
     .menu-backdrop.open { display: block; }
     #import-file { display: none; }
-    .speak-test {
+    .dictate {
       display: none;
       position: fixed;
       inset: 0;
       z-index: 10;
       overflow: auto;
-      background: #f4f7fb;
-      color: #1a2744;
-      padding: 72px 18px 32px;
+      background: #e0f7fa;
+      color: #37474f;
+      padding: 72px 16px 28px;
+      font-family: "M PLUS Rounded 1c", "PingFang HK", "Microsoft JhengHei", sans-serif;
       -webkit-overflow-scrolling: touch;
     }
-    .speak-test.open { display: block; }
-    .speak-test h1 { margin: 0 0 8px; font-size: 1.45rem; }
-    .speak-test p { margin: 0 0 12px; line-height: 1.45; }
-    .speak-test-grid { display: grid; gap: 10px; max-width: 720px; }
-    .speak-test button {
-      text-align: left;
-      border: 2px solid #c5d4e8;
+    .dictate.open { display: block; }
+    .dictate-wrap { max-width: 760px; margin: 0 auto; }
+    .dictate h1 { margin: 0 0 6px; font-size: 1.7rem; color: #ff7043; font-weight: 800; }
+    .dictate-lead { margin: 0 0 12px; line-height: 1.45; font-weight: 700; color: #546e7a; }
+    .dictate-label { display: block; font-weight: 800; margin-bottom: 6px; }
+    #dictate-source {
+      width: 100%;
+      min-height: 132px;
+      border: 3px solid #b2ebf2;
+      border-radius: 18px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      line-height: 1.55;
+      font-family: "Noto Serif HK", "PMingLiU", serif;
       background: #fff;
-      color: #1a2744;
-      border-radius: 14px;
-      padding: 12px 14px;
+      color: #37474f;
+      resize: vertical;
+    }
+    .dictate-tools, .dictate-nav, .dictate-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+    .dictate button, .dictate-row label {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 16px;
       font-weight: 800;
-      font-size: 1.05rem;
+      font-size: 1rem;
       cursor: pointer;
-      line-height: 1.35;
+      font-family: inherit;
     }
-    .speak-test button small { display: block; font-weight: 650; color: #3d5a80; margin-top: 2px; }
-    .speak-test button:active { background: #e7f2ff; }
-    .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; max-width: 920px; }
-    .board-grid button { min-height: 76px; font-size: 1.25rem; text-align: center; border-color: transparent; }
-    .board-grid button.on { border-color: #e53935; background: #fff5f5; }
-    #board-frame { width: 100%; height: calc(100dvh - 168px); min-height: 420px; border: 0; background: #fff; border-radius: 12px; }
-    #board-status { font-size: 1.15rem; }
-    #speak-test-status {
+    #dictate-split { background: #fff; color: #0277bd; border: 3px solid #81d4fa; }
+    #dictate-start, #dictate-again { background: #42a5f5; color: #fff; }
+    #dictate-prev { background: #fff; color: #37474f; border: 3px solid #b2ebf2; }
+    #dictate-next { background: #ff7043; color: #fff; }
+    #dictate-hide { background: #fff3e0; color: #e65100; border: 3px solid #ffcc80; }
+    #dictate-hide[aria-pressed="true"] { background: #ff7043; color: #fff; border-color: #ff7043; }
+    .dictate-row label { background: #fff; border: 3px solid #b2ebf2; cursor: default; }
+    .dictate-row input { width: 52px; border: 0; font-weight: 800; font-size: 1rem; text-align: center; background: transparent; }
+    .dictate-card {
       margin-top: 14px;
-      max-width: 720px;
-      min-height: 3.2em;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: #1a2744;
-      color: #e8f4ff;
-      font-weight: 700;
-      line-height: 1.4;
+      background: #fff;
+      border: 4px solid #b2ebf2;
+      border-radius: 28px;
+      min-height: 220px;
+      padding: 18px 16px 20px;
+      box-shadow: 0 8px 0 rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
+    .dictate-progress { font-weight: 800; color: #0288d1; margin-bottom: 8px; }
+    .dictate-chunk {
+      font-family: "Noto Serif HK", "PMingLiU", serif;
+      font-size: clamp(1.6rem, 5vw, 2.5rem);
+      font-weight: 900;
+      line-height: 1.45;
+      color: #37474f;
+    }
+    .dictate-card.is-hidden .dictate-chunk { color: #ff7043; font-family: inherit; font-size: 1.8rem; }
+    .dictate-rep { margin-top: 10px; font-weight: 800; color: #ef6c00; min-height: 1.4em; }
+    .dictate-hint { margin: 12px 0 0; font-weight: 800; color: #00695c; }
     .version-badge {
       position: fixed; right: 12px; bottom: 12px; z-index: 100001;
       background: rgba(26, 39, 68, 0.92); color: #7dd3fc;
@@ -114,8 +143,8 @@
       .menu-root { top: 10px; left: 10px; }
       .menu-toggle { width: 44px; height: 44px; border-radius: 12px; }
       .version-badge { right: 10px; bottom: 10px; font-size: 11px; padding: 5px 10px; }
-      .speak-test { padding: 64px 16px 28px; }
-      .speak-test button { min-height: 52px; font-size: 1rem; }
+      .dictate { padding: 64px 12px 24px; }
+      .dictate-nav button, #dictate-start { min-height: 52px; }
     }
   </style>
 </head>
@@ -124,7 +153,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.4.4</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.4.5</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -136,37 +165,9 @@
           <span class="menu-icon">🀄</span>
           <span class="menu-text">中文 · 生字閃卡認讀</span>
         </button>
-        <button class="menu-item" type="button" data-page="speak-test" data-label="讀音測試">
-          <span class="menu-icon">🔊</span>
-          <span class="menu-text">讀音測試</span>
-        </button>
-        <button class="menu-item" type="button" data-page="board-1" data-label="1 對照現況">
-          <span class="menu-icon">1</span>
-          <span class="menu-text">1 對照現況</span>
-        </button>
-        <button class="menu-item" type="button" data-page="board-2" data-label="2 即刻讀">
-          <span class="menu-icon">2</span>
-          <span class="menu-text">2 即刻讀</span>
-        </button>
-        <button class="menu-item" type="button" data-page="board-3" data-label="3 iframe 裡面讀">
-          <span class="menu-icon">3</span>
-          <span class="menu-text">3 iframe 裡面讀</span>
-        </button>
-        <button class="menu-item" type="button" data-page="board-4" data-label="4 揀中文聲">
-          <span class="menu-icon">4</span>
-          <span class="menu-text">4 揀中文聲</span>
-        </button>
-        <button class="menu-item" type="button" data-page="board-5" data-label="5 yue-HK">
-          <span class="menu-icon">5</span>
-          <span class="menu-text">5 yue-HK</span>
-        </button>
-        <button class="menu-item" type="button" data-page="board-6" data-label="6 倒數完先讀">
-          <span class="menu-icon">6</span>
-          <span class="menu-text">6 倒數完先讀</span>
-        </button>
-        <button class="menu-item" type="button" data-page="board-7" data-label="7 外層頁代讀">
-          <span class="menu-icon">7</span>
-          <span class="menu-text">7 外層頁代讀</span>
+        <button class="menu-item" type="button" data-page="dictate" data-label="讀默">
+          <span class="menu-icon">📖</span>
+          <span class="menu-text">中文 · 讀默</span>
         </button>
         <button class="menu-item" type="button" data-page="juanduan" data-label="句段辨析">
           <span class="menu-icon">📝</span>
@@ -207,31 +208,39 @@
     </div>
   </div>
   <iframe id="app-frame" title="學習內容"></iframe>
-  <section class="speak-test" id="speak-test" hidden>
-    <h1>讀音測試 1–10</h1>
-    <p>每粒掣都讀「朝陽」，除咗 6 同 7 係提示音，用來試部 iPad 播唔播到聲。撳完睇下面狀態。回覆邊幾個號碼有聲就得。</p>
-    <div class="speak-test-grid">
-      <button type="button" data-speak="1">1 即刻讀<small>外層頁 · 先 cancel · zh-HK</small></button>
-      <button type="button" data-speak="2">2 舊閃卡<small>同步前：唔 cancel · zh-HK · 語速 0.8 · 可揀 Google 聲</small></button>
-      <button type="button" data-speak="3">3 keepalive<small>外層頁 · 先讀「啊」，每 200ms resume，再讀「朝陽」</small></button>
-      <button type="button" data-speak="4">4 倒數完先讀<small>外層頁 · 3 秒後先 speak</small></button>
-      <button type="button" data-speak="5">5 撥一下就開始，倒數完再播<small>外層頁 · 即刻 speak 然後 pause，3 秒後 resume</small></button>
-      <button type="button" data-speak="6">6 即刻播提示音<small>外層頁 · new Audio 播 wav，唔係人聲</small></button>
-      <button type="button" data-speak="7">7 遲 1 秒播提示音<small>外層頁 · 1 秒後先 audio.play()</small></button>
-      <button type="button" data-speak="8">8 iframe 裡面讀<small>父頁點擊當下，叫 iframe 自己的 speechSynthesis</small></button>
-      <button type="button" data-speak="9">9 揀中文聲<small>外層頁 · zh-HK，否則 zh-TW / zh-CN / 任何中文</small></button>
-      <button type="button" data-speak="10">10 yue-HK<small>外層頁 · 失敗再讀 zh-CN</small></button>
+  <section class="dictate" id="dictate" hidden>
+    <div class="dictate-wrap">
+      <h1>讀默</h1>
+      <p class="dictate-lead">好似老師讀默：每次大約十個字，標點一併讀出。預設連續讀三次。聽完先寫，再撳下一句。</p>
+      <label class="dictate-label" for="dictate-source">課文（可以貼過另一篇）</label>
+      <textarea id="dictate-source" spellcheck="false">清晨，天剛矇矇亮。海邊擠滿等看日出的人，我好不容易擠上前，探着腦袋，目不轉睛盯住將要升起之處。
+海面平靜極了，偶爾有海鳥飛入視線。我望着很長的地平線，想着尚未升起的太陽，心裏迫不及待。
+「出來了，快看！」只見它從水平面鑽出一點頭。天空由上而下分成藍、紫、紅、黃，美極了。
+朝陽漸漸露出一半，金黃耀眼，光芒圍着半圓，照亮周圍景物。陽光反射在波光粼粼的海上，像被誰撒了一層碎金。海面與水中各有半個，像在托着，仔細看才知是倒影，真會捉弄人。岸邊議論這美、這奇，它好像聽見，害羞得臉都紅了。
+
+人們已經聚集到那方，數也，所瞧那條，和那樣還正談些話，哈，可怪道，去到兩隻，四種顏色分別組圈兒形燦。</textarea>
+      <div class="dictate-tools">
+        <button type="button" id="dictate-split">按課文分句</button>
+        <button type="button" id="dictate-start">開始讀</button>
+      </div>
+      <div class="dictate-card" id="dictate-card">
+        <div class="dictate-progress" id="dictate-progress">準備好</div>
+        <div class="dictate-chunk" id="dictate-chunk">撳「開始讀」</div>
+        <div class="dictate-rep" id="dictate-rep"></div>
+      </div>
+      <div class="dictate-nav">
+        <button type="button" id="dictate-prev">上一句</button>
+        <button type="button" id="dictate-again">重讀</button>
+        <button type="button" id="dictate-next">下一句</button>
+      </div>
+      <div class="dictate-row">
+        <button type="button" id="dictate-hide" aria-pressed="false">隱藏文字</button>
+        <label>讀 <input id="dictate-times" type="number" min="1" max="5" value="3" inputmode="numeric"> 次</label>
+      </div>
+      <p class="dictate-hint" id="dictate-hint">聽完先寫低。寫好，先去下一句。可以隱藏文字，淨係聽。</p>
     </div>
-    <div id="speak-test-status">未撳。有聲就記低號碼。</div>
   </section>
-  <section class="speak-test" id="board-host" hidden>
-    <h1 id="board-title">詞語板</h1>
-    <p id="board-note"></p>
-    <div id="board-status">載入詞語表…</div>
-    <div class="board-grid" id="board-grid"></div>
-    <iframe id="board-frame" title="詞語板" hidden></iframe>
-  </section>
-  <div class="version-badge" id="version-badge">Ver.4.4</div>
+    <div class="version-badge" id="version-badge">Ver.4.5</div>
   <script>
   const APP_VERSION = "3.2";
   const PAGES = {
@@ -905,16 +914,9 @@
       "\n          return runHold(setObj.hold, readout, signal);\n        }).then(function () {\n          if (repI < setObj.reps) {\n            return speakOverCountdown(zhRepDone(repI), INTER_REP_SILENT, readout, phaseEl, signal);\n          }\n          if (setObj.reps > 1) {\n            return speakOverCountdown(\"最後一次\", INTER_REP_SILENT, readout, phaseEl, signal);\n          }\n        }).then(function () {\n          repI += 1;\n          return runNextRep();\n        });\n      }\n\n      return runNextRep().then(function () {\n        if (setI >= sets.length - 1) return;\n        var restSec = prog.interSet === \"silent3\" ? INTER_REP_SILENT : INTER_SET_REST;\n        var phrases = prog.frequentRep || setObj.reps > 1\n          ? zhSetDone(setNum, false)\n          : [\"最後一次\", zhSetDone(setNum, false)];\n        return speakOverCountdown(phrases, restSec, readout, phaseEl, signal);\n      }).then(function () {\n        setI += 1;\n        return runNextSet();\n      });\n    }\n\n    var customRun = runCustomScript();\n    (customRun || runNextSet()).then(function () {\n      if (signal.aborted) return;\n      phaseEl.textContent = donePhrase;\n      readout.textContent = \"✓\";\n      if (prog.custom) return;\n      return speak(donePhrase, { cancel: true, wait: true });\n    }).catch(function (err) {\n      if (!err || err.name !== \"AbortError\") {\n        phaseEl.textContent = \"計時已停止\";\n      }\n    }).then(function () {\n      if (active && active.btn === btn && !active.controller.signal.aborted) {\n        setIdle(btn, readout, phaseEl);\n        phaseEl.textContent = donePhrase;\n        active = null;\n      }\n    });\n  }\n\n  document.querySelectorAll(\".timer-btn\").forEach(function (btn) {\n    btn.addEventListener(\"click\", function () {\n      var row = btn.closest(\".exercise\") || btn.parentElement;\n      var r" +
       "eadout = row.querySelector(\".timer-readout\");\n      var phaseEl = row.querySelector(\".timer-phase\");\n      runProgram(btn.getAttribute(\"data-timer\"), btn, readout, phaseEl);\n    });\n  });\n})();\n<\/script>\n\n</body>\n</html>"
     ),
-    "speak-test": "top-document",
-    "board-1": "top-document",
-    "board-2": "top-document",
-    "board-3": "top-document",
-    "board-4": "top-document",
-    "board-5": "top-document",
-    "board-6": "top-document",
-    "board-7": "top-document"
+    "dictate": "top-document"
   };
-  const META = [{"id": "spelling", "label": "英文 · Spelling Assistant", "short": "Spelling", "icon": "🔤"}, {"id": "zh-flash", "label": "中文 · 生字閃卡認讀", "short": "中文閃卡", "icon": "🀄"}, {"id": "speak-test", "label": "讀音測試", "short": "讀音測試", "icon": "🔊"}, {"id": "board-1", "label": "1 對照現況", "short": "1 對照現況", "icon": "1"}, {"id": "board-2", "label": "2 即刻讀", "short": "2 即刻讀", "icon": "2"}, {"id": "board-3", "label": "3 iframe 裡面讀", "short": "3 iframe 裡面讀", "icon": "3"}, {"id": "board-4", "label": "4 揀中文聲", "short": "4 揀中文聲", "icon": "4"}, {"id": "board-5", "label": "5 yue-HK", "short": "5 yue-HK", "icon": "5"}, {"id": "board-6", "label": "6 倒數完先讀", "short": "6 倒數完先讀", "icon": "6"}, {"id": "board-7", "label": "7 外層頁代讀", "short": "7 外層頁代讀", "icon": "7"}, {"id": "juanduan", "label": "中文 · 句段辨析（小五）", "short": "句段辨析", "icon": "📝"}, {"id": "cuoyao", "label": "中文 · 段落撮要（小五）", "short": "段落撮要", "icon": "✂️"}, {"id": "fendian", "label": "中文 · 分點舉例說明（小五）", "short": "分點說明", "icon": "🧩"}, {"id": "comp-56", "label": "中文 · 小五六作文範例", "short": "五六作文", "icon": "✍️"}, {"id": "comp-4", "label": "中文 · 中作小四", "short": "小四作文", "icon": "📘"}, {"id": "math-four", "label": "數學 · 混合四式測驗", "short": "混合四式", "icon": "🧮"}, {"id": "posture", "label": "健康 · 體態訓練", "short": "體態訓練", "icon": "🧍"}];
+  const META = [{"id": "spelling", "label": "英文 · Spelling Assistant", "short": "Spelling", "icon": "🔤"}, {"id": "zh-flash", "label": "中文 · 生字閃卡認讀", "short": "中文閃卡", "icon": "🀄"}, {"id": "dictate", "label": "中文 · 讀默", "short": "讀默", "icon": "📖"}, {"id": "juanduan", "label": "中文 · 句段辨析（小五）", "short": "句段辨析", "icon": "📝"}, {"id": "cuoyao", "label": "中文 · 段落撮要（小五）", "short": "段落撮要", "icon": "✂️"}, {"id": "fendian", "label": "中文 · 分點舉例說明（小五）", "short": "分點說明", "icon": "🧩"}, {"id": "comp-56", "label": "中文 · 小五六作文範例", "short": "五六作文", "icon": "✍️"}, {"id": "comp-4", "label": "中文 · 中作小四", "short": "小四作文", "icon": "📘"}, {"id": "math-four", "label": "數學 · 混合四式測驗", "short": "混合四式", "icon": "🧮"}, {"id": "posture", "label": "健康 · 體態訓練", "short": "體態訓練", "icon": "🧍"}];
   const STORAGE_KEY = 'alpha-hub-last-page';
   const PROGRESS_KEYS = ["alpha-hub-last-page", "alpha-juanduan-progress-v1", "alpha-cuoyao-progress-v1", "alpha-fendian-progress-v1", "alpha-spelling-progress-v1", "flashcard_profiles", "flashcard_current_profile", "p56_essay_read_count_v1", "p56_essay_user_highlights_v1", "p56_essay_custom_notes_v1", "p56_vocab_removed_v1", "essay-font", "essay-dark", "essay_highlights_v2", "essay_custom_notes_v1", "essay_topic_order_v1", "alphaMathMistakesFourOps", "alpha-zh-flash-vocab-batch"];
 
@@ -985,548 +987,214 @@
     });
   }
 
-  const SPEAK_PHRASE = "朝陽";
-  let speakTestTimer = null;
-  let speakTestKick = null;
-  const SPEAK_TEST_WAV = (function () {
-    const sampleRate = 8000;
-    const n = Math.floor(sampleRate * 0.35);
-    const data = n * 2;
-    const bytes = new Uint8Array(44 + data);
-    const view = new DataView(bytes.buffer);
-    const write = (offset, text) => {
-      for (let i = 0; i < text.length; i++) bytes[offset + i] = text.charCodeAt(i);
-    };
-    write(0, "RIFF");
-    view.setUint32(4, 36 + data, true);
-    write(8, "WAVE");
-    write(12, "fmt ");
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    write(36, "data");
-    view.setUint32(40, data, true);
-    for (let i = 0; i < n; i++) {
-      view.setInt16(44 + i * 2, Math.round(Math.sin((2 * Math.PI * 880 * i) / sampleRate) * 0.55 * 32767), true);
-    }
-    let binary = "";
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return "data:audio/wav;base64," + btoa(binary);
-  })();
+  const DICTATE_SAMPLE = document.getElementById("dictate-source") ? document.getElementById("dictate-source").value : "";
+  const DICTATE_TEXT_KEY = "alpha-dictate-text";
+  const DICTATE_HIDE_KEY = "alpha-dictate-hide";
+  let dictateChunks = [];
+  let dictateIndex = 0;
+  let dictateToken = 0;
+  let dictateHidden = false;
 
-  function clearSpeakTestTimers() {
-    if (speakTestTimer) clearTimeout(speakTestTimer);
-    if (speakTestKick) clearInterval(speakTestKick);
-    speakTestTimer = null;
-    speakTestKick = null;
+  function dictateEls() {
+    return {
+      source: document.getElementById("dictate-source"),
+      card: document.getElementById("dictate-card"),
+      progress: document.getElementById("dictate-progress"),
+      chunk: document.getElementById("dictate-chunk"),
+      rep: document.getElementById("dictate-rep"),
+      hint: document.getElementById("dictate-hint"),
+      hide: document.getElementById("dictate-hide"),
+      times: document.getElementById("dictate-times")
+    };
   }
 
-  const BOARD_DEFAULT_WORDS = ["作壁上觀", "助紂為虐", "含辛茹苦", "吹毛求疵", "呆若木雞", "忍辱負重", "忘年之交", "改過自新", "矇矇亮", "視線", "光芒", "朝陽", "波光粼粼", "倒影", "摻", "偶爾", "耀眼", "反射", "撒", "奪目", "猶如", "卧", "璀璨"];
-  const BOARD_SPECS = {
-    "board-1": { title: "1 對照現況", note: "同而家 iPad 中文閃卡、立即朗讀關：先倒數 4 秒，再顯示聽下讀音，然後先讀。讀完（onend）先可以再揀。", kind: "srcdoc" },
-    "board-2": { title: "2 即刻讀", note: "外層頁。點詞後先紅框同聽下讀音，即刻 cancel 再讀，zh-HK，語速 1。中間冇 await。", kind: "parent", mode: "m1" },
-    "board-3": { title: "3 iframe 裡面讀", note: "詞語格喺外層頁。點擊當下叫 iframe 自己的 speechSynthesis 讀，zh-HK。", kind: "parent", mode: "m8" },
-    "board-4": { title: "4 揀中文聲", note: "外層頁。先揀 zh-HK，否則 zh-TW、zh-CN、任何中文聲，然後即刻讀。", kind: "parent", mode: "m9" },
-    "board-5": { title: "5 yue-HK", note: "外層頁。先讀 yue-HK；如果 onerror，再讀 zh-CN。", kind: "parent", mode: "m10" },
-    "board-6": { title: "6 倒數完先讀", note: "外層頁。點詞先顯示 3、2、1，倒數時唔顯示聽下讀音。倒數完先用第 2 板嘅讀法。", kind: "parent", mode: "countdown" },
-    "board-7": { title: "7 外層頁代讀", note: "詞語格喺 iframe。點擊當下 iframe 叫外層頁用第 2 板嘅讀法讀出個詞。", kind: "written" }
-  };
-  let boardBusy = false;
-  let boardTimer = null;
+  function dictateTimes() {
+    const raw = Number(dictateEls().times && dictateEls().times.value);
+    if (!Number.isFinite(raw)) return 3;
+    return Math.max(1, Math.min(5, Math.round(raw)));
+  }
 
-  function showBoard(on) {
-    const panel = document.getElementById("board-host");
-    if (!panel) return;
-    panel.hidden = !on;
-    panel.classList.toggle("open", on);
-    if (!on) {
-      if (boardTimer) clearInterval(boardTimer);
-      boardTimer = null;
-      boardBusy = false;
-      const box = document.getElementById("board-frame");
-      if (box) {
-        box.hidden = true;
-        box.removeAttribute("srcdoc");
-        box.removeAttribute("src");
+  function dictateChunksFrom(raw) {
+    const target = 10;
+    const max = target + 4;
+    const text = String(raw || "").replace(/\r/g, "");
+    const sentences = [];
+    let buf = "";
+    const pushSentence = () => {
+      const s = buf.replace(/\s+/g, "");
+      buf = "";
+      if (s) sentences.push(s);
+    };
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === "\n") {
+        pushSentence();
+        continue;
       }
-      const testsOpen = document.getElementById("speak-test") && document.getElementById("speak-test").classList.contains("open");
-      if (!testsOpen) frame.style.visibility = "visible";
-    } else {
-      frame.style.visibility = "hidden";
-    }
-  }
-
-  function showSpeakTest(on) {
-    const panel = document.getElementById("speak-test");
-    if (!panel) return;
-    if (on) showBoard(false);
-    panel.hidden = !on;
-    panel.classList.toggle("open", on);
-    const boardOpen = document.getElementById("board-host") && document.getElementById("board-host").classList.contains("open");
-    frame.style.visibility = (on || boardOpen) ? "hidden" : "visible";
-  }
-
-  function boardStatus(text) {
-    const el = document.getElementById("board-status");
-    if (el) el.textContent = text;
-  }
-
-  function loadBoardWords() {
-    return new Promise((resolve) => {
-      const fallback = () => resolve(BOARD_DEFAULT_WORDS.slice());
-      let profile = "default";
-      try { profile = localStorage.getItem("flashcard_current_profile") || "default"; } catch (e) {}
-      const req = indexedDB.open("FlashcardDB_v4.0", 1);
-      req.onerror = fallback;
-      req.onupgradeneeded = () => { try { req.transaction.abort(); } catch (e) {} };
-      req.onsuccess = () => {
-        const db = req.result;
-        if (!db.objectStoreNames.contains("data")) { db.close(); fallback(); return; }
-        const tx = db.transaction("data", "readonly");
-        const store = tx.objectStore("data");
-        const primary = store.get(profile + "_words");
-        const legacy = store.get("words");
-        tx.oncomplete = () => {
-          db.close();
-          const raw = (primary.result && primary.result.value) || (profile === "default" && legacy.result && legacy.result.value) || [];
-          const texts = (Array.isArray(raw) ? raw : []).map((w) => (w && w.text ? String(w.text).trim() : "")).filter(Boolean);
-          resolve(texts.length ? texts : BOARD_DEFAULT_WORDS.slice());
-        };
-        tx.onerror = () => { try { db.close(); } catch (e) {} fallback(); };
-      };
-    });
-  }
-
-  function finishBoardSpeak() {
-    boardBusy = false;
-    boardStatus("可以再揀");
-  }
-
-  function speakMethod1(text, onDone) {
-    const synth = window.speechSynthesis;
-    try { synth.cancel(); } catch (e) {}
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "zh-HK";
-    u.rate = 1;
-    let finished = false;
-    const done = () => { if (finished) return; finished = true; if (onDone) onDone(); };
-    u.onend = u.onerror = done;
-    synth.speak(u);
-  }
-
-  function board3SpeakWindow() {
-    let box = document.getElementById("board-speak-iframe");
-    if (!box) {
-      box = document.createElement("iframe");
-      box.id = "board-speak-iframe";
-      box.title = "詞語板朗讀 iframe";
-      box.style.cssText = "position:fixed;left:0;bottom:0;width:2px;height:2px;border:0;opacity:0.02;";
-      document.body.appendChild(box);
-    }
-    return box.contentWindow;
-  }
-
-  function speakOnBoard3(text, lang, onDone) {
-    const inner = board3SpeakWindow();
-    if (!inner || !inner.speechSynthesis) throw new Error("iframe 未有 speechSynthesis");
-    inner.speechSynthesis.cancel();
-    const u = new inner.SpeechSynthesisUtterance(text);
-    u.lang = lang || "zh-HK";
-    u.rate = 1;
-    let finished = false;
-    let watch = null;
-    const done = () => {
-      if (finished) return;
-      finished = true;
-      if (watch) clearTimeout(watch);
-      if (onDone) onDone();
-    };
-    u.onend = u.onerror = done;
-    watch = setTimeout(() => {
-      if (finished) return;
-      let speaking = false;
-      try { speaking = !!(inner.speechSynthesis.speaking || inner.speechSynthesis.pending); } catch (e) {}
-      if (!speaking) done();
-    }, 2500);
-    try {
-      inner.speechSynthesis.speak(u);
-    } catch (e) {
-      done();
-    }
-  }
-
-  function speakMethod8(text, onDone) {
-    speakOnBoard3(text, "zh-HK", onDone);
-  }
-
-  window.__alphaBoard3Speak = function (text, lang, onDone) {
-    speakOnBoard3(text, lang, onDone);
-  };
-
-  window.__alphaBoard3Cancel = function () {
-    try {
-      const box = document.getElementById("board-speak-iframe");
-      if (box && box.contentWindow && box.contentWindow.speechSynthesis)
-        box.contentWindow.speechSynthesis.cancel();
-    } catch (e) {}
-  };
-
-  function speakMethod9(text, onDone) {
-    const synth = window.speechSynthesis;
-    try { synth.cancel(); } catch (e) {}
-    const voices = synth.getVoices() || [];
-    const norm = (v) => (v.lang || "").toLowerCase().replace(/_/g, "-");
-    const voice =
-      voices.find((v) => norm(v) === "zh-hk") ||
-      voices.find((v) => norm(v) === "zh-tw") ||
-      voices.find((v) => norm(v) === "zh-cn") ||
-      voices.find((v) => norm(v).startsWith("zh")) ||
-      null;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = voice ? voice.lang : "zh-HK";
-    u.rate = 1;
-    if (voice) u.voice = voice;
-    let finished = false;
-    const done = () => { if (finished) return; finished = true; if (onDone) onDone(); };
-    u.onend = u.onerror = done;
-    synth.speak(u);
-    boardStatus("聽下讀音 · " + (voice ? voice.name + " " + voice.lang : "冇揀到聲，用 zh-HK"));
-  }
-
-  function speakMethod10(text, onDone) {
-    const synth = window.speechSynthesis;
-    try { synth.cancel(); } catch (e) {}
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "yue-HK";
-    u.rate = 1;
-    let finished = false;
-    const done = () => { if (finished) return; finished = true; if (onDone) onDone(); };
-    u.onerror = () => {
-      try {
-        const next = new SpeechSynthesisUtterance(text);
-        next.lang = "zh-CN";
-        next.rate = 1;
-        next.onend = next.onerror = done;
-        synth.speak(next);
-        boardStatus("聽下讀音 · yue-HK 失敗，改 zh-CN");
-      } catch (e) { done(); }
-    };
-    u.onend = done;
-    synth.speak(u);
-  }
-
-  function renderParentBoard(words, spec) {
-    const grid = document.getElementById("board-grid");
-    const box = document.getElementById("board-frame");
-    grid.hidden = false;
-    box.hidden = true;
-    grid.innerHTML = "";
-    if (boardTimer) clearInterval(boardTimer);
-    boardTimer = null;
-    boardBusy = false;
-    words.forEach((text) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = text;
-      btn.addEventListener("click", () => {
-        if (boardBusy) return;
-        grid.querySelectorAll("button").forEach((el) => el.classList.remove("on"));
-        btn.classList.add("on");
-        if (spec.mode === "countdown") {
-          boardBusy = true;
-          let left = 3;
-          boardStatus(String(left));
-          boardTimer = setInterval(() => {
-            left -= 1;
-            if (left > 0) {
-              boardStatus(String(left));
-              return;
-            }
-            clearInterval(boardTimer);
-            boardTimer = null;
-            boardStatus("聽下讀音");
-            try { speakMethod1(text, finishBoardSpeak); }
-            catch (e) { boardStatus("throw " + (e && e.message ? e.message : e)); finishBoardSpeak(); }
-          }, 1000);
-          return;
+      if (/\s/.test(ch)) continue;
+      buf += ch;
+      if ("。！？".indexOf(ch) >= 0) {
+        const next = text[i + 1];
+        if (next === "」" || next === "』" || next === "”") {
+          buf += next;
+          i += 1;
         }
-        boardBusy = true;
-        boardStatus("聽下讀音");
-        try {
-          const speak = spec.mode === "m8" ? speakMethod8 : spec.mode === "m9" ? speakMethod9 : spec.mode === "m10" ? speakMethod10 : speakMethod1;
-          speak(text, finishBoardSpeak);
-        } catch (e) {
-          boardStatus("throw " + (e && e.message ? e.message : e));
-          finishBoardSpeak();
-        }
-      });
-      grid.appendChild(btn);
-    });
-  }
-
-  function boardShell(title, note, bodyJs) {
-    const wordsJson = arguments[3];
-    return "<!doctype html><html lang=\"zh-HK\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + title + "</title><style>body{margin:0;padding:16px 12px 24px;font-family:sans-serif;background:#f4f7fb;color:#1a2744}h1{font-size:1.35rem;margin:0 0 8px}p{margin:0 0 10px;line-height:1.45}#st{font-weight:800;font-size:1.15rem;min-height:1.4em;margin-bottom:10px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}button{min-height:76px;font-size:1.25rem;font-weight:800;border:3px solid transparent;border-radius:12px;background:#fff}button.on{border-color:#e53935;background:#fff5f5}</style></head><body><h1>" + title + "</h1><p>" + note + "</p><div id=\"st\">揀一個詞</div><div class=\"g\" id=\"g\"></div><script>const WORDS=" + wordsJson + ";" + bodyJs + "<" + "/script></body></html>";
-  }
-
-  function boardLiveHtml(words) {
-    const wordsJson = JSON.stringify(words).replace(/</g, "\\u003c");
-    const js = "let status='idle';let timer=null;const st=document.getElementById('st');const g=document.getElementById('g');function paint(active){g.innerHTML='';WORDS.forEach(function(text,index){var b=document.createElement('button');b.type='button';b.textContent=text;if(index===active)b.className='on';b.onclick=function(){onTap(index);};g.appendChild(b);});}function onTap(index){if(status!=='idle')return;paint(index);var text=WORDS[index];status='countdown';var left=4;st.textContent='試下自己讀 ('+left+')';timer=setInterval(function(){left--;if(left>0){st.textContent='試下自己讀 ('+left+')';return;}clearInterval(timer);status='speaking';st.textContent='聽下讀音';paint(index);var speakNow=function(){var synth=window.speechSynthesis;try{synth.cancel();}catch(e){}var u=new SpeechSynthesisUtterance(text);u.lang=/^[A-Za-z0-9\\\\s.,?!'\"]+$/.test(text)?'en-IE':'zh-HK';var finished=false;var done=function(){if(finished)return;finished=true;status='idle';st.textContent='可以再揀';};u.onend=u.onerror=done;try{synth.speak(u);}catch(e){done();}};var req=indexedDB.open('FlashcardRecordings_v1',1);var after=function(){speakNow();};req.onerror=after;req.onsuccess=function(){var db=req.result;if(!db.objectStoreNames.contains('byText')){db.close();after();return;}var tx=db.transaction('byText','readonly');var got=tx.objectStore('byText').get(String(text||'').trim());got.onsuccess=function(){try{db.close();}catch(e){}after();};got.onerror=function(){try{db.close();}catch(e){}after();};};},1000);}paint(-1);";
-    return boardShell("1 對照現況", "同而家 iPad 中文閃卡、立即朗讀關。先倒數，再聽下讀音，然後先讀。", js, wordsJson);
-  }
-
-  function boardParentSpeakHtml(words) {
-    const wordsJson = JSON.stringify(words).replace(/</g, "\\u003c");
-    const js = "let status='idle';const st=document.getElementById('st');const g=document.getElementById('g');function paint(active){g.innerHTML='';WORDS.forEach(function(text,index){var b=document.createElement('button');b.type='button';b.textContent=text;if(index===active)b.className='on';b.onclick=function(){onTap(index,text);};g.appendChild(b);});}function onTap(index,text){if(status!=='idle')return;status='speaking';paint(index);st.textContent='聽下讀音';try{parent.__boardParentSpeak(text,function(){status='idle';st.textContent='可以再揀';});}catch(e){st.textContent='throw '+(e&&e.message?e.message:e);status='idle';}}paint(-1);";
-    return boardShell("7 外層頁代讀", "詞語格喺呢個 iframe。點擊當下叫外層頁讀。", js, wordsJson);
-  }
-
-  async function openBoard(pageId) {
-    const spec = BOARD_SPECS[pageId];
-    if (!spec) return;
-    showSpeakTest(false);
-    showBoard(true);
-    document.getElementById("board-title").textContent = spec.title;
-    document.getElementById("board-note").textContent = spec.note;
-    boardStatus("載入詞語表…");
-    document.getElementById("board-grid").innerHTML = "";
-    const box = document.getElementById("board-frame");
-    box.hidden = true;
-    const words = await loadBoardWords();
-    if (currentPageId !== pageId) return;
-    boardStatus("揀一個詞（" + words.length + "）");
-    if (spec.kind === "srcdoc") {
-      document.getElementById("board-grid").hidden = true;
-      box.hidden = false;
-      box.removeAttribute("src");
-      box.srcdoc = boardLiveHtml(words);
-      return;
+        pushSentence();
+      }
     }
-    if (spec.kind === "written") {
-      document.getElementById("board-grid").hidden = true;
-      box.hidden = false;
-      box.removeAttribute("srcdoc");
-      box.src = "about:blank";
-      window.__boardParentSpeak = function (text, done) { speakMethod1(text, done); };
-      const doc = box.contentDocument;
-      doc.open();
-      doc.write(boardParentSpeakHtml(words));
-      doc.close();
-      return;
-    }
-    document.getElementById("board-grid").hidden = false;
-    renderParentBoard(words, spec);
-  }
-
-  function speakTestStatus(n, text) {
-    const el = document.getElementById("speak-test-status");
-    if (el) el.textContent = "第 " + n + " 號：" + text;
-  }
-
-  function speakTestIframeWindow() {
-    let box = document.getElementById("speak-test-iframe");
-    if (!box) {
-      box = document.createElement("iframe");
-      box.id = "speak-test-iframe";
-      box.title = "讀音測試 iframe";
-      box.style.cssText = "position:fixed;left:0;bottom:0;width:2px;height:2px;border:0;opacity:0.02;";
-      document.body.appendChild(box);
-    }
-    return box.contentWindow;
-  }
-
-  function runSpeakTest(n) {
-    clearSpeakTestTimers();
-    const synth = window.speechSynthesis;
-    if (!synth && n !== 6 && n !== 7) {
-      speakTestStatus(n, "呢個瀏覽器冇 speechSynthesis");
-      return;
-    }
-    if (n === 1) {
-      synth.cancel();
-      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
-      u.lang = "zh-HK";
-      u.onend = () => speakTestStatus(1, "speak 已返回，onend 有叫");
-      u.onerror = (ev) => speakTestStatus(1, "speak 已返回，onerror " + (ev && ev.error ? ev.error : ""));
-      synth.speak(u);
-      speakTestStatus(1, "speak() 已呼叫，冇 throw");
-      return;
-    }
-    if (n === 2) {
-      const voices = synth.getVoices() || [];
-      const cantoneseVoice =
-        voices.find((v) => v.lang === "zh-HK" && v.name.includes("Google")) ||
-        voices.find((v) => v.lang === "zh-HK");
-      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
-      u.lang = "zh-HK";
-      if (cantoneseVoice) u.voice = cantoneseVoice;
-      u.rate = 0.8;
-      let finished = false;
-      u.onend = u.onerror = (ev) => {
-        if (finished) return;
-        finished = true;
-        speakTestStatus(2, (ev && ev.type === "error" ? "onerror " + (ev.error || "") : "onend") + " · 聲：" + (cantoneseVoice ? cantoneseVoice.name : "冇揀"));
-      };
-      window.speechSynthesis.speak(u);
-      speakTestStatus(2, "舊閃卡 speak() 已呼叫（冇 cancel），聲：" + (cantoneseVoice ? cantoneseVoice.name : "冇揀，只用 zh-HK"));
-      return;
-    }
-    if (n === 3) {
-      synth.cancel();
-      const kick = new SpeechSynthesisUtterance("啊");
-      kick.lang = "zh-HK";
-      synth.speak(kick);
-      speakTestKick = setInterval(() => {
-        try {
-          if (!synth.speaking && !synth.pending) {
-            clearInterval(speakTestKick);
-            speakTestKick = null;
-            return;
-          }
-          synth.resume();
-        } catch (e) {}
-      }, 200);
-      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
-      u.lang = "zh-HK";
-      u.onend = () => speakTestStatus(3, "keepalive 之後 onend");
-      u.onerror = (ev) => speakTestStatus(3, "keepalive 之後 onerror " + (ev && ev.error ? ev.error : ""));
-      synth.speak(u);
-      speakTestStatus(3, "已讀「啊」，已開始 200ms resume，並已 speak「朝陽」");
-      return;
-    }
-    if (n === 4) {
-      synth.cancel();
-      speakTestStatus(4, "倒數 3 秒，未 speak");
-      speakTestTimer = setTimeout(() => {
-        try {
-          const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
-          u.lang = "zh-HK";
-          u.onend = () => speakTestStatus(4, "3 秒後 speak 已返回，onend");
-          u.onerror = (ev) => speakTestStatus(4, "3 秒後 speak 已返回，onerror " + (ev && ev.error ? ev.error : ""));
-          synth.speak(u);
-          speakTestStatus(4, "3 秒到，speak() 已呼叫，冇 throw");
-        } catch (e) {
-          speakTestStatus(4, "3 秒到，throw " + (e && e.message ? e.message : e));
-        }
-      }, 3000);
-      return;
-    }
-    if (n === 5) {
-      synth.cancel();
-      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
-      u.lang = "zh-HK";
-      u.onstart = () => speakTestStatus(5, "onstart 之後已 pause，等 3 秒 resume");
-      u.onend = () => speakTestStatus(5, "resume 後 onend");
-      u.onerror = (ev) => speakTestStatus(5, "onerror " + (ev && ev.error ? ev.error : ""));
-      synth.speak(u);
-      synth.pause();
-      speakTestStatus(5, "speak() 同 pause() 已呼叫，3 秒後 resume");
-      speakTestTimer = setTimeout(() => {
-        try {
-          synth.resume();
-          speakTestStatus(5, "3 秒到，resume() 已呼叫，冇 throw");
-        } catch (e) {
-          speakTestStatus(5, "resume throw " + (e && e.message ? e.message : e));
-        }
-      }, 3000);
-      return;
-    }
-    if (n === 6 || n === 7) {
-      const audio = new Audio(SPEAK_TEST_WAV);
-      audio.playsInline = true;
-      audio.setAttribute("playsinline", "");
-      const reportPlay = (label) => {
-        try {
-          const pending = audio.play();
-          speakTestStatus(n, label + " play() 已呼叫");
-          if (pending && pending.then) {
-            pending.then(() => speakTestStatus(n, label + " play() 成功")).catch((err) => {
-              speakTestStatus(n, label + " play() 被拒 " + (err && err.name ? err.name : err));
-            });
-          }
-        } catch (e) {
-          speakTestStatus(n, label + " throw " + (e && e.message ? e.message : e));
-        }
-      };
-      if (n === 6) {
-        reportPlay("即刻");
+    pushSentence();
+    const pieces = [];
+    sentences.forEach((sentence) => {
+      if (sentence.length <= max) {
+        pieces.push(sentence);
         return;
       }
-      speakTestStatus(7, "1 秒後先 play，而家未播");
-      speakTestTimer = setTimeout(() => reportPlay("1 秒後"), 1000);
-      return;
-    }
-    if (n === 8) {
-      try {
-        const inner = speakTestIframeWindow();
-        if (!inner || !inner.speechSynthesis) {
-          speakTestStatus(8, "iframe 未有 speechSynthesis");
-          return;
+      let clause = "";
+      for (let j = 0; j < sentence.length; j++) {
+        clause += sentence[j];
+        if ("，、；：".indexOf(sentence[j]) >= 0) {
+          pieces.push(clause);
+          clause = "";
         }
-        inner.speechSynthesis.cancel();
-        const u = new inner.SpeechSynthesisUtterance(SPEAK_PHRASE);
-        u.lang = "zh-HK";
-        u.onend = () => speakTestStatus(8, "iframe speak 已返回，onend");
-        u.onerror = (ev) => speakTestStatus(8, "iframe onerror " + (ev && ev.error ? ev.error : ""));
-        inner.speechSynthesis.speak(u);
-        speakTestStatus(8, "已喺 iframe 呼叫 speak()，冇 throw");
-      } catch (e) {
-        speakTestStatus(8, "throw " + (e && e.message ? e.message : e));
       }
+      if (clause) pieces.push(clause);
+    });
+    const split = [];
+    pieces.forEach((piece) => {
+      if (piece.length <= max) split.push(piece);
+      else {
+        for (let k = 0; k < piece.length; k += target) split.push(piece.slice(k, k + target));
+      }
+    });
+    const out = [];
+    for (let n = 0; n < split.length; n++) {
+      const cur = split[n];
+      if (cur.length < 6 && n + 1 < split.length && cur.length + split[n + 1].length <= max) {
+        split[n + 1] = cur + split[n + 1];
+        continue;
+      }
+      if (cur.length < 6 && out.length && out[out.length - 1].length + cur.length <= max) {
+        out[out.length - 1] += cur;
+        continue;
+      }
+      if (cur) out.push(cur);
+    }
+    return out;
+  }
+
+  function dictateVoice() {
+    const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() || [] : [];
+    const norm = (v) => String(v && v.lang || "").toLowerCase();
+    return (
+      voices.find((v) => norm(v) === "zh-hk") ||
+      voices.find((v) => norm(v).startsWith("zh-hk")) ||
+      voices.find((v) => norm(v) === "zh-tw") ||
+      voices.find((v) => norm(v).startsWith("zh")) ||
+      null
+    );
+  }
+
+  function dictateStop() {
+    dictateToken += 1;
+    if (window.speechSynthesis) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+  }
+
+  function dictateShow() {
+    const el = dictateEls();
+    const total = dictateChunks.length;
+    const item = dictateChunks[dictateIndex] || "";
+    if (el.progress) {
+      el.progress.textContent = total ? ("第 " + (dictateIndex + 1) + " / " + total + " 句") : "未有句子";
+    }
+    if (el.chunk) el.chunk.textContent = !item ? "貼課文，再撳開始讀" : (dictateHidden ? "👂 聽住讀" : item);
+    if (el.card) el.card.classList.toggle("is-hidden", dictateHidden && !!item);
+  }
+
+  function dictateSaveText() {
+    const el = dictateEls();
+    if (!el.source) return;
+    try { localStorage.setItem(DICTATE_TEXT_KEY, el.source.value); } catch (e) {}
+  }
+
+  function dictateRebuild(resetIndex) {
+    const el = dictateEls();
+    dictateChunks = dictateChunksFrom(el.source ? el.source.value : "");
+    if (resetIndex || dictateIndex >= dictateChunks.length) dictateIndex = 0;
+    dictateSaveText();
+    dictateShow();
+    if (el.hint) el.hint.textContent = dictateChunks.length ? ("分好 " + dictateChunks.length + " 句。聽完先寫，再撳下一句。") : "課文是空的。";
+  }
+
+  function dictateRead() {
+    const el = dictateEls();
+    const item = dictateChunks[dictateIndex];
+    if (!item || !window.speechSynthesis) {
+      if (el.rep) el.rep.textContent = item ? "" : "未有句子";
       return;
     }
-    if (n === 9) {
-      synth.cancel();
-      const voices = synth.getVoices() || [];
-      const norm = (v) => (v.lang || "").toLowerCase().replace(/_/g, "-");
-      const voice =
-        voices.find((v) => norm(v) === "zh-hk") ||
-        voices.find((v) => norm(v) === "zh-tw") ||
-        voices.find((v) => norm(v) === "zh-cn") ||
-        voices.find((v) => norm(v).startsWith("zh")) ||
-        null;
-      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
+    const times = dictateTimes();
+    const token = ++dictateToken;
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+    const voice = dictateVoice();
+    for (let i = 0; i < times; i++) {
+      const u = new SpeechSynthesisUtterance(item);
       u.lang = voice ? voice.lang : "zh-HK";
       if (voice) u.voice = voice;
-      u.onend = () => speakTestStatus(9, "onend · " + (voice ? voice.name + " " + voice.lang : "冇 voice"));
-      u.onerror = (ev) => speakTestStatus(9, "onerror " + (ev && ev.error ? ev.error : ""));
-      synth.speak(u);
-      speakTestStatus(9, "speak() 已呼叫 · " + (voice ? voice.name + " " + voice.lang : "冇揀到中文聲，用 zh-HK"));
-      return;
-    }
-    if (n === 10) {
-      synth.cancel();
-      const u = new SpeechSynthesisUtterance(SPEAK_PHRASE);
-      u.lang = "yue-HK";
-      u.onerror = (ev) => {
-        speakTestStatus(10, "yue-HK onerror " + (ev && ev.error ? ev.error : "") + "，改讀 zh-CN");
-        try {
-          const next = new SpeechSynthesisUtterance(SPEAK_PHRASE);
-          next.lang = "zh-CN";
-          next.onend = () => speakTestStatus(10, "zh-CN onend");
-          next.onerror = (err) => speakTestStatus(10, "zh-CN onerror " + (err && err.error ? err.error : ""));
-          synth.speak(next);
-        } catch (e) {
-          speakTestStatus(10, "zh-CN throw " + (e && e.message ? e.message : e));
-        }
+      u.rate = 0.82;
+      u.onstart = () => {
+        if (token !== dictateToken) return;
+        if (el.rep) el.rep.textContent = "第 " + (i + 1) + " / " + times + " 次";
       };
-      u.onend = () => speakTestStatus(10, "yue-HK onend");
-      synth.speak(u);
-      speakTestStatus(10, "yue-HK speak() 已呼叫，冇 throw");
+      if (i === times - 1) {
+        u.onend = () => {
+          if (token !== dictateToken) return;
+          if (el.rep) el.rep.textContent = "聽完啦";
+          if (el.hint) el.hint.textContent = "寫低這句，再撳下一句。";
+        };
+      }
+      window.speechSynthesis.speak(u);
     }
+    dictateShow();
+  }
+
+  function dictateGo(delta) {
+    if (!dictateChunks.length) dictateRebuild(true);
+    if (!dictateChunks.length) return;
+    dictateIndex = Math.max(0, Math.min(dictateChunks.length - 1, dictateIndex + delta));
+    dictateShow();
+    dictateRead();
+  }
+
+  function showDictate(on) {
+    const panel = document.getElementById("dictate");
+    if (!panel) return;
+    panel.hidden = !on;
+    panel.classList.toggle("open", on);
+    frame.style.visibility = on ? "hidden" : "visible";
+    if (!on) dictateStop();
+  }
+
+  function dictateInit() {
+    const el = dictateEls();
+    if (!el.source) return;
+    let saved = "";
+    try { saved = localStorage.getItem(DICTATE_TEXT_KEY) || ""; } catch (e) {}
+    if (!saved.trim()) el.source.value = DICTATE_SAMPLE || el.source.value;
+    else el.source.value = saved;
+    try { dictateHidden = localStorage.getItem(DICTATE_HIDE_KEY) === "1"; } catch (e) {}
+    if (el.hide) el.hide.setAttribute("aria-pressed", dictateHidden ? "true" : "false");
+    dictateRebuild(true);
   }
 
   async function loadPage(pageId, opts) {
     const requestId = ++pageLoadId;
     if (!(opts && opts.skipFlush)) await flushFlashcard();
     if (requestId !== pageLoadId) return;
-    clearSpeakTestTimers();
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
-    if (pageId === "speak-test" || BOARD_SPECS[pageId]) {
+    if (pageId === "speak-test" || /^board-[1-7]$/.test(pageId)) pageId = "dictate";
+    dictateStop();
+    if (pageId === "dictate") {
       try { localStorage.setItem(STORAGE_KEY, pageId); } catch (e) {}
       const meta = META.find(m => m.id === pageId);
       currentLabel.textContent = '而家：' + (meta ? meta.label : pageId);
@@ -1535,12 +1203,11 @@
       document.title = (meta ? meta.short : '學習') + ' · Alpha_Learn';
       currentPageId = pageId;
       refreshStatus();
-      if (pageId === "speak-test") showSpeakTest(true);
-      else await openBoard(pageId);
+      showDictate(true);
+      dictateInit();
       return;
     }
-    showSpeakTest(false);
-    showBoard(false);
+    showDictate(false);
     const external = EXTERNAL_PAGES[pageId];
     if (external) {
       frame.removeAttribute('srcdoc');
@@ -1796,16 +1463,32 @@
   document.querySelectorAll('.menu-item[data-page]').forEach(btn => {
     btn.addEventListener('click', () => loadPage(btn.dataset.page));
   });
-  document.querySelectorAll('#speak-test [data-speak]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const n = Number(btn.getAttribute('data-speak'));
-      try {
-        runSpeakTest(n);
-      } catch (e) {
-        speakTestStatus(n, 'throw ' + (e && e.message ? e.message : e));
-      }
-    });
+  document.getElementById("dictate-split").addEventListener("click", () => {
+    dictateStop();
+    dictateRebuild(true);
   });
+  document.getElementById("dictate-start").addEventListener("click", () => {
+    dictateRebuild(true);
+    dictateIndex = 0;
+    dictateRead();
+  });
+  document.getElementById("dictate-prev").addEventListener("click", () => dictateGo(-1));
+  document.getElementById("dictate-next").addEventListener("click", () => dictateGo(1));
+  document.getElementById("dictate-again").addEventListener("click", () => {
+    if (!dictateChunks.length) dictateRebuild(true);
+    dictateRead();
+  });
+  document.getElementById("dictate-hide").addEventListener("click", () => {
+    dictateHidden = !dictateHidden;
+    const btn = document.getElementById("dictate-hide");
+    btn.setAttribute("aria-pressed", dictateHidden ? "true" : "false");
+    try { localStorage.setItem(DICTATE_HIDE_KEY, dictateHidden ? "1" : "0"); } catch (e) {}
+    dictateShow();
+  });
+  document.getElementById("dictate-source").addEventListener("input", dictateSaveText);
+  if (window.speechSynthesis) {
+    window.speechSynthesis.addEventListener("voiceschanged", () => {});
+  }
 
 
   const SHARED_DOC = "alpha-learn";
@@ -2199,7 +1882,8 @@
   function pickStartId() {
     let startId = META[0].id;
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      let saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === "speak-test" || /^board-[1-7]$/.test(saved || "")) saved = "dictate";
       if (saved && (PAGES[saved] || EXTERNAL_PAGES[saved])) startId = saved;
       
     } catch (e) {}

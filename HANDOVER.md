@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · 讀默：** 選單新加中文 · 讀默。貼課文後按標點分成大約十個字一句（太長先切開），預設連續讀三次，讀完要撳下一句，亦可以上一句、重讀、隱藏文字。開頁已放入《海上觀日出》收短版，下面空一行再加四十二字嗰句。讀音測試同 1–7 板已刪。Alpha_Learn **v4.5**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · 點新詞即刻讀、詞表會上傳：** 讀緊或倒數中再點另一個詞，會停咗而家嘅朗讀同剩餘次數，即刻讀新詞。iPad 仍然用第 3 板 iframe 朗讀。詞語表、還要練、已學識、學生同目錄改完會寫入共用文件再上傳；畫面顯示「上傳中」「上傳完成」，失敗就「上傳失敗」。開頁同約 12 秒會拉較新嘅伺服器；本機未上傳嘅改動唔會被舊雲端蓋過。錄音仍然留喺錄音嗰部機。Alpha_Learn **v4.4**。
 - **Karson_Learn · iPad 朗讀：** 中文閃卡跟 Alpha 第 3 板，用細 iframe 嘅 speechSynthesis，讀完或出錯先解鎖。Karson_Learn **v2.3**。GitHub 後備 → Vercel。刷新 Alpha 同 Karson 已開嘅分頁。唔開 Chrome。
 
