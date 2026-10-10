@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · 中文閃卡：** 詞語表換走舊 7 個（都是／Apple／這個／Banana／合成／Orange／共有），已學識換走舊 3 個（和／高／Cat）。新詞語表 23 個：八個成語，加上《海上觀日出》認讀 7 個（含單字「摻」）同運用 8 個（含單字「撒」「卧」）。已開過嘅瀏覽器會一次過換，之後唔會自動加返刪走嘅新詞。Alpha_Learn **v3.6**（閃卡 v4.7）。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn／Karson_Learn 左邊選單：** 內嵌頁有一行未跳脫嘅 `</script>`，瀏覽器喺選單程式之前截斷，撳 ☰ 冇反應，畫面空白。已跳脫，選單同第一頁會再載入。Alpha_Learn **v3.5**、Karson_Learn **v2.1**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
