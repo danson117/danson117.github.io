@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · 上傳呢版：** 主頁之前冇載入共用同步程式，所以電腦同 iPad 撳上傳都即刻失敗。而家主頁會載入 `HX/hx-shared-sync.js`，再把閃卡畫面直接交去上傳。**上傳呢版** 改放到 導出、設定 嘅右手邊。另一部機仍然要重新開網址先下載。Alpha_Learn **v5.1**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · 讀默換返《海上觀日出》原文：** 課文唔再係收短版，亦唔再加下面四十二字練習句。已開過、而家仲係收短版嘅瀏覽器會一次過換原文，自己貼過另一篇嘅唔郁。貼完會自動高到睇晒。Alpha_Learn **v5.0**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
