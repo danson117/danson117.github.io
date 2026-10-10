@@ -1,10 +1,10 @@
-<!-- Ver.4.8 -->
+<!-- Ver.4.9 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="4.8">
+  <meta name="app-version" content="4.9">
   <title>Alpha_Learn</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&family=Noto+Serif+HK:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -73,20 +73,37 @@
     .dictate.open { display: block; }
     .dictate-wrap { max-width: 760px; margin: 0 auto; }
     .dictate h1 { margin: 0 0 6px; font-size: 1.7rem; color: #ff7043; font-weight: 800; }
-    .dictate-lead { margin: 0 0 12px; line-height: 1.45; font-weight: 700; color: #546e7a; }
-    .dictate-label { display: block; font-weight: 800; margin-bottom: 6px; }
-    #dictate-source {
+    .dictate-box {
       width: 100%;
+      height: 132px;
       min-height: 132px;
       border: 3px solid #b2ebf2;
       border-radius: 18px;
+      background: #fff;
+      resize: vertical;
+      overflow: auto;
+    }
+    .dictate-article {
       padding: 12px 14px;
       font-size: 1rem;
       line-height: 1.55;
       font-family: "Noto Serif HK", "PMingLiU", serif;
-      background: #fff;
       color: #37474f;
-      resize: vertical;
+      white-space: pre-wrap;
+      outline: none;
+    }
+    .dictate-span { cursor: pointer; border-radius: 4px; }
+    .dictate-span.is-current { background: #ffe0b2; box-shadow: inset 0 0 0 2px #ff7043; }
+    .dictate-source-store {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
     .dictate-tools, .dictate-nav, .dictate-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
     .dictate button, .dictate-row label {
@@ -132,43 +149,12 @@
     }
     .dictate-card.is-hidden .dictate-chunk { color: #ff7043; font-family: inherit; font-size: 1.8rem; }
     .dictate-count { margin: 0 0 8px; font-weight: 800; color: #0277bd; }
-    .dictate-passage {
-      margin-top: 10px;
-      border: 3px solid #b2ebf2;
-      border-radius: 18px;
-      background: #fff;
-      padding: 6px;
-    }
-    .dictate-passage .dictate-sent {
-      width: 100%;
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      text-align: left;
-      border-radius: 12px;
-      background: transparent;
-      color: #37474f;
-      border: 2px solid transparent;
-      padding: 8px 10px;
-      font-family: "Noto Serif HK", "PMingLiU", serif;
-    }
-    .dictate-sent-no {
-      flex: 0 0 auto;
-      min-width: 4.4em;
-      font-weight: 800;
-      color: #0277bd;
-    }
-    .dictate-sent-text { flex: 1; font-weight: 700; line-height: 1.45; }
-    .dictate-passage .dictate-sent.is-current { background: #fff3e0; border-color: #ff7043; }
-    .dictate.is-passage-hidden #dictate-source,
-    .dictate.is-passage-hidden .dictate-sent-text {
+    .dictate.is-passage-hidden .dictate-span {
       color: transparent;
       -webkit-text-fill-color: transparent;
-      caret-color: transparent;
       user-select: none;
       -webkit-user-select: none;
     }
-    .dictate.is-passage-hidden #dictate-source { pointer-events: none; }
     .dictate-rep { margin-top: 10px; font-weight: 800; color: #ef6c00; min-height: 1.4em; }
     .dictate-hint { margin: 12px 0 0; font-weight: 800; color: #00695c; }
     .version-badge {
@@ -193,7 +179,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.4.8</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.4.9</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -251,16 +237,16 @@
   <section class="dictate" id="dictate" hidden>
     <div class="dictate-wrap">
       <h1>讀默</h1>
-      <p class="dictate-lead">好似老師讀默：每次大約十個字，標點會讀出。每讀一次隔兩秒。可以暫停。聽完先寫，再撳下一句。</p>
-      <label class="dictate-label" for="dictate-source">課文（可以貼過另一篇）</label>
       <p class="dictate-count" id="dictate-count">總字數（連標點，唔計換行）</p>
-      <textarea id="dictate-source" spellcheck="false">清晨，天剛矇矇亮。海邊擠滿等看日出的人，我好不容易擠上前，探着腦袋，目不轉睛盯住將要升起之處。
+      <div class="dictate-box" id="dictate-box">
+        <div class="dictate-article" id="dictate-article" tabindex="0" contenteditable="true" spellcheck="false"></div>
+      </div>
+      <textarea id="dictate-source" class="dictate-source-store" spellcheck="false">清晨，天剛矇矇亮。海邊擠滿等看日出的人，我好不容易擠上前，探着腦袋，目不轉睛盯住將要升起之處。
 海面平靜極了，偶爾有海鳥飛入視線。我望着很長的地平線，想着尚未升起的太陽，心裏迫不及待。
 「出來了，快看！」只見它從水平面鑽出一點頭。天空由上而下分成藍、紫、紅、黃，美極了。
 朝陽漸漸露出一半，金黃耀眼，光芒圍着半圓，照亮周圍景物。陽光反射在波光粼粼的海上，像被誰撒了一層碎金。海面與水中各有半個，像在托着，仔細看才知是倒影，真會捉弄人。岸邊議論這美、這奇，它好像聽見，害羞得臉都紅了。
 
 人們已經聚集到那方，數也，所瞧那條，和那樣還正談些話，哈，可怪道，去到兩隻，四種顏色分別組圈兒形燦。</textarea>
-      <div class="dictate-passage" id="dictate-passage" role="list"></div>
       <div class="dictate-tools">
         <button type="button" id="dictate-split">按課文分句</button>
         <button type="button" id="dictate-start">開始讀</button>
@@ -283,7 +269,7 @@
       <p class="dictate-hint" id="dictate-hint">聽完先寫低。寫好，先去下一句。可以撳課文某一句即刻讀。可以隱藏文字，淨係聽。</p>
     </div>
   </section>
-    <div class="version-badge" id="version-badge">Ver.4.8</div>
+    <div class="version-badge" id="version-badge">Ver.4.9</div>
   <script>
   const APP_VERSION = "3.2";
   const PAGES = {
@@ -1033,6 +1019,9 @@
   const DICTATE_SAMPLE = document.getElementById("dictate-source") ? document.getElementById("dictate-source").value : "";
   const DICTATE_TEXT_KEY = "alpha-dictate-text";
   const DICTATE_HIDE_KEY = "alpha-dictate-hide";
+  const DICTATE_H_KEY = "alpha-dictate-box-h";
+  const DICTATE_H_SIG = "alpha-dictate-box-sig";
+  const DICTATE_H_MODE = "alpha-dictate-box-mode";
   let dictateChunks = [];
   let dictateIndex = 0;
   let dictateToken = 0;
@@ -1217,6 +1206,7 @@
   }
 
   let dictatePassageMark = -2;
+  let dictateSizing = 0;
 
   function dictateEscape(text) {
     return String(text || "")
@@ -1225,29 +1215,130 @@
       .replace(/>/g, "&gt;");
   }
 
+  function dictateEscapeBreak(text) {
+    return dictateEscape(text).replace(/\n/g, "<br>");
+  }
+
   function dictateCharCount(raw) {
     return String(raw || "").replace(/\r/g, "").replace(/\n/g, "").length;
   }
 
+  function dictateArticleHtml(raw) {
+    const text = String(raw || "").replace(/\r/g, "");
+    let html = "";
+    let i = 0;
+    for (let c = 0; c < dictateChunks.length; c++) {
+      while (i < text.length && /\s/.test(text.charAt(i))) {
+        html += dictateEscapeBreak(text.charAt(i));
+        i += 1;
+      }
+      const chunk = dictateChunks[c];
+      let got = "";
+      const start = i;
+      while (i < text.length && got.length < chunk.length) {
+        const ch = text.charAt(i);
+        if (!/\s/.test(ch)) got += ch;
+        i += 1;
+      }
+      const current = c === dictateIndex ? " is-current" : "";
+      const hidden = dictateHidden ? ' aria-hidden="true"' : "";
+      html += '<span class="dictate-span' + current + '" data-idx="' + c + '"' + hidden + '>'
+        + dictateEscapeBreak(text.slice(start, i)) + '</span>';
+    }
+    if (i < text.length) html += dictateEscapeBreak(text.slice(i));
+    return html;
+  }
+
+  function dictateScrollCurrent() {
+    const box = document.getElementById("dictate-box");
+    const current = box && box.querySelector(".is-current");
+    if (!box || !current) return;
+    const boxRect = box.getBoundingClientRect();
+    const curRect = current.getBoundingClientRect();
+    if (curRect.top < boxRect.top) box.scrollTop -= boxRect.top - curRect.top;
+    else if (curRect.bottom > boxRect.bottom) box.scrollTop += curRect.bottom - boxRect.bottom;
+  }
+
+  function dictateRememberHeight(mode) {
+    const box = document.getElementById("dictate-box");
+    const el = dictateEls();
+    if (!box || !el.source) return;
+    try {
+      localStorage.setItem(DICTATE_H_KEY, String(Math.round(box.getBoundingClientRect().height)));
+      localStorage.setItem(DICTATE_H_SIG, el.source.value);
+      localStorage.setItem(DICTATE_H_MODE, mode);
+    } catch (e) {}
+  }
+
+  function dictateApplyBoxHeight() {
+    const box = document.getElementById("dictate-box");
+    const el = dictateEls();
+    if (!box || !el.source) return;
+    let h = "";
+    let sig = "";
+    let mode = "";
+    try {
+      h = localStorage.getItem(DICTATE_H_KEY) || "";
+      sig = localStorage.getItem(DICTATE_H_SIG) || "";
+      mode = localStorage.getItem(DICTATE_H_MODE) || "";
+    } catch (e) {}
+    if ((mode === "user" || mode === "auto") && sig === el.source.value && Number(h) >= 132) {
+      dictateSizing += 1;
+      box.style.height = Number(h) + "px";
+      dictateSizing -= 1;
+      return;
+    }
+    box.style.height = "";
+  }
+
+  function dictateFitBox() {
+    const box = document.getElementById("dictate-box");
+    if (!box) return;
+    dictateSizing += 1;
+    box.style.height = "auto";
+    const fitted = Math.max(132, box.scrollHeight);
+    box.style.height = fitted + "px";
+    dictateRememberHeight("auto");
+    requestAnimationFrame(() => { dictateSizing = Math.max(0, dictateSizing - 1); });
+  }
+
+  function dictateWatchBox() {
+    const box = document.getElementById("dictate-box");
+    if (!box || box.getAttribute("data-watched") === "1" || !window.ResizeObserver) return;
+    box.setAttribute("data-watched", "1");
+    const observer = new ResizeObserver(() => {
+      if (dictateSizing) return;
+      if (!box.style.height) return;
+      dictateRememberHeight("user");
+    });
+    observer.observe(box);
+  }
+
+  function dictatePasteArticle(text) {
+    const el = dictateEls();
+    if (!el.source) return;
+    el.source.value = text;
+    try {
+      localStorage.removeItem(DICTATE_H_KEY);
+      localStorage.removeItem(DICTATE_H_SIG);
+      localStorage.removeItem(DICTATE_H_MODE);
+    } catch (e) {}
+    const box = document.getElementById("dictate-box");
+    if (box) box.style.height = "";
+    dictateRebuild(true);
+    dictateFitBox();
+  }
+
   function dictateRenderPassage() {
-    const list = document.getElementById("dictate-passage");
+    const article = document.getElementById("dictate-article");
     const countEl = document.getElementById("dictate-count");
     const el = dictateEls();
     const raw = el.source ? el.source.value : "";
     if (countEl) countEl.textContent = "總字數 " + dictateCharCount(raw) + "（連標點，唔計換行）";
-    if (!list) return;
-    const html = dictateChunks.map((text, i) => {
-      const current = i === dictateIndex ? " is-current" : "";
-      const hiddenText = dictateHidden ? ' aria-hidden="true"' : "";
-      return '<button type="button" class="dictate-sent' + current + '" data-idx="' + i + '" role="listitem">'
-        + '<span class="dictate-sent-no">第' + (i + 1) + '句</span>'
-        + '<span class="dictate-sent-text"' + hiddenText + '>' + dictateEscape(text) + '</span>'
-        + '</button>';
-    }).join("");
-    list.innerHTML = html;
+    if (!article) return;
+    article.innerHTML = dictateArticleHtml(raw);
     if (dictateIndex !== dictatePassageMark) {
-      const current = list.querySelector(".is-current");
-      if (current && current.scrollIntoView) current.scrollIntoView({ block: "nearest", inline: "nearest" });
+      dictateScrollCurrent();
       dictatePassageMark = dictateIndex;
     }
   }
@@ -1376,6 +1467,8 @@
     try { dictateHidden = localStorage.getItem(DICTATE_HIDE_KEY) === "1"; } catch (e) {}
     if (el.hide) el.hide.setAttribute("aria-pressed", dictateHidden ? "true" : "false");
     dictateRebuild(true);
+    dictateApplyBoxHeight();
+    dictateWatchBox();
   }
 
   async function loadPage(pageId, opts) {
@@ -1691,14 +1784,27 @@
     dictateShow();
   });
   document.getElementById("dictate-source").addEventListener("input", () => dictateRebuild(false));
-  document.getElementById("dictate-passage").addEventListener("click", (event) => {
-    const btn = event.target.closest("[data-idx]");
-    if (!btn || !btn.closest("#dictate-passage")) return;
-    const idx = Number(btn.getAttribute("data-idx"));
+  document.getElementById("dictate-article").addEventListener("pointerdown", (event) => {
+    if (event.target.closest(".dictate-span")) event.preventDefault();
+  });
+  document.getElementById("dictate-article").addEventListener("click", (event) => {
+    const span = event.target.closest(".dictate-span");
+    if (!span || !span.closest("#dictate-article")) return;
+    const idx = Number(span.getAttribute("data-idx"));
     if (!Number.isFinite(idx) || idx < 0 || idx >= dictateChunks.length) return;
     dictateIndex = idx;
     dictateShow();
     dictateRead();
+  });
+  document.getElementById("dictate-article").addEventListener("paste", (event) => {
+    const data = event.clipboardData || window.clipboardData;
+    const text = data ? data.getData("text/plain") : "";
+    if (!text) return;
+    event.preventDefault();
+    dictatePasteArticle(text);
+  });
+  document.getElementById("dictate-article").addEventListener("beforeinput", (event) => {
+    event.preventDefault();
   });
   if (window.speechSynthesis) {
     window.speechSynthesis.addEventListener("voiceschanged", () => {});
