@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · iPad 倒數後冇聲、錄音回放冇聲：** 詞語表已經可以再揀。倒數「試下自己讀」完咗仍然冇聲；自己錄咗嘅詞回放都冇聲。電腦正常。iPad 倒數完先呼叫朗讀，Safari 唔當係點擊，所以唔出聲。錄音同解鎖共用同一個播放器，解鎖完會 pause，而且 iOS 播唔到 webm。而家點擊當下就預備好朗讀或錄音，倒數完先播出；新錄音用 mp4。立即朗讀仍然即刻讀。電腦倒數同「讀緊唔俾再揀」維持。Alpha_Learn **v3.9**。GitHub 後備 → Vercel。刷新已開嘅分頁。舊錄音要再錄一次。唔開 Chrome。未喺真 iPad 試到。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · iPad 詞語表朗讀：** 電腦揀一個詞會讀出聲，之後可以再揀。iPad 讀唔出，而且詞語表像卡住，揀唔到第二個。原因係 iOS Safari 的 speechSynthesis：朗讀前先等錄音資料庫，手勢過咗就唔出聲；無聲解鎖會卡住隊列；讀完事件唔來，狀態停喺朗讀中，詞語表只喺閒置先接受下一點。iPad 而家喺點擊當下用外層頁朗讀，失敗或無聲都會放開列表。立即朗讀在 iPad 會即刻讀而家個詞。電腦路徑維持。雲端同步重載唔係呢個卡住原因。Alpha_Learn **v3.8**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。未喺真 iPad 試到。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
