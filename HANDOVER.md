@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · 七塊詞語板：** 左邊選單 1–7。每塊用而家中文閃卡嘅詞語表（冇就用而家預設 23 個）。點詞有紅框同鎖，讀完先可以再揀。1 係而家 iPad 閃卡（立即朗讀關）嘅讀法，放喺 iframe。2–6 喺外層頁，分別係測試 1、8、9、10，同倒數完先用測試 1。7 係 iframe 詞語格叫外層頁讀。真正中文閃卡冇改讀法。讀音測試留低。Alpha_Learn **v4.2**。GitHub 後備 → Vercel。刷新已開嘅分頁，話邊一個號碼讀到自己嘅詞。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · iPad 少一次空等：** 真機讀音測試：1、4、5、8、9、10 讀到「朝陽」；2 冇聲；3 只讀「啊」；6、7 係提示音。倒數完先讀（4）有聲，所以唔係計時後唔准讀。v3.9 會先暫停一段朗讀，畫面已經顯示「聽下讀音」，然後先至倒數，等兩次。而家 iPad 跟電腦：立即朗讀就即刻讀（同測試 1），讀完先倒數一次再讀；冇開立即朗讀就只倒數一次再讀。讀音測試留低。閃卡唔再暫停隱藏朗讀。Alpha_Learn **v4.1**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
