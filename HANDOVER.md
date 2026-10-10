@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha_Learn · iPad 少一次空等：** 真機讀音測試：1、4、5、8、9、10 讀到「朝陽」；2 冇聲；3 只讀「啊」；6、7 係提示音。倒數完先讀（4）有聲，所以唔係計時後唔准讀。v3.9 會先暫停一段朗讀，畫面已經顯示「聽下讀音」，然後先至倒數，等兩次。而家 iPad 跟電腦：立即朗讀就即刻讀（同測試 1），讀完先倒數一次再讀；冇開立即朗讀就只倒數一次再讀。讀音測試留低。閃卡唔再暫停隱藏朗讀。Alpha_Learn **v4.1**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha_Learn · 讀音測試 1–10：** 左邊選單加「讀音測試」。十粒掣喺外層頁（第 8 號先係 iframe），每粒讀「朝陽」，6 同 7 係提示音。第 2 號抄同步前閃卡：唔 cancel、zh-HK、語速 0.8。閃卡本身冇改。Alpha_Learn **v4.0**。GitHub 後備 → Vercel。刷新已開嘅分頁，開讀音測試，回覆邊幾個號碼有聲。唔開 Chrome。未喺真 iPad 試到。
 
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
