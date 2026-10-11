@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Alpha Learn／Karson Learn · 讀默間隔同速度：** 兩頁同一套工具。讀幾次旁邊加 **間隔**（秒，可小數，0–30；原本每次之間兩秒，預設仍然 2）。加 **速度** 下拉：0.5、0.75、1、1.25、1.5、2，預設 1。上一句、下一句、重讀、撳課文或而家嗰句，都按而家嘅次數、間隔同速度讀完，唔會自己跳下一句。讀完之後再撳其他掣，重讀仍然跟足次數。次數、間隔、速度記喺本機。課文唔互抄。Alpha_Learn **v5.3**、Karson_Learn **v2.6**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Life OS · 轉 tab 慢：** 唔係 SQLite 細（約 125 events／23 tasks／27 records）。每個 tab／click 都會 cheap-sync iCloud CalDAV（無冷卻），401 時更慢。而家頁面仍然先讀本機 `data/life.db`；打開／轉 tab／返視窗先 check ctag，**60 秒內唔再打 iCloud**；唔再每個 pointerdown 都 sync。換 Postgres／Supabase 唔會加快本機轉頁。`C:\Cursor\life-os` 未 commit。
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

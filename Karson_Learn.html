@@ -1,4 +1,4 @@
-<!-- Ver.2.5 -->
+<!-- Ver.2.6 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -132,6 +132,12 @@
     #dictate-hide[aria-pressed="true"] { background: #ff7043; color: #fff; border-color: #ff7043; }
     .dictate-row label { background: #fff; border: 3px solid #b2ebf2; cursor: default; }
     .dictate-row input { width: 52px; border: 0; font-weight: 800; font-size: 1rem; text-align: center; background: transparent; }
+    #dictate-gap { width: 68px; }
+    .dictate-row select {
+      border: 0; font-weight: 800; font-size: 1rem; background: transparent; color: #0277bd;
+      cursor: pointer; padding: 2px 4px; min-width: 72px;
+    }
+    #dictate-chunk { cursor: pointer; }
     .dictate-card {
       margin-top: 14px;
       background: #fff;
@@ -178,7 +184,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">KARSON_LEARN · Ver.2.5</p>
+      <p class="menu-title" id="menu-title">KARSON_LEARN · Ver.2.6</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>低小詞語已學標記會保留；大更新前請先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -243,11 +249,20 @@
       <div class="dictate-row">
         <button type="button" id="dictate-hide" aria-pressed="false">隱藏文字</button>
         <label>讀 <input id="dictate-times" type="number" min="1" max="5" value="3" inputmode="numeric"> 次</label>
+        <label>間隔 <input id="dictate-gap" type="number" min="0" max="30" step="0.5" value="2" inputmode="decimal"> 秒</label>
+        <label>速度 <select id="dictate-speed" aria-label="速度">
+          <option value="0.5">0.5</option>
+          <option value="0.75">0.75</option>
+          <option value="1" selected>1</option>
+          <option value="1.25">1.25</option>
+          <option value="1.5">1.5</option>
+          <option value="2">2</option>
+        </select></label>
       </div>
       <p class="dictate-hint" id="dictate-hint">聽完先寫低。寫好，先去下一句。可以撳課文某一句即刻讀。可以隱藏文字，淨係聽。</p>
     </div>
   </section>
-  <div class="version-badge" id="version-badge">Ver.2.5</div>
+  <div class="version-badge" id="version-badge">Ver.2.6</div>
   <script src="HX/hx-shared-sync.js?v=1.4"></script>
   <script>
   const APP_VERSION = "1.8";
@@ -485,6 +500,10 @@
   const DICTATE_H_KEY = "karson-dictate-box-h";
   const DICTATE_H_SIG = "karson-dictate-box-sig";
   const DICTATE_H_MODE = "karson-dictate-box-mode";
+  const DICTATE_TIMES_KEY = "learn-dictate-times";
+  const DICTATE_GAP_KEY = "learn-dictate-gap";
+  const DICTATE_SPEED_KEY = "learn-dictate-speed";
+  const DICTATE_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
   let dictateChunks = [];
   let dictateIndex = 0;
   let dictateToken = 0;
@@ -492,7 +511,6 @@
   let dictateGapTimer = null;
   let dictatePaused = false;
   let dictateReading = false;
-  let dictateRepeatAt = 0;
   let dictateSpeakNext = function () {};
   const DICTATE_PUNCT = {
     "，": "逗號",
@@ -533,7 +551,9 @@
       rep: document.getElementById("dictate-rep"),
       hint: document.getElementById("dictate-hint"),
       hide: document.getElementById("dictate-hide"),
-      times: document.getElementById("dictate-times")
+      times: document.getElementById("dictate-times"),
+      gap: document.getElementById("dictate-gap"),
+      speed: document.getElementById("dictate-speed")
     };
   }
 
@@ -541,6 +561,61 @@
     const raw = Number(dictateEls().times && dictateEls().times.value);
     if (!Number.isFinite(raw)) return 3;
     return Math.max(1, Math.min(5, Math.round(raw)));
+  }
+
+  function dictateGapMs() {
+    const el = dictateEls().gap;
+    const text = el ? String(el.value).trim() : "";
+    if (!text) return 2000;
+    const raw = Number(text);
+    if (!Number.isFinite(raw)) return 2000;
+    return Math.round(Math.max(0, Math.min(30, raw)) * 1000);
+  }
+
+  function dictateRate() {
+    const raw = Number(dictateEls().speed && dictateEls().speed.value);
+    if (DICTATE_SPEEDS.indexOf(raw) >= 0) return raw;
+    return 1;
+  }
+
+  function dictateSavePrefs() {
+    const el = dictateEls();
+    try {
+      if (el.times) localStorage.setItem(DICTATE_TIMES_KEY, String(dictateTimes()));
+      if (el.gap) {
+        const text = String(el.gap.value).trim();
+        const raw = Number(text);
+        const sec = text && Number.isFinite(raw) ? Math.max(0, Math.min(30, raw)) : 2;
+        localStorage.setItem(DICTATE_GAP_KEY, String(sec));
+      }
+      localStorage.setItem(DICTATE_SPEED_KEY, String(dictateRate()));
+    } catch (e) {}
+  }
+
+  function dictateLoadPrefs() {
+    const el = dictateEls();
+    try {
+      const times = localStorage.getItem(DICTATE_TIMES_KEY);
+      const gap = localStorage.getItem(DICTATE_GAP_KEY);
+      const speed = localStorage.getItem(DICTATE_SPEED_KEY);
+      if (el.times && times != null && times !== "") {
+        const n = Number(times);
+        if (Number.isFinite(n)) el.times.value = String(Math.max(1, Math.min(5, Math.round(n))));
+      }
+      if (el.gap && gap != null && gap !== "") {
+        const n = Number(gap);
+        if (Number.isFinite(n)) el.gap.value = String(Math.max(0, Math.min(30, n)));
+      }
+      if (el.speed && speed != null && DICTATE_SPEEDS.indexOf(Number(speed)) >= 0) {
+        el.speed.value = String(Number(speed));
+      }
+    } catch (e) {}
+  }
+
+  function dictateUseArmDelay() {
+    const ua = navigator.userAgent || "";
+    const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    return !iOS;
   }
 
   function dictateChunksFrom(raw) {
@@ -778,6 +853,7 @@
   }
 
   function dictatePasteArticle(text) {
+    dictateStop();
     const el = dictateEls();
     if (!el.source) return;
     el.source.value = text;
@@ -843,16 +919,18 @@
       dictateSetPauseButton("idle");
       return;
     }
-    const times = dictateTimes();
     const token = ++dictateToken;
     dictatePaused = false;
     dictateReading = true;
-    dictateRepeatAt = 0;
     dictateClearGap();
     try { window.speechSynthesis.cancel(); } catch (e) {}
+    try { window.speechSynthesis.resume(); } catch (e) {}
     dictateSetPauseButton("pause");
     const voice = dictateVoice();
     const spoken = dictateSpoken(item);
+    let said = 0;
+    let burstRetries = 0;
+    let playGen = 0;
     const finish = () => {
       if (token !== dictateToken) return;
       dictateReading = false;
@@ -861,45 +939,71 @@
       if (el.rep) el.rep.textContent = "聽完啦";
       if (el.hint) el.hint.textContent = "寫低這句，再撳下一句。";
     };
+    const arm = (ms) => {
+      dictateClearGap();
+      dictateGapTimer = setTimeout(() => {
+        dictateGapTimer = null;
+        if (token !== dictateToken || dictatePaused) return;
+        try { window.speechSynthesis.resume(); } catch (e) {}
+        speakOne();
+      }, ms);
+    };
     const speakOne = () => {
       if (token !== dictateToken || dictatePaused) return;
-      if (dictateRepeatAt >= times) {
+      const times = dictateTimes();
+      const rate = dictateRate();
+      if (said >= times) {
         finish();
         return;
       }
-      const n = dictateRepeatAt;
+      const n = said;
+      const myPlay = ++playGen;
       const u = new SpeechSynthesisUtterance(spoken);
       u.lang = voice ? voice.lang : "zh-HK";
       if (voice) u.voice = voice;
-      u.rate = 0.82;
+      u.rate = rate;
       let settled = false;
-      const after = () => {
+      let started = false;
+      const completeOne = () => {
         if (settled) return;
         settled = true;
-        if (token !== dictateToken || dictatePaused) return;
-        dictateRepeatAt = n + 1;
-        if (dictateRepeatAt >= times) {
+        if (token !== dictateToken || dictatePaused || myPlay !== playGen) return;
+        said += 1;
+        burstRetries = 0;
+        if (said >= dictateTimes()) {
           finish();
           return;
         }
-        dictateClearGap();
-        dictateGapTimer = setTimeout(() => {
-          dictateGapTimer = null;
-          if (token !== dictateToken || dictatePaused) return;
-          try { window.speechSynthesis.resume(); } catch (e) {}
-          speakOne();
-        }, 2000);
+        arm(dictateGapMs());
       };
       u.onstart = () => {
-        if (token !== dictateToken) return;
+        started = true;
+        if (token !== dictateToken || myPlay !== playGen) return;
         if (el.rep) el.rep.textContent = "第 " + (n + 1) + " / " + times + " 次";
       };
-      u.onend = after;
-      u.onerror = after;
+      u.onend = () => completeOne();
+      u.onerror = (ev) => {
+        if (settled) return;
+        if (token !== dictateToken || dictatePaused || myPlay !== playGen) {
+          settled = true;
+          return;
+        }
+        const err = ev && ev.error;
+        const dropped = !started && (err === "interrupted" || err === "canceled" || err === "cancelled");
+        if (dropped && burstRetries < 2) {
+          settled = true;
+          burstRetries += 1;
+          arm(80);
+          return;
+        }
+        completeOne();
+      };
+      try { window.speechSynthesis.resume(); } catch (e) {}
       window.speechSynthesis.speak(u);
     };
     dictateSpeakNext = speakOne;
-    speakOne();
+    if (dictateUseArmDelay()) arm(80);
+    else speakOne();
     dictateShow();
   }
 
@@ -936,6 +1040,7 @@
     } else el.source.value = saved;
     try { dictateHidden = localStorage.getItem(DICTATE_HIDE_KEY) === "1"; } catch (e) {}
     if (el.hide) el.hide.setAttribute("aria-pressed", dictateHidden ? "true" : "false");
+    dictateLoadPrefs();
     dictateRebuild(true);
     dictateApplyBoxHeight();
     if (!saved.trim() || sunriseSample) dictateFitBox();
@@ -1315,7 +1420,21 @@
     try { localStorage.setItem(DICTATE_HIDE_KEY, dictateHidden ? "1" : "0"); } catch (e) {}
     dictateShow();
   });
-  document.getElementById("dictate-source").addEventListener("input", () => dictateRebuild(false));
+  document.getElementById("dictate-source").addEventListener("input", () => {
+    dictateStop();
+    dictateRebuild(false);
+  });
+  ["dictate-times", "dictate-gap", "dictate-speed"].forEach((id) => {
+    const node = document.getElementById(id);
+    if (!node) return;
+    node.addEventListener("change", dictateSavePrefs);
+    node.addEventListener("input", dictateSavePrefs);
+  });
+  document.getElementById("dictate-chunk").addEventListener("click", () => {
+    if (!dictateChunks.length) dictateRebuild(true);
+    if (!dictateChunks.length) return;
+    dictateRead();
+  });
   document.getElementById("dictate-article").addEventListener("pointerdown", (event) => {
     if (event.target.closest(".dictate-span")) event.preventDefault();
   });
