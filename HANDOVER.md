@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Life OS · 轉 tab 慢：** 唔係 SQLite 細（約 125 events／23 tasks／27 records）。每個 tab／click 都會 cheap-sync iCloud CalDAV（無冷卻），401 時更慢。而家頁面仍然先讀本機 `data/life.db`；打開／轉 tab／返視窗先 check ctag，**60 秒內唔再打 iCloud**；唔再每個 pointerdown 都 sync。換 Postgres／Supabase 唔會加快本機轉頁。`C:\Cursor\life-os` 未 commit。
+
+## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Life OS · Apple Calendar sync 401：** 屋企本機 `C:\Cursor\life-os`。iCloud 拒絕而家嘅 app-specific password。上次成功 sync 係 2026-09-26 16:30 HKT、64 項。`.env` 密碼格式啱但 Apple 已拒絕；資料庫另有一截 9 位舊值，唔當正式密碼。設定頁「儲存」之前只寫 `data/life.db`，sync 卻用 `.env`，貼新密碼都唔會生效。而家 16 位密碼先算有效；設定頁儲存會寫入資料庫，並一併更新 `.env`／`.env.local`。401 提示改為去 appleid.apple.com 開新密碼再貼上。冇改行程。密碼冇寫入呢份紀錄。呢個 life-os 改動未 commit、未 push。
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
