@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **Alpha Learn／Karson Learn 工具要一齊改：** 之後工具、畫面、程式改一邊，另一邊要同一套，除非講明只改一邊。生詞、已學識、課文唔好互抄。雲端仍然分開 `alpha-learn`、`karson-learn`。本機一改就上傳；另一部機要自己重新整理先下載。成功顯示上傳中..... 然後上傳完成，唔彈窗；失敗睇得到。上傳掣已拿走。Karson 閃卡預設詞表同讀默課文係空；Alpha 小五詞表同讀默課文留低。Alpha_Learn **v5.2**、Karson_Learn **v2.4**、`hx-rules` **v10.96**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
 ## 2026-10-10 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **Alpha_Learn · 上傳呢版：** 主頁之前冇載入共用同步程式，所以電腦同 iPad 撳上傳都即刻失敗。而家主頁會載入 `HX/hx-shared-sync.js`，再把閃卡畫面直接交去上傳。**上傳呢版** 改放到 導出、設定 嘅右手邊。另一部機仍然要重新開網址先下載。Alpha_Learn **v5.1**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。

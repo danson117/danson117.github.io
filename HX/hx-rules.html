@@ -145,6 +145,7 @@
     <div class="card">
       <p><span class="key">已實作</span>：同一個網站、任何裝置（電腦／iPad／另一部機）見到<strong>同一效果</strong>。設置、文字、學習進度、課程表等共用紀錄寫入 locked Supabase（經 Edge <code>team-board</code> 保留位 <code>__hx_shared__/…</code>），由 Vercel 頁讀寫。唔會清 Training One View 嘅 Status／Manual／UAL／CT／Mandatory。</p>
       <ul>
+        <li style="color:#b00020"><b>新 · Alpha Learn 同 Karson Learn 工具要一齊改：</b>任何工具、畫面或程式改動，Alpha Learn 同 Karson Learn 要用同一套做法，反過嚟一樣，除非用戶講明只改一邊。內容按小朋友分開，唔好把生詞表、已學識、課文由一邊抄去另一邊。Alpha 係小五；Karson 係小二，詞表同讀默課文可以係空。雲端文件分開：<code>alpha-learn</code> 同 <code>karson-learn</code>。本機一有新改動就上傳。另一部機唔會開住頁自動下載，要自己重新整理先拉最新。較新嘅本機改動唔好被較舊嘅雲端蓋過。成功唔彈窗，狀態先寫 <b>上傳中.....</b> 再寫 <b>上傳完成</b>；失敗要睇得到。Alpha_Learn <b>v5.2</b>、Karson_Learn <b>v2.4</b>、<code>hx-rules</code> <b>v10.96</b>。</li>
         <li style="color:#b00020"><b>新 · 其餘 HX 紀錄共同見到：</b>VHHH Line MX Weekly Auth 嘅週同 difference history（<code>vhhh-line-mx-weekly</code>）、Authorization List（<code>authorization-list</code>）、License Records（<code>lic-records</code>）、Course completion 而家拖入嘅表同 Expiry 年數（<code>course-completion-view</code>）寫入 locked Supabase <code>__hx_shared__/…</code>。讀公開 GET。寫要 hub 已登入。較新 <code>updated</code> 贏。空裝置唔洗伺服器。Line MX 的 UNDO 一併上。側欄次序、filter、Name List 欄次序留本機。Training One View lite poll 只保留 Briefing and R&amp;S 嗰份 shared 內文，其他 shared doc 唔跟住每 5 秒下載。Line MX <b>v2.5</b>、Auth <b>v2.18</b>、Lic <b>v2.7</b>、Course completion <b>v2.21</b>、hub <b>v21.7</b>、<code>hx-shared-sync.js</code> <b>v1.5</b>。</li>
         <li><strong>Course List</strong>（<code>course-catalog</code>）：課程列同步。</li>
         <li><strong>Alpha_Learn／Karson_Learn</strong>（<code>alpha-learn</code>／<code>karson-learn</code>）：詞庫、學生檔、練習進度同步（錄音等大檔可留本機）。</li>
@@ -410,6 +411,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.95">v10.95</div>
+  <div class="page-version" data-version="10.96">v10.96</div>
 </body>
 </html>
