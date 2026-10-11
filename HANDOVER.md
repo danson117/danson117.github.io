@@ -14,6 +14,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Life OS · Apple Calendar 再試：** 同一條 app-specific password 喺 09:41 HKT 成功 sync 一次（70 項；之前 9月26日 16:30、64 項）。之後 iCloud 又回 401，網頁同命令列都係。未開新密碼之前唔好連撳 sync。設定頁「儲存」而家會把新密碼寫入 `data/life.db` 同 `.env`／`.env.local`。life-os 呢個改動仍未 commit、未 push。密碼冇寫入紀錄。
+
+## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Life OS · Apple Calendar sync 401：** 屋企本機 `C:\Cursor\life-os`。iCloud 拒絕而家嘅 app-specific password。上次成功 sync 係 2026-09-26 16:30 HKT、64 項。`.env` 密碼格式啱但 Apple 已拒絕；資料庫另有一截 9 位舊值，唔當正式密碼。設定頁「儲存」之前只寫 `data/life.db`，sync 卻用 `.env`，貼新密碼都唔會生效。而家 16 位密碼先算有效；設定頁儲存會寫入資料庫，並一併更新 `.env`／`.env.local`。401 提示改為去 appleid.apple.com 開新密碼再貼上。冇改行程。密碼冇寫入呢份紀錄。呢個 life-os 改動未 commit、未 push。
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
