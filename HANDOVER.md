@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **OCG Name List · DM／DIC／DDIC Team：** 跟 duty 圖表。CG 用 D1–D4，PAX 用 1–4；D／E 尾數＝Team。Role 顯示加 DM／DIC／DDIC（保留原有 Mechanic／Certifier／Office）。William Poon `144030` → Team 1；CG Deputy 四位 → D1–D4。HO FUNG CHEUNG 已離職，唔入名冊。TOV／Course completion 歸隊認 D／E 尾數。Name List **v3.24**、TOV **v15.46**、Course completion **v2.33**、hub **v21.24**、`hx-rules` **v10.97**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Alpha Learn／Karson Learn · 讀默間隔同速度：** 兩頁同一套工具。讀幾次旁邊加 **間隔**（秒，可小數，0–30；原本每次之間兩秒，預設仍然 2）。加 **速度** 下拉：0.5、0.75、1、1.25、1.5、2，預設 1。上一句、下一句、重讀、撳課文或而家嗰句，都按而家嘅次數、間隔同速度讀完，唔會自己跳下一句。讀完之後再撳其他掣，重讀仍然跟足次數。次數、間隔、速度記喺本機。課文唔互抄。Alpha_Learn **v5.3**、Karson_Learn **v2.6**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
