@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **OCG Name List · Role AV：** Authorization Category 有 **B2** 或 **B2***、而且冇 **B1** → Role 加 **AV**（保留原有身份）。而家 12 人。Name List **v3.25**、hub **v21.25**、`hx-rules` **v10.98**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **OCG Name List · DM／DIC／DDIC Team：** 跟 duty 圖表。CG 用 D1–D4，PAX 用 1–4；D／E 尾數＝Team。Role 顯示加 DM／DIC／DDIC（保留原有 Mechanic／Certifier／Office）。William Poon `144030` → Team 1；CG Deputy 四位 → D1–D4。HO FUNG CHEUNG 已離職，唔入名冊。TOV／Course completion 歸隊認 D／E 尾數。Name List **v3.24**、TOV **v15.46**、Course completion **v2.33**、hub **v21.24**、`hx-rules` **v10.97**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
