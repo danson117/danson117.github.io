@@ -24,7 +24,7 @@ alwaysApply: true
 - **Section 尾數定 Team：** Home 同 Current 同一個 section code，最後一字係 1／2／3／4 → Team 跟該數字（只填空白）。尾數 5 或 X 維持 TBD。兩邊 section 唔同，或者新資料同已有 Team 有衝突 → 問邊個先跟。Team 數字唔改 CG／PAX，唔加入 Crew List。Name List v3.18。詳見 `HX/hx-rules.html` 紅字。
 - **CG crew code 就係 Team：** Crew 欄（1P、E1、D1、00、CG）寫入 Team。只限 Name List 內、CG、Home 同 Current 都等於該 Sect。唔喺名冊、PAX、section 唔同 → 唔改，先問。開頭 1–4 嘅 crew，TOV 仍歸 Team 1–4。Name List v3.19。詳見 `HX/hx-rules.html` 紅字。
 - **DM／DIC／DDIC Team：** CG 用 D1–D4，PAX 用 1–4。D1–D4／E1–E4 尾數＝Team 幾。Role 保留 Mechanic／Certifier／Office，Title 係 Duty Manager／Duty in Charge／Deputy DIC 時再顯示 DM／DIC／DDIC。HO FUNG CHEUNG 已離職唔入名冊。Name List v3.24。詳見 `HX/hx-rules.html` 紅字。
-- **Role AV：** Authorization Category 有 B2 或 B2*、而且冇 B1 → Role 加 AV。Name List v3.25。詳見 `HX/hx-rules.html` 紅字。
+- **Role AV：** Authorization Category 有 B2 或 B2*、而且冇 B1 → Role 加 AV。Home／Current 係 LGW… → 都加 AV（即使有 B1）。Name List v3.26。詳見 `HX/hx-rules.html` 紅字。
 - **320531 已從成個 HX 刪走：** 唔留 Full List 黃行。名冊、TOV 存檔、Course completion 檢查名單都冇佢。其他員工唔郁。Name List v3.21。詳見 `HX/hx-rules.html` 紅字。
 - **Course completion Check log：** 人數彈窗係存低嘅名單。唔喺 Name List 嘅人，載入同儲存都會剔走，人數跟剔完之後嘅名單。頁 v2.15。詳見 `HX/hx-rules.html` 紅字。
 - **290990 Remark：** 報告 Current section code 係 **LTGC**。出街 Home／Current 仍然 **LTC4**。Remark **Current section code is LTGC in reports**。仍然 PAX，仍然喺 Name List。Name List v3.22。詳見 `HX/hx-rules.html` 紅字。

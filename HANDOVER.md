@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **OCG Name List · Role AV · LGW：** Home 或 Current 係 **LGW…** → Role 加 **AV**（即使有 B1）。仍然保留 B2／B2* 冇 B1 → AV。Name List **v3.26**、hub **v21.26**、`hx-rules` **v10.99**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **OCG Name List · Role AV：** Authorization Category 有 **B2** 或 **B2***、而且冇 **B1** → Role 加 **AV**（保留原有身份）。而家 12 人。Name List **v3.25**、hub **v21.25**、`hx-rules` **v10.98**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

@@ -117,10 +117,10 @@
       <p><b>Home / Current</b> for the 2 Oct 2026 update uses the numbered sections <b>LTC1, LTC2, LTC3, LTC4, LTC6, LTCX</b> and <b>LTW1–LTW4</b>. The old LTA / LGEX / LTDX codes for those people are no longer their section. <b>Future sections</b> is the only LT family list (no team digit). Team digits 1–9 and duplicate rows stay off that table (LTY1–9 → LTY). Letter suffixes stay (LTCX, LTDC, LTFA, LTXM). The hub hash <b>#sections</b> opens this tab.</p>
       <p><b>LTN1–LTN4</b> are the CX PAX A320 team. Those 34 people are PAX Mechanics and are included in the Name List counts. Revenue YES is the revenue code.</p>
       <p>When <b>Home</b> and <b>Current</b> are the same code and the last character is <b>1, 2, 3, or 4</b>, <b>Team</b> follows that digit unless a crew code is already stored. A last character of <b>5</b> or <b>X</b> stays <b>TBD</b>. Crew codes such as <b>1P</b>, <b>E1</b>, <b>D1</b>, and <b>00</b> are the Team value. For CG duty posts use <b>D1–D4</b>; for PAX use <b>1–4</b>. The trailing digit on <b>D1–D4</b> / <b>E1–E4</b> is the Team number. If Home and Current disagree with a new crew file, Team stays as it is until you choose. A Team value does not change CG / PAX.</p>
-      <p><b>OCG</b> = CG + PAX (the total). A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = already marked PAX on the roster, or on the Crew List (including FLS and RF). <b>CG</b> stays CG. A <b>Team</b> number is only a team number and does not make someone PAX, so CG can have a Team number. <b>Role</b> keeps Mechanic / Certifier / Office, and may also show <b>DM</b> / <b>DIC</b> / <b>DDIC</b> when the Position Title is Duty Manager / Duty in Charge / Deputy DIC, and <b>AV</b> when Authorization Category has <b>B2</b> or <b>B2*</b> and no <b>B1</b>. <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC). <b>Office</b> = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
+      <p><b>OCG</b> = CG + PAX (the total). A person is <b>CG</b> or <b>PAX</b> only. <b>PAX</b> = already marked PAX on the roster, or on the Crew List (including FLS and RF). <b>CG</b> stays CG. A <b>Team</b> number is only a team number and does not make someone PAX, so CG can have a Team number. <b>Role</b> keeps Mechanic / Certifier / Office, and may also show <b>DM</b> / <b>DIC</b> / <b>DDIC</b> when the Position Title is Duty Manager / Duty in Charge / Deputy DIC, and <b>AV</b> when Authorization Category has <b>B2</b> or <b>B2*</b> and no <b>B1</b>, or when Home / Current section is <b>LGW…</b> (LGW1–LGW4 等). <b>Certifiers</b> = Licensed Engineer / Assistant Licensed Engineer / Controller / Duty in Charge (including Deputy DIC and OCG PAX / CARGO / UPS DIC). <b>Office</b> = Manager / Assistant Manager / support / liaison / project officer / operations officer — not Controller, not Duty in Charge. <b>Mechanics</b> = AMM, technician, refueller, and Supervisor. Click a counter to filter. Click a header to sort. Drag a header to change column order.</p>
     </div>
   </div>
-  <div class="page-version" data-version="3.25">v3.25</div>
+  <div class="page-version" data-version="3.26">v3.26</div>
 <script src="ocg-pax-data.js?v=17"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
@@ -383,7 +383,11 @@ const AV_STAFF = (() => {
   return out;
 })();
 function avOf(r){
-  return AV_STAFF.has(padStaff(r && r.staff)) ? "AV" : "";
+  if (AV_STAFF.has(padStaff(r && r.staff))) return "AV";
+  const home = String((r && r.home) || "").trim().toUpperCase();
+  const cur = String((r && r.current) || "").trim().toUpperCase();
+  if (/^LGW/.test(home) || /^LGW/.test(cur)) return "AV";
+  return "";
 }
 function roleLabelOf(r){
   const parts = [roleOf(r)];

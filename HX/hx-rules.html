@@ -261,6 +261,7 @@
         <li style="color:#b00020"><b>新 · Course completion · Category 同 A/C Type：</b>Auth 後面加 <b>Category</b> 同 <b>A/C Type</b>，跟 Authorization List。下拉只列出而家 Auth（同另一個已揀值）之下、Name List 人真係有嘅值。<b>All</b> 保留。揀咗嘅值消失就返 All。Outstanding、人數、Add to TOV 只計同一條授權同時有呢個 Category 同 A/C Type 嘅人。Completed 維持 Completed。Check log 一行再加呢兩個選項：唔同就多一行，一樣就更新 Outstanding。頁 <b>v2.26</b>。</li>
         <li style="color:#b00020"><b>新 · A/C Type：</b>授權飛機型號嘅畫面名由 <b>Aircraft</b> 改做 <b>A/C Type</b>。Authorization List 篩選同欄、License Records 篩選同欄、Training One View Manual 授權篩選、Briefing and R&amp;S 授權欄都係呢個名。頁 Auth <b>v2.20</b>、Lic <b>v2.9</b>、TOV <b>v15.44</b>、BRS <b>v5.7</b>。</li>
         <li style="color:#b00020"><b>新 · Course completion · Check log 跟選項：</b>Check log 一行係 <b>course ＋ Auth ＋ Expiry ＋ Include near expiry</b>。上面 Outstanding 係 0（例如 Auth 揀 <b>LX</b>），呢一行四個 Outstanding 人數都跟呢個結果，可以係 <b>0</b>。同一科下次冇揀 LX，或者 Auth／Expiry／Include near expiry 有唔同，就多一行，唔覆蓋舊行。全部呢啲選項一樣，只係 xlsx 內容唔同，就更新嗰一行嘅 Outstanding 人數、File、Checked；Remark 同 TOV Creation 保留。舊嘅、未記選項嘅一行，下一次分析會當成呢次選項更新。Group／Role／Status 仍然只改上面個表，唔會因為撳咗就多開一行。頁 <b>v2.25</b>。</li>
+        <li style="color:#b00020"><b>新 · OCG Name List · Role AV · LGW：</b>Home 或 Current section 係 <b>LGW…</b>（LGW1–LGW4 等）→ Role 加 <b>AV</b>（即使有 B1）。仍然保留：Authorization 有 B2／B2* 而且冇 B1 → AV。Name List <b>v3.26</b>、hub <b>v21.26</b>。</li>
         <li style="color:#b00020"><b>新 · OCG Name List · Role AV：</b>Authorization Category 有 <b>B2</b> 或 <b>B2*</b>、而且冇 <b>B1</b> → Role 加 <b>AV</b>（保留原有 Mechanic／Certifier／Office，同 DM／DIC／DDIC）。跟而家 <code>AUTH_PACK</code>。Name List <b>v3.25</b>、hub <b>v21.25</b>。</li>
         <li style="color:#b00020"><b>新 · OCG Name List · DM／DIC／DDIC Team：</b>跟 duty 圖表。CG 用 <b>D1–D4</b>，PAX 用 <b>1–4</b>。<b>D1–D4</b>／<b>E1–E4</b> 尾數＝Team 幾。Role 欄保留 Mechanic／Certifier／Office，Position Title 係 Duty Manager／Duty in Charge／Deputy DIC 時再顯示 <b>DM</b>／<b>DIC</b>／<b>DDIC</b>。<b>144030</b> William Poon → Team <b>1</b>（PAX）；CG Deputy <b>191239</b>／<b>271255</b>／<b>329731</b>／<b>208901</b> → <b>D1–D4</b>。HO FUNG CHEUNG 已離職，唔入名冊。Training One View／Course completion 歸隊認 D／E 尾數。Name List <b>v3.24</b>、TOV <b>v15.46</b>、Course completion <b>v2.33</b>、hub <b>v21.24</b>。</li>
         <li style="color:#b00020"><b>新 · OCG Name List · LTN1–LTN4：</b>加 <b>34</b> 人，section <b>LTN1–LTN4</b>，全部 <b>Mechanic</b>，Training One View、Course completion、Authorization List、License Records、Briefing and R&amp;S、Name List 人數都計埋。Name List <b>v3.23</b>。頁 Course completion <b>v2.24</b>、hub <b>v21.11</b>。</li>
@@ -413,6 +414,6 @@
       <p>唔包：<code>#docs</code>／<code>#tooling</code>／<code>#scratch</code>／<code>#rules</code>。</p>
     </div>
   </div>
-  <div class="page-version" data-version="10.98">v10.98</div>
+  <div class="page-version" data-version="10.99">v10.99</div>
 </body>
 </html>
