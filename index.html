@@ -199,7 +199,7 @@
       </div>
       <iframe id="frame" title="Home" allow="clipboard-write"></iframe>
     </main>
-    <div class="page-version" data-version="1.4">Home v1.4</div>
+    <div class="page-version" data-version="1.5">Home v1.5</div>
     <script>
       const TOPICS = [
         { group: "學習", id: "alpha", title: "Alpha Learn", blurb: "小五", file: "Alpha_Learn.html?v=5.4" },
@@ -210,8 +210,7 @@
         { group: "生活", id: "parents", title: "老豆阿媽", blurb: "醫療減免", file: "parents.html?v=1.0" },
         { group: "生活", id: "weight", title: "成長記錄", blurb: "信唯、啟淳", file: "weight.html?v=1.3" },
         { group: "生活", id: "stuff", title: "物品清單", blurb: "家中物件", file: "物品清單.html?v=1.7" },
-        { group: "生活", id: "efas", title: "特快公屋", blurb: "篩選", file: "efas2026-hsc-remaining-flats.html?v=1.3" },
-        { group: "生活", id: "efas-short", title: "特快公屋初選", blurb: "名單", file: "efas2026-hsc-shortlist.html" },
+        { group: "生活", id: "efas", title: "特快公屋", blurb: "篩選 · 名單", file: "efas2026-hsc-remaining-flats.html?v=1.4" },
         { group: "其他", id: "life-os", title: "Life OS", blurb: "日曆、待辦", file: "https://life-os-danson117.vercel.app/", external: true }
       ];
       const box = document.getElementById("topics");
@@ -242,13 +241,17 @@
       }
 
       function show(id) {
-        const pick = TOPICS.find((t) => t.id === id) || TOPICS[0];
-        if (frame.getAttribute("src") !== pick.file) frame.src = pick.file;
+        const listMode = id === "efas-short";
+        const pick = TOPICS.find((t) => t.id === (listMode ? "efas" : id)) || TOPICS[0];
+        let file = pick.file;
+        if (listMode && pick.id === "efas") file += "&mode=list";
+        if (frame.getAttribute("src") !== file) frame.src = file;
         now.textContent = pick.title;
-        solo.href = pick.file;
+        solo.href = file;
         solo.textContent = pick.external ? "另開 Life OS" : "另開呢頁";
-        if (location.hash.replace(/^#/, "") !== pick.id) location.hash = pick.id;
-        try { localStorage.setItem(KEY, pick.id); } catch (e) {}
+        const hashId = listMode ? "efas-short" : pick.id;
+        if (location.hash.replace(/^#/, "") !== hashId) location.hash = hashId;
+        try { localStorage.setItem(KEY, hashId); } catch (e) {}
         box.querySelectorAll("button.topic").forEach((b) => {
           b.classList.toggle("on", b.dataset.id === pick.id);
         });
@@ -261,7 +264,7 @@
       window.addEventListener("hashchange", () => show(location.hash.replace(/^#/, "")));
       render();
       let start = location.hash.replace(/^#/, "");
-      if (!TOPICS.some((t) => t.id === start)) {
+      if (start !== "efas-short" && !TOPICS.some((t) => t.id === start)) {
         try { start = localStorage.getItem(KEY) || "alpha"; } catch (e) { start = "alpha"; }
       }
       show(start);

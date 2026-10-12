@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **特快公屋兩個模式同一頁：** 篩選同初選名單合成一個入口。頁面頂有 **篩選**／**名單** 兩個掣。舊網址 `efas2026-hsc-shortlist.html` 仍然開名單模式。Home **v1.5**、特快公屋 **v1.4**。GitHub `danson117/home` → Vercel。刷新已開分頁。唔開 Chrome。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Life OS stamp：** 開住每 5 秒只問家庭 Edge stamp。冇變就停。有變先下載 `life-os` 一份。改行程、待辦、提醒、紀錄會自動上傳。設定同 Apple 密碼唔入呢份。iCloud 日曆同步保留。Edge `team-board` 公開名單加 `life-os`。上限約 1.4 MB。家庭 Supabase `kcoszufshvvpxikpzlue`，唔係公司項目。Life OS **v0.2**。刷新已開嘅 Life OS 分頁。唔開 Chrome。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
