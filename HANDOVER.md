@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企電腦
 
+- **交通意外紀錄：** 寫入 2026年9月警方信件。交通意外頁 **v1.2**、Home 整體 **v2.1**。GitHub `danson117/home` → Vercel。
+
+## 2026-10-12 屋企電腦
+
 - **Home 側欄：** 移除去公司網站嘅連結。整體 Home **v2.0**。GitHub `danson117/home` → Vercel。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
