@@ -5,7 +5,7 @@ alwaysApply: true
 
 # 呢個 folder 唔處理公司嘢
 
-Workspace 係 `danson117/danson117.github.io`（`C:\Cursor\danson117.github.io`）時，只做家庭、Life OS、Alpha Learn、Karson Learn，同埋呢個倉根目錄嘅頁。
+Workspace 係 `danson117/home`（本機 folder `C:\Cursor\danson117.github.io`）時，只做家庭、Life OS、Alpha Learn、Karson Learn，同埋呢個倉根目錄嘅頁。
 
 公司內容一出現就停手，唔改檔、唔查公司資料、唔部署公司網站。直接提醒用戶去：
 

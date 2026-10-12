@@ -1,6 +1,6 @@
 # Handover log
 
-兩部電腦共用。檔在 **GitHub** 倉根目錄（`danson117/danson117.github.io/HANDOVER.md`），唔係本機獨有，亦唔喺 Supabase。屋企／公司都要 `git pull` 先睇到最新。
+兩部電腦共用。檔在 **GitHub** 倉根目錄（`danson117/home/HANDOVER.md`），唔係本機獨有，亦唔喺 Supabase。屋企／公司都要 `git pull` 先睇到最新。
 
 **做任何嘢之前**先讀呢頁。另一部機有新紀錄而呢部未跟上 → 先對齊再做。
 
@@ -14,7 +14,7 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
-- **Home：** 家庭入口改名 **Home**，`index.html` **v1.1**。側欄係呢個倉根目錄每一頁（Alpha Learn、Karson Learn、乘數表、乘數表練習、拼字、動詞分類、中作4、小五六作文、作文技巧、行李清單、成長記錄、物品清單、特快公屋、特快公屋初選）加 Life OS 另開。公司頁只係文字連結，唔嵌 iframe。網址仍然 `https://danson117-github-io.vercel.app/`。Vercel／GitHub／Supabase 顯示名對齊 **Home**（slug `home`）；改唔到嘅名會寫喺下一句。GitHub → Vercel。
+- **Home：** 家庭入口叫 **Home**，`index.html` **v1.1**。側欄係呢個倉根目錄每一頁（Alpha Learn、Karson Learn、乘數表、乘數表練習、拼字、動詞分類、中作4、小五六作文、作文技巧、行李清單、成長記錄、物品清單、特快公屋、特快公屋初選）加 Life OS 另開。公司頁只係文字連結。正式網址 `https://danson117-github-io.vercel.app/`。Vercel 項目名 **home**（`prj_6lcbCsao80CHy1dkApf0ICPX1jgR`）。GitHub 倉 **`danson117/home`**（repo id 不變，Vercel 仍然接住 `main`）。Supabase 顯示名仍然 **hx-test**（ref `kcoszufshvvpxikpzlue`）：冇改名工具，唔刪，公司項目冇郁。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 

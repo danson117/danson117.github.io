@@ -7,7 +7,7 @@ alwaysApply: true
 
 Two GitHub users, split by purpose. Never use `0421ALPHA` / `0421alpha`.
 
-- **Family and this repo:** `danson117` / `danson.mj@gmail.com` only. Includes `danson117/danson117.github.io` and `danson117/life-os`.
+- **Family and this repo:** `danson117` / `danson.mj@gmail.com` only. GitHub repo is `danson117/home` (renamed from `danson117.github.io`; the old URL redirects). Local folder stays `C:\Cursor\danson117.github.io`. Life OS stays `danson117/life-os`.
 - **Company HX only:** `danson236051` / `danson236051@gmail.com`. Local project `C:\Cursor\danson236051.github.io`. Site `https://danson236051githubio.vercel.app/HX/hx.html`. Do not put family pages there.
 - **This folder does not do company work.** In `danson117/danson117.github.io`, if the request touches company HX content, stop and tell the user to open the danson236051 project. Do not edit `HX/` here.
 
