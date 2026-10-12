@@ -9,7 +9,7 @@ alwaysApply: true
 
 公司內容唔喺呢度處理。一涉及 HAECO／HX／職員訓練，停手，提醒去 `C:\Cursor\danson236051.github.io`、GitHub `danson236051/danson236051.github.io`、網站 `https://danson236051githubio.vercel.app/HX/hx.html`。
 
-- 家庭頁：根目錄，由 `index.html` 入
+- 家庭頁：根目錄，由 `index.html` 入（頁名 **Home**）
 - 唔好把公司頁再寫入呢個倉
 - 唔好再開 `家庭/` folder
 - 唔好把呢兩頁再複製去其他 branch
