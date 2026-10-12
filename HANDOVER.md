@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **老豆阿媽 · 陳遠歡眼科：** 2026-10-10 轉介信（香港專業眼科手術及激光中心 → 威爾斯親王醫院眼科專科門診）同 2026-05-23 醫療報告 PDF，放喺陳遠歡一段。毛素芳減免證明冇郁。兩張減免證明留低。`parents.html` **v1.1**、Home **v1.6**。GitHub `danson117/home` → Vercel。刷新已開分頁。唔開 Chrome。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **特快公屋兩個模式同一頁：** 篩選同初選名單合成一個入口。頁面頂有 **篩選**／**名單** 兩個掣。舊網址 `efas2026-hsc-shortlist.html` 仍然開名單模式。Home **v1.5**、特快公屋 **v1.4**。GitHub `danson117/home` → Vercel。刷新已開分頁。唔開 Chrome。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
