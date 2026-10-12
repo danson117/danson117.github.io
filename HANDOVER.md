@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **HAECO Edge `team-board` 已部署：** 項目 `wmswfnrjfkevvhkpbpxd`，`verify_jwt` 關，`/gate/public` 200。公司倉頁面已經指住呢個 function。Vercel 公司項目未開，未有新網址。舊項目 `kcoszufshvvpxikpzlue` 未刪。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **HAECO 資料已齊，Edge／Vercel 未開：** 真正 ref 係 `wmswfnrjfkevvhkpbpxd`（另一個拼法解析唔到）。已有訓練主檔 1 行（家庭共用文件未搬）、修訂 17 行、Line MX 8 週＋meta、登入閘、19 個 HX 函式。新項目 Edge `team-board` 而家 404。Vercel 呢部機仍然係 `danson117`，未開公司項目。公司倉 commit `1d8cbf7` 已指住新 ref。舊倉仍然指 `kcoszufshvvpxikpzlue`。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
