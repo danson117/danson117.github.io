@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **公司 GitHub 倉已開：** 私人倉 `danson236051/danson236051.github.io`，`main` 已 push，只得 `HX/`。本機 `C:\Cursor\danson236051.github.io`。舊倉 `danson117/danson117.github.io` 未刪（2026-10-19 先提醒）。Supabase 同 Vercel 未開；新 Supabase 項目名用 **HX**，唔好 test。預設 `gh` 仍然係 `danson117`。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **同步一律 5 秒先問 stamp：** HX 同家庭頁（Alpha Learn、Karson Learn、行李、成長、乘數表、中作、小五六作文、特快公屋）開住都先問細 stamp。冇變就停。有變先下載嗰一份，一次。輪詢唔會因為打包時間係「而家」就再上傳成份。家庭頁左下角顯示而家呢個 Supabase 嘅 Plan／Database／Files／Egress 百分比；HX hub 側欄顯示同一套。Egress 已用同帳單完結日讀唔到就唔估。`hx-shared-sync.js` **v1.7**、hub **v21.30**、`hx-rules` **v11.3**、TOV **v15.47**、Auth **v2.22**、Lic **v2.11**、Course completion **v2.35**、Line MX **v2.7**、Course List **v2.5**、BRS **v5.9**、KE record **v1.8**、Alpha **v5.4**、Karson **v2.7**、家庭頁 **v1.3**。公司鏡像 `C:\Cursor\danson236051.github.io\HX` 已抄最新 HX，未 push。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
