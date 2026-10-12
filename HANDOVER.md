@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **公司網站已換新版：** Owner 登入一次就有全頁權限。第一次 Vercel 部署失敗，再部署成功。Hub **v21.31**、Training One View **v15.48**、規矩 **v11.5**。網址 `https://danson236051githubio.vercel.app/HX/hx.html#team-board`。舊倉 HX HTML 未改。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Owner hub login is enough for every company HX page; no second Unlock.** 公司倉 `danson236051/danson236051.github.io` commit `35c4e9e`。Training One View **v15.48**、hub **v21.31**、`hx-rules` **v11.5**。GitHub 已 push；Vercel 應自動跟公司倉。刷新 `https://danson236051githubio.vercel.app/HX/hx.html#team-board`。冇改 Supabase。唔開 Chrome。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
