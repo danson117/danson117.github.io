@@ -11,7 +11,7 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **Hub 用量指標：** 側欄底部顯示 Supabase Plan（Pro）、Database 即時容量同百分比、Files、Egress 限額。Egress 已用幾多同帳單幾時完，project 讀唔到，頁面唔估，撳 Usage page。hub **v21.28**、`hx-rules` **v11.1**。Edge `team-board` 加 `?usage=1`。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
-- **Edge 回復：** 部署時曾經短暫 500。而家 Edge 載入 `HX/supabase-edge/team-board/index.runtime.js`（由 `index.ts` 去掉型別）。源碼仍然以 `index.ts` 為準。
+- **Edge 回復：** 部署時曾經短暫 500。而家 `team-board` 已直接部署完整程式。`?stamp=1` 同 `?usage=1` 都係 200。`index.runtime.js` 係去掉型別嘅副本；源碼仍然以 `index.ts` 為準。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
