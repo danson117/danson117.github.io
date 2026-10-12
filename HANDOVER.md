@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **公司交接改去公司倉：** 公司 HAECO 嘅完整交接而家喺 `danson236051/danson236051.github.io` 根目錄 `HANDOVER.md`。公司頁面之後只喺嗰個倉改。呢份家庭交接繼續記家庭同 Life OS。Alpha Learn、Karson Learn、Life OS 仍然留喺呢個倉同舊 Supabase。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **公司網站已換新版：** Owner 登入一次就有全頁權限。第一次 Vercel 部署失敗，再部署成功。Hub **v21.31**、Training One View **v15.48**、規矩 **v11.5**。網址 `https://danson236051githubio.vercel.app/HX/hx.html#team-board`。舊倉 HX HTML 未改。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
