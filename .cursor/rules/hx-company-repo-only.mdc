@@ -1,0 +1,10 @@
+---
+description: Company HAECO HX file edits go only in the danson236051 repo
+alwaysApply: true
+---
+
+# Company HX repo only
+
+HAECO / company HX file edits go only in `C:\Cursor\danson236051.github.io` and are pushed only as `danson236051`. Do not edit HX HTML/JS in `danson117/danson117.github.io` for company work. Family pages and `HANDOVER.md` on danson117 stay.
+
+Visible rule: company repo `HX/hx-rules.html` (red bullet at the top). Do not put this rule only in chat.

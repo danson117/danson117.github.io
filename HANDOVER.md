@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **公司 HX HTML 只改 danson236051：** 由今次起，公司 HAECO 頁面只喺 `danson236051/danson236051.github.io` 改同 push。舊倉 `danson117/danson117.github.io` 嘅 HX HTML 係後備，唔再更新。家庭頁同 `HANDOVER.md` 仍然喺 danson117。公司 `hx-rules` **v11.4**。GitHub。冇改 Supabase。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **公司 Vercel 已開：** 帳 `danson236051`。正式網址 `https://danson236051githubio.vercel.app/HX/hx.html#team-board`（200，指住 HAECO `wmswfnrjfkevvhkpbpxd`）。舊網址 `danson117-github-io.vercel.app` 未刪（2026-10-19 先提醒）。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
