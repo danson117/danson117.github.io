@@ -281,10 +281,10 @@
   </div>
   <p class="hist-empty" id="hist-empty">No differences saved yet.</p>
 
-      <p class="page-version">page-version 2.5</p>
+      <p class="page-version">page-version 2.6</p>
 </div>
 
-<script src="hx-shared-sync.js?v=1.5"></script>
+<script src="hx-shared-sync.js?v=1.6"></script>
 <script>
 (function () {
   "use strict";
@@ -749,10 +749,13 @@
           renderTable();
         },
         onStatus: (s) => {
-          if (quiet) return;
+          if (s === "offline") {
+            showMsg("Could not check for newer weekly reports.", false);
+            return;
+          }
+          if (quiet || s === "unchanged") return;
           if (s === "uploaded") showMsg("Shared this browser's weekly reports.", true);
           else if (s === "need-password") showMsg("Weekly reports are on this browser. Log in to share them.", false);
-          else if (s === "offline" && !quiet) showMsg("Cloud unreachable. Showing this browser's weekly reports.", false);
           else if (s === "too-large") showMsg("Weekly reports are too large to share.", false);
         }
       });
@@ -1609,7 +1612,11 @@
     updateSortHeaders("current-table", sortCurrent);
     updateSortHeaders("hist-table", sortHist);
     void syncLmxFromCloud(false);
-    window.setInterval(() => { void syncLmxFromCloud(true); }, 20000);
+    if (window.HxSharedSync && window.HxSharedSync.watch) {
+      window.HxSharedSync.watch(LMX_DOC, () => { void syncLmxFromCloud(true); });
+    } else {
+      window.setInterval(() => { void syncLmxFromCloud(true); }, 20000);
+    }
   }
 
   init();

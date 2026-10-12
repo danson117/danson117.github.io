@@ -152,8 +152,8 @@
     <option value="annual"></option>
     <option value="one-time"></option>
   </datalist>
-  <div class="page-version" data-version="2.3" aria-label="Page version 2.3">v2.3</div>
-<script src="hx-shared-sync.js?v=1.0"></script>
+  <div class="page-version" data-version="2.4" aria-label="Page version 2.4">v2.4</div>
+<script src="hx-shared-sync.js?v=1.6"></script>
 <script>
 const COURSE_STORE = "hx:course-catalog:rows";
 const UI_Q = "hx:course-catalog:q";
@@ -347,10 +347,11 @@ async function syncCoursesFromCloud() {
       paint();
     },
     onStatus: (s) => {
+      if (s === "unchanged") return;
       if (s === "need-password") paintStatus("Course List loaded locally. Unlock HX once to sync across devices.");
       else if (s === "uploaded") paintStatus("Uploaded local Course List to Supabase.");
       else if (s === "synced") paintStatus("Course List synced from Supabase.");
-      else if (s === "offline") paintStatus("Cloud unreachable; using this browser copy.");
+      else if (s === "offline") paintStatus("Could not check for newer Course List. Showing this browser copy.");
     }
   });
   cloudReady = true;
@@ -752,6 +753,9 @@ window.addEventListener("storage", (e) => {
   await prefetchParentStore();
   loadSaved();
   await syncCoursesFromCloud();
+  if (window.HxSharedSync && window.HxSharedSync.watch) {
+    window.HxSharedSync.watch(SHARED_DOC, () => { void syncCoursesFromCloud(); });
+  }
   const added = seedFromBoard();
   const relatedChanged = fillRelated();
   const factsChanged = applyCourseFacts();

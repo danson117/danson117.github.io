@@ -493,6 +493,18 @@ Deno.serve(async (req: Request) => {
   }
 
   if (req.method === "GET" && !path.includes("/gate") && !path.includes("/pin/")) {
+    const stampOnly = url.searchParams.get("stamp") === "1";
+    const docId = String(url.searchParams.get("doc") || "");
+    if (stampOnly) {
+      const { data, error } = await admin.rpc("hx_team_board_stamp");
+      if (error) return json(500, { error: error.message });
+      return json(200, { stamp: data && typeof data === "object" ? data : {} });
+    }
+    if (/^[a-z0-9][a-z0-9-]{0,80}$/.test(docId)) {
+      const { data, error } = await admin.rpc("hx_team_board_doc", { p_doc: docId });
+      if (error) return json(500, { error: error.message });
+      return json(200, data && typeof data === "object" ? data : { doc: docId, rec: null });
+    }
     const { data, error } = await admin.rpc("hx_team_board_get");
     if (error) return json(500, { error: error.message });
     const full = (data && typeof data === "object") ? data as Record<string, any> : { status: {}, manual: [] };

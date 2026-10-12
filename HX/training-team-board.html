@@ -1845,7 +1845,7 @@
   <div class="page-version" data-version="15.46" aria-label="Page version 15.46">v15.46</div>
 <script src="ocg-pax-data.js?v=17"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
-<script src="hx-shared-sync.js?v=1.4"></script>
+<script src="hx-shared-sync.js?v=1.6"></script>
 <script src="authorization-list-data.js?v=7"></script>
 <script>
 hxUnpackRoster();
@@ -1924,6 +1924,10 @@ let hubGate = { role: "view", password: "", editActions: [], accessStaff: "", ac
 let syncPollTimer = null;
 let syncPollBusy = false;
 let lastRemoteActionsSig = "";
+let lastBoardStamp = "";
+let actionsPushFailed = false;
+let pushFailShown = false;
+let quietIngestRetry = false;
 let suppressRemoteMerge = false;
 let suppressIngestPush = false;
 let dirtyIngest = false;
@@ -6377,6 +6381,7 @@ function applyServerPayload(data, opts) {
   actionsFileCache = data;
   lastRemoteActionsSig = actionsPayloadSig(data);
   if (!keepDirty) clearDirtyAll();
+  dedupeManualRows();
   persistActionsLocal();
   // Lite poll has ingest meta only (rowCount / textLen) — never apply as file bodies.
   if (!(data && data._lite)) {
@@ -6880,6 +6885,7 @@ function closePushFailPop() {
   pop.hidden = true;
 }
 function showPushFail(msg) {
+  if (quietIngestRetry) return;
   const lead = document.getElementById("push-fail-lead");
   if (lead) lead.textContent = msg || "Could not reach the server. This upload is saved in this browser only.";
   const pop = document.getElementById("push-fail-pop");
@@ -6899,6 +6905,7 @@ async function pushActionsToEdge() {
   const headers = edgeAuthHeaders({ "Content-Type": "application/json" });
   if (!headers["x-hx-board-password"] && !headers["x-hx-sync-key"]) return false;
   if (!dirtyStatusKeys.size && !dirtyManualIds.size && !pendingStatusDeletes.length && !pendingManualDeletes.length) {
+    noteActionsPushOk();
     setSaveSync("Saved");
     return true;
   }
@@ -6911,8 +6918,7 @@ async function pushActionsToEdge() {
       // Compare data time before upload. Failed fetch ≠ local wins.
       const remote = await fetchLatestBoardFresh();
       if (!remote) {
-        showPushFail("Could not reach the server. This upload is saved in this browser only.");
-        setSaveSync("Saved");
+        noteActionsPushFailed("Could not reach the server. This upload is saved in this browser only.");
         return true;
       }
       const remoteStatus = remote.status && typeof remote.status === "object" ? remote.status : {};
@@ -6932,6 +6938,7 @@ async function pushActionsToEdge() {
         lastRemoteActionsSig = actionsPayloadSig(remote);
         actionsFileCache = remote;
         persistActionsLocal();
+        noteActionsPushOk();
         setSaveSync("Saved");
         return true;
       }
@@ -6945,29 +6952,26 @@ async function pushActionsToEdge() {
       const body = await putRes.json().catch(() => ({}));
       if (putRes.status === 401 || putRes.status === 403) {
         if (!getBoardPassword()) lsRemove(SYNC_KEY_KEY);
-        showPushFail("Sync was rejected. Status is saved in this browser.");
-        setSaveSync("Saved");
+        noteActionsPushFailed("Sync was rejected. Status is saved in this browser.");
         return true;
       }
       if (putRes.status === 409 || (body && body.conflict)) {
         if (body && body.payload) applyServerPayload(body.payload, { keepDirty: false });
-        showPushFail(CONFLICT_MSG);
-        setSaveSync("Saved");
+        noteActionsPushFailed(CONFLICT_MSG);
         paint();
         return true;
       }
       if (!putRes.ok) {
-        showPushFail("Could not sync Status (" + putRes.status + "). Status is saved in this browser.");
-        setSaveSync("Saved");
+        noteActionsPushFailed("Could not sync Status (" + putRes.status + "). Status is saved in this browser.");
         return true;
       }
       if (body && body.payload) applyServerPayload(body.payload, { keepDirty: false });
       else clearDirtyAll();
+      noteActionsPushOk();
       setSaveSync("Saved");
     } while (pushQueued);
   } catch (e) {
-    showPushFail("Could not reach the server. This upload is saved in this browser only.");
-    setSaveSync("Saved");
+    noteActionsPushFailed("Could not reach the server. This upload is saved in this browser only.");
   } finally {
     pushBusy = false;
     window.setTimeout(() => { suppressRemoteMerge = false; }, 800);
@@ -7203,6 +7207,40 @@ function normManualRow(r) {
 }
 function persistManualCourses() {
   schedulePersistActions();
+}
+function manualIdentity(r) {
+  const n = normManualRow(r);
+  return n.staff + "|" + String(n.code || "").toUpperCase() + "|" + n.exp;
+}
+function dedupeManualRows() {
+  const by = new Map();
+  manualRows.forEach((raw) => {
+    const n = normManualRow(raw);
+    if (!n.staff || !(n.code || n.cname) || !n.exp) return;
+    const k = manualIdentity(n);
+    const prev = by.get(k);
+    if (!prev) { by.set(k, n); return; }
+    const local = dirtyManualIds.has(n.id);
+    const prevLocal = dirtyManualIds.has(prev.id);
+    if (local && !prevLocal) by.set(k, n);
+    else if (!local && prevLocal) return;
+    else if ((parseInt(n.v, 10) || 0) >= (parseInt(prev.v, 10) || 0)) by.set(k, n);
+  });
+  const keep = new Set(Array.from(by.values()).map((r) => r.id));
+  Array.from(dirtyManualIds).forEach((id) => { if (!keep.has(id)) dirtyManualIds.delete(id); });
+  manualRows = Array.from(by.values());
+}
+function noteActionsPushFailed(msg) {
+  actionsPushFailed = true;
+  if (!pushFailShown) {
+    showPushFail(msg);
+    pushFailShown = true;
+  }
+  setSaveSync("Only in this browser");
+}
+function noteActionsPushOk() {
+  actionsPushFailed = false;
+  pushFailShown = false;
 }
 function manualRowKey(r) {
   const n = normManualRow(r);
@@ -11392,16 +11430,55 @@ function applyHubGate(msg) {
   if (staffChanged) paint();
   else updateFilterNarrowHints();
 }
+function tovStampKey(stamp) {
+  if (!stamp || typeof stamp !== "object") return "";
+  return [stamp.manual || "", stamp.status || "", stamp.brs || "", stamp.ual || "", stamp.ct || "", stamp.omt || ""].join("|");
+}
+async function loadBoardStamp() {
+  try {
+    const join = SYNC_EDGE_URL.indexOf("?") >= 0 ? "&" : "?";
+    const res = await fetch(SYNC_EDGE_URL + join + "stamp=1", {
+      cache: "no-store",
+      headers: edgeAuthHeaders()
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data && data.stamp && typeof data.stamp === "object" ? data.stamp : null;
+  } catch (e) {
+    return null;
+  }
+}
+function pendingLocalActions() {
+  return !!(dirtyStatusKeys.size || dirtyManualIds.size || pendingStatusDeletes.length || pendingManualDeletes.length || actionsPushFailed);
+}
 async function pollRemoteActions() {
   if (syncPollBusy || suppressRemoteMerge || pushBusy || ingestPushBusy) return;
   if (!remoteBoardConfirmed) return;
   syncPollBusy = true;
   try {
+    const stamp = await loadBoardStamp();
+    if (!stamp) {
+      if (pendingLocalActions() || dirtyIngest) setSaveSync("Only in this browser");
+      else setSaveSync("Could not check for newer data");
+      return;
+    }
+    const canWrite = canRemoteWrite() && !!(getBoardPassword() || getSyncKey());
+    if (canWrite && pendingLocalActions()) await pushActionsToEdge();
+    if (canWrite && dirtyIngest) {
+      quietIngestRetry = !!ingestSyncFailed;
+      try { await pushIngestToEdge(); } finally { quietIngestRetry = false; }
+    }
+    const key = tovStampKey(stamp);
+    if (lastBoardStamp && key === lastBoardStamp) return;
     const lite = await loadActionsFromEdge({ mode: "lite" });
-    if (!lite) return;
+    if (!lite) {
+      setSaveSync("New data is on the server. This page could not download it yet.");
+      return;
+    }
     const brsChanged = applyRemoteBrs(lite);
     const sig = actionsPayloadSig(lite);
     if (!sig || sig === lastRemoteActionsSig) {
+      lastBoardStamp = key;
       if (brsChanged) paint();
       return;
     }
@@ -11423,6 +11500,7 @@ async function pollRemoteActions() {
     } else {
       remote = Object.assign({}, lite, { _lite: true });
     }
+    lastBoardStamp = key;
     setSaveSync("Updating…");
     applyServerPayload(remote, {
       keepDirty: !!(dirtyStatusKeys.size || dirtyManualIds.size || pendingStatusDeletes.length || pendingManualDeletes.length)
@@ -11504,8 +11582,17 @@ window.addEventListener("message", (e) => {
     try {
       const fresh = await fetchLatestBoardFresh();
       if (fresh) {
+        const pendingLocalManual = manualRows.map(normManualRow);
         // Status/manual from server first; ingest merged per uploadedAt (not session/open time).
         applyServerPayload(fresh, { keepDirty: false });
+        pendingLocalManual.forEach((r) => {
+          if (!r.staff || !(r.code || r.cname) || !r.exp) return;
+          if (manualRows.some((x) => manualIdentity(x) === manualIdentity(r))) return;
+          manualRows.push(r);
+          markManualDirty(r.id, 0, false);
+        });
+        const stampNow = await loadBoardStamp();
+        if (stampNow) lastBoardStamp = tovStampKey(stampNow);
         lastRemoteIngestHadContent = ingestHasContent(fresh);
         lastRemoteIngestMetaSig = ingestMetaSig(fresh);
         remoteBoardConfirmed = true;
@@ -11548,6 +11635,14 @@ window.addEventListener("message", (e) => {
     setSaveSync("Could not load latest — refresh");
   }
 })();
+function pokeSync() {
+  if (remoteBoardConfirmed) pollRemoteActions();
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") pokeSync();
+});
+window.addEventListener("online", pokeSync);
+window.addEventListener("pageshow", pokeSync);
 window.addEventListener("storage", (e) => {
   if (e.key === COURSE_STORE) paint();
 });

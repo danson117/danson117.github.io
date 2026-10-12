@@ -139,12 +139,12 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.20">v2.20</div>
+  <div class="page-version" data-version="2.21">v2.21</div>
 <script src="ocg-pax-data.js?v=17"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
 <script src="authorization-list-data.js?v=7"></script>
-<script src="hx-shared-sync.js?v=1.5"></script>
+<script src="hx-shared-sync.js?v=1.6"></script>
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["team","Team"],["staff","Staff #"],["name","Name"],
@@ -735,9 +735,13 @@ async function syncAuthFromCloud(quiet) {
         applyPack(doc.pack);
       },
       onStatus: (s) => {
-        if (quiet) return;
+        if (s === "offline") {
+          authSyncNote = " · could not check for newer data";
+          rebuildView(false);
+          return;
+        }
+        if (quiet || s === "unchanged") return;
         if (s === "uploaded") authSyncNote = " · shared";
-        else if (s === "offline") authSyncNote = " · this browser";
       }
     });
     if (result && result.reason === "equal" && !quiet) {
@@ -1155,7 +1159,11 @@ if (!unpack()) {
   bindUi();
   document.documentElement.classList.add("hx-ready");
   void syncAuthFromCloud(false);
-  window.setInterval(() => { void syncAuthFromCloud(true); }, 20000);
+  if (window.HxSharedSync && window.HxSharedSync.watch) {
+    window.HxSharedSync.watch(AUTH_DOC, () => { void syncAuthFromCloud(true); });
+  } else {
+    window.setInterval(() => { void syncAuthFromCloud(true); }, 20000);
+  }
 }
 </script>
 </body>

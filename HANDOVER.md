@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **主動同步：** Training One View 寫入失敗係因為接觸唔到 Supabase。而家專案回覆 egress quota 已滿，瀏覽器經 Edge 嘅讀寫會被拒，直到計劃或用量恢復。資料庫本身已有今次 Manual LM00108（HJ 授權組，25 人，到期 2026-10-08）。同步改為先問一個細 stamp，冇變就停，有變先下載嗰一份。刷新、返去分頁、約 5 秒（TOV）或 20 秒（Auth／Lic／Course completion／Line MX／Course List／BRS）都會查。寫入失敗留喺瀏覽器再試，唔好刷新就當冇。Alpha／Karson 仍然係上傳後另一部機刷新先下載。TOV **v15.47**、hub **v21.27**、Auth **v2.21**、Lic **v2.10**、Course completion **v2.34**、Line MX **v2.6**、Course List **v2.4**、BRS **v5.8**、`hx-rules` **v11.0**、`hx-shared-sync.js` **v1.6**。Edge `team-board` 已部署。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。用量未恢復之前，刷新仍然會話接觸唔到伺服器。
+
 ## 2026-10-11 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **OCG Name List · Role AV · LGW：** Home 或 Current 係 **LGW…** → Role 加 **AV**（即使有 B1）。仍然保留 B2／B2* 冇 B1 → AV。Name List **v3.26**、hub **v21.26**、`hx-rules` **v10.99**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。

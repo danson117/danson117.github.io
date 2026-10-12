@@ -96,9 +96,54 @@
     return res.json();
   }
 
-  function readDocFromBoard(board, docId) {
-    if (!board || !board.status) return null;
-    var rec = board.status[metaKey(docId)];
+  var seenDocToken = {};
+  var liveFns = {};
+  var liveTimer = 0;
+
+  async function fetchStamp() {
+    var res = await fetch(EDGE_URL + "?stamp=1", { cache: "no-store", headers: authHeaders() });
+    if (!res.ok) throw new Error("stamp " + res.status);
+    var data = await res.json();
+    if (!data || !data.stamp || typeof data.stamp !== "object" || Array.isArray(data.stamp)) {
+      var err = new Error("no-stamp");
+      err.code = "no-stamp";
+      throw err;
+    }
+    return data.stamp;
+  }
+
+  function docTokenFromStamp(stamp, docId) {
+    if (!stamp || typeof stamp !== "object") return "";
+    var docs = stamp.docs && typeof stamp.docs === "object" ? stamp.docs : {};
+    if (Object.prototype.hasOwnProperty.call(docs, docId)) return String(docs[docId] || "");
+    if (docId === "briefing-read-sign") return String(stamp.brs || "");
+    return "";
+  }
+
+  function armLiveTimer() {
+    if (liveTimer || typeof window === "undefined") return;
+    liveTimer = window.setInterval(runLiveFns, 20000);
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") runLiveFns();
+    });
+    window.addEventListener("online", runLiveFns);
+    window.addEventListener("pageshow", runLiveFns);
+  }
+
+  function runLiveFns() {
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+    Object.keys(liveFns).forEach(function (id) {
+      try { liveFns[id](); } catch (e) {}
+    });
+  }
+
+  function watch(docId, fn) {
+    if (!docId || typeof fn !== "function") return;
+    liveFns[String(docId)] = fn;
+    armLiveTimer();
+  }
+
+  function readRec(rec) {
     if (!rec || rec.remark == null || rec.remark === "") return null;
     try {
       var parsed = JSON.parse(String(rec.remark));
@@ -113,9 +158,32 @@
     }
   }
 
+  function readDocFromBoard(board, docId) {
+    if (!board || !board.status) return null;
+    return readRec(board.status[metaKey(docId)]);
+  }
+
   async function pullDoc(docId) {
-    var board = await fetchBoard();
-    return readDocFromBoard(board, docId);
+    var res = await fetch(EDGE_URL + "?doc=" + encodeURIComponent(docId), {
+      cache: "no-store",
+      headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error("shared-sync GET " + res.status);
+    var data = await res.json();
+    if (data && Object.prototype.hasOwnProperty.call(data, "rec") && !data.status) return readRec(data.rec);
+    return readDocFromBoard(data, docId);
+  }
+
+  async function pullDocIfChanged(docId) {
+    var stamp = await fetchStamp();
+    var token = docTokenFromStamp(stamp, docId);
+    if (seenDocToken[docId] != null && seenDocToken[docId] === token) {
+      return { unchanged: true, doc: null, token: token };
+    }
+    var wrap = await pullDoc(docId);
+    seenDocToken[docId] = token;
+    if (wrap) wrap.token = token;
+    return wrap;
   }
 
   function isPublicDoc(docId) {
@@ -128,8 +196,7 @@
     if (!payloadDoc.v) payloadDoc.v = 1;
     // Compare server data time before upload. Failed fetch ≠ local wins.
     try {
-      var boardNow = await fetchBoard();
-      var remoteWrap = readDocFromBoard(boardNow, docId);
+      var remoteWrap = await pullDoc(docId);
       if (remoteWrap && remoteWrap.doc) {
         var localAt = parseDocAt(payloadDoc.updated);
         var remoteAt = Math.max(
@@ -139,7 +206,7 @@
         if (remoteAt > localAt) {
           var eOld = new Error("stale-local");
           eOld.code = "stale-local";
-          eOld.payload = boardNow;
+          eOld.payload = null;
           eOld.remote = remoteWrap;
           throw eOld;
         }
@@ -261,9 +328,27 @@
 
     onStatus("syncing");
     var local = await Promise.resolve(getLocal());
+    var localHasEarly = !localEmpty(local);
+    var localAtEarly = parseDocAt(local && local.updated);
+    var token = null;
+    try {
+      var stamp = await fetchStamp();
+      token = docTokenFromStamp(stamp, docId);
+      var tokenAt = parseDocAt(token);
+      if (seenDocToken[docId] != null && seenDocToken[docId] === token && !(localHasEarly && localAtEarly > tokenAt)) {
+        onStatus("unchanged");
+        return { ok: true, reason: "unchanged" };
+      }
+    } catch (eStamp) {
+      if (!(eStamp && eStamp.code === "no-stamp")) {
+        onStatus("offline");
+        return { ok: false, reason: "offline", error: eStamp };
+      }
+    }
     var remoteWrap = null;
     try {
       remoteWrap = await pullDoc(docId);
+      if (token != null) seenDocToken[docId] = token;
     } catch (e) {
       onStatus("offline");
       return { ok: false, reason: "offline", error: e };
@@ -449,7 +534,10 @@
     getStaff: getStaff,
     promptPassword: promptPassword,
     fetchBoard: fetchBoard,
+    fetchStamp: fetchStamp,
     pullDoc: pullDoc,
+    pullDocIfChanged: pullDocIfChanged,
+    watch: watch,
     pushDoc: pushDoc,
     syncDoc: syncDoc,
     docHasContent: docHasContent,

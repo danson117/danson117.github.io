@@ -567,12 +567,12 @@
       </table>
     </div>
   </div>
-  <div class="page-version" data-version="2.33" aria-label="Page version 2.33">v2.33</div>
+  <div class="page-version" data-version="2.34" aria-label="Page version 2.34">v2.34</div>
 <script src="ocg-pax-data.js?v=17"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="authorization-list-data.js?v=7"></script>
 <script src="hx-xlsx.js?v=4"></script>
-<script src="hx-shared-sync.js?v=1.5"></script>
+<script src="hx-shared-sync.js?v=1.6"></script>
 <script>
 try { if (typeof hxUnpackRoster === "function") hxUnpackRoster(); } catch (e) {}
 const byStaff = new Map();
@@ -848,6 +848,7 @@ const CMP_GATE_PW = "hx:hub:gate-pw";
 const CMP_GATE_STAFF = "hx:hub:gate-staff";
 const CMP_CHECK_STORE = "hx:course-completion:checks";
 const CMP_CHECK_DOC = "course-completion-checks";
+let cmpCheckNeedsPush = false;
 const CMP_VIEW_STORE = "hx:course-completion:view";
 const CMP_VIEW_DOC = "course-completion-view";
 let cmpChecks = [];
@@ -2428,7 +2429,12 @@ async function cmpSyncChecksBody() {
   if (!window.HxSharedSync) return;
   let remoteWrap = null;
   try {
-    remoteWrap = await window.HxSharedSync.pullDoc(CMP_CHECK_DOC);
+    if (cmpCheckNeedsPush || !window.HxSharedSync.pullDocIfChanged) {
+      remoteWrap = await window.HxSharedSync.pullDoc(CMP_CHECK_DOC);
+    } else {
+      remoteWrap = await window.HxSharedSync.pullDocIfChanged(CMP_CHECK_DOC);
+      if (remoteWrap && remoteWrap.unchanged) return;
+    }
   } catch (e) {
     return;
   }
@@ -2449,7 +2455,9 @@ async function cmpSyncChecksBody() {
     try {
       await window.HxSharedSync.pushDoc(CMP_CHECK_DOC, cmpPackCheckDoc());
       cmpCheckStaleRetry = 0;
+      cmpCheckNeedsPush = false;
     } catch (e) {
+      cmpCheckNeedsPush = true;
       if (e && e.code === "stale-local" && cmpCheckStaleRetry < 1) {
         cmpCheckStaleRetry += 1;
         scheduleCmpCheckPush();
@@ -2536,7 +2544,13 @@ async function cmpSyncViewFromCloud(quiet) {
       getLocal: () => cmpPackViewDoc(),
       localEmpty: (doc) => !(doc && doc.view && Array.isArray(doc.view.rows) && doc.view.rows.length),
       applyRemote: () => {},
-      onStatus: () => {}
+      onStatus: (s) => {
+        if (s !== "offline") return;
+        const note = document.getElementById("cmp-status");
+        if (note && note.textContent.indexOf("Could not check for newer data") < 0) {
+          note.textContent = (note.textContent ? note.textContent + " · " : "") + "Could not check for newer data";
+        }
+      }
     });
     if (!quiet && result && result.reason === "pulled") {
       const statusEl = document.getElementById("cmp-status");
@@ -4611,10 +4625,15 @@ paintCmpCheckLog();
 cmpLoadViewLocal();
 void cmpSyncChecksFromCloud();
 void cmpSyncViewFromCloud(false);
-window.setInterval(() => {
-  void cmpSyncChecksFromCloud();
-  void cmpSyncViewFromCloud(true);
-}, 20000);
+if (window.HxSharedSync && window.HxSharedSync.watch) {
+  window.HxSharedSync.watch(CMP_CHECK_DOC, () => { void cmpSyncChecksFromCloud(); });
+  window.HxSharedSync.watch(CMP_VIEW_DOC, () => { void cmpSyncViewFromCloud(true); });
+} else {
+  window.setInterval(() => {
+    void cmpSyncChecksFromCloud();
+    void cmpSyncViewFromCloud(true);
+  }, 20000);
+}
 </script>
 </body>
 </html>

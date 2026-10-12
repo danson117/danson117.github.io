@@ -868,10 +868,10 @@
     </div>
   </div>
 
-  <div class="page-version" data-version="5.7">v5.7</div>
+  <div class="page-version" data-version="5.8">v5.8</div>
   <script src="ocg-pax-data.js?v=17"></script>
   <script src="ocg-pax-data-unpack.js?v=1"></script>
-  <script src="hx-shared-sync.js?v=1.4"></script>
+  <script src="hx-shared-sync.js?v=1.6"></script>
   <script src="authorization-list-data.js?v=7"></script>
   <script>
 (function () {
@@ -2918,23 +2918,36 @@
       if (panel) panel.scrollIntoView({ block: "start" });
     }, 80);
   }
-  window.HxSharedSync && window.HxSharedSync.syncDoc(SHARED, {
-    getLocal: function () {
-      try {
-        var o = JSON.parse(localStorage.getItem(STORE) || "");
-        if (o && Array.isArray(o.items)) return o;
-      } catch (e) {}
-      return { v: 1, updated: "", app: SHARED, keys: { record: 1 }, issued: {}, items: [] };
-    },
-    localEmpty: function (d) { return !(d && Array.isArray(d.items) && d.items.length); },
-    applyRemote: applyRemote,
-    onStatus: function (s) {
-      if (s === "need-password") paintStatus("Saved in this browser. Unlock HX once to sync across devices.");
-      else if (s === "uploaded") paintStatus("Uploaded this list.");
-      else if (s === "synced") paintStatus("Synced from the shared list.");
-      else if (s === "offline") paintStatus("Cloud unreachable. Using this browser copy.");
+  function brsCloudOpts(quiet) {
+    return {
+      getLocal: function () {
+        try {
+          var o = JSON.parse(localStorage.getItem(STORE) || "");
+          if (o && Array.isArray(o.items)) return o;
+        } catch (e) {}
+        return { v: 1, updated: "", app: SHARED, keys: { record: 1 }, issued: {}, items: [] };
+      },
+      localEmpty: function (d) { return !(d && Array.isArray(d.items) && d.items.length); },
+      applyRemote: applyRemote,
+      onStatus: function (s) {
+        if (s === "unchanged") return;
+        if (quiet && s === "synced") return;
+        if (s === "need-password") paintStatus("Saved in this browser. Unlock HX once to sync across devices.");
+        else if (s === "uploaded") paintStatus("Uploaded this list.");
+        else if (s === "synced") paintStatus("Synced from the shared list.");
+        else if (s === "offline") paintStatus("Could not check for newer data. Using this browser copy.");
+      }
+    };
+  }
+  window.HxSharedSync && window.HxSharedSync.syncDoc(SHARED, brsCloudOpts(false)).then(function () {
+    cloudReady = true;
+    renderAdminEditor();
+    if (window.HxSharedSync.watch) {
+      window.HxSharedSync.watch(SHARED, function () {
+        window.HxSharedSync.syncDoc(SHARED, brsCloudOpts(true));
+      });
     }
-  }).then(function () { cloudReady = true; renderAdminEditor(); });
+  });
 })();
   </script>
 </body>
