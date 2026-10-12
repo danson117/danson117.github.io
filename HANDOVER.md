@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **公司帳同家庭帳分開：** 公司 HX 用 GitHub `danson236051`（`danson236051@gmail.com`）。本機新鏡像 `C:\Cursor\danson236051.github.io`，只複製 `HX/`，未 push（呢部機 `gh` 仍然係 `danson117`）。家庭、Life OS、呢個倉留 `danson117`。**2026-10-19** 先提醒刪除呢個倉嘅 HX 後備；而家唔刪。Supabase 只有一個項目，名 `hx-test`、ref `kcoszufshvvpxikpzlue`，入面係用緊嘅資料，唔刪；要喺 Dashboard 改名做 `hx`（ref 不變）。新 Supabase／Vercel 要用戶用 `danson236051` 登入先開得。`hx-rules` **v11.2**、hub **v21.29**。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Hub 用量指標：** 側欄底部顯示 Supabase Plan（Pro）、Database 即時容量同百分比、Files、Egress 限額。Egress 已用幾多同帳單幾時完，project 讀唔到，頁面唔估，撳 Usage page。hub **v21.28**、`hx-rules` **v11.1**。Edge `team-board` 加 `?usage=1`。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
 - **Edge 回復：** 部署時曾經短暫 500。而家 `team-board` 已直接部署完整程式。`?stamp=1` 同 `?usage=1` 都係 200。`index.runtime.js` 係去掉型別嘅副本；源碼仍然以 `index.ts` 為準。
 

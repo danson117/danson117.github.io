@@ -1,13 +1,16 @@
 ---
-description: GitHub ops only as user danson117 / danson.mj@gmail.com — never 0421alpha
+description: Company HX uses danson236051; family and this repo stay danson117. Never 0421alpha.
 alwaysApply: true
 ---
 
-# GitHub account lock — danson117 only
+# GitHub account lock
 
-GitHub operations may use **ONLY** the GitHub user `danson117` / email `danson.mj@gmail.com`. Never use any other GitHub account, especially `0421ALPHA` / `0421alpha`.
+Two GitHub users, split by purpose. Never use `0421ALPHA` / `0421alpha`.
 
-**Email split:** Cursor account email `0421alpha@gmail.com` is **NOT** the GitHub account. Never use `0421alpha`, `0421ALPHA`, or `0421alpha@gmail.com` as the GitHub author, `gh` login, remotes, or Vercel Git author. Commits / `gh` / remotes / Vercel Git author = `danson117` / `danson.mj@gmail.com` only.
+- **Family and this repo:** `danson117` / `danson.mj@gmail.com` only. Includes `danson117/danson117.github.io` and `danson117/life-os`.
+- **Company HX only:** `danson236051` / `danson236051@gmail.com`. Local mirror `C:\Cursor\danson236051.github.io`. Do not put family pages there.
+
+**Email split:** Cursor account email `0421alpha@gmail.com` is **NOT** a GitHub account. Never use `0421alpha`, `0421ALPHA`, or `0421alpha@gmail.com` as the GitHub author, `gh` login, remotes, or Vercel Git author.
 
 This is an **account lock** (User Rule + every project). Different from `github-sync.mdc` (Pages SSOT / pull-then-push for this repo only).
 
@@ -17,13 +20,15 @@ Visible SoT: `HX/hx-rules.html` red **GitHub account lock**.
 
 Before `gh`, `git push`, `git remote`, repo create, or Vercel GitHub import: check the authenticated username (`gh api user --jq .login` or equivalent).
 
-- If it is **not** `danson117` → **STOP**. Do not create, push, authorize, or import.
-- If `gh` is logged in as someone else → stop and say so. Do not proceed with that account.
+- This repo or `danson117/life-os`, and the login is **not** `danson117` → **STOP**.
+- The company HX repo, and the login is **not** `danson236051` → **STOP**.
+- If `gh` is logged in as someone else → stop and say so. Do not proceed with that account. Do not switch the saved `gh` login in order to push the other repo.
 
 ## Forbidden
 
-- Never create or push repos under another user or org
-- Never switch to, log in as, or reuse credentials for `0421ALPHA` / `0421alpha` or any other account
+- Never create or push family or Life OS repos under `danson236051`
+- Never create or push company HX repos under `danson117` after the new repo exists
+- Never switch to, log in as, or reuse credentials for `0421ALPHA` / `0421alpha`
 - Never set Git author to `0421alpha@gmail.com`
 
 ## Life OS author (per command only)
