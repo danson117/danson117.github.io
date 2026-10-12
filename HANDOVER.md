@@ -10,6 +10,11 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **家庭入口：** 根目錄 `index.html` **v1.0**。一個 Vercel app 側欄睇晒家庭題目（Alpha、Karson、乘數表、拼字、動詞、中作、作文、行李、成長、物品、特快公屋、Life OS 另開）。用量百分比喺側欄底部。公司內容唔嵌進來。網址 `https://danson117-github-io.vercel.app/`。GitHub → Vercel。
+- **呢個倉唔處理公司嘢：** 一涉及 HAECO／HX，停手，提醒去 `C:\Cursor\danson236051.github.io`、GitHub `danson236051/danson236051.github.io`、`https://danson236051githubio.vercel.app/HX/hx.html`。規矩喺 `.cursor/rules/hx-company-repo-only.mdc`。舊 `HX/` 仍然係後備，今次冇改公司頁。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **公司交接改去公司倉：** 公司 HAECO 嘅完整交接而家喺 `danson236051/danson236051.github.io` 根目錄 `HANDOVER.md`。公司頁面之後只喺嗰個倉改。呢份家庭交接繼續記家庭同 Life OS。Alpha Learn、Karson Learn、Life OS 仍然留喺呢個倉同舊 Supabase。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

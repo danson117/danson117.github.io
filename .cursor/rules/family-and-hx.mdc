@@ -1,14 +1,16 @@
 ---
-description: main root is family pages; work files go in HX/
+description: Family hub is index.html. This repo does not handle company HX.
 alwaysApply: true
 ---
 
-# Family on main root, work in HX
+# Family on main root
 
-`main` 根目錄 = **家庭**。`HX/` = **工作**。
+`main` 根目錄 = **家庭**。入口係 `index.html`，側欄一次睇晒家庭題目。`HX/` 係公司舊後備，呢個倉唔再改。
 
-- 家庭頁：根目錄 `物品清單.html`、`todo.html`
-- 工作檔：只放入 `HX/`
+公司內容唔喺呢度處理。一涉及 HAECO／HX／職員訓練，停手，提醒去 `C:\Cursor\danson236051.github.io`、GitHub `danson236051/danson236051.github.io`、網站 `https://danson236051githubio.vercel.app/HX/hx.html`。
+
+- 家庭頁：根目錄，由 `index.html` 入
+- 唔好把公司頁再寫入呢個倉
 - 唔好再開 `家庭/` folder
 - 唔好把呢兩頁再複製去其他 branch
 - After every local HX / repo update that should live on GitHub, **commit and `git push` immediately** (same turn). Do not leave work only on this PC. If several versions were never pushed, **push the latest** (one commit of current state is enough — do not invent one commit per missed version). Do not push secrets (`.env`, passwords, credentials). Do not force-push. Do not skip hooks unless the user asked.
