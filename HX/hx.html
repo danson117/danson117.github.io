@@ -95,8 +95,52 @@
       }
       body.nav-off nav h1,
       body.nav-off nav p,
-      body.nav-off #topics {
+      body.nav-off #topics,
+      body.nav-off .sb-usage {
         display: none;
+      }
+      .sb-usage {
+        flex-shrink: 0;
+        margin-top: 8px;
+        padding: 8px 8px 6px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(0, 0, 0, 0.18);
+        font-size: 11px;
+        line-height: 1.35;
+        color: var(--side-ink);
+      }
+      .sb-usage b {
+        font-weight: 650;
+      }
+      .sb-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .sb-bar {
+        height: 6px;
+        margin: 3px 0 4px;
+        background: rgba(255, 255, 255, 0.22);
+      }
+      .sb-bar > i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: #00a8ad;
+      }
+      .sb-bar > i.warn {
+        background: #e6a817;
+      }
+      .sb-bar > i.hot {
+        background: #e24b4b;
+      }
+      .sb-meta {
+        color: var(--side-dim);
+        font-size: 10px;
+        margin: 0 0 6px;
+      }
+      .sb-usage a {
+        color: #b7e6ea;
       }
       nav h1 {
         font-size: 15px;
@@ -592,6 +636,18 @@
         </button>
       </div>
       <div id="topics"></div>
+      <div id="sb-usage" class="sb-usage" aria-label="Supabase usage">
+        <div class="sb-row"><b>Supabase</b><span id="sb-plan">—</span></div>
+        <div class="sb-row"><span>Database</span><span id="sb-db-pct">—</span></div>
+        <div class="sb-bar"><i id="sb-db-bar"></i></div>
+        <div class="sb-meta" id="sb-db-meta">—</div>
+        <div class="sb-meta" id="sb-file-meta">Files —</div>
+        <div class="sb-row"><span>Egress</span><span id="sb-eg-pct">—</span></div>
+        <div class="sb-bar"><i id="sb-eg-bar"></i></div>
+        <div class="sb-meta" id="sb-eg-meta">—</div>
+        <div class="sb-meta" id="sb-period">Period end —</div>
+        <div class="sb-meta"><a id="sb-usage-link" href="https://supabase.com/dashboard/org/buqbydyobfihnnfpxirb/usage" target="_blank" rel="noopener">Usage page</a></div>
+      </div>
     </nav>
     <main>
       <div class="bar">
@@ -744,7 +800,7 @@
       </div>
     </div>
 
-    <div class="page-version" data-version="21.27">v21.27</div>
+    <div class="page-version" data-version="21.28">v21.28</div>
     <script src="ocg-pax-data.js?v=17"></script>
     <script src="ocg-pax-data-unpack.js?v=1"></script>
     <script>
@@ -842,7 +898,7 @@
         },
         {
           id: "rules",
-          file: "hx-rules.html?v=11.0",
+          file: "hx-rules.html?v=11.1",
           title: "HX 規矩",
           blurb: "規則 · 交接 · 共用同步",
         },
@@ -2369,6 +2425,88 @@
         }
       });
 
+      function fmtQuota(n) {
+        const bytes = Number(n);
+        if (!isFinite(bytes) || bytes < 0) return "—";
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        let v = bytes;
+        let i = 0;
+        while (v >= 1024 && i < units.length - 1) {
+          v /= 1024;
+          i += 1;
+        }
+        const digits = v >= 100 || i === 0 ? 0 : v >= 10 ? 1 : 2;
+        return v.toFixed(digits) + " " + units[i];
+      }
+      function paintMeter(barId, pctId, used, limit) {
+        const bar = document.getElementById(barId);
+        const pctEl = document.getElementById(pctId);
+        if (used == null || !isFinite(Number(used)) || !limit) {
+          if (bar) {
+            bar.style.width = "0";
+            bar.className = "";
+          }
+          if (pctEl) pctEl.textContent = "—";
+          return null;
+        }
+        const pct = (Number(used) / Number(limit)) * 100;
+        if (bar) {
+          bar.style.width = Math.min(100, Math.max(0, pct)) + "%";
+          bar.className = pct >= 100 ? "hot" : pct >= 80 ? "warn" : "";
+        }
+        if (pctEl) {
+          pctEl.textContent = (pct < 10 ? pct.toFixed(1) : String(Math.round(pct))) + "%";
+        }
+        return pct;
+      }
+      function paintSbUsage(data) {
+        const limits = (data && data.limits) || {};
+        const plan = document.getElementById("sb-plan");
+        if (plan) plan.textContent = data && data.plan ? String(data.plan) : "—";
+        paintMeter("sb-db-bar", "sb-db-pct", data && data.databaseBytes, limits.databaseBytes);
+        const dbMeta = document.getElementById("sb-db-meta");
+        if (dbMeta) {
+          dbMeta.textContent = fmtQuota(data && data.databaseBytes) + " / " + fmtQuota(limits.databaseBytes);
+        }
+        const fileMeta = document.getElementById("sb-file-meta");
+        if (fileMeta) {
+          fileMeta.textContent = "Files " + fmtQuota(data && data.fileBytes) + " / " + fmtQuota(limits.fileBytes);
+        }
+        const egUsed = data && data.egressBytes != null ? data.egressBytes : null;
+        paintMeter("sb-eg-bar", "sb-eg-pct", egUsed, limits.egressBytes);
+        const egMeta = document.getElementById("sb-eg-meta");
+        if (egMeta) {
+          egMeta.textContent = egUsed == null
+            ? "— / " + fmtQuota(limits.egressBytes) + " · used GB is on the usage page"
+            : fmtQuota(egUsed) + " / " + fmtQuota(limits.egressBytes);
+        }
+        const period = document.getElementById("sb-period");
+        if (period) {
+          const end = data && data.periodEnd;
+          if (!end) period.textContent = "Period end —";
+          else {
+            const d = new Date(end);
+            period.textContent = isNaN(d.getTime())
+              ? "Period end —"
+              : "Period end " + d.getFullYear() + "-" +
+                String(d.getMonth() + 1).padStart(2, "0") + "-" +
+                String(d.getDate()).padStart(2, "0") + " " +
+                String(d.getHours()).padStart(2, "0") + ":" +
+                String(d.getMinutes()).padStart(2, "0");
+          }
+        }
+        const link = document.getElementById("sb-usage-link");
+        if (link && data && data.usagePage) link.href = String(data.usagePage);
+      }
+      async function loadSbUsage() {
+        try {
+          const res = await fetch(GATE_EDGE + "?usage=1", { cache: "no-store" });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return;
+          paintSbUsage(data);
+        } catch (e) {}
+      }
+
       (async function init() {
         await fetchGatePublic();
         gateStaff = padStaff(lsGet(GATE_STAFF_KEY) || "");
@@ -2403,6 +2541,8 @@
         }
         applyGateChrome();
         renderTopics();
+        loadSbUsage();
+        setInterval(loadSbUsage, 15 * 60 * 1000);
         const start = location.hash.replace(/^#/, "") || loadTopic();
         show(start);
         window.addEventListener("hashchange", () =>

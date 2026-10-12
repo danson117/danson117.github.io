@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Hub 用量指標：** 側欄底部顯示 Supabase Plan（Pro）、Database 即時容量同百分比、Files、Egress 限額。Egress 已用幾多同帳單幾時完，project 讀唔到，頁面唔估，撳 Usage page。hub **v21.28**、`hx-rules` **v11.1**。Edge `team-board` 加 `?usage=1`。GitHub 後備 → Vercel。刷新已開嘅分頁。唔開 Chrome。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Supabase Pro 已恢復：** 組織 `hx` 而家係 Pro。Edge `team-board` 讀寫回 200，唔再係 egress 402。今早已寫入但未帶課程名嘅 Manual LM00108（25 人，到期 2026-10-08）補上瀏覽器嗰個課程名。瀏覽器有、伺服器未有嘅兩份較新 CT Reminder（Daily 3015 行、Weekly 365 行，上傳時間 2026-10-12）已寫入 Supabase。Action log 補返呢三次。Mandatory 檔同伺服器一樣，冇再覆蓋。GitHub 檔冇改訓練頁。刷新已開嘅分頁。唔開 Chrome。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

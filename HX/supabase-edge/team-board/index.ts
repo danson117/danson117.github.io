@@ -493,6 +493,26 @@ Deno.serve(async (req: Request) => {
   }
 
   if (req.method === "GET" && !path.includes("/gate") && !path.includes("/pin/")) {
+    if (url.searchParams.get("usage") === "1") {
+      const { data, error } = await admin.rpc("hx_project_disk");
+      if (error) return json(500, { error: error.message });
+      const disk = data && typeof data === "object" ? data as Record<string, unknown> : {};
+      // Plan and included quotas are the Pro figures for this organization.
+      // Egress already used, and the billing-period end, are not stored in the project.
+      return json(200, {
+        plan: "Pro",
+        databaseBytes: Number(disk.databaseBytes) || 0,
+        fileBytes: Number(disk.fileBytes) || 0,
+        egressBytes: null,
+        periodEnd: null,
+        limits: {
+          databaseBytes: 8 * 1024 * 1024 * 1024,
+          fileBytes: 100 * 1024 * 1024 * 1024,
+          egressBytes: 250 * 1024 * 1024 * 1024,
+        },
+        usagePage: "https://supabase.com/dashboard/org/buqbydyobfihnnfpxirb/usage",
+      });
+    }
     const stampOnly = url.searchParams.get("stamp") === "1";
     const docId = String(url.searchParams.get("doc") || "");
     if (stampOnly) {
