@@ -458,12 +458,13 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <div class="page-version" data-version="1.3" aria-label="頁面版本 1.2" style="position:fixed;right:10px;bottom:8px;font:12px/1 sans-serif;opacity:.55;z-index:9;">v1.3</div>
+  <div class="page-version" data-version="1.4" aria-label="頁面版本 1.4" style="position:fixed;right:10px;bottom:8px;font:12px/1 sans-serif;opacity:.55;z-index:9;">v1.4</div>
 
   <script src="HX/hx-shared-sync.js?v=1.7"></script>
   <script>
     const STORAGE_KEY = "luggage-packing-checklist-v3";
     const UI_KEY = "luggage-packing-checklist-ui-v1";
+    const UPDATED_KEY = "luggage-packing-checklist-updated";
     const SHARED_DOC = "travel-list";
     let cloudReady = false;
     let suppressCloudPush = false;
@@ -722,10 +723,32 @@
       return { showDoneByCat: {} };
     }
 
+    function loadDocUpdated() {
+      try {
+        const saved = localStorage.getItem(UPDATED_KEY);
+        if (saved && Number.isFinite(Date.parse(saved))) return saved;
+      } catch (_) {}
+      return "";
+    }
+
+    let docUpdated = loadDocUpdated();
+    let editedBeforeCloud = false;
+
+    function rememberDocUpdated(iso) {
+      if (!iso || !Number.isFinite(Date.parse(iso))) return;
+      docUpdated = iso;
+      try { localStorage.setItem(UPDATED_KEY, docUpdated); } catch (_) {}
+    }
+
+    function touchDocUpdated() {
+      rememberDocUpdated(new Date().toISOString());
+      if (!cloudReady) editedBeforeCloud = true;
+    }
+
     function packCloudDoc() {
       return {
         v: 1,
-        updated: new Date().toISOString(),
+        updated: docUpdated || "1970-01-01T00:00:00.000Z",
         app: "travel_list",
         payload: state
       };
@@ -757,6 +780,7 @@
       : function () {};
 
     function saveState() {
+      touchDocUpdated();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       updateProgress();
       scheduleCloudPush();
@@ -1290,11 +1314,13 @@
         getLocal: () => packCloudDoc(),
         localEmpty: localCloudEmpty,
         applyRemote: (doc) => {
+          if (editedBeforeCloud) return;
           suppressCloudPush = true;
           try {
             if (doc && Array.isArray(doc.payload) && doc.payload.length) {
               state = normalize(doc.payload);
               localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+              rememberDocUpdated(doc.updated);
             }
           } finally {
             setTimeout(() => { suppressCloudPush = false; }, 100);
@@ -1302,7 +1328,7 @@
         },
         onStatus: (s) => {
           if (s === "uploaded") setSyncStatus("已把本機清單上傳到 Supabase。");
-          else if (s === "synced") setSyncStatus("已從 Supabase 同步最新清單。");
+          else if (s === "synced" || s === "unchanged") setSyncStatus("已是最新清單。");
           else if (s === "offline") setSyncStatus("雲端暫未能連線；使用本機清單。");
           else if (s === "empty") setSyncStatus("尚未有共用清單。");
         }
@@ -1315,9 +1341,17 @@
       window.HxSharedSync.watch(SHARED_DOC, function () { syncCloudOnBoot(true); });
     }
 
+    render();
     (async function boot() {
-      try { await syncCloudOnBoot(); } catch (e) { setSyncStatus("本機清單（同步略過）。"); }
-      render();
+      try {
+        const result = await syncCloudOnBoot();
+        if (editedBeforeCloud) scheduleCloudPush();
+        else if (result && result.reason === "pulled") render();
+      } catch (e) {
+        cloudReady = true;
+        setSyncStatus("本機清單（同步略過）。");
+        if (editedBeforeCloud) scheduleCloudPush();
+      }
     })();
   </script>
 </body>

@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **行李清單開頁加快：** 先畫本機清單，雲端喺背後核對。冇改過唔再當「而家時間」去上傳成個板。改過先記時間再上傳。行李 **v1.4**、Home **v1.4**。GitHub `danson117/home` → Vercel。刷新已開分頁。唔開 Chrome。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Stamp 規矩同而家做法一樣：** 開住約 5 秒問 stamp，冇變就停，有變先下載嗰一份一次；本機改動會上傳。唔改規矩文。Home 側欄：Alpha、Karson、行李、成長、特快公屋篩選已有。動詞分類、作文技巧、老豆阿媽、物品清單、特快公屋初選冇編輯，唔開共用文件。Life OS 係另一個 app。Home 仍然 **v1.3**。GitHub `danson117/home`。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
