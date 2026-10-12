@@ -99,6 +99,7 @@
   var seenDocToken = {};
   var liveFns = {};
   var liveTimer = 0;
+  var liveBusy = false;
 
   async function fetchStamp() {
     var res = await fetch(EDGE_URL + "?stamp=1", { cache: "no-store", headers: authHeaders() });
@@ -122,7 +123,7 @@
 
   function armLiveTimer() {
     if (liveTimer || typeof window === "undefined") return;
-    liveTimer = window.setInterval(runLiveFns, 20000);
+    liveTimer = window.setInterval(runLiveFns, 5000);
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState === "visible") runLiveFns();
     });
@@ -130,11 +131,35 @@
     window.addEventListener("pageshow", runLiveFns);
   }
 
-  function runLiveFns() {
+  async function runLiveFns() {
     if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
-    Object.keys(liveFns).forEach(function (id) {
-      try { liveFns[id](); } catch (e) {}
-    });
+    if (liveBusy) return;
+    var ids = Object.keys(liveFns);
+    if (!ids.length) return;
+    liveBusy = true;
+    try {
+      var stamp;
+      try {
+        stamp = await fetchStamp();
+      } catch (e) {
+        return;
+      }
+      for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        var token = docTokenFromStamp(stamp, id);
+        if (seenDocToken[id] != null && seenDocToken[id] === token) continue;
+        try { await liveFns[id](); } catch (e2) {}
+      }
+    } finally {
+      liveBusy = false;
+    }
+  }
+
+  async function rememberDocStamp(docId) {
+    try {
+      var stamp = await fetchStamp();
+      seenDocToken[docId] = docTokenFromStamp(stamp, docId);
+    } catch (e) {}
   }
 
   function watch(docId, fn) {
@@ -234,6 +259,7 @@
       // Old Edge (no /shared) returns 401/405. Fall back only if this browser already unlocked HX.
       if (pubRes.status !== 401 && pubRes.status !== 405) {
         if (!pubRes.ok) throw new Error("shared-sync PUT " + pubRes.status);
+        await rememberDocStamp(docId);
         return readDocFromBoard(pubData.payload || (await fetchBoard()), docId);
       }
       if (!getPassword()) throw new Error("shared-sync PUT " + pubRes.status);
@@ -289,6 +315,7 @@
       throw e409;
     }
     if (!res.ok) throw new Error("shared-sync PUT " + res.status);
+    await rememberDocStamp(docId);
     return readDocFromBoard(data.payload || (await fetchBoard()), docId);
   }
 
@@ -335,7 +362,7 @@
       var stamp = await fetchStamp();
       token = docTokenFromStamp(stamp, docId);
       var tokenAt = parseDocAt(token);
-      if (seenDocToken[docId] != null && seenDocToken[docId] === token && !(localHasEarly && localAtEarly > tokenAt)) {
+      if (seenDocToken[docId] != null && seenDocToken[docId] === token && (opts.poll || !(localHasEarly && localAtEarly > tokenAt))) {
         onStatus("unchanged");
         return { ok: true, reason: "unchanged" };
       }
@@ -354,6 +381,15 @@
       return { ok: false, reason: "offline", error: e };
     }
     var remote = remoteWrap && remoteWrap.doc;
+    if (opts.poll) {
+      if (docHasContent(remote)) {
+        await Promise.resolve(applyRemote(remote));
+        onStatus("synced");
+        return { ok: true, reason: "pulled", remote: remote, v: remoteWrap.v };
+      }
+      onStatus("empty");
+      return { ok: true, reason: "empty" };
+    }
     var localHas = !localEmpty(local);
     var remoteHas = docHasContent(remote);
     var localAt = parseDocAt(local && local.updated);
@@ -523,6 +559,52 @@
     return { ok: true };
   }
 
+  function mountFamilyUsage() {
+    if (typeof document === "undefined" || typeof location === "undefined") return;
+    var path = String(location.pathname || "").replace(/\\/g, "/");
+    if (/\/HX\//i.test(path)) return;
+    if (document.getElementById("sb-plan") || document.getElementById("fam-sb-usage")) return;
+    var bar = document.createElement("a");
+    bar.id = "fam-sb-usage";
+    bar.target = "_blank";
+    bar.rel = "noopener";
+    bar.href = "https://supabase.com/dashboard/org/buqbydyobfihnnfpxirb/usage";
+    bar.style.cssText = "position:fixed;left:8px;bottom:8px;z-index:9998;font:11px/1.35 sans-serif;color:#243044;background:#fff;border:1px solid #c5d0da;border-radius:8px;padding:4px 8px;text-decoration:none;max-width:72vw;box-shadow:0 1px 4px rgba(0,0,0,.08);";
+    bar.textContent = "Supabase …";
+    function pct(used, limit) {
+      if (used == null || !limit) return "—";
+      var p = (Number(used) / Number(limit)) * 100;
+      if (!isFinite(p)) return "—";
+      return (p < 10 ? p.toFixed(1) : String(Math.round(p))) + "%";
+    }
+    function paint(data) {
+      var limits = (data && data.limits) || {};
+      var plan = data && data.plan ? String(data.plan) : "—";
+      var eg = data && data.egressBytes != null ? pct(data.egressBytes, limits.egressBytes) : "—";
+      bar.textContent = "Plan " + plan +
+        " · DB " + pct(data && data.databaseBytes, limits.databaseBytes) +
+        " · Files " + pct(data && data.fileBytes, limits.fileBytes) +
+        " · Egress " + eg;
+      if (data && data.usagePage) bar.href = String(data.usagePage);
+    }
+    function load() {
+      fetch(EDGE_URL + "?usage=1", { cache: "no-store" }).then(function (res) {
+        if (!res.ok) return null;
+        return res.json();
+      }).then(function (data) {
+        if (data) paint(data);
+      }).catch(function () {});
+    }
+    function attach() {
+      if (!document.body || document.getElementById("fam-sb-usage")) return;
+      document.body.appendChild(bar);
+      load();
+      window.setInterval(load, 15 * 60 * 1000);
+    }
+    if (document.body) attach();
+    else document.addEventListener("DOMContentLoaded", attach);
+  }
+
   global.HxSharedSync = {
     EDGE_URL: EDGE_URL,
     META_PREFIX: META_PREFIX,
@@ -549,4 +631,5 @@
     pinAdminList: pinAdminList,
     pinAdminReset: pinAdminReset,
   };
+  mountFamilyUsage();
 })(typeof window !== "undefined" ? window : globalThis);

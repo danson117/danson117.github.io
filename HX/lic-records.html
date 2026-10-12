@@ -102,12 +102,12 @@
       <p><b>OCG</b> = CG + PAX. A person is <b>CG</b> or <b>PAX</b> only. This list does not change published Name List Home / Current.</p>
     </div>
   </div>
-  <div class="page-version" data-version="2.10">v2.10</div>
+  <div class="page-version" data-version="2.11">v2.11</div>
 <script src="ocg-pax-data.js?v=17"></script>
 <script src="ocg-pax-data-unpack.js?v=1"></script>
 <script src="hx-xlsx.js?v=4"></script>
 <script src="lic-records-data.js?v=3"></script>
-<script src="hx-shared-sync.js?v=1.6"></script>
+<script src="hx-shared-sync.js?v=1.7"></script>
 <script>
 const COLS = [
   ["group","CG/PAX"],["dept","Section"],["team","Team"],["staff","Staff #"],["name","Name"],
@@ -876,7 +876,7 @@ if (!unpack()) {
   if (window.HxSharedSync && window.HxSharedSync.watch) {
     window.HxSharedSync.watch(LIC_DOC, () => { void syncLicFromCloud(true); });
   } else {
-    window.setInterval(() => { void syncLicFromCloud(true); }, 20000);
+    window.setInterval(() => { void syncLicFromCloud(true); }, 5000);
   }
 }
 document.documentElement.classList.add("hx-ready");

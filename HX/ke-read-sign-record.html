@@ -323,8 +323,8 @@
     </div>
   </div>
   <div class="stage" id="sheets"></div>
-  <div class="page-version no-print" data-version="1.7">v1.7</div>
-  <script src="hx-shared-sync.js?v=1.6"></script>
+  <div class="page-version no-print" data-version="1.8">v1.8</div>
+  <script src="hx-shared-sync.js?v=1.7"></script>
   <script>
 (function () {
   "use strict";
@@ -846,7 +846,13 @@
     });
     cloudReady = true;
   }
-  if (!state.brsId) syncNow();
+  if (!state.brsId) {
+    syncNow().then(function () {
+      if (window.HxSharedSync && window.HxSharedSync.watch) {
+        window.HxSharedSync.watch(SHARED_DOC, function () { syncNow(); });
+      }
+    });
+  }
 })();
   </script>
 </body>

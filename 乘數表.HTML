@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>數學 · 乘數表</title>
     <link rel="stylesheet" href="math-tailwind.css">
-    <script src="HX/hx-shared-sync.js?v=1.6"></script>
+    <script src="HX/hx-shared-sync.js?v=1.7"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap');
         html, body { margin: 0; padding: 0; }
@@ -405,10 +405,11 @@
             } catch(e) { console.log("無法儲存至 localStorage"); }
         }
 
-        async function syncMistakesOnBoot() {
+        async function syncMistakesOnBoot(poll) {
             if (!window.HxSharedSync) { cloudReady = true; return; }
             try {
                 await window.HxSharedSync.syncDoc(SHARED_DOC, {
+                    poll: poll === true,
                     getLocal: () => packCloudDoc(),
                     localEmpty: localCloudEmpty,
                     applyRemote: (doc) => {
@@ -429,7 +430,9 @@
             } catch (e) {}
             cloudReady = true;
         }
-        syncMistakesOnBoot();
+        if (window.HxSharedSync && window.HxSharedSync.watch) {
+            window.HxSharedSync.watch(SHARED_DOC, function () { syncMistakesOnBoot(true); });
+        }
 
         function startGame(practiceMode, customPool) {
             isPracticeMode = practiceMode;
@@ -970,6 +973,6 @@
         document.getElementById('btn-hide').addEventListener('click', () => allCells.forEach(c => c.classList.remove('revealed')));
     });
 </script>
-<div class="page-version" data-version="1.2" aria-label="頁面版本 1.2" style="position:fixed;right:10px;bottom:8px;font:12px/1 sans-serif;opacity:.55;z-index:99;">v1.2</div>
+<div class="page-version" data-version="1.3" aria-label="頁面版本 1.2" style="position:fixed;right:10px;bottom:8px;font:12px/1 sans-serif;opacity:.55;z-index:99;">v1.3</div>
 </body>
 </html>

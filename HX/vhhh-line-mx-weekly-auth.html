@@ -281,10 +281,10 @@
   </div>
   <p class="hist-empty" id="hist-empty">No differences saved yet.</p>
 
-      <p class="page-version">page-version 2.6</p>
+      <p class="page-version">page-version 2.7</p>
 </div>
 
-<script src="hx-shared-sync.js?v=1.6"></script>
+<script src="hx-shared-sync.js?v=1.7"></script>
 <script>
 (function () {
   "use strict";
@@ -1615,7 +1615,7 @@
     if (window.HxSharedSync && window.HxSharedSync.watch) {
       window.HxSharedSync.watch(LMX_DOC, () => { void syncLmxFromCloud(true); });
     } else {
-      window.setInterval(() => { void syncLmxFromCloud(true); }, 20000);
+      window.setInterval(() => { void syncLmxFromCloud(true); }, 5000);
     }
   }
 

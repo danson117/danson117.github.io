@@ -152,8 +152,8 @@
     <option value="annual"></option>
     <option value="one-time"></option>
   </datalist>
-  <div class="page-version" data-version="2.4" aria-label="Page version 2.4">v2.4</div>
-<script src="hx-shared-sync.js?v=1.6"></script>
+  <div class="page-version" data-version="2.5" aria-label="Page version 2.4">v2.5</div>
+<script src="hx-shared-sync.js?v=1.7"></script>
 <script>
 const COURSE_STORE = "hx:course-catalog:rows";
 const UI_Q = "hx:course-catalog:q";
@@ -337,9 +337,10 @@ const scheduleCloudPush = (window.HxSharedSync && window.HxSharedSync.schedule)
       }
     }, 1200)
   : function () {};
-async function syncCoursesFromCloud() {
+async function syncCoursesFromCloud(poll) {
   if (!window.HxSharedSync) return;
   const result = await window.HxSharedSync.syncDoc(SHARED_DOC, {
+    poll: poll === true,
     getLocal: () => packCourseDoc(),
     localEmpty: (doc) => !(doc && Array.isArray(doc.rows) && doc.rows.length),
     applyRemote: (doc) => {
@@ -754,7 +755,7 @@ window.addEventListener("storage", (e) => {
   loadSaved();
   await syncCoursesFromCloud();
   if (window.HxSharedSync && window.HxSharedSync.watch) {
-    window.HxSharedSync.watch(SHARED_DOC, () => { void syncCoursesFromCloud(); });
+    window.HxSharedSync.watch(SHARED_DOC, () => { void syncCoursesFromCloud(true); });
   }
   const added = seedFromBoard();
   const relatedChanged = fillRelated();
