@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **HAECO 資料已齊，Edge／Vercel 未開：** 真正 ref 係 `wmswfnrjfkevvhkpbpxd`（另一個拼法解析唔到）。已有訓練主檔 1 行（家庭共用文件未搬）、修訂 17 行、Line MX 8 週＋meta、登入閘、19 個 HX 函式。新項目 Edge `team-board` 而家 404。Vercel 呢部機仍然係 `danson117`，未開公司項目。公司倉 commit `1d8cbf7` 已指住新 ref。舊倉仍然指 `kcoszufshvvpxikpzlue`。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **公司 Supabase 項目 HAECO：** ref `wmswfnrjfkevvhkpbpxd`，地區 Singapore，帳 `danson236051@gmail.com`。已建 `hx_private` 表，搬咗 Line MX 8 週同登入閘。家庭共用文件留喺舊項目 `kcoszufshvvpxikpzlue`。公司倉頁面已改指新項目並 push。訓練主檔同 Edge、Vercel 未完。舊倉未刪。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
