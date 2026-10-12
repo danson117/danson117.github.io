@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-13 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
+- **公司電腦脫節，先去公司倉：** 分倉係喺屋企電腦做完。公司電腦未有獨立 `danson236051.github.io`。返公司第一件事：開新 folder `C:\Cursor\danson236051.github.io`，用 GitHub 用戶 `danson236051` clone `danson236051/danson236051.github.io`，讀嗰份根目錄 `HANDOVER.md` 開頭「公司電腦第一次對齊」。唔好再喺呢個倉改 HAECO／HX。公司 Supabase 係 HAECO `wmswfnrjfkevvhkpbpxd`。公司 Vercel 係 `https://danson236051githubio.vercel.app/HX/hx.html`。家庭、Life OS、Alpha、Karson 仍然留呢個倉同舊 Supabase `kcoszufshvvpxikpzlue`。GitHub。冇改 Supabase。冇改頁。
+
 ## 2026-10-12 屋企電腦
 
 - **交通意外紀錄：** 寫入 2026年9月警方信件。交通意外頁 **v1.2**、Home 整體 **v2.1**。GitHub `danson117/home` → Vercel。
