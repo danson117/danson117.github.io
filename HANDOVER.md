@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Home 整體版本：** 右下角係成個 Home（整體 v1.9）。每個題目自己嘅版本留低，顯示喺標題下面同左下角。側欄仍然有「交通意外」。GitHub `danson117/home` → Vercel 會重新部署。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Home v1.8：** 側欄生活組加「交通意外」題目，放喺老豆阿媽後面，說明係家人須知。GitHub `danson117/home` → Vercel 會重新部署。刷新已開分頁。唔開 Chrome。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
