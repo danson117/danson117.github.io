@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **公司 Supabase 項目 HAECO：** ref `wmswfnrjfkevvhkpbpxd`，地區 Singapore，帳 `danson236051@gmail.com`。已建 `hx_private` 表，搬咗 Line MX 8 週同登入閘。家庭共用文件留喺舊項目 `kcoszufshvvpxikpzlue`。公司倉頁面已改指新項目並 push。訓練主檔同 Edge、Vercel 未完。舊倉未刪。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **公司 GitHub 倉已開：** 私人倉 `danson236051/danson236051.github.io`，`main` 已 push，只得 `HX/`。本機 `C:\Cursor\danson236051.github.io`。舊倉 `danson117/danson117.github.io` 未刪（2026-10-19 先提醒）。Supabase 同 Vercel 未開；新 Supabase 項目名用 **HX**，唔好 test。預設 `gh` 仍然係 `danson117`。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
