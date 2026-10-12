@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Home · 老豆阿媽：** 側欄加 section，放入兩張醫管局醫療費用減免證明（相片同有效期）。冇寫身份證號碼入呢份紀錄。Home **v1.2**、`parents.html` **v1.0**。GitHub → Vercel。刷新已開嘅分頁。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Home：** 家庭入口改名 **Home**，`index.html` **v1.1**。側欄係呢個倉根目錄每一頁（Alpha Learn、Karson Learn、乘數表、乘數表練習、拼字、動詞分類、中作4、小五六作文、作文技巧、行李清單、成長記錄、物品清單、特快公屋、特快公屋初選）加 Life OS 另開。公司頁只係文字連結，唔嵌 iframe。網址仍然 `https://danson117-github-io.vercel.app/`。Vercel／GitHub／Supabase 顯示名對齊 **Home**（slug `home`）；改唔到嘅名會寫喺下一句。GitHub → Vercel。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
