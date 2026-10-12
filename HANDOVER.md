@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Owner hub login is enough for every company HX page; no second Unlock.** 公司倉 `danson236051/danson236051.github.io` commit `35c4e9e`。Training One View **v15.48**、hub **v21.31**、`hx-rules` **v11.5**。GitHub 已 push；Vercel 應自動跟公司倉。刷新 `https://danson236051githubio.vercel.app/HX/hx.html#team-board`。冇改 Supabase。唔開 Chrome。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **公司 HX HTML 只改 danson236051：** 由今次起，公司 HAECO 頁面只喺 `danson236051/danson236051.github.io` 改同 push。舊倉 `danson117/danson117.github.io` 嘅 HX HTML 係後備，唔再更新。家庭頁同 `HANDOVER.md` 仍然喺 danson117。公司 `hx-rules` **v11.4**。GitHub。冇改 Supabase。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
