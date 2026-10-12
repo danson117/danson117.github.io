@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Life OS 開頁加快：** 程式由美國華盛頓改去新加坡，同 Supabase 資料庫同一區。開頁先出側欄，約 5 秒先問 stamp；暖機冇變唔再讀成個資料庫。Life OS **v0.3**。GitHub `danson117/life-os` → Vercel `https://life-os-danson117.vercel.app/`。Home `#life-os` 仍然嵌呢個網址。刷新已開分頁。唔開 Chrome。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **老豆阿媽 · 陳遠歡眼科：** 2026-10-10 轉介信（香港專業眼科手術及激光中心 → 威爾斯親王醫院眼科專科門診）同 2026-05-23 醫療報告 PDF，放喺陳遠歡一段。毛素芳減免證明冇郁。兩張減免證明留低。`parents.html` **v1.1**、Home **v1.6**。GitHub `danson117/home` → Vercel。刷新已開分頁。唔開 Chrome。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
