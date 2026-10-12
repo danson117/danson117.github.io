@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Home v1.8：** 側欄生活組加「交通意外」題目，放喺老豆阿媽後面，說明係家人須知。GitHub `danson117/home` → Vercel 會重新部署。刷新已開分頁。唔開 Chrome。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Life OS 開頁加快：** 程式由美國華盛頓改去新加坡，同 Supabase 資料庫同一區。開頁先出側欄，約 5 秒先問 stamp；暖機冇變唔再讀成個資料庫。Life OS **v0.3**。GitHub `danson117/life-os` → Vercel `https://life-os-danson117.vercel.app/`。Home `#life-os` 仍然嵌呢個網址。刷新已開分頁。唔開 Chrome。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
