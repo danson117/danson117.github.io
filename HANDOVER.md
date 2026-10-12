@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Stamp 規矩同而家做法一樣：** 開住約 5 秒問 stamp，冇變就停，有變先下載嗰一份一次；本機改動會上傳。唔改規矩文。Home 側欄：Alpha、Karson、行李、成長、特快公屋篩選已有。動詞分類、作文技巧、老豆阿媽、物品清單、特快公屋初選冇編輯，唔開共用文件。Life OS 係另一個 app。Home 仍然 **v1.3**。GitHub `danson117/home`。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Life OS · 醫療豁免續期：** 跟現有續約 `CSL續約（阿媽）`。毛素芳減免至 2027-09-29，辦事日 2027-07-29。陳遠歡減免至 2027-12-11，辦事日 2027-10-11。每人一條資料（到期日）、一條提示日曆全日行程、一條待辦。待辦由辦事日起每週催，唔設下一年重複。寫入屋企本機 `C:\Cursor\life-os\data\life.db`，並同步 Supabase `life_os`。冇寫身份證號碼。GitHub 冇呢份資料庫。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
