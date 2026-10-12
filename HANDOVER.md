@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Home 側欄唔重複學習工具：** Alpha Learn 選單已有拼字、小五六作文、中作4；Karson Learn 選單已有乘數表（練習喺同一頁）。呢四樣同乘數表練習不再列 Home 側欄，HTML 檔留低。動詞分類同作文技巧唔喺兩個選單，仍然列出。Home **v1.3**。規矩：呢個 folder 改完唔開新瀏覽器，用戶刷新已開分頁。GitHub `danson117/home` → Vercel 項目 **home**。Supabase 顯示名仍然 **hx-test**。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **Home · 老豆阿媽：** 側欄加 section，放入兩張醫管局醫療費用減免證明（相片同有效期）。冇寫身份證號碼入呢份紀錄。Home **v1.2**、`parents.html` **v1.0**。GitHub → Vercel。刷新已開嘅分頁。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
