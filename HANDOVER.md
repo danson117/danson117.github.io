@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 2026-10-12 屋企電腦
+
+- **Home 側欄：** 移除去公司網站嘅連結。整體 Home **v2.0**。GitHub `danson117/home` → Vercel。
+
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
 - **Home 整體版本：** 右下角係成個 Home（整體 v1.9）。每個題目自己嘅版本留低，顯示喺標題下面同左下角。側欄仍然有「交通意外」。GitHub `danson117/home` → Vercel 會重新部署。
