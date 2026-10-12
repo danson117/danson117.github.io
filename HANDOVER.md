@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
+- **Life OS stamp：** 開住每 5 秒只問家庭 Edge stamp。冇變就停。有變先下載 `life-os` 一份。改行程、待辦、提醒、紀錄會自動上傳。設定同 Apple 密碼唔入呢份。iCloud 日曆同步保留。Edge `team-board` 公開名單加 `life-os`。上限約 1.4 MB。家庭 Supabase `kcoszufshvvpxikpzlue`，唔係公司項目。Life OS **v0.2**。刷新已開嘅 Life OS 分頁。唔開 Chrome。
+
+## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
+
 - **行李清單開頁加快：** 先畫本機清單，雲端喺背後核對。冇改過唔再當「而家時間」去上傳成個板。改過先記時間再上傳。行李 **v1.4**、Home **v1.4**。GitHub `danson117/home` → Vercel。刷新已開分頁。唔開 Chrome。
 
 ## 2026-10-12 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）

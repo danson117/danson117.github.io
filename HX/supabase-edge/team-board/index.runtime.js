@@ -551,7 +551,7 @@ Deno.serve(async (req) => {
   }
   if (path.endsWith("/shared") && req.method === "PUT") {
     const body = await req.json().catch(() => ({}));
-    const PUBLIC = /* @__PURE__ */ new Set(["alpha-learn", "karson-learn", "travel-list", "weight-records", "math-mistakes", "zhongzuo4", "p56-essay", "efas2026-hsc"]);
+    const PUBLIC = /* @__PURE__ */ new Set(["alpha-learn", "karson-learn", "travel-list", "weight-records", "math-mistakes", "zhongzuo4", "p56-essay", "efas2026-hsc", "life-os"]);
     const docId = String(body.docId || "").trim();
     if (!PUBLIC.has(docId)) return json(403, { error: "doc not public" });
     if (!body.doc || typeof body.doc !== "object" || Array.isArray(body.doc)) return json(400, { error: "doc required" });
