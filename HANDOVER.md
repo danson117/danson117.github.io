@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 屋企電腦先跟公司倉（2026-10-13 公司電腦寫）
+
+屋企電腦下一個 agent：先 pull 公司倉 `C:\Cursor\danson236051.github.io`，讀嗰度 `HANDOVER.md` 最上面一節「屋企電腦必須跟公司電腦：兩個帳同時連住，資料夾一樣三分」（2026-10-13 公司電腦），照做。兩個 GitHub、兩個 Vercel、Supabase 對應項目，同三條資料夾路徑，都以嗰節為準。唔好靠呢份家庭交接代替嗰段。做完先喺公司倉同呢份各加一句短註，話屋企電腦已經分完，再用正確帳分別 push。唔好寫秘密。
+
 ## 公司電腦：見到呢份就跟住做（2026-10-13 屋企電腦寫）
 
 屋企電腦（Desktop-Yanson）已經分完倉。公司電腦未有 `C:\Cursor\danson236051.github.io`，所以脫節。
