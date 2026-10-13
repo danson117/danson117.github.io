@@ -10,7 +10,11 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 屋企電腦先跟公司倉（2026-10-13 公司電腦寫）
 
-屋企電腦下一個 agent：先 pull 公司倉 `C:\Cursor\danson236051.github.io`，讀嗰度 `HANDOVER.md` 最上面一節「唔再有 danson236051.local」（2026-10-13 公司電腦），照住做同一樣搬移。如果屋企仲有 `C:\Cursor\danson236051.local`，秘密同大工具搬入公司倉 `.private\`（唔 commit），試算表搬入 `local-work\`，切帳腳本用 `scripts\use-github-account.ps1`，然後刪 `.local`。唔好重建 `.local`。唔好抄 `MACHINE.md`。屋企預設 `gh` 保持 `danson117`。家庭倉 HX 後備留到 2026-10-19，而家唔刪。做完先喺公司倉同呢份各加一句短註，再用正確帳分別 push。唔好寫秘密。
+屋企電腦下一個 agent：先 pull 公司倉 `C:\Cursor\danson236051.github.io`，讀嗰度 `HANDOVER.md` 最上面。家庭倉路徑例外同 `.private` 做到邊，以公司倉最新交接為準。如果屋企仲有 `C:\Cursor\danson236051.local`，秘密同大工具搬入公司倉 `.private\`（唔 commit），試算表搬入 `local-work\`，切帳腳本用 `scripts\use-github-account.ps1`，然後刪 `.local`。唔好重建 `.local`。唔好抄 `MACHINE.md`。屋企預設 `gh` 保持 `danson117`。家庭倉仍然係 `C:\Cursor\danson117.github.io`，唔好建立嵌套路徑。家庭倉 HX 後備留到 2026-10-19，而家唔刪。未做完嘅（解鎖檔、Vercel CLI）唔好寫成已經做完。做完先再用正確帳分別 push。唔好寫秘密。
+
+## 屋企電腦 .private 做到邊（2026-10-13 屋企電腦）
+
+屋企電腦已建立公司倉 `.private`。公司 GitHub 目錄已搬去 `C:\Cursor\danson236051.github.io\.private\gh-danson236051`。家庭倉仍然係 `C:\Cursor\danson117.github.io`，冇建立嵌套路徑。`.private\MACHINE.md` role 係屋企電腦。解鎖檔同 Vercel CLI 呢部未有，未算全部做完。GitHub。冇改 Supabase。冇改頁。
 
 ## 公司電腦：見到呢份就跟住做（2026-10-13 屋企電腦寫）
 
