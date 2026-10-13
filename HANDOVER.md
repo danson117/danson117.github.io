@@ -14,7 +14,7 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 屋企電腦 .private 做到邊（2026-10-13 屋企電腦）
 
-屋企電腦已建立公司倉 `.private`。公司 GitHub 目錄已搬去 `C:\Cursor\danson236051.github.io\.private\gh-danson236051`。家庭倉仍然係 `C:\Cursor\danson117.github.io`，冇建立嵌套路徑。`.private\MACHINE.md` role 係屋企電腦。Supabase CLI 已用公司 token 登入，只見 HAECO。Vercel 公司帳已登入 `.private\vercel`（`danson236051`）。預設 Vercel 未登入家庭帳。解鎖檔聽日先放。未算全部做完。GitHub。冇改 Supabase 資料。冇改頁。
+屋企電腦已建立公司倉 `.private`。公司 GitHub 目錄已搬去 `C:\Cursor\danson236051.github.io\.private\gh-danson236051`。家庭倉仍然係 `C:\Cursor\danson117.github.io`，冇建立嵌套路徑。`.private\MACHINE.md` role 係屋企電腦。Supabase CLI 已用公司 token 登入，只見 HAECO。Vercel 預設係 `danson117`，公司 `.private\vercel` 係 `danson236051`。解鎖檔聽日先放。未算全部做完。GitHub。冇改 Supabase 資料。冇改頁。
 
 ## 公司電腦：見到呢份就跟住做（2026-10-13 屋企電腦寫）
 
