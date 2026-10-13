@@ -6,7 +6,11 @@
 
 **每一次改動之後**（同一輪）寫重點：日期、邊部電腦、做咗乜、喺邊（GitHub／Supabase／Vercel），然後 commit + push。隨時可能換機繼續，另一部機要知做過乜。
 
-Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
+Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份係公司倉 `C:\Cursor\danson236051.github.io\.private\MACHINE.md`（唔 commit）。`C:\Cursor_Work` 兩部機都已收埋，唔好重建。
+
+## 屋企電腦收埋 C:\Cursor_Work（2026-10-13 屋企電腦）
+
+屋企電腦已刪 `C:\Cursor_Work`。公司草稿同唔入 Git 嘅試算表放公司倉 `.private\cursor-work\`。秘密檔只留公司倉 gitignore 嘅 `.secrets.env`。家庭頁留 `C:\Cursor\danson117.github.io`。`mo-so-fong-claim-guide.html` 用咗較新嗰份覆蓋家庭倉已有嘅同一頁。GitHub。冇改 Supabase。
 
 ## 屋企電腦先跟公司倉（2026-10-13 公司電腦寫）
 
