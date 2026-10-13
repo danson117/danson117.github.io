@@ -10,7 +10,7 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 屋企電腦先跟公司倉（2026-10-13 公司電腦寫）
 
-屋企電腦下一個 agent：先 pull 公司倉 `C:\Cursor\danson236051.github.io`，讀嗰度 `HANDOVER.md` 最上面「兩部機都可以有公司登入同解鎖」同「兩個帳同時連住，資料夾一樣三分」（2026-10-13 公司電腦），照做。屋企電腦可以有本地公司 GitHub 登入同 HX 解鎖，仍然唔好 commit。兩個 GitHub、兩個 Vercel、Supabase 對應項目，同三條資料夾路徑，都以公司倉嗰兩節為準。做完先喺公司倉同呢份各加一句短註，話屋企電腦已經分完，再用正確帳分別 push。唔好寫秘密。
+屋企電腦下一個 agent：先 pull 公司倉 `C:\Cursor\danson236051.github.io`，讀嗰度 `HANDOVER.md` 最上面一節「唔再有 danson236051.local」（2026-10-13 公司電腦），照住做同一樣搬移。如果屋企仲有 `C:\Cursor\danson236051.local`，秘密同大工具搬入公司倉 `.private\`（唔 commit），試算表搬入 `local-work\`，切帳腳本用 `scripts\use-github-account.ps1`，然後刪 `.local`。唔好重建 `.local`。唔好抄 `MACHINE.md`。屋企預設 `gh` 保持 `danson117`。家庭倉 HX 後備留到 2026-10-19，而家唔刪。做完先喺公司倉同呢份各加一句短註，再用正確帳分別 push。唔好寫秘密。
 
 ## 公司電腦：見到呢份就跟住做（2026-10-13 屋企電腦寫）
 
