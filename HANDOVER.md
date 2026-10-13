@@ -8,9 +8,71 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份只喺本機 `C:\Cursor_Work\MACHINE.md`。
 
+## 公司電腦：見到呢份就跟住做（2026-10-13 屋企電腦寫）
+
+屋企電腦（Desktop-Yanson）已經分完倉。公司電腦未有 `C:\Cursor\danson236051.github.io`，所以脫節。
+
+**公司電腦嘅下一個 agent：見到呢份就照下面做。** 用戶把呢份 copy 去公司電腦，或者公司電腦 `git pull` 到呢份，都係同一套。第一次對齊唔使再問用戶要第二份先至知做乜。Clone 完之後，公司倉根目錄 `HANDOVER.md` 有其後嘅公司工作紀錄；第一次 setup 跟呢度。
+
+### 兩邊
+
+- **公司 HAECO／HX：** GitHub `danson236051/danson236051.github.io`。本機獨立 folder `C:\Cursor\danson236051.github.io`。Cursor 開呢個 folder 做自己一個 workspace。
+- **家庭：** Home、Life OS、Alpha Learn、Karson Learn 留 `danson117`（GitHub 倉名 `danson117/home`，本機 `C:\Cursor\danson117.github.io`）。舊 Supabase `kcoszufshvvpxikpzlue`（畫面名 hx-test）係家庭資料。公司電腦可以 pull 嚟睇家庭。
+
+### 邊啲代理做，邊啲要用戶本人
+
+代理做得到：停改舊 HX、睇 `git status`、clone、`git pull`、讀公司倉交接、之後改公司頁同 push。
+
+要用戶本人做一次（代理唔好代登，唔好叫人把密碼貼上對話）：
+
+- 第一次 GitHub 登入 `danson236051`（`danson236051@gmail.com`）
+- Supabase 登入 `danson236051@gmail.com`，接項目 **HAECO**
+- Vercel 登入 `danson236051`，接現有項目
+
+### 1. 舊 folder 先停手
+
+- 公司電腦而家開住嘅舊 HX（`C:\Cursor\danson117.github.io` 或 `C:\Cursor_Work\danson117.github.io`）唔好再改、唔好再部署。
+- Clone 之前先 `git status`。有未 commit 嘅 HX 改動就停低問用戶。唔好丟，唔好直接抄去新倉。冇就以 GitHub 公司倉為準。
+
+### 2. 開返 danson236051 倉
+
+- 設 `GH_CONFIG_DIR=C:\Cursor_Work\gh-danson236051`。公司電腦第一次未有呢個目錄，要用戶本人喺呢度登入 `danson236051`。唔好改預設 `gh`（預設留 `danson117`）。唔好用 `0421alpha`／`0421alpha@gmail.com`。
+- 登入之後 clone 去 `C:\Cursor\danson236051.github.io`。Cursor 開呢個 folder。
+- Clone 完 `git pull`，再讀公司倉根目錄 `HANDOVER.md`。
+- 作者只用一次性 `git -c user.name=danson236051 -c user.email=danson236051@gmail.com`。唔好 `git config`。Push 完 unset `GH_CONFIG_DIR`。
+- 全域規矩如果寫「GitHub 只可以用 danson117」：開住公司 folder 時，公司倉 push 用 `danson236051`。家庭倉 push 仍然用 `danson117`（`GH_CONFIG_DIR` 必須 unset，`gh api user` 必須係 `danson117`）。
+- 永遠唔 force-push。永遠唔 commit 秘密、`.env`、token、密碼。
+
+### 3. 接公司 Supabase
+
+- 用戶登入 `danson236051@gmail.com`。項目名 **HAECO**，ref `wmswfnrjfkevvhkpbpxd`，地區 `ap-southeast-1`。
+- Edge：`https://wmswfnrjfkevvhkpbpxd.supabase.co/functions/v1/team-board`。公司頁已經指呢度。
+- 接 **HAECO**。唔好再指舊項目 `kcoszufshvvpxikpzlue`。唔好刪，唔好改名。
+- 秘密檔只喺屋企電腦：`C:\Cursor_Work\danson236051.secrets.env`，同公司倉嘅 `.secrets.env`（gitignore，唔入 Git）。唔好經 Git、呢份交接、或者對話傳密碼。公司電腦要跑資料庫：用戶自己私下把呢兩個檔拷去同一路徑，或者喺公司電腦登入 Supabase。代理唔好叫人把密碼貼上對話。
+
+### 4. 接公司 Vercel
+
+- 用戶登入帳 `danson236051`。項目已經上線。接現有項目。唔好再開一個新項目。
+- 正式網址：`https://danson236051githubio.vercel.app/HX/hx.html#team-board`
+- 要用 CLI 先 `vercel link` 去現有項目。推 `main` 會部署。推完對 live hub 版本。GitHub 成功唔等於站已跟上。
+- 寫呢段時 GitHub hub 係 **v21.39**（`b6cfb4f`）。公司電腦 pull 完先信倉入面嘅版本。
+- 舊網址 `https://danson117-github-io.vercel.app/HX/hx.html` 係後備。公司更新留喺新站。2026-10-19 先提醒刪舊倉 HX 後備。而家唔刪。
+
+### 5. 瀏覽器同解鎖
+
+- 公司 Chrome 開上面個新網址。舊網址嘅 localStorage 唔會跟過去。Owner 喺新站 hub 登入一次，每一頁有完整權限。
+- 解鎖檔 `C:\Cursor_Work\hx-unlock.local.json` 只留公司電腦。唔好 commit，唔好抄去屋企。伺服器接受就唔好再問。HAECO 拒絕先問用戶一次。
+- 唔好開新 Chrome。對話講 version，用戶自己刷新已開嘅分頁。
+
+### 6. 跟住
+
+- 之後每次先 `git pull` 再改公司頁。屋企電腦 2026-10-12 之後嘅公司改動都喺公司倉，公司電腦本地冇。
+- `C:\Cursor_Work\MACHINE.md` 喺公司電腦應寫公司電腦。唔好 commit。唔好改成屋企。
+- 家庭頁、Life OS、Alpha、Karson 繼續留呢個 `danson117` 倉。
+
 ## 2026-10-13 屋企（Desktop-Yanson · `C:\Cursor_Work\MACHINE.md`）
 
-- **公司電腦脫節，先去公司倉：** 分倉係喺屋企電腦做完。公司電腦未有獨立 `danson236051.github.io`。返公司第一件事：開新 folder `C:\Cursor\danson236051.github.io`，用 GitHub 用戶 `danson236051` clone `danson236051/danson236051.github.io`，讀嗰份根目錄 `HANDOVER.md` 開頭「公司電腦第一次對齊」。唔好再喺呢個倉改 HAECO／HX。公司 Supabase 係 HAECO `wmswfnrjfkevvhkpbpxd`。公司 Vercel 係 `https://danson236051githubio.vercel.app/HX/hx.html`。家庭、Life OS、Alpha、Karson 仍然留呢個倉同舊 Supabase `kcoszufshvvpxikpzlue`。GitHub。冇改 Supabase。冇改頁。
+- **公司電腦一份交接寫齊：** 上面「公司電腦：見到呢份就跟住做」係公司電腦第一次對齊嘅完整步驟。GitHub。冇改 Supabase。冇改頁。
 
 ## 2026-10-12 屋企電腦
 
