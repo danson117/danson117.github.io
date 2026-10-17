@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-17 屋企電腦（Desktop-Yanson）
 
+- Alpha Learn **v5.6**：不供詞填充改成四套，每套十六題，用齊同一批十六個詞，句子各不相同。頁面唔先顯示詞語，亦冇選項。心裏作答，點該題先顯示答案，再點一次隱藏，唔會一次顯示全部。Home 整體 **v2.3**。GitHub `danson117/home` → Vercel。冇改 Supabase。冇改 Karson。刷新已開分頁。唔開 Chrome。
+
+## 2026-10-17 屋企電腦（Desktop-Yanson）
+
 - Alpha Learn **v5.5**：加「詞語填充（小五）」四套，每套四題，每題四個不同詞做選項。答案預設隱藏；點該題空格先顯示，再點一次隱藏，唔會一次顯示全部。用詞：規模、完善、遜色、逼真、引人注目、探究、體驗、百聞不如一見、偶爾、耀眼、反射、撒、奪目、猶如、臥、璀璨。Home 整體 **v2.2**。GitHub `danson117/home` → Vercel。冇改 Supabase。冇改 Karson（小五練習，用戶指定放 Alpha）。刷新已開分頁。唔開 Chrome。
 
 ## 屋企電腦收埋 C:\Cursor_Work（2026-10-13 屋企電腦）
