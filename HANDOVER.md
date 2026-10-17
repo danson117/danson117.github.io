@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-17 屋企電腦（Desktop-Yanson）
 
+- Alpha Learn **v5.9**：不供詞填充加乙組十四題、四套。每套用齊呢十四個詞，句子不同；打開時每套各自隨機，同一組四套次序唔同。甲組十六題四套仍在。仍然唔供詞、冇選項；點該題先顯示答案同解釋。天色用「矇矇亮」。Home 整體 **v2.6**。GitHub `danson117/home` → Vercel。冇改 Supabase。冇改 Karson。刷新已開分頁。唔開 Chrome。
+
+## 2026-10-17 屋企電腦（Desktop-Yanson）
+
 - Alpha Learn **v5.8**：不供詞填充每次打開，四套各自隨機排題，四套次序唔會相同。刷新先換次序；點開答案同解釋嘅做法不變。Home 整體 **v2.5**。GitHub `danson117/home` → Vercel。冇改 Supabase。冇改 Karson。刷新已開分頁。唔開 Chrome。
 
 ## 2026-10-17 屋企電腦（Desktop-Yanson）

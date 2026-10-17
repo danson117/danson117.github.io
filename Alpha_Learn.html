@@ -1,10 +1,10 @@
-<!-- Ver.5.8 -->
+<!-- Ver.5.9 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="5.8">
+  <meta name="app-version" content="5.9">
   <title>Alpha_Learn</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&family=Noto+Serif+HK:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -185,7 +185,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.5.8</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.5.9</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -286,7 +286,7 @@
       <p class="dictate-hint" id="dictate-hint">聽完先寫低。寫好，先去下一句。可以撳課文某一句即刻讀。可以隱藏文字，淨係聽。</p>
     </div>
   </section>
-    <div class="version-badge" id="version-badge">Ver.5.8</div>
+    <div class="version-badge" id="version-badge">Ver.5.9</div>
   <script src="HX/hx-shared-sync.js?v=1.7"></script>
   <script>
   const APP_VERSION = "3.2";
@@ -1005,6 +1005,21 @@
     .tab strong { display: block; color: var(--accent); }
     .tab span { display: block; color: var(--muted); font-size: 0.86rem; }
     .tab.on { border-color: var(--accent); background: var(--accent-soft); }
+    .lessons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .lesson {
+      border: 2px solid var(--line);
+      background: #fff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      min-height: 56px;
+      touch-action: manipulation;
+    }
+    .lesson strong { display: block; color: var(--accent); }
+    .lesson span { display: block; color: var(--muted); font-size: 0.86rem; }
+    .lesson.on { border-color: var(--accent); background: var(--accent-soft); }
     .panel[hidden] { display: none; }
     .q {
       background: var(--card);
@@ -1061,15 +1076,19 @@
 <body>
   <div class="wrap">
     <h1>不供詞填充</h1>
-    <p class="lead">小五。四套，每套十六題，用盡同一批詞語，但句子不同。每次打開，每套題目都會重新隨機排列，四套不會用同一個次序。頁面不會先給詞，也沒有選項。請先在心裏作答，再點該題顯示答案；再點一次就隱藏。顯示答案時，才會看見為甚麼用這個詞。每次只顯示這一題。</p>
+    <p class="lead">小五。分甲、乙兩組，每組四套。甲組每套十六題，乙組每套十四題。每套都用盡該組全部詞語，句子不同。每次打開，題目都會重新隨機排列，同一組的四套不會用同一個次序。頁面不會先給詞，也沒有選項。請先在心裏作答，再點該題顯示答案；再點一次就隱藏。顯示答案時，才會看見為甚麼用這個詞。每次只顯示這一題。</p>
+    <div class="lessons" role="tablist" aria-label="詞語組">
+      <button class="lesson" type="button" role="tab" aria-selected="false" data-lesson="1"><strong>甲組</strong><span>16 題 · 四套</span></button>
+      <button class="lesson on" type="button" role="tab" aria-selected="true" data-lesson="2"><strong>乙組</strong><span>14 題 · 四套</span></button>
+    </div>
     <div class="tabs" role="tablist">
-      <button class="tab on" type="button" role="tab" aria-selected="true" data-set="1"><strong>第一套</strong><span>16 題</span></button>
-      <button class="tab" type="button" role="tab" aria-selected="false" data-set="2"><strong>第二套</strong><span>16 題</span></button>
-      <button class="tab" type="button" role="tab" aria-selected="false" data-set="3"><strong>第三套</strong><span>16 題</span></button>
-      <button class="tab" type="button" role="tab" aria-selected="false" data-set="4"><strong>第四套</strong><span>16 題</span></button>
+      <button class="tab on" type="button" role="tab" aria-selected="true" data-set="1"><strong>第一套</strong><span>14 題</span></button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-set="2"><strong>第二套</strong><span>14 題</span></button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-set="3"><strong>第三套</strong><span>14 題</span></button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-set="4"><strong>第四套</strong><span>14 題</span></button>
     </div>
 
-    <section class="panel" data-set="1">
+    <section class="panel" data-lesson="1" data-set="1" hidden>
       <article class="q">
         <p class="stem">1. 新落成的體育館<button type="button" class="blank" data-answer="規模" aria-expanded="false">＿＿＿＿</button>很大，看台可以坐滿幾千人。</p>
         <p class="hint">點這一題顯示答案</p>
@@ -1151,7 +1170,7 @@
         <p class="why">很多星星一起閃，用璀璨生輝。耀眼是一道光太強，奪目是單一件東西搶眼。</p>
       </article>
     </section>
-    <section class="panel" data-set="2" hidden>
+    <section class="panel" data-lesson="1" data-set="2" hidden>
       <article class="q">
         <p class="stem">1. 這次書展的<button type="button" class="blank" data-answer="規模" aria-expanded="false">＿＿＿＿</button>比去年大，連走廊都擺滿攤位。</p>
         <p class="hint">點這一題顯示答案</p>
@@ -1233,7 +1252,7 @@
         <p class="why">整條街很多燈一起亮，用一片璀璨。耀眼是一道光太強，這句是一片燈海。</p>
       </article>
     </section>
-    <section class="panel" data-set="3" hidden>
+    <section class="panel" data-lesson="1" data-set="3" hidden>
       <article class="q">
         <p class="stem">1. 跨海大橋的<button type="button" class="blank" data-answer="規模" aria-expanded="false">＿＿＿＿</button>龐大，開車要走好一陣子。</p>
         <p class="hint">點這一題顯示答案</p>
@@ -1315,7 +1334,7 @@
         <p class="why">很多寶石一起閃，用璀璨。耀眼是亮到刺眼，這句是閃爍、華麗。</p>
       </article>
     </section>
-    <section class="panel" data-set="4" hidden>
+    <section class="panel" data-lesson="1" data-set="4" hidden>
       <article class="q">
         <p class="stem">1. 這間超市的<button type="button" class="blank" data-answer="規模" aria-expanded="false">＿＿＿＿</button>不小，貨架從門口一直伸到最裏面。</p>
         <p class="hint">點這一題顯示答案</p>
@@ -1362,9 +1381,9 @@
         <p class="why">只在星期日下午畫，不是天天畫，用偶爾。常常做的事，不用偶爾。</p>
       </article>
       <article class="q">
-        <p class="stem">10. 對着這顆裸鑽，光芒太<button type="button" class="blank" data-answer="耀眼" aria-expanded="false">＿＿＿＿</button>，媽媽連忙把盒蓋上。</p>
+        <p class="stem">10. 對着這顆裸鑽，亮得太<button type="button" class="blank" data-answer="耀眼" aria-expanded="false">＿＿＿＿</button>，媽媽連忙把盒蓋上。</p>
         <p class="hint">點這一題顯示答案</p>
-        <p class="why">光芒強得要蓋上盒子，是耀眼。璀璨是華麗地閃；這句是亮得受不了。</p>
+        <p class="why">亮得要蓋上盒子，是耀眼。光芒是光線本身；這句是光太強、眼睛受不了。璀璨是華麗地閃。</p>
       </article>
       <article class="q">
         <p class="stem">11. 平靜的海面<button type="button" class="blank" data-answer="反射" aria-expanded="false">＿＿＿＿</button>着初升的太陽，水上水下像各有半個。</p>
@@ -1395,6 +1414,294 @@
         <p class="stem">16. 城市的夜景燈火<button type="button" class="blank" data-answer="璀璨" aria-expanded="false">＿＿＿＿</button>，從山上望下去像一幅光畫。</p>
         <p class="hint">點這一題顯示答案</p>
         <p class="why">一整片城市的燈一起閃，用璀璨。耀眼是一道光太強，這句是很多燈組成的夜景。</p>
+      </article>
+    </section>
+    <section class="panel" data-lesson="2" data-set="1">
+      <article class="q">
+        <p class="stem">1. 晚上太熱，我在床上<button type="button" class="blank" data-answer="輾轉反側" aria-expanded="false">＿＿＿＿</button>，很久都睡不着。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">躺着翻來覆去、很久睡不着，用輾轉反側。偶爾只是間中一次，這句是不斷翻身。</p>
+      </article>
+      <article class="q">
+        <p class="stem">2. 暑假我們去西安，參觀了不少<button type="button" class="blank" data-answer="名勝古蹟" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">有名的風景和古老建築合起來叫名勝古蹟。兵馬俑是其中一處，這句要的是這類地方的總稱。</p>
+      </article>
+      <article class="q">
+        <p class="stem">3. 博物館裏，一列列<button type="button" class="blank" data-answer="兵馬俑" aria-expanded="false">＿＿＿＿</button>站得筆直，像一支古代軍隊。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">用陶土做的兵士和馬，排成軍隊，叫兵馬俑。陪葬品可以是任何埋進墓裏的東西，這句專指這些陶俑。</p>
+      </article>
+      <article class="q">
+        <p class="stem">4. 古墓裏除了主人，還放着陶器和玉器，這些都是<button type="button" class="blank" data-answer="陪葬品" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">埋進古墓、給墓主用的物件叫陪葬品。兵馬俑是其中一種，這句還包括陶器和玉器。</p>
+      </article>
+      <article class="q">
+        <p class="stem">5. 戲臺上的將軍披上紅色<button type="button" class="blank" data-answer="戰袍" aria-expanded="false">＿＿＿＿</button>，看起來威風凜凜。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">將軍穿的戰衣叫戰袍。盔甲是又硬又重的護具，這句是披在身上的衣服。</p>
+      </article>
+      <article class="q">
+        <p class="stem">6. 士兵上陣前先穿上<button type="button" class="blank" data-answer="盔甲" aria-expanded="false">＿＿＿＿</button>，保護胸口和頭。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">上陣前穿上、保護胸口和頭的是盔甲。戰袍是衣服，擋不住刀劍。</p>
+      </article>
+      <article class="q">
+        <p class="stem">7. 哥哥才思很快，黑板報開頭幾句幾乎是<button type="button" class="blank" data-answer="一揮而就" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">才思快，幾句幾乎一下子寫成，用一揮而就。輾轉反側是翻來覆去睡不着，不是寫字。</p>
+      </article>
+      <article class="q">
+        <p class="stem">8. 我們出門時，天色才<button type="button" class="blank" data-answer="矇矇亮" aria-expanded="false">＿＿＿＿</button>，街上還沒有多少人。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">天剛有一點光、太陽還沒出來，用矇矇亮。朝陽是已經升起來的太陽。</p>
+      </article>
+      <article class="q">
+        <p class="stem">9. 前面的人很高，擋住了我的<button type="button" class="blank" data-answer="視線" aria-expanded="false">＿＿＿＿</button>，我只好側過身。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">被人擋住、望不過去，用視線。光芒是光線，這句是目光被擋。</p>
+      </article>
+      <article class="q">
+        <p class="stem">10. 雲層裂開一條縫，金色的<button type="button" class="blank" data-answer="光芒" aria-expanded="false">＿＿＿＿</button>灑了下來。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">從雲縫灑下來的是光線，用光芒。朝陽是太陽那個圓，這句是它射下的光。</p>
+      </article>
+      <article class="q">
+        <p class="stem">11. 我們面向東方，等那輪<button type="button" class="blank" data-answer="朝陽" aria-expanded="false">＿＿＿＿</button>升出海面。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">早晨從海面升起來的那輪太陽叫朝陽。光芒是它發出的光，這句是太陽本身。</p>
+      </article>
+      <article class="q">
+        <p class="stem">12. 風一停，湖面就<button type="button" class="blank" data-answer="波光粼粼" aria-expanded="false">＿＿＿＿</button>，像鋪了一層碎金。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">風停後湖面細細閃光，用波光粼粼。撒是把東西散在表面，這句是水面自己在閃。</p>
+      </article>
+      <article class="q">
+        <p class="stem">13. 水很清，橋的<button type="button" class="blank" data-answer="倒影" aria-expanded="false">＿＿＿＿</button>連欄杆都看得清楚。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">水裏映出橋和欄杆，那是倒影。反射是光折回來的動作，這句要的是映出的影子。</p>
+      </article>
+      <article class="q">
+        <p class="stem">14. 做蛋糕時，媽媽把巧克力<button type="button" class="blank" data-answer="摻" aria-expanded="false">＿＿＿＿</button>進麵糊裏。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">把巧克力混進麵糊裏，用摻。撒是散在表面，這句是拌進去。</p>
+      </article>
+    </section>
+    <section class="panel" data-lesson="2" data-set="2" hidden>
+      <article class="q">
+        <p class="stem">1. 明天要考試，妹妹<button type="button" class="blank" data-answer="輾轉反側" aria-expanded="false">＿＿＿＿</button>，怎樣也睡不安穩。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">因為緊張而翻來覆去，用輾轉反側。一揮而就是一下子寫完，不是睡不着。</p>
+      </article>
+      <article class="q">
+        <p class="stem">2. 老師說，旅行不要只逛街，也要看看當地的<button type="button" class="blank" data-answer="名勝古蹟" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">旅行時要看的景點和歷史建築，用名勝古蹟。陪葬品是埋在墓裏的物件，不是地方。</p>
+      </article>
+      <article class="q">
+        <p class="stem">3. 我站在坑邊，看着幾千個<button type="button" class="blank" data-answer="兵馬俑" aria-expanded="false">＿＿＿＿</button>，幾乎說不出話。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">坑裏成千上萬的陶土兵士，用兵馬俑。不是活人組成的軍隊。</p>
+      </article>
+      <article class="q">
+        <p class="stem">4. 解說員說，這些銅鏡和寶劍都是當時的<button type="button" class="blank" data-answer="陪葬品" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">銅鏡和寶劍是當時放進墓裏的東西，用陪葬品。不是現在日常買的用品。</p>
+      </article>
+      <article class="q">
+        <p class="stem">5. 圖畫裏，士兵的<button type="button" class="blank" data-answer="戰袍" aria-expanded="false">＿＿＿＿</button>被風吹得獵獵作響。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">被風吹得獵獵作響的是布做的戰袍。盔甲又硬，不會像布那樣被風吹起。</p>
+      </article>
+      <article class="q">
+        <p class="stem">6. 這副<button type="button" class="blank" data-answer="盔甲" aria-expanded="false">＿＿＿＿</button>又重又硬，小朋友捧起來也吃力。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">又重又硬、捧起來吃力，用盔甲。戰袍是布衣，不會這麼重。</p>
+      </article>
+      <article class="q">
+        <p class="stem">7. 畫家對着宣紙，幾筆梅花<button type="button" class="blank" data-answer="一揮而就" aria-expanded="false">＿＿＿＿</button>，同學都拍手。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">幾筆就把梅花畫成，同學立刻拍手，用一揮而就。摻是把東西混進去，這句是很快畫完。</p>
+      </article>
+      <article class="q">
+        <p class="stem">8. 窗簾縫透進一點光，外面已經<button type="button" class="blank" data-answer="矇矇亮" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">窗外只有微光，用矇矇亮。光芒是明顯射出來的光，這句只是剛亮。</p>
+      </article>
+      <article class="q">
+        <p class="stem">9. 小鳥飛出我的<button type="button" class="blank" data-answer="視線" aria-expanded="false">＿＿＿＿</button>，一下子就找不到了。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">小鳥飛出眼睛望得到的範圍，用視線。波光粼粼是水面閃光的樣子，不是眼睛。</p>
+      </article>
+      <article class="q">
+        <p class="stem">10. 電筒的<button type="button" class="blank" data-answer="光芒" aria-expanded="false">＿＿＿＿</button>在黑夜裏劃出一道白線。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">電筒在黑夜劃出的白線是光芒。視線是人眼望的方向，這句是燈的光。</p>
+      </article>
+      <article class="q">
+        <p class="stem">11. 紅紅的<button type="button" class="blank" data-answer="朝陽" aria-expanded="false">＿＿＿＿</button>把雲朵染成橙色。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">把雲染成橙色的是朝陽。倒影是映在水裏的影子，這句是天上的太陽。</p>
+      </article>
+      <article class="q">
+        <p class="stem">12. 傍晚的河面<button type="button" class="blank" data-answer="波光粼粼" aria-expanded="false">＿＿＿＿</button>，我們坐在岸邊看了很久。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">傍晚河面一閃一閃，用波光粼粼。倒影是某一樣東西映出的影子，這句是整片水面。</p>
+      </article>
+      <article class="q">
+        <p class="stem">13. 山的<button type="button" class="blank" data-answer="倒影" aria-expanded="false">＿＿＿＿</button>落在湖心，像另一座山倒了過來。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">山映在湖心，像另一座倒過來的山，用倒影。猶如是「好像」，這句空位是影子本身。</p>
+      </article>
+      <article class="q">
+        <p class="stem">14. 這杯果汁<button type="button" class="blank" data-answer="摻" aria-expanded="false">＿＿＿＿</button>了一點蜜糖，喝起來沒那麼酸。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">果汁裏混進蜜糖，味道變了，用摻。不是只放在面上。</p>
+      </article>
+    </section>
+    <section class="panel" data-lesson="2" data-set="3" hidden>
+      <article class="q">
+        <p class="stem">1. 爸爸聽到屋外的風聲，<button type="button" class="blank" data-answer="輾轉反側" aria-expanded="false">＿＿＿＿</button>了半夜。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">被聲音吵到翻了半夜，用輾轉反側。視線是眼睛望向哪裏，這句是睡不着。</p>
+      </article>
+      <article class="q">
+        <p class="stem">2. 這本小冊子介紹了香港和內地多處<button type="button" class="blank" data-answer="名勝古蹟" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">小冊子介紹的是多處有名景點和古建築，用名勝古蹟。不是某一件器物。</p>
+      </article>
+      <article class="q">
+        <p class="stem">3. 每個<button type="button" class="blank" data-answer="兵馬俑" aria-expanded="false">＿＿＿＿</button>的表情都不一樣，有的嚴肅，有的微微笑。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">每個陶俑表情不同，說的是兵馬俑本身。盔甲是穿在身上的護具，這句沒有在說護具。</p>
+      </article>
+      <article class="q">
+        <p class="stem">4. 不是每件<button type="button" class="blank" data-answer="陪葬品" aria-expanded="false">＿＿＿＿</button>都很貴重，有些只是日常用的碗。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">墓裏的物件不一定貴重，日常的碗也可以是陪葬品。</p>
+      </article>
+      <article class="q">
+        <p class="stem">5. 展櫃裏那件已經褪色的<button type="button" class="blank" data-answer="戰袍" aria-expanded="false">＿＿＿＿</button>，仍看得出原來的花紋。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">展櫃裏褪色、還看得出花紋的是戰袍。花紋多在衣料上。</p>
+      </article>
+      <article class="q">
+        <p class="stem">6. 武士的<button type="button" class="blank" data-answer="盔甲" aria-expanded="false">＿＿＿＿</button>在燈下閃着冷光。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">武士身上又硬的護具在燈下閃，用盔甲。光芒是光線本身，這句是護具。</p>
+      </article>
+      <article class="q">
+        <p class="stem">7. 這封感謝信他沒有起草，坐下來就<button type="button" class="blank" data-answer="一揮而就" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">沒有起草，坐下來就寫成，用一揮而就。不是改了很多次。</p>
+      </article>
+      <article class="q">
+        <p class="stem">8. 登山的人在天色<button type="button" class="blank" data-answer="矇矇亮" aria-expanded="false">＿＿＿＿</button>時就起程，想趕在日出前到達。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">天色未全亮就起程，用矇矇亮。他們想趕在日出前，所以還未大亮。</p>
+      </article>
+      <article class="q">
+        <p class="stem">9. 他沿着海岸移動<button type="button" class="blank" data-answer="視線" aria-expanded="false">＿＿＿＿</button>，想找出太陽將要升起的位置。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">沿着海岸移動目光，用視線。朝陽是早晨的太陽本身，這句是眼睛在找它。</p>
+      </article>
+      <article class="q">
+        <p class="stem">10. 那顆石頭沒有發出很強的<button type="button" class="blank" data-answer="光芒" aria-expanded="false">＿＿＿＿</button>，只是靜靜地閃了一下。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">石頭發出的光本身叫光芒。耀眼是形容光太強、眼睛不舒服，這句只說有沒有強光。</p>
+      </article>
+      <article class="q">
+        <p class="stem">11. 窗外那輪<button type="button" class="blank" data-answer="朝陽" aria-expanded="false">＿＿＿＿</button>又大又圓，新的一天開始了。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">窗外又大又圓、新一天開始，用朝陽。矇矇亮是尚未大亮的天色，這句太陽已經出來。</p>
+      </article>
+      <article class="q">
+        <p class="stem">12. 船走過後，平靜的海又變回<button type="button" class="blank" data-answer="波光粼粼" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">船過後海面又恢復細閃，用波光粼粼。光芒是光線這個名詞，這句形容水面的樣子。</p>
+      </article>
+      <article class="q">
+        <p class="stem">13. 他一揮手，水中的<button type="button" class="blank" data-answer="倒影" aria-expanded="false">＿＿＿＿</button>也跟着揮手。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">人揮手，水裏的影子也揮手，用倒影。視線是眼睛望去的方向，這句是水中的影子。</p>
+      </article>
+      <article class="q">
+        <p class="stem">14. 畫家在藍色顏料裏<button type="button" class="blank" data-answer="摻" aria-expanded="false">＿＿＿＿</button>了少許白色，顏色就淺了。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">在藍色裏混進少許白色，顏色變淺，用摻。一揮而就是一下子畫完，這句是調色。</p>
+      </article>
+    </section>
+    <section class="panel" data-lesson="2" data-set="4" hidden>
+      <article class="q">
+        <p class="stem">1. 想起白天的比賽，我<button type="button" class="blank" data-answer="輾轉反側" aria-expanded="false">＿＿＿＿</button>，直到天快亮才睡着。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">心裏記掛事情，不斷翻身直到天亮，用輾轉反側。不是只醒了一下。</p>
+      </article>
+      <article class="q">
+        <p class="stem">2. 故宮和長城都是人人都想去的<button type="button" class="blank" data-answer="名勝古蹟" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">故宮和長城都是人人想去的地方，用名勝古蹟。戰袍和盔甲是衣物和護具，不是景點。</p>
+      </article>
+      <article class="q">
+        <p class="stem">3. 影片介紹<button type="button" class="blank" data-answer="兵馬俑" aria-expanded="false">＿＿＿＿</button>怎樣被發現，工人挖井時先挖到陶片。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">工人挖井才發現，說的是兵馬俑怎樣被找到。一揮而就是一下子做完，這裏不是。</p>
+      </article>
+      <article class="q">
+        <p class="stem">4. 考古隊小心地取出<button type="button" class="blank" data-answer="陪葬品" aria-expanded="false">＿＿＿＿</button>，免得脆弱的陶罐破裂。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">考古隊取出的是埋在墓裏的物件，用陪葬品。倒影是映在水面的影子，這句是實物。</p>
+      </article>
+      <article class="q">
+        <p class="stem">5. 他整理好<button type="button" class="blank" data-answer="戰袍" aria-expanded="false">＿＿＿＿</button>，才踏出營帳。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">踏出營帳前整理的戰衣，用戰袍。不是護住胸口的盔甲。</p>
+      </article>
+      <article class="q">
+        <p class="stem">6. 修復師傅用了好多天才補好這副殘破的<button type="button" class="blank" data-answer="盔甲" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">殘破、要很多天才補好的是盔甲。不是一下子就可以一揮而就。</p>
+      </article>
+      <article class="q">
+        <p class="stem">7. 老師出了上聯，班長幾乎<button type="button" class="blank" data-answer="一揮而就" aria-expanded="false">＿＿＿＿</button>，對出下聯。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">出了上聯立刻對出下聯，用一揮而就。探究是慢慢查問，這句是一下子對上。</p>
+      </article>
+      <article class="q">
+        <p class="stem">8. 公雞叫了兩遍，天邊已經<button type="button" class="blank" data-answer="矇矇亮" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">雞叫後天邊剛發白，用矇矇亮。視線是眼睛望的方向，這句是天色。</p>
+      </article>
+      <article class="q">
+        <p class="stem">9. 大霧一來，遠處的橋離開了我的<button type="button" class="blank" data-answer="視線" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">大霧讓人望不到遠處的橋，橋離開了視線。倒影是水裏的影子，這句是望不見。</p>
+      </article>
+      <article class="q">
+        <p class="stem">10. 太陽出來以後，海面鋪滿柔和的<button type="button" class="blank" data-answer="光芒" aria-expanded="false">＿＿＿＿</button>。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">日出後鋪在海面的是光芒。波光粼粼是水面一閃一閃的樣子，這句先說光鋪滿海面。</p>
+      </article>
+      <article class="q">
+        <p class="stem">11. 船夫朝着那輪<button type="button" class="blank" data-answer="朝陽" aria-expanded="false">＿＿＿＿</button>駛去，船頭濺起細碎的水花。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">船朝着早晨的太陽駛去，用朝陽。視線是目光，這句是太陽的方向。</p>
+      </article>
+      <article class="q">
+        <p class="stem">12. 我看見<button type="button" class="blank" data-answer="波光粼粼" aria-expanded="false">＿＿＿＿</button>的湖水，心裏也跟着亮起來。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">看見閃着光的湖水，用波光粼粼。朝陽是早晨的太陽，這句是湖水。</p>
+      </article>
+      <article class="q">
+        <p class="stem">13. 微風把月亮的<button type="button" class="blank" data-answer="倒影" aria-expanded="false">＿＿＿＿</button>弄皺了，過了一會又恢復完整。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">微風把水裏的月亮弄皺，那一塊是倒影。波光粼粼是整片水面細閃，這句是月亮的影子。</p>
+      </article>
+      <article class="q">
+        <p class="stem">14. 湯太鹹，姐姐<button type="button" class="blank" data-answer="摻" aria-expanded="false">＿＿＿＿</button>了半碗清水，味道才剛好。</p>
+        <p class="hint">點這一題顯示答案</p>
+        <p class="why">太鹹就混進清水，用摻。撒是散一點在表面，這句是把水加進湯裏。</p>
       </article>
     </section>
     <footer>Alpha Learn · 不供詞填充</footer>
@@ -1437,18 +1744,39 @@
         }
       });
     });
+    var currentLesson = "2";
+    function showGroup(lesson, setId) {
+      currentLesson = lesson;
+      document.querySelectorAll(".lesson").forEach(function (item) {
+        var on = item.getAttribute("data-lesson") === lesson;
+        item.classList.toggle("on", on);
+        item.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      document.querySelectorAll(".tab").forEach(function (item) {
+        var on = item.getAttribute("data-set") === setId;
+        item.classList.toggle("on", on);
+        item.setAttribute("aria-selected", on ? "true" : "false");
+        var label = item.querySelector("span");
+        if (label) label.textContent = (lesson === "1" ? "16" : "14") + " 題";
+      });
+      document.querySelectorAll(".panel").forEach(function (panel) {
+        panel.hidden = !(panel.getAttribute("data-lesson") === lesson && panel.getAttribute("data-set") === setId);
+      });
+    }
+    document.querySelectorAll(".lesson").forEach(function (lessonBtn) {
+      lessonBtn.addEventListener("click", function (event) {
+        event.stopPropagation();
+        var setId = "1";
+        document.querySelectorAll(".tab").forEach(function (tab) {
+          if (tab.classList.contains("on")) setId = tab.getAttribute("data-set");
+        });
+        showGroup(lessonBtn.getAttribute("data-lesson"), setId);
+      });
+    });
     document.querySelectorAll(".tab").forEach(function (tab) {
       tab.addEventListener("click", function (event) {
         event.stopPropagation();
-        var id = tab.getAttribute("data-set");
-        document.querySelectorAll(".tab").forEach(function (item) {
-          var on = item === tab;
-          item.classList.toggle("on", on);
-          item.setAttribute("aria-selected", on ? "true" : "false");
-        });
-        document.querySelectorAll(".panel").forEach(function (panel) {
-          panel.hidden = panel.getAttribute("data-set") !== id;
-        });
+        showGroup(currentLesson, tab.getAttribute("data-set"));
       });
     });
     document.querySelectorAll(".q").forEach(function (card) {
