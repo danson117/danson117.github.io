@@ -1,10 +1,10 @@
-<!-- Ver.5.6 -->
+<!-- Ver.5.7 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="5.6">
+  <meta name="app-version" content="5.7">
   <title>Alpha_Learn</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&family=Noto+Serif+HK:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -185,7 +185,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.5.6</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.5.7</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -286,7 +286,7 @@
       <p class="dictate-hint" id="dictate-hint">聽完先寫低。寫好，先去下一句。可以撳課文某一句即刻讀。可以隱藏文字，淨係聽。</p>
     </div>
   </section>
-    <div class="version-badge" id="version-badge">Ver.5.6</div>
+    <div class="version-badge" id="version-badge">Ver.5.7</div>
   <script src="HX/hx-shared-sync.js?v=1.7"></script>
   <script>
   const APP_VERSION = "3.2";
@@ -1045,13 +1045,23 @@
       letter-spacing: 0;
     }
     .hint { margin: 8px 0 0; color: var(--muted); font-size: 0.86rem; }
+    .why {
+      display: none;
+      margin: 8px 0 0;
+      padding: 8px 10px;
+      background: var(--ok-bg);
+      border-radius: 10px;
+      color: #145c32;
+      font-size: 0.98rem;
+    }
+    .q.open .why { display: block; }
     footer { margin-top: 8px; color: var(--muted); font-size: 0.85rem; text-align: center; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>不供詞填充</h1>
-    <p class="lead">小五。四套，每套十六題，用盡同一批詞語，但句子不同。頁面不會先給詞，也沒有選項。請先在心裏作答，再點該題顯示答案；再點一次就隱藏。每次只顯示這一題。</p>
+    <p class="lead">小五。四套，每套十六題，用盡同一批詞語，但句子不同。頁面不會先給詞，也沒有選項。請先在心裏作答，再點該題顯示答案；再點一次就隱藏。顯示答案時，才會看見為甚麼用這個詞。每次只顯示這一題。</p>
     <div class="tabs" role="tablist">
       <button class="tab on" type="button" role="tab" aria-selected="true" data-set="1"><strong>第一套</strong><span>16 題</span></button>
       <button class="tab" type="button" role="tab" aria-selected="false" data-set="2"><strong>第二套</strong><span>16 題</span></button>
@@ -1063,271 +1073,336 @@
       <article class="q">
         <p class="stem">1. 新落成的體育館<button type="button" class="blank" data-answer="規模" aria-expanded="false">＿＿＿＿</button>很大，看台可以坐滿幾千人。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">這裏說的是場館有多大、坐得下多少人。規模用來講範圍和容量。完善是設備齊備，這句沒有說設施缺不缺。</p>
       </article>
       <article class="q">
         <p class="stem">2. 校內圖書館的設備很<button type="button" class="blank" data-answer="完善" aria-expanded="false">＿＿＿＿</button>，同學找書十分方便。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">設備齊全、用起來方便，就是完善。規模只說大不大，這句重點是沒有缺漏。</p>
       </article>
       <article class="q">
         <p class="stem">3. 這幅仿畫跟真跡放在一起，就明顯<button type="button" class="blank" data-answer="遜色" aria-expanded="false">＿＿＿＿</button>了。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">兩樣東西一比，仿畫比不上真跡，就用遜色。逼真是像真的；這句是在說比下去之後較差。</p>
       </article>
       <article class="q">
         <p class="stem">4. 博物館的恐龍模型做得十分<button type="button" class="blank" data-answer="逼真" aria-expanded="false">＿＿＿＿</button>，彷彿下一秒就會走動。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">模型像活的一樣，就用逼真。遜色是比不上，這句是在誇它像真，不是說它較差。</p>
       </article>
       <article class="q">
         <p class="stem">5. 校慶攤位掛滿彩帶，其中一個造型蛋糕特別<button type="button" class="blank" data-answer="引人注目" aria-expanded="false">＿＿＿＿</button>。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">蛋糕特別，使人忍不住看，就用引人注目。它不一定發亮。耀眼、奪目、璀璨多半跟光有關。</p>
       </article>
       <article class="q">
         <p class="stem">6. 科學課上，我們分組<button type="button" class="blank" data-answer="探究" aria-expanded="false">＿＿＿＿</button>豆苗為甚麼會彎向窗口。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">要找出「為甚麼」，是探究。體驗是自己做過、感受過；這句是追問原因。</p>
       </article>
       <article class="q">
         <p class="stem">7. 這次賣旗，讓我親身<button type="button" class="blank" data-answer="體驗" aria-expanded="false">＿＿＿＿</button>了付出的快樂。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">自己賣過旗，才感受到那份快樂，所以用體驗。探究是研究原因，不是親身經歷。</p>
       </article>
       <article class="q">
         <p class="stem">8. 九寨溝的水到底有多清？<button type="button" class="blank" data-answer="百聞不如一見" aria-expanded="false">＿＿＿＿</button>，還是要自己去看。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">聽人怎樣形容都不夠，一定要親眼看見，才用「百聞不如一見」。這句成語要整句用，不能換成耀眼或逼真。</p>
       </article>
       <article class="q">
         <p class="stem">9. 我家附近的小巷很靜，<button type="button" class="blank" data-answer="偶爾" aria-expanded="false">＿＿＿＿</button>才聽見單車鈴。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">不是常常有單車，只是間中才聽見，所以用偶爾。如果天天都有，就不能用。</p>
       </article>
       <article class="q">
         <p class="stem">10. 中午的陽光太<button type="button" class="blank" data-answer="耀眼" aria-expanded="false">＿＿＿＿</button>，我瞇着眼才敢看海面。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">光強得要瞇眼，是耀眼，重點是刺眼。奪目是漂亮得搶眼，璀璨是很多光一起閃。</p>
       </article>
       <article class="q">
         <p class="stem">11. 平靜的湖面<button type="button" class="blank" data-answer="反射" aria-expanded="false">＿＿＿＿</button>出對岸的涼亭。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">湖面把涼亭的樣子映出來，這是倒影，用反射。撒是把細碎的東西灑開，不是映出影像。</p>
       </article>
       <article class="q">
         <p class="stem">12. 春風一吹，櫻花花瓣就<button type="button" class="blank" data-answer="撒" aria-expanded="false">＿＿＿＿</button>了滿地。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">花瓣被風散開、鋪了一地，用撒。反射是映出倒影，不是把東西散開。</p>
       </article>
       <article class="q">
         <p class="stem">13. 頒獎禮上，金牌在燈下光彩<button type="button" class="blank" data-answer="奪目" aria-expanded="false">＿＿＿＿</button>。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">光彩後面習慣接奪目，意思是漂亮得把目光吸過去。耀眼是亮到刺眼，這句是好看、搶眼。</p>
       </article>
       <article class="q">
         <p class="stem">14. 遠處的小島<button type="button" class="blank" data-answer="猶如" aria-expanded="false">＿＿＿＿</button>一艘停着不動的船。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">把小島比作一艘船，是打比方，用猶如。臥是躺下，不能用來比喻。</p>
       </article>
       <article class="q">
         <p class="stem">15. 疲倦的小狗<button type="button" class="blank" data-answer="臥" aria-expanded="false">＿＿＿＿</button>在門口的地墊上，很快睡着了。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">小狗橫着躺下休息，用臥。猶如是「好像」，這句是身體躺着的動作。</p>
       </article>
       <article class="q">
         <p class="stem">16. 夜空裏的繁星<button type="button" class="blank" data-answer="璀璨" aria-expanded="false">＿＿＿＿</button>生輝，美得令人捨不得眨眼。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">很多星星一起閃，用璀璨生輝。耀眼是一道光太強，奪目是單一件東西搶眼。</p>
       </article>
     </section>
     <section class="panel" data-set="2" hidden>
       <article class="q">
         <p class="stem">1. 這次書展的<button type="button" class="blank" data-answer="規模" aria-expanded="false">＿＿＿＿</button>比去年大，連走廊都擺滿攤位。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">攤位變多、範圍變大，說的是規模。完善是內容齊備，這句比的是大小。</p>
       </article>
       <article class="q">
         <p class="stem">2. 老師說我的閱讀報告內容<button type="button" class="blank" data-answer="完善" aria-expanded="false">＿＿＿＿</button>，例子也夠清楚。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">內容齊、例子也夠，沒有缺漏，就是完善。規模不是用來形容一篇報告齊不齊。</p>
       </article>
       <article class="q">
         <p class="stem">3. 打印出來的海報跟螢幕上的設計一比，顏色<button type="button" class="blank" data-answer="遜色" aria-expanded="false">＿＿＿＿</button>了不少。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">打印的顏色比不上螢幕，一比就較差，用遜色。逼真是像真，這句是比較之後較差。</p>
       </article>
       <article class="q">
         <p class="stem">4. 這套機械鳥的羽毛做得非常<button type="button" class="blank" data-answer="逼真" aria-expanded="false">＿＿＿＿</button>，同學都以為是活的。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">羽毛像真鳥，別人以為是活的，用逼真。遜色是比不上，這句是像真。</p>
       </article>
       <article class="q">
         <p class="stem">5. 商場中庭那棵燈飾樹十分<button type="button" class="blank" data-answer="引人注目" aria-expanded="false">＿＿＿＿</button>，人人都停下來拍照。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">使人停步、拿起相機，就是引人注目。耀眼才是光強得刺眼；這句重點是吸引人看。</p>
       </article>
       <article class="q">
         <p class="stem">6. 自然觀察員帶我們<button type="button" class="blank" data-answer="探究" aria-expanded="false">＿＿＿＿</button>池塘裏的小生物怎樣過冬。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">要搞清楚「怎樣過冬」，是探究。體驗是自己去做，這句是觀察研究。</p>
       </article>
       <article class="q">
         <p class="stem">7. 在農場住了兩天，我<button type="button" class="blank" data-answer="體驗" aria-expanded="false">＿＿＿＿</button>了清晨擠牛奶的過程。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">自己住過、擠過牛奶，是親身做過，用體驗。探究是找原因，不是這段經歷。</p>
       </article>
       <article class="q">
         <p class="stem">8. 長城有多雄偉，聽人說一百次也不及走上去，這就叫<button type="button" class="blank" data-answer="百聞不如一見" aria-expanded="false">＿＿＿＿</button>。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">聽很多遍都不及自己走上去看，正是「百聞不如一見」。意思是耳聞不如眼見，要整句使用。</p>
       </article>
       <article class="q">
         <p class="stem">9. 爸爸平日加班，<button type="button" class="blank" data-answer="偶爾" aria-expanded="false">＿＿＿＿</button>才趕得及吃晚飯。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">不是天天趕得及，只是間中才可以，用偶爾。如果常常一起吃，就不適合。</p>
       </article>
       <article class="q">
         <p class="stem">10. 雪地上的陽光格外<button type="button" class="blank" data-answer="耀眼" aria-expanded="false">＿＿＿＿</button>，我只好用手擋着眼睛。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">光強得要用手擋眼，是耀眼。這句不是說雪景漂亮，而是光太強、刺眼。</p>
       </article>
       <article class="q">
         <p class="stem">11. 鏡子把窗口的綠樹<button type="button" class="blank" data-answer="反射" aria-expanded="false">＿＿＿＿</button>到房間對面的牆上。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">鏡子把樹的影像映到牆上，用反射。撒是把東西灑上去，不是把影像映出去。</p>
       </article>
       <article class="q">
         <p class="stem">12. 麵店老闆把葱花<button type="button" class="blank" data-answer="撒" aria-expanded="false">＿＿＿＿</button>在熱湯上面。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">把碎葱花散在湯面，用撒。反射是映出影像，不是把碎的東西灑上。</p>
       </article>
       <article class="q">
         <p class="stem">13. 開場舞蹈的紅色服裝光彩<button type="button" class="blank" data-answer="奪目" aria-expanded="false">＿＿＿＿</button>，觀眾一下子靜了下來。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">衣服漂亮得全場立刻看過去，用光彩奪目。璀璨多用於星星、燈海、寶石一起閃。</p>
       </article>
       <article class="q">
         <p class="stem">14. 中秋的月亮<button type="button" class="blank" data-answer="猶如" aria-expanded="false">＿＿＿＿</button>一面銀盤，掛在樓宇上空。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">把月亮比成銀盤，是比喻，用猶如。月亮不是躺着，所以不用臥。</p>
       </article>
       <article class="q">
         <p class="stem">15. 老水牛<button type="button" class="blank" data-answer="臥" aria-expanded="false">＿＿＿＿</button>在田埂邊，一動也不動。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">水牛橫躺着休息，用臥。猶如是「好像」，這句是躺的動作。</p>
       </article>
       <article class="q">
         <p class="stem">16. 除夕夜的燈海一片<button type="button" class="blank" data-answer="璀璨" aria-expanded="false">＿＿＿＿</button>，整條街像被點亮了。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">整條街很多燈一起亮，用一片璀璨。耀眼是一道光太強，這句是一片燈海。</p>
       </article>
     </section>
     <section class="panel" data-set="3" hidden>
       <article class="q">
         <p class="stem">1. 跨海大橋的<button type="button" class="blank" data-answer="規模" aria-expanded="false">＿＿＿＿</button>龐大，開車要走好一陣子。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">橋又長又大，說的是規模。完善是設施齊不齊，這句說的是龐大。</p>
       </article>
       <article class="q">
         <p class="stem">2. 社區會堂的無障礙通道很<button type="button" class="blank" data-answer="完善" aria-expanded="false">＿＿＿＿</button>，輪椅也可以順利進出。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">通道安排周到、沒有缺漏，輪椅也能用，就是完善。規模只說大不大。</p>
       </article>
       <article class="q">
         <p class="stem">3. 複製品的做工跟原物相比，始終<button type="button" class="blank" data-answer="遜色" aria-expanded="false">＿＿＿＿</button>一截。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">跟原物比，複製品差一截，用遜色。逼真是像真；這句是說始終比不上。</p>
       </article>
       <article class="q">
         <p class="stem">4. 飛行模擬艙裏的雲層十分<button type="button" class="blank" data-answer="逼真" aria-expanded="false">＿＿＿＿</button>，就像真的升上了天空。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">模擬得像真的在飛，用逼真。遜色是較差，這句是做得像真。</p>
       </article>
       <article class="q">
         <p class="stem">5. 櫥窗裏新展出的機械人非常<button type="button" class="blank" data-answer="引人注目" aria-expanded="false">＿＿＿＿</button>，路過的小朋友都貼着玻璃看。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">機械人特別，把小朋友吸到玻璃前，用引人注目。奪目、耀眼偏重光，這句重點是吸引人。</p>
       </article>
       <article class="q">
         <p class="stem">6. 專題研習要我們<button type="button" class="blank" data-answer="探究" aria-expanded="false">＿＿＿＿</button>校園雨水最後流到哪裏。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">要追查雨水的去向，弄清楚一件事，用探究。體驗是自己去感受，不是查究。</p>
       </article>
       <article class="q">
         <p class="stem">7. 陶藝工作坊讓我親手<button type="button" class="blank" data-answer="體驗" aria-expanded="false">＿＿＿＿</button>了拉坯的樂趣。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">親手做過拉坯，才知道那份樂趣，用體驗。探究是找原因，這句是親身做過。</p>
       </article>
       <article class="q">
         <p class="stem">8. 朋友形容極光多麼夢幻，我總覺得<button type="button" class="blank" data-answer="百聞不如一見" aria-expanded="false">＿＿＿＿</button>，希望有天能親眼看見。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">聽朋友形容還不夠，希望親眼看見，就用「百聞不如一見」。聽再多，也不及見一次。</p>
       </article>
       <article class="q">
         <p class="stem">9. 這片沙灘平常人不多，<button type="button" class="blank" data-answer="偶爾" aria-expanded="false">＿＿＿＿</button>才遇上放風箏的人。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">不是常常遇見，只是間中遇上，用偶爾。天天都有人放風箏，就不能這樣說。</p>
       </article>
       <article class="q">
         <p class="stem">10. 舞台正中的射燈亮得十分<button type="button" class="blank" data-answer="耀眼" aria-expanded="false">＿＿＿＿</button>，演員出場時大家都瞇起眼。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">燈強得大家瞇眼，是耀眼。奪目是好看搶眼；這句是光強得睜不開眼。</p>
       </article>
       <article class="q">
         <p class="stem">11. 玻璃幕牆<button type="button" class="blank" data-answer="反射" aria-expanded="false">＿＿＿＿</button>出傍晚的彩霞，大樓像換了一件新衣。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">幕牆把彩霞映出來，用反射。撒是把碎物散開，不是映出天空。</p>
       </article>
       <article class="q">
         <p class="stem">12. 慶生會上，大家把彩紙屑<button type="button" class="blank" data-answer="撒" aria-expanded="false">＿＿＿＿</button>向半空。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">把紙屑散向空中，用撒。反射是映出影像，不是把紙屑灑出去。</p>
       </article>
       <article class="q">
         <p class="stem">13. 櫥窗那條金色裙子光彩<button type="button" class="blank" data-answer="奪目" aria-expanded="false">＿＿＿＿</button>，遠遠就看見了。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">光彩奪目，裙子漂亮得遠遠就看見。引人注目也可以說吸引人，但「光彩」後面用奪目。</p>
       </article>
       <article class="q">
         <p class="stem">14. 山間的雲海<button type="button" class="blank" data-answer="猶如" aria-expanded="false">＿＿＿＿</button>一片白色波浪，在腳下慢慢流動。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">把雲海比作波浪，是打比方，用猶如。臥不能用來比喻雲。</p>
       </article>
       <article class="q">
         <p class="stem">15. 小熊貓<button type="button" class="blank" data-answer="臥" aria-expanded="false">＿＿＿＿</button>在粗樹枝上打盹，鼻子還一抽一抽的。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">小熊貓趴着打盹，身體躺在樹上，用臥。猶如是好像，這句是休息的姿勢。</p>
       </article>
       <article class="q">
         <p class="stem">16. 黑絲絨上的寶石顯得格外<button type="button" class="blank" data-answer="璀璨" aria-expanded="false">＿＿＿＿</button>，每一顆都在閃。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">很多寶石一起閃，用璀璨。耀眼是亮到刺眼，這句是閃爍、華麗。</p>
       </article>
     </section>
     <section class="panel" data-set="4" hidden>
       <article class="q">
         <p class="stem">1. 這間超市的<button type="button" class="blank" data-answer="規模" aria-expanded="false">＿＿＿＿</button>不小，貨架從門口一直伸到最裏面。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">貨架排得很長、店面大，說的是規模。完善是設施齊，這句說的是不小。</p>
       </article>
       <article class="q">
         <p class="stem">2. 幾經修改，這份班會計劃終於更<button type="button" class="blank" data-answer="完善" aria-expanded="false">＿＿＿＿</button>，同學都贊成。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">計劃改到沒有缺漏，大家才贊成，用完善。規模不是形容一份計劃齊不齊。</p>
       </article>
       <article class="q">
         <p class="stem">3. 跟冠軍隊伍的表現相比，我們這場就<button type="button" class="blank" data-answer="遜色" aria-expanded="false">＿＿＿＿</button>了一些。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">和更強的隊伍比，我們差了一些，用遜色。逼真不是用來比較高低。</p>
       </article>
       <article class="q">
         <p class="stem">4. 布偶的眼睛做得太<button type="button" class="blank" data-answer="逼真" aria-expanded="false">＿＿＿＿</button>，妹妹抱着它不肯放手。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">眼睛像真的，所以捨不得放手，用逼真。遜色是較差，這句是做得像真。</p>
       </article>
       <article class="q">
         <p class="stem">5. 遊行隊伍裏那盞巨型花燈格外<button type="button" class="blank" data-answer="引人注目" aria-expanded="false">＿＿＿＿</button>，沿途都有人拍手。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">花燈特別，沿途的人都看、都拍手，用引人注目。它的重點是吸引目光，不一定刺眼。</p>
       </article>
       <article class="q">
         <p class="stem">6. 天文社每月都<button type="button" class="blank" data-answer="探究" aria-expanded="false">＿＿＿＿</button>月亮形狀的變化，並把結果記下來。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">每月觀察、記錄月亮怎樣變，是探究。體驗是去感受，這句是研究。</p>
       </article>
       <article class="q">
         <p class="stem">7. 參加三日營，我第一次<button type="button" class="blank" data-answer="體驗" aria-expanded="false">＿＿＿＿</button>了離開家人的團體生活。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">自己離開家人過了三日營，是親身經歷，用體驗。探究是找原因，不是這段生活。</p>
       </article>
       <article class="q">
         <p class="stem">8. 大峽谷的壯觀，相片永遠說不完，真是<button type="button" class="blank" data-answer="百聞不如一見" aria-expanded="false">＿＿＿＿</button>。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">相片怎樣拍也說不完，意思是要自己看見，用「百聞不如一見」。這句成語必須完整使用。</p>
       </article>
       <article class="q">
         <p class="stem">9. 我<button type="button" class="blank" data-answer="偶爾" aria-expanded="false">＿＿＿＿</button>會在星期日下午畫畫，其餘時間都用來做功課。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">只在星期日下午畫，不是天天畫，用偶爾。常常做的事，不用偶爾。</p>
       </article>
       <article class="q">
         <p class="stem">10. 對着這顆裸鑽，光芒太<button type="button" class="blank" data-answer="耀眼" aria-expanded="false">＿＿＿＿</button>，媽媽連忙把盒蓋上。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">光芒強得要蓋上盒子，是耀眼。璀璨是華麗地閃；這句是亮得受不了。</p>
       </article>
       <article class="q">
         <p class="stem">11. 平靜的海面<button type="button" class="blank" data-answer="反射" aria-expanded="false">＿＿＿＿</button>着初升的太陽，水上水下像各有半個。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">海面映出太陽，出現倒影，用反射。撒不是把太陽映出來。</p>
       </article>
       <article class="q">
         <p class="stem">12. 農夫把種子均勻地<button type="button" class="blank" data-answer="撒" aria-expanded="false">＿＿＿＿</button>進鬆好的泥土裏。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">把種子散進田裏，用撒。反射是映出影像，不是把種子灑開。</p>
       </article>
       <article class="q">
         <p class="stem">13. 頒獎台上的獎盃光彩<button type="button" class="blank" data-answer="奪目" aria-expanded="false">＿＿＿＿</button>，拍照的人擠成一圈。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">光彩奪目，獎盃好看，大家圍過來拍。璀璨較少緊接在「光彩」後面。</p>
       </article>
       <article class="q">
         <p class="stem">14. 湖邊的柳條<button type="button" class="blank" data-answer="猶如" aria-expanded="false">＿＿＿＿</button>少女的長髮，被風吹得輕輕擺動。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">把柳條比作長髮，是比喻，用猶如。柳條不是躺在地上，所以不是臥。</p>
       </article>
       <article class="q">
         <p class="stem">15. 白貓舒服地<button type="button" class="blank" data-answer="臥" aria-expanded="false">＿＿＿＿</button>在窗台，曬着暖暖的太陽。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">貓橫躺在窗台曬太陽，用臥。猶如是好像，這句是躺着的動作。</p>
       </article>
       <article class="q">
         <p class="stem">16. 城市的夜景燈火<button type="button" class="blank" data-answer="璀璨" aria-expanded="false">＿＿＿＿</button>，從山上望下去像一幅光畫。</p>
         <p class="hint">點這一題顯示答案</p>
+        <p class="why">一整片城市的燈一起閃，用璀璨。耀眼是一道光太強，這句是很多燈組成的夜景。</p>
       </article>
     </section>
     <footer>Alpha Learn · 不供詞填充</footer>
   </div>
   <script>
     document.querySelectorAll(".tab").forEach(function (tab) {
-      tab.addEventListener("click", function () {
+      tab.addEventListener("click", function (event) {
+        event.stopPropagation();
         var id = tab.getAttribute("data-set");
         document.querySelectorAll(".tab").forEach(function (item) {
           var on = item === tab;
