@@ -10,6 +10,10 @@ Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使�
 
 ## 2026-10-17 屋企電腦（Desktop-Yanson）
 
+- Alpha Learn **v5.8**：不供詞填充每次打開，四套各自隨機排題，四套次序唔會相同。刷新先換次序；點開答案同解釋嘅做法不變。Home 整體 **v2.5**。GitHub `danson117/home` → Vercel。冇改 Supabase。冇改 Karson。刷新已開分頁。唔開 Chrome。
+
+## 2026-10-17 屋企電腦（Desktop-Yanson）
+
 - Alpha Learn **v5.7**：不供詞填充每一題加「點解用這個詞」。解釋只在點開該題、顯示答案時先出現，再點一次連答案一齊隱藏。相近詞（例如耀眼／奪目／璀璨／引人注目）會寫明邊種情況先用。Home 整體 **v2.4**。GitHub `danson117/home` → Vercel。冇改 Supabase。冇改 Karson。刷新已開分頁。唔開 Chrome。
 
 ## 2026-10-17 屋企電腦（Desktop-Yanson）

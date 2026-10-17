@@ -1,10 +1,10 @@
-<!-- Ver.5.7 -->
+<!-- Ver.5.8 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="5.7">
+  <meta name="app-version" content="5.8">
   <title>Alpha_Learn</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&family=Noto+Serif+HK:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -185,7 +185,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.5.7</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.5.8</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -286,7 +286,7 @@
       <p class="dictate-hint" id="dictate-hint">聽完先寫低。寫好，先去下一句。可以撳課文某一句即刻讀。可以隱藏文字，淨係聽。</p>
     </div>
   </section>
-    <div class="version-badge" id="version-badge">Ver.5.7</div>
+    <div class="version-badge" id="version-badge">Ver.5.8</div>
   <script src="HX/hx-shared-sync.js?v=1.7"></script>
   <script>
   const APP_VERSION = "3.2";
@@ -1061,7 +1061,7 @@
 <body>
   <div class="wrap">
     <h1>不供詞填充</h1>
-    <p class="lead">小五。四套，每套十六題，用盡同一批詞語，但句子不同。頁面不會先給詞，也沒有選項。請先在心裏作答，再點該題顯示答案；再點一次就隱藏。顯示答案時，才會看見為甚麼用這個詞。每次只顯示這一題。</p>
+    <p class="lead">小五。四套，每套十六題，用盡同一批詞語，但句子不同。每次打開，每套題目都會重新隨機排列，四套不會用同一個次序。頁面不會先給詞，也沒有選項。請先在心裏作答，再點該題顯示答案；再點一次就隱藏。顯示答案時，才會看見為甚麼用這個詞。每次只顯示這一題。</p>
     <div class="tabs" role="tablist">
       <button class="tab on" type="button" role="tab" aria-selected="true" data-set="1"><strong>第一套</strong><span>16 題</span></button>
       <button class="tab" type="button" role="tab" aria-selected="false" data-set="2"><strong>第二套</strong><span>16 題</span></button>
@@ -1400,6 +1400,43 @@
     <footer>Alpha Learn · 不供詞填充</footer>
   </div>
   <script>
+    function shuffleCards(list) {
+      var i, j, item;
+      for (i = list.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        item = list[i];
+        list[i] = list[j];
+        list[j] = item;
+      }
+    }
+    function cardKey(cards) {
+      var parts = [];
+      var i;
+      for (i = 0; i < cards.length; i++) {
+        parts.push(cards[i].querySelector(".blank").getAttribute("data-answer"));
+      }
+      return parts.join("|");
+    }
+    var usedOrders = {};
+    document.querySelectorAll(".panel").forEach(function (panel) {
+      var cards = Array.prototype.slice.call(panel.querySelectorAll(".q"));
+      var key = "";
+      var guard = 0;
+      do {
+        shuffleCards(cards);
+        key = cardKey(cards);
+        guard += 1;
+      } while (usedOrders[key] && guard < 30);
+      usedOrders[key] = true;
+      cards.forEach(function (card, index) {
+        panel.appendChild(card);
+        var stem = card.querySelector(".stem");
+        var text = stem.firstChild;
+        if (text && text.nodeType === 3) {
+          text.nodeValue = text.nodeValue.replace(/^\s*\d+\.\s*/, (index + 1) + ". ");
+        }
+      });
+    });
     document.querySelectorAll(".tab").forEach(function (tab) {
       tab.addEventListener("click", function (event) {
         event.stopPropagation();
