@@ -1,10 +1,10 @@
-<!-- Ver.5.4 -->
+<!-- Ver.5.5 -->
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="app-version" content="5.4">
+  <meta name="app-version" content="5.5">
   <title>Alpha_Learn</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&family=Noto+Serif+HK:wght@700;900&display=swap" rel="stylesheet">
   <style>
@@ -185,7 +185,7 @@
   <div class="menu-root">
     <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打開選單" aria-controls="menu-panel" aria-expanded="false">☰</button>
     <div class="menu-panel" id="menu-panel" aria-labelledby="menu-title">
-      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.5.3</p>
+      <p class="menu-title" id="menu-title">ALPHA_LEARN · Ver.5.5</p>
       <p class="menu-note">✅ 單一完整檔 · 進度即時儲存 · 更新 HTML 唔會自動清記錄<br>請固定用同一個檔開啟；大更新前先匯出進度</p>
       <p class="menu-current" id="menu-current">而家：—</p>
       <p class="menu-status" id="menu-status">進度摘要載入中…</p>
@@ -200,6 +200,10 @@
         <button class="menu-item" type="button" data-page="dictate" data-label="讀默">
           <span class="menu-icon">📖</span>
           <span class="menu-text">中文 · 讀默</span>
+        </button>
+        <button class="menu-item" type="button" data-page="ciyu" data-label="詞語填充">
+          <span class="menu-icon">📗</span>
+          <span class="menu-text">中文 · 詞語填充（小五）</span>
         </button>
         <button class="menu-item" type="button" data-page="juanduan" data-label="句段辨析">
           <span class="menu-icon">📝</span>
@@ -282,7 +286,7 @@
       <p class="dictate-hint" id="dictate-hint">聽完先寫低。寫好，先去下一句。可以撳課文某一句即刻讀。可以隱藏文字，淨係聽。</p>
     </div>
   </section>
-    <div class="version-badge" id="version-badge">Ver.5.3</div>
+    <div class="version-badge" id="version-badge">Ver.5.5</div>
   <script src="HX/hx-shared-sync.js?v=1.7"></script>
   <script>
   const APP_VERSION = "3.2";
@@ -957,9 +961,245 @@
       "\n          return runHold(setObj.hold, readout, signal);\n        }).then(function () {\n          if (repI < setObj.reps) {\n            return speakOverCountdown(zhRepDone(repI), INTER_REP_SILENT, readout, phaseEl, signal);\n          }\n          if (setObj.reps > 1) {\n            return speakOverCountdown(\"最後一次\", INTER_REP_SILENT, readout, phaseEl, signal);\n          }\n        }).then(function () {\n          repI += 1;\n          return runNextRep();\n        });\n      }\n\n      return runNextRep().then(function () {\n        if (setI >= sets.length - 1) return;\n        var restSec = prog.interSet === \"silent3\" ? INTER_REP_SILENT : INTER_SET_REST;\n        var phrases = prog.frequentRep || setObj.reps > 1\n          ? zhSetDone(setNum, false)\n          : [\"最後一次\", zhSetDone(setNum, false)];\n        return speakOverCountdown(phrases, restSec, readout, phaseEl, signal);\n      }).then(function () {\n        setI += 1;\n        return runNextSet();\n      });\n    }\n\n    var customRun = runCustomScript();\n    (customRun || runNextSet()).then(function () {\n      if (signal.aborted) return;\n      phaseEl.textContent = donePhrase;\n      readout.textContent = \"✓\";\n      if (prog.custom) return;\n      return speak(donePhrase, { cancel: true, wait: true });\n    }).catch(function (err) {\n      if (!err || err.name !== \"AbortError\") {\n        phaseEl.textContent = \"計時已停止\";\n      }\n    }).then(function () {\n      if (active && active.btn === btn && !active.controller.signal.aborted) {\n        setIdle(btn, readout, phaseEl);\n        phaseEl.textContent = donePhrase;\n        active = null;\n      }\n    });\n  }\n\n  document.querySelectorAll(\".timer-btn\").forEach(function (btn) {\n    btn.addEventListener(\"click\", function () {\n      var row = btn.closest(\".exercise\") || btn.parentElement;\n      var r" +
       "eadout = row.querySelector(\".timer-readout\");\n      var phaseEl = row.querySelector(\".timer-phase\");\n      runProgram(btn.getAttribute(\"data-timer\"), btn, readout, phaseEl);\n    });\n  });\n})();\n<\/script>\n\n</body>\n</html>"
     ),
+    "ciyu": `<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>詞語填充（小五）</title>
+  <style>
+    :root {
+      --bg: #eef6fb;
+      --card: #fff;
+      --ink: #1c2b3a;
+      --muted: #5c6b7a;
+      --line: #d5e2ee;
+      --accent: #0b6e99;
+      --accent-soft: #e5f4fb;
+      --ok: #0f7a45;
+      --ok-bg: #e7f7ee;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", "PingFang HK", "Noto Sans TC", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at top left, #d9eef8 0, transparent 42%), var(--bg);
+      line-height: 1.65;
+    }
+    .wrap { width: min(820px, calc(100% - 1.5rem)); margin: 0 auto; padding: 1.2rem 0 2.5rem; }
+    h1 { margin: 0 0 0.35rem; font-size: 1.55rem; }
+    .lead { margin: 0 0 0.9rem; color: var(--muted); }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .tab {
+      border: 2px solid var(--line);
+      background: #fff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      min-height: 64px;
+      touch-action: manipulation;
+    }
+    .tab strong { display: block; color: var(--accent); }
+    .tab span { display: block; color: var(--muted); font-size: 0.86rem; }
+    .tab.on { border-color: var(--accent); background: var(--accent-soft); }
+    .panel[hidden] { display: none; }
+    .q {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 14px 12px;
+      margin: 0 0 12px;
+      box-shadow: 0 8px 20px rgba(20, 40, 60, 0.05);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .stem { margin: 0 0 10px; font-size: 1.12rem; }
+    .blank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 5.2em;
+      min-height: 48px;
+      margin: 0 4px;
+      padding: 4px 12px;
+      border: 2px dashed #8eb4cc;
+      border-radius: 12px;
+      background: #f4f9fc;
+      color: #8aa0b3;
+      font: inherit;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      vertical-align: middle;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .q.open .blank {
+      border-style: solid;
+      border-color: var(--ok);
+      background: var(--ok-bg);
+      color: var(--ok);
+      letter-spacing: 0;
+    }
+    .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+    .opt {
+      border: 1px solid var(--line);
+      background: #f7fafc;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 1rem;
+    }
+    .opt.hit {
+      border-color: var(--ok);
+      background: var(--ok-bg);
+      color: var(--ok);
+      font-weight: 700;
+    }
+    .hint { margin: 8px 0 0; color: var(--muted); font-size: 0.86rem; }
+    footer { margin-top: 8px; color: var(--muted); font-size: 0.85rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>詞語填充</h1>
+    <p class="lead">小五。四套，每套四題。每題四個選項都是不同的詞。先自己選，再點該題顯示答案；再點一次就隱藏。不會一次顯示全部。</p>
+    <div class="tabs" role="tablist">
+      <button class="tab on" type="button" role="tab" aria-selected="true" data-set="1"><strong>第一套</strong><span>規模、完善、遜色、逼真</span></button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-set="2"><strong>第二套</strong><span>引人注目、探究、體驗、百聞不如一見</span></button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-set="3"><strong>第三套</strong><span>偶爾、耀眼、反射、撒</span></button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-set="4"><strong>第四套</strong><span>奪目、猶如、臥、璀璨</span></button>
+    </div>
+
+    <section class="panel" data-set="1">
+      <article class="q">
+        <p class="stem">1. 海洋公園的<button type="button" class="blank" data-answer="規模" aria-expanded="false">＿＿＿＿</button>龐大，一天也逛不完。</p>
+        <div class="opts"><span class="opt">逼真</span><span class="opt">規模</span><span class="opt">遜色</span><span class="opt">完善</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">2. 這間實驗室的安全措施很<button type="button" class="blank" data-answer="完善" aria-expanded="false">＿＿＿＿</button>，每一步都有清楚指引。</p>
+        <div class="opts"><span class="opt">遜色</span><span class="opt">逼真</span><span class="opt">完善</span><span class="opt">規模</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">3. 印刷的海報跟實物一比，就<button type="button" class="blank" data-answer="遜色" aria-expanded="false">＿＿＿＿</button>不少。</p>
+        <div class="opts"><span class="opt">完善</span><span class="opt">遜色</span><span class="opt">規模</span><span class="opt">逼真</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">4. 這隻機械狗走路的樣子十分<button type="button" class="blank" data-answer="逼真" aria-expanded="false">＿＿＿＿</button>，同學都以為是真的。</p>
+        <div class="opts"><span class="opt">規模</span><span class="opt">完善</span><span class="opt">逼真</span><span class="opt">遜色</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+    </section>
+
+    <section class="panel" data-set="2" hidden>
+      <article class="q">
+        <p class="stem">1. 校門口的壁畫色彩鮮艷，非常<button type="button" class="blank" data-answer="引人注目" aria-expanded="false">＿＿＿＿</button>。</p>
+        <div class="opts"><span class="opt">探究</span><span class="opt">百聞不如一見</span><span class="opt">引人注目</span><span class="opt">體驗</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">2. 同學分組<button type="button" class="blank" data-answer="探究" aria-expanded="false">＿＿＿＿</button>：種子在黑暗中還會不會發芽。</p>
+        <div class="opts"><span class="opt">體驗</span><span class="opt">探究</span><span class="opt">引人注目</span><span class="opt">百聞不如一見</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">3. 參加賣旗日，讓我親身<button type="button" class="blank" data-answer="體驗" aria-expanded="false">＿＿＿＿</button>了幫助別人的快樂。</p>
+        <div class="opts"><span class="opt">百聞不如一見</span><span class="opt">引人注目</span><span class="opt">體驗</span><span class="opt">探究</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">4. 桂林山水到底有多美？<button type="button" class="blank" data-answer="百聞不如一見" aria-expanded="false">＿＿＿＿</button>，有機會一定要親自去看看。</p>
+        <div class="opts"><span class="opt">引人注目</span><span class="opt">體驗</span><span class="opt">探究</span><span class="opt">百聞不如一見</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+    </section>
+
+    <section class="panel" data-set="3" hidden>
+      <article class="q">
+        <p class="stem">1. 這條小路平日很少人，<button type="button" class="blank" data-answer="偶爾" aria-expanded="false">＿＿＿＿</button>才有單車經過。</p>
+        <div class="opts"><span class="opt">撒</span><span class="opt">耀眼</span><span class="opt">偶爾</span><span class="opt">反射</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">2. 中午的陽光太<button type="button" class="blank" data-answer="耀眼" aria-expanded="false">＿＿＿＿</button>，我瞇起了眼睛。</p>
+        <div class="opts"><span class="opt">反射</span><span class="opt">偶爾</span><span class="opt">撒</span><span class="opt">耀眼</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">3. 平靜的湖面<button type="button" class="blank" data-answer="反射" aria-expanded="false">＿＿＿＿</button>出青山的倒影。</p>
+        <div class="opts"><span class="opt">耀眼</span><span class="opt">反射</span><span class="opt">撒</span><span class="opt">偶爾</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">4. 風一吹，花瓣就<button type="button" class="blank" data-answer="撒" aria-expanded="false">＿＿＿＿</button>了一地。</p>
+        <div class="opts"><span class="opt">偶爾</span><span class="opt">耀眼</span><span class="opt">反射</span><span class="opt">撒</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+    </section>
+
+    <section class="panel" data-set="4" hidden>
+      <article class="q">
+        <p class="stem">1. 頒獎禮上，那襲金色禮服光彩<button type="button" class="blank" data-answer="奪目" aria-expanded="false">＿＿＿＿</button>，全場目光都投向她。</p>
+        <div class="opts"><span class="opt">臥</span><span class="opt">璀璨</span><span class="opt">奪目</span><span class="opt">猶如</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">2. 遠方的島嶼<button type="button" class="blank" data-answer="猶如" aria-expanded="false">＿＿＿＿</button>一艘停住的船。</p>
+        <div class="opts"><span class="opt">奪目</span><span class="opt">猶如</span><span class="opt">臥</span><span class="opt">璀璨</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">3. 疲倦的小狗<button type="button" class="blank" data-answer="臥" aria-expanded="false">＿＿＿＿</button>在門口的地墊上，很快便睡着了。</p>
+        <div class="opts"><span class="opt">璀璨</span><span class="opt">奪目</span><span class="opt">猶如</span><span class="opt">臥</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+      <article class="q">
+        <p class="stem">4. 夜空的繁星<button type="button" class="blank" data-answer="璀璨" aria-expanded="false">＿＿＿＿</button>生輝，美得讓人不想離開。</p>
+        <div class="opts"><span class="opt">猶如</span><span class="opt">臥</span><span class="opt">璀璨</span><span class="opt">奪目</span></div>
+        <p class="hint">點這一題顯示答案</p>
+      </article>
+    </section>
+    <footer>Alpha Learn · 詞語填充</footer>
+  </div>
+  <script>
+    document.querySelectorAll(".tab").forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        var id = tab.getAttribute("data-set");
+        document.querySelectorAll(".tab").forEach(function (item) {
+          var on = item === tab;
+          item.classList.toggle("on", on);
+          item.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        document.querySelectorAll(".panel").forEach(function (panel) {
+          panel.hidden = panel.getAttribute("data-set") !== id;
+        });
+      });
+    });
+    document.querySelectorAll(".q").forEach(function (card) {
+      card.addEventListener("click", function () {
+        var blank = card.querySelector(".blank");
+        var open = card.classList.toggle("open");
+        var answer = blank.getAttribute("data-answer");
+        blank.textContent = open ? answer : "＿＿＿＿";
+        blank.setAttribute("aria-expanded", open ? "true" : "false");
+        var hint = card.querySelector(".hint");
+        hint.textContent = open ? "再點一次隱藏這一題" : "點這一題顯示答案";
+        card.querySelectorAll(".opt").forEach(function (opt) {
+          opt.classList.toggle("hit", open && opt.textContent === answer);
+        });
+      });
+    });
+  <\/script>
+</body>
+</html>`,
     "dictate": "top-document"
   };
-  const META = [{"id": "spelling", "label": "英文 · Spelling Assistant", "short": "Spelling", "icon": "🔤"}, {"id": "zh-flash", "label": "中文 · 生字閃卡認讀", "short": "中文閃卡", "icon": "🀄"}, {"id": "dictate", "label": "中文 · 讀默", "short": "讀默", "icon": "📖"}, {"id": "juanduan", "label": "中文 · 句段辨析（小五）", "short": "句段辨析", "icon": "📝"}, {"id": "cuoyao", "label": "中文 · 段落撮要（小五）", "short": "段落撮要", "icon": "✂️"}, {"id": "fendian", "label": "中文 · 分點舉例說明（小五）", "short": "分點說明", "icon": "🧩"}, {"id": "comp-56", "label": "中文 · 小五六作文範例", "short": "五六作文", "icon": "✍️"}, {"id": "comp-4", "label": "中文 · 中作小四", "short": "小四作文", "icon": "📘"}, {"id": "math-four", "label": "數學 · 混合四式測驗", "short": "混合四式", "icon": "🧮"}, {"id": "posture", "label": "健康 · 體態訓練", "short": "體態訓練", "icon": "🧍"}];
+  const META = [{"id": "spelling", "label": "英文 · Spelling Assistant", "short": "Spelling", "icon": "🔤"}, {"id": "zh-flash", "label": "中文 · 生字閃卡認讀", "short": "中文閃卡", "icon": "🀄"}, {"id": "dictate", "label": "中文 · 讀默", "short": "讀默", "icon": "📖"}, {"id": "ciyu", "label": "中文 · 詞語填充（小五）", "short": "詞語填充", "icon": "📗"}, {"id": "juanduan", "label": "中文 · 句段辨析（小五）", "short": "句段辨析", "icon": "📝"}, {"id": "cuoyao", "label": "中文 · 段落撮要（小五）", "short": "段落撮要", "icon": "✂️"}, {"id": "fendian", "label": "中文 · 分點舉例說明（小五）", "short": "分點說明", "icon": "🧩"}, {"id": "comp-56", "label": "中文 · 小五六作文範例", "short": "五六作文", "icon": "✍️"}, {"id": "comp-4", "label": "中文 · 中作小四", "short": "小四作文", "icon": "📘"}, {"id": "math-four", "label": "數學 · 混合四式測驗", "short": "混合四式", "icon": "🧮"}, {"id": "posture", "label": "健康 · 體態訓練", "short": "體態訓練", "icon": "🧍"}];
   const STORAGE_KEY = 'alpha-hub-last-page';
   const PROGRESS_KEYS = ["alpha-hub-last-page", "alpha-juanduan-progress-v1", "alpha-cuoyao-progress-v1", "alpha-fendian-progress-v1", "alpha-spelling-progress-v1", "flashcard_profiles", "flashcard_current_profile", "p56_essay_read_count_v1", "p56_essay_user_highlights_v1", "p56_essay_custom_notes_v1", "p56_vocab_removed_v1", "essay-font", "essay-dark", "essay_highlights_v2", "essay_custom_notes_v1", "essay_topic_order_v1", "alphaMathMistakesFourOps", "alpha-zh-flash-vocab-batch"];
 

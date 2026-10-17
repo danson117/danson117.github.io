@@ -8,6 +8,10 @@
 
 Live 網站＝Vercel；資料＝Supabase；GitHub HTML＝後備備份（唔使追齊 Pages）。唔 force-push。唔寫 `hx_test`。唔寫職員訓練明細。電腦身份係公司倉 `C:\Cursor\danson236051.github.io\.private\MACHINE.md`（唔 commit）。`C:\Cursor_Work` 兩部機都已收埋，唔好重建。
 
+## 2026-10-17 屋企電腦（Desktop-Yanson）
+
+- Alpha Learn **v5.5**：加「詞語填充（小五）」四套，每套四題，每題四個不同詞做選項。答案預設隱藏；點該題空格先顯示，再點一次隱藏，唔會一次顯示全部。用詞：規模、完善、遜色、逼真、引人注目、探究、體驗、百聞不如一見、偶爾、耀眼、反射、撒、奪目、猶如、臥、璀璨。Home 整體 **v2.2**。GitHub `danson117/home` → Vercel。冇改 Supabase。冇改 Karson（小五練習，用戶指定放 Alpha）。刷新已開分頁。唔開 Chrome。
+
 ## 屋企電腦收埋 C:\Cursor_Work（2026-10-13 屋企電腦）
 
 屋企電腦已刪 `C:\Cursor_Work`。公司草稿同唔入 Git 嘅試算表放公司倉 `.private\cursor-work\`。秘密檔只留公司倉 gitignore 嘅 `.secrets.env`。家庭頁留 `C:\Cursor\danson117.github.io`。`mo-so-fong-claim-guide.html` 用咗較新嗰份覆蓋家庭倉已有嘅同一頁。GitHub。冇改 Supabase。
